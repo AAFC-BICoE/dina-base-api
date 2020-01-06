@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>ca.gc.aafc</groupId>
+  <artifactId>dina-base-api</artifactId>
+  <version>0.1-SNAPSHOT</version>
+  <name>dina-base-api</name>
+  <url>https://github.com/AAFC-BICoE/dina-base-api</url>
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.2.1.RELEASE</version>
+  </parent>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <javax.inject.version>1</javax.inject.version>
+    <jcip-annotations.version>1.0</jcip-annotations.version>
+    <spotbugs.version>3.1.12</spotbugs.version>
+    <local-javax-jaxb.version>2.3.0.1</local-javax-jaxb.version>
+    <javax.activation.version>1.1.1</javax.activation.version>
+    <crnk.version>3.1.20191113192440</crnk.version>
+  </properties>
+
+  <repositories>
+    <!-- Required for Crnk 3.0 -->
+    <repository>
+      <id>spring-libs-release</id>
+      <url>https://repo.spring.io/libs-release</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <!-- Used by Spotbug annotation -->
+    <dependency>
+      <groupId>net.jcip</groupId>
+      <artifactId>jcip-annotations</artifactId>
+      <version>${jcip-annotations.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <version>${spotbugs.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <!-- Required for Java >= 9 -->
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-core</artifactId>
+      <version>${local-javax-jaxb.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <version>${local-javax-jaxb.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.activation</groupId>
+      <artifactId>activation</artifactId>
+      <version>${javax.activation.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <version>${javax.inject.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.persistence</groupId>
+      <artifactId>javax.persistence-api</artifactId>
+      <version>2.2</version>
+    </dependency>
+    <!-- crnk -->
+    <dependency>
+      <groupId>io.crnk</groupId>
+      <artifactId>crnk-setup-spring-boot2</artifactId>
+      <version>${crnk.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.crnk</groupId>
+      <artifactId>crnk-operations</artifactId>
+      <version>${crnk.version}</version>
+    </dependency>
+    <!--Util-->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+  </dependencies>
+
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub AAFC-BICoE Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/AAFC-BICoE/dina-base-api</url>
+    </repository>
+  </distributionManagement>
+
+</project>
