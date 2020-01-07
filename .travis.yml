@@ -13,6 +13,6 @@ jdk:
 
 deploy:
   provider: script
-  script: deployToGitHubRegistry.sh
+  script: bash deployToGitHubRegistry.sh
   on:
     branch: Support_18292_configure_project_to_deploy_to_github_packages
