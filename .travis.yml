@@ -17,3 +17,4 @@ deploy:
   script: mvn deploy
   on:
     branch: Support_18292_configure_project_to_deploy_to_github_packages
+    jdk: openjdk8
