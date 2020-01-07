@@ -12,11 +12,13 @@ jdk:
   - openjdk11
 
 deploy:
-  provider: maven
+  provider: github maven package registry
   registry: https://maven.pkg.github.com/
-  github_token: $GITHUB_TOKEN
+  api_key: $GITHUB_TOKEN
+  edge:
+    branch: Support_18292_configure_project_to_deploy_to_github_packages
   skip_cleanup: true
   keep_history: true
   on:
-    branch:  Support_18292_configure_project_to_deploy_to_github_packages
+    branch: Support_18292_configure_project_to_deploy_to_github_packages
     repo: AAFC-BICoE/dina-base-api
