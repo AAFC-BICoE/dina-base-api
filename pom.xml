@@ -29,6 +29,8 @@
     <crnk.version>3.1.20191113192440</crnk.version>
     <maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
     <checkstyle.version>8.23</checkstyle.version>
+    <spotbugs-maven-plugin.version>3.1.12</spotbugs-maven-plugin.version>
+    <spotbugs.version>3.1.12</spotbugs.version>
   </properties>
 
   <repositories>
@@ -116,6 +118,19 @@
           <logViolationsToConsole>true</logViolationsToConsole>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>${spotbugs-maven-plugin.version}</version>
+        <dependencies>
+          <!-- Force SpotBug version to match the annotation -->
+          <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs</artifactId>
+            <version>${spotbugs.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
     </plugins>
   </build>
 
@@ -130,6 +145,11 @@
           <failOnViolation>false</failOnViolation>
           <logViolationsToConsole>false</logViolationsToConsole>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>${spotbugs-maven-plugin.version}</version>
       </plugin>
     </plugins>
   </reporting>
