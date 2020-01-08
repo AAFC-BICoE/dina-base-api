@@ -4,7 +4,7 @@ cache:
   - $HOME/.m2
 
 script: 
-  - mvn verify
+  - mvn verify checkstyle:check com.github.spotbugs:spotbugs-maven-plugin:check
  
 jdk:
   - openjdk8
