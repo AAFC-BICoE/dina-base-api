@@ -4,7 +4,7 @@ cache:
   - $HOME/.m2
 
 script:
-  - mvn verify
+  - mvn verify checkstyle:check com.github.spotbugs:spotbugs-maven-plugin:check
   - echo "<settings><servers><server><id>github</id><username>"$GITHUB_USER"</username><password>"$GITHUB_TOKEN"</password></server></servers></settings>" > ~/.m2/settings.xml
 
 jdk:
