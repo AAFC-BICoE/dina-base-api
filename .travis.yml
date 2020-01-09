@@ -5,7 +5,7 @@ cache:
 
 script:
   - mvn verify
-  - echo "<settings><servers><server><id>github</id><username>#GITHUB_USER</username><password>$GITHUB_TOKEN</password></server></servers></settings>" > ~/.m2/settings.xml
+  - echo "<settings><servers><server><id>github</id><username>$GITHUB_USER</username><password>$GITHUB_TOKEN</password></server></servers></settings>" > ~/.m2/settings.xml
 
 jdk:
   - openjdk8
