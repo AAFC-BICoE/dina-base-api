@@ -2,8 +2,8 @@ language: java
 cache:
   directories:
     - $HOME/.m2
-  before_cache:
-    - rm -f $HOME/.m2/settings.xml
+before_cache:
+  - rm -f $HOME/.m2/settings.xml
 
 script:
   - mvn verify checkstyle:check com.github.spotbugs:spotbugs-maven-plugin:check
