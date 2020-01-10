@@ -16,5 +16,5 @@ deploy:
   provider: script
   script: mvn deploy
   on:
-    branch: bug_18328_change_DbBackedIntegrationTest_to_object-store_implementation
+    branch: master
     jdk: openjdk8
