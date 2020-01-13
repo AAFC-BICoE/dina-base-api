@@ -16,5 +16,5 @@ deploy:
   provider: script
   script: mvn deploy
   on:
-    branch: Support_18384_publish_artifact_to_bintray
+    branch: master
     jdk: openjdk8
