@@ -7,7 +7,7 @@
 
   <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-base-api</artifactId>
-  <version>0.18-SNAPSHOT</version>
+  <version>0.19-SNAPSHOT</version>
   <name>dina-base-api</name>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
@@ -156,9 +156,9 @@
 
   <distributionManagement>
     <repository>
-      <id>github</id>
-      <name>GitHub AAFC-BICoE Apache Maven Packages</name>
-      <url>https://maven.pkg.github.com/AAFC-BICoE/dina-base-api</url>
+      <id>bintray-aafc-bice-BICoE</id>
+      <name>aafc-bice-BICoE</name>
+      <url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-base-api/;publish=1;</url>
     </repository>
   </distributionManagement>
 
