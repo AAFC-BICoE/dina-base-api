@@ -1,4 +1,4 @@
-package ca.gc.aafc.seqdb.testsupport.factories;
+package ca.gc.aafc.dina.testsupport.factories;
 
 import java.util.List;
 import java.util.function.BiFunction;
