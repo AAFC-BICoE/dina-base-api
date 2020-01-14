@@ -1,4 +1,4 @@
-package ca.gc.aafc.seqdb.testsupport;
+package ca.gc.aafc.dina.testsupport;
 
 import java.io.Serializable;
 import java.util.function.Consumer;
