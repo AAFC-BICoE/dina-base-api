@@ -70,6 +70,16 @@ limitations under the License.
     <module name="NewlineAtEndOfFile">
       <property name="severity" value="error"/>
     </module>
+    
+    <!-- Checks for Size Violations.                    -->
+    <!-- See http://checkstyle.sf.net/config_sizes.html -->
+    <module name="LineLength">
+        <property name="max" value="100"/>
+        <!-- Ignore import statements and javadoc comments and variables -->
+        <property name="ignorePattern" value='^(import.*$|^ *\*( |[^\/]) *.*)|((.*)=( |)"(.*)"(.*))'/>
+        <!-- severity is at ignore until we fix the other issues -->
+        <property name="severity" value="ignore"/>
+      </module>
 
     <!-- Checks that property files contain the same keys.         -->
     <!-- See http://checkstyle.sf.net/config_misc.html#Translation -->
@@ -164,22 +174,29 @@ limitations under the License.
       <!-- See http://checkstyle.sf.net/config_javadoc.html -->
       <module name="JavadocMethod">
       <property name="severity" value="ignore"/>
-        <!-- don't require javadoc for methods shorter than or equal to
-        this many lines (including opening & closing brace lines) -->
-        <property name="minLineCount" value="5"/>
+        
+
 
         <!-- javadoc doesn't need one @param, @return, @throws tags -->
         <property name="scope" value="public"/>
-      <property name="allowUndeclaredRTE" value="true"/>
         <property name="allowMissingParamTags" value="true"/>
-        <property name="allowMissingThrowsTags" value="true"/>
         <property name="allowMissingReturnTag" value="true"/>
 
-        <!-- simple set/get methods don't need javadoc comments -->
-        <property name="allowMissingPropertyJavadoc" value="true" />
+
 
         <!-- Allow tags for runtime exceptions that are not explicitly declared -->
 
+      </module>
+      
+      <module name="MissingJavadocMethod">
+      
+      	<!-- don't require javadoc for methods shorter than or equal to
+        this many lines (including opening & closing brace lines) -->
+      	<property name="minLineCount" value="5"/>
+      	
+      	<!-- simple set/get methods don't need javadoc comments -->
+        <property name="allowMissingPropertyJavadoc" value="true" />
+      
       </module>
 
       <module name="JavadocType">
@@ -275,15 +292,8 @@ limitations under the License.
                  ca.gc.aafc. Each group should be separated by a single blank line." />
       </module>
 
-      <!-- Checks for Size Violations.                    -->
-      <!-- See http://checkstyle.sf.net/config_sizes.html -->
-      <module name="LineLength">
-        <property name="max" value="100"/>
-        <!-- Ignore import statements and javadoc comments and variables -->
-        <property name="ignorePattern" value='^(import.*$|^ *\*( |[^\/]) *.*)|((.*)=( |)"(.*)"(.*))'/>
-        <!-- severity is at ignore until we fix the other issues -->
-        <property name="severity" value="ignore"/>
-      </module>
+      
+      
 
       <module name="OuterTypeNumber"/>
 
