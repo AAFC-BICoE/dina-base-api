@@ -31,6 +31,9 @@
     <checkstyle.version>8.29</checkstyle.version>
     <spotbugs-maven-plugin.version>3.1.12</spotbugs-maven-plugin.version>
     <spotbugs.version>3.1.12</spotbugs.version>
+    <rsql-jpa.version>2.0.2</rsql-jpa.version>
+    <guava.version>24.0-jre</guava.version>
+    <commons.beanutils.version>1.9.3</commons.beanutils.version>
   </properties>
 
   <repositories>
@@ -42,6 +45,15 @@
   </repositories>
 
   <dependencies>
+    <!-- Spring -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
     <!-- Used by Spotbug annotation -->
     <dependency>
       <groupId>net.jcip</groupId>
@@ -92,10 +104,50 @@
       <artifactId>crnk-operations</artifactId>
       <version>${crnk.version}</version>
     </dependency>
+    <!-- RSQL -->
+    <dependency>
+      <groupId>com.github.tennaito</groupId>
+      <artifactId>rsql-jpa</artifactId>
+      <version>${rsql-jpa.version}</version>
+    </dependency>
     <!--Util-->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-beanutils</groupId>
+      <artifactId>commons-beanutils</artifactId>
+      <version>${commons.beanutils.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+    </dependency>
+
+    <!-- TEST Scope -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
