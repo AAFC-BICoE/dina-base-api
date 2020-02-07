@@ -16,10 +16,12 @@ import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.entities.Department;
 import ca.gc.aafc.dina.entities.Employee;
 import ca.gc.aafc.dina.jpa.JpaDtoMapper;
+import ca.gc.aafc.dina.jpa.filter.RsqlFilterHandler;
+import ca.gc.aafc.dina.jpa.filter.SimpleFilterHandler;
 import ca.gc.aafc.dina.jpa.meta.JpaTotalMetaInformationProvider;
 import ca.gc.aafc.dina.jpa.repository.JpaDtoRepository;
+import ca.gc.aafc.dina.jpa.repository.JpaRelationshipRepository;
 import ca.gc.aafc.dina.jpa.repository.JpaResourceRepository;
-import io.crnk.core.repository.ResourceRepository;
 
 /**
  * Small test application running on dina-base-api
@@ -30,6 +32,12 @@ public class TestConfiguration {
 
   @Inject
   private JpaTotalMetaInformationProvider metaInformationProvider;
+
+  @Inject
+  private SimpleFilterHandler simpleFilterHandler;
+
+  @Inject
+  private RsqlFilterHandler rsqlFilterHandler;
 
   @Bean
   public JpaDtoMapper jpaDtoMapper() {
@@ -42,21 +50,49 @@ public class TestConfiguration {
   }
 
   @Bean
-  public ResourceRepository<DepartmentDto, Serializable> departmentRepository(JpaDtoRepository dtoRepository) {
+  public JpaResourceRepository<DepartmentDto> departmentRepository(JpaDtoRepository dtoRepository) {
     return new JpaResourceRepository<DepartmentDto>(
       DepartmentDto.class,
       dtoRepository,
-      Arrays.asList(),
+      Arrays.asList(simpleFilterHandler, rsqlFilterHandler),
       metaInformationProvider
     );
   }
 
   @Bean
-  public ResourceRepository<EmployeeDto, Serializable> employeeRepository(JpaDtoRepository dtoRepository) {
+  public JpaResourceRepository<EmployeeDto> employeeRepository(JpaDtoRepository dtoRepository) {
     return new JpaResourceRepository<EmployeeDto>(
       EmployeeDto.class,
       dtoRepository,
-      Arrays.asList(),
+      Arrays.asList(simpleFilterHandler, rsqlFilterHandler),
+      metaInformationProvider
+    );
+  }
+
+  @Bean
+  public JpaRelationshipRepository<DepartmentDto, EmployeeDto> departmentToEmployeeRepository(JpaDtoRepository dtoRepository) {
+    return new JpaRelationshipRepository<>(
+      DepartmentDto.class,
+      EmployeeDto.class,
+      dtoRepository,
+      Arrays.asList(
+        simpleFilterHandler, 
+        rsqlFilterHandler
+      ),
+      metaInformationProvider
+    );
+  }
+
+  @Bean
+  public JpaRelationshipRepository<EmployeeDto, DepartmentDto> employeeToDepartmentRepository(JpaDtoRepository dtoRepository) {
+    return new JpaRelationshipRepository<>(
+      EmployeeDto.class,
+      DepartmentDto.class,
+      dtoRepository,
+      Arrays.asList(
+        simpleFilterHandler, 
+        rsqlFilterHandler
+      ),
       metaInformationProvider
     );
   }

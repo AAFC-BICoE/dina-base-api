@@ -21,7 +21,7 @@ import io.crnk.core.engine.error.ErrorResponse;
 import io.crnk.core.repository.ResourceRepository;
 
 @Transactional
-@SpringBootTest(classes = TestConfiguration.class, properties = "spring.jpa.show_sql=true")
+@SpringBootTest(classes = TestConfiguration.class)
 public class DataIntegrityViolationExceptionMapperIT {
   
   @Inject

@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -10,10 +11,16 @@ import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Department {
 
   @Id
@@ -27,7 +34,12 @@ public class Department {
   @NotNull
   private String location;
 
+  @Builder.Default
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "department", targetEntity = Employee.class)
-  private List<Employee> employees;
+  private List<Employee> employees = new ArrayList<>();;
+
+  public String toString() {
+    return super.toString();
+  }
 
 }
