@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +21,8 @@ import ca.gc.aafc.dina.jpa.meta.JpaTotalMetaInformationProvider;
 import ca.gc.aafc.dina.jpa.repository.JpaDtoRepository;
 import ca.gc.aafc.dina.jpa.repository.JpaRelationshipRepository;
 import ca.gc.aafc.dina.jpa.repository.JpaResourceRepository;
+import ca.gc.aafc.dina.jpa.repository.SelectionHandler;
+import lombok.NonNull;
 
 /**
  * Small test application running on dina-base-api
@@ -40,13 +41,13 @@ public class TestConfiguration {
   private RsqlFilterHandler rsqlFilterHandler;
 
   @Bean
-  public JpaDtoMapper jpaDtoMapper() {
+  public JpaDtoMapper jpaDtoMapper(@NonNull SelectionHandler selectionHandler) {
     Map<Class<?>, Class<?>> jpaEntities = new HashMap<>();
 
     jpaEntities.put(DepartmentDto.class, Department.class);
     jpaEntities.put(EmployeeDto.class, Employee.class);
 
-    return new JpaDtoMapper(jpaEntities);
+    return new JpaDtoMapper(jpaEntities, selectionHandler);
   }
 
   @Bean
