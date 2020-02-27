@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.dto;
 
+import ca.gc.aafc.dina.jpa.annotation.DerivedDtoField;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
@@ -21,6 +22,7 @@ public class EmployeeDto {
   private String name;
 
   /** This field is generated from the name field. */
+  @DerivedDtoField
   private String nameUppercase;
 
   private String job;

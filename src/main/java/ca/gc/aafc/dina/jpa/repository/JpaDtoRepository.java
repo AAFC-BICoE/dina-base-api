@@ -30,6 +30,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Repository;
 
 import ca.gc.aafc.dina.jpa.JpaDtoMapper;
+import ca.gc.aafc.dina.jpa.annotation.DerivedDtoField;
 import ca.gc.aafc.dina.jpa.meta.JpaMetaInformationProvider;
 import ca.gc.aafc.dina.jpa.meta.JpaMetaInformationProvider.JpaMetaInformationParams;
 import ca.gc.aafc.dina.links.NoLinkInformation;
@@ -47,6 +48,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
 @Repository
 @Transactional
@@ -303,6 +305,12 @@ public class JpaDtoRepository {
     List<ResourceField> attributeFields = resourceInformation.getAttributeFields();
     for (ResourceField attributeField : attributeFields) {
       String attributeName = attributeField.getUnderlyingName();
+
+      // Skip read-only derived fields:
+      if (isGenerated(dto.getClass(), attributeName)) {
+        continue;
+      }
+
       PropertyUtils.setProperty(entity, attributeName,
           PropertyUtils.getProperty(dto, attributeName));
     }
@@ -357,6 +365,12 @@ public class JpaDtoRepository {
       }
 
     }
+  }
+
+  /** Whether a dto field is generated and read-only. */
+  @SneakyThrows(NoSuchFieldException.class)
+  private boolean isGenerated(Class<?> dtoClass, String field) {
+    return dtoClass.getDeclaredField(field).isAnnotationPresent(DerivedDtoField.class);
   }
 
   /**
