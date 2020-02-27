@@ -238,9 +238,9 @@ public class JpaDtoMapper {
 
   @Builder
   @Getter
-  public static class CustomFieldResolverSpec<TEntity> {
+  public static class CustomFieldResolverSpec<Entity> {
     @NonNull private String field;
-    @NonNull private Function<TEntity, Object> resolver;
+    @NonNull private Function<Entity, Object> resolver;
   }
 
 }
