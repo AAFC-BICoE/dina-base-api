@@ -236,11 +236,14 @@ public class JpaDtoMapper {
     return type;
   }
 
+  /**
+   * @param <E> Entity type
+   */
   @Builder
   @Getter
-  public static class CustomFieldResolverSpec<Entity> {
+  public static class CustomFieldResolverSpec<E> {
     @NonNull private String field;
-    @NonNull private Function<Entity, Object> resolver;
+    @NonNull private Function<E, Object> resolver;
   }
 
 }
