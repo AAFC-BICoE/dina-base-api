@@ -20,6 +20,9 @@ public class EmployeeDto {
 
   private String name;
 
+  /** This field is generated from the name field. */
+  private String nameUppercase;
+
   private String job;
 
   @JsonApiRelation

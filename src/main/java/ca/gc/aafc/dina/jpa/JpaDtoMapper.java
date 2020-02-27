@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.BiMap;
@@ -24,6 +25,8 @@ import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.queryspec.IncludeFieldSpec;
 import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.QuerySpec;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -33,12 +36,25 @@ public class JpaDtoMapper {
   
   private final BiMap<Class<?>, Class<?>> jpaEntities;
   private final SelectionHandler selectionHandler;
+  private final Map<Class<?>, List<CustomFieldResolverSpec<?>>> customFieldResolvers;
+
+  private final ExpressionParser entityParser = new SpelExpressionParser(
+    // Auto-grow must be false for the entity to avoid adding empty related entities:
+    new SpelParserConfiguration(false, false)
+  );
+
+  private final ExpressionParser dtoParser = new SpelExpressionParser(
+    // Auto-grow must be true for the DTO instantiate related DTOs:
+    new SpelParserConfiguration(true, true)
+  );
   
   public JpaDtoMapper(
     @NonNull Map<Class<?>, Class<?>> jpaEntities,
+    Map<Class<?>, List<CustomFieldResolverSpec<?>>> customFieldResolvers,
     @NonNull SelectionHandler selectionHandler
   ) {
     this.jpaEntities = HashBiMap.create(jpaEntities);
+    this.customFieldResolvers = customFieldResolvers;
     this.selectionHandler = selectionHandler;
   }
   
@@ -51,7 +67,7 @@ public class JpaDtoMapper {
   }
   
   /**
-   * Converts an Entity to a DTO based on the selected fields in the QuerySpec.
+   * Converts an Entity to a DTO based on the selected fields and includes in the QuerySpec.
    * 
    * @param entity
    * @param querySpec
@@ -62,27 +78,40 @@ public class JpaDtoMapper {
     Class<?> dtoClass = this.getDtoClassForEntity(entity.getClass());
 
     Map<Class<?>, List<String>> selectedFieldsPerClass = getSelectedFieldsPerClass(resourceRegistry, querySpec);
+    List<String> rootSelectedFields = selectedFieldsPerClass.get(dtoClass);
 
-    List<String> selectedFields = selectedFieldsPerClass.get(dtoClass);
+    Object dto = toSingleDto(entity, dtoClass, rootSelectedFields);
+
+    StandardEvaluationContext entityContext = new StandardEvaluationContext(entity);
+    StandardEvaluationContext dtoContext = new StandardEvaluationContext(dto);
+
     for (IncludeRelationSpec relation : querySpec.getIncludedRelations()) {
-      Class<?> relationClass = getPropertyClass(dtoClass, relation.getAttributePath());
-      List<String> relationSelectedFields = selectedFieldsPerClass.get(relationClass);
-      List<String> fullFieldPaths = relationSelectedFields.stream()
-        .map(path -> String.join(".", relation.getAttributePath()) + "." + path)
-        .collect(Collectors.toList());
-      selectedFields.addAll(fullFieldPaths);
+      String pathString = String.join(".", relation.getAttributePath());
+      Class<?> relationDtoClass = getPropertyClass(dtoClass, relation.getAttributePath());
+
+      Object relationEntity;
+      try {
+        relationEntity = entityParser.parseExpression(pathString).getValue(entityContext);
+      } catch (EvaluationException ee) {
+        relationEntity = null;
+      }
+
+      if (relationEntity != null) {
+        List<String> relationSelectedFields = selectedFieldsPerClass.get(relationDtoClass);
+        Object relationDto = toSingleDto(relationEntity, relationDtoClass, relationSelectedFields);
+        dtoParser.parseExpression(pathString).setValue(dtoContext, relationDto);
+      }
     }
 
+    return dto;
+  }
+
+  /**
+   * Converts an Entity to a DTO, only including the fields on this DTO, not included DTOs.
+   */
+  private Object toSingleDto(Object entity, Class<?> dtoClass, List<String> selectedFields) {
     Object dto = BeanUtils.instantiate(dtoClass);
 
-    ExpressionParser entityParser = new SpelExpressionParser(
-      // Auto-grow must be false for the entity to avoid adding empty related entities:
-      new SpelParserConfiguration(false, false)
-      );
-      ExpressionParser dtoParser = new SpelExpressionParser(
-      // Auto-grow must be true for the DTO instantiate related DTOs:
-      new SpelParserConfiguration(true, true)
-    );
     StandardEvaluationContext entityContext = new StandardEvaluationContext(entity);
     StandardEvaluationContext dtoContext = new StandardEvaluationContext(dto);
 
@@ -95,6 +124,15 @@ public class JpaDtoMapper {
       }
       if (value != null) {
         dtoParser.parseExpression(field).setValue(dtoContext, value);
+      }
+    }
+
+    // Apply custom field resolvers:
+    List<CustomFieldResolverSpec<?>> resolverSpecs = customFieldResolvers.get(dtoClass);
+    if (resolverSpecs != null) {
+      for (CustomFieldResolverSpec spec : resolverSpecs) {
+        dtoParser.parseExpression(spec.getField())
+          .setValue(dtoContext, spec.getResolver().apply(entity));
       }
     }
 
@@ -196,6 +234,13 @@ public class JpaDtoMapper {
       type = PropertyUtils.getPropertyClass(type, pathElement);
     }
     return type;
+  }
+
+  @Builder
+  @Getter
+  public static class CustomFieldResolverSpec<TEntity> {
+    @NonNull private String field;
+    @NonNull private Function<TEntity, Object> resolver;
   }
 
 }
