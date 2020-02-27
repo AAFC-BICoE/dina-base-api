@@ -61,6 +61,13 @@ public class TestConfiguration {
         .build()
     ));
 
+    customFieldResolvers.put(DepartmentDto.class, Arrays.asList(
+      CustomFieldResolverSpec.<Department>builder()
+        .field("employeeCount")
+        .resolver(dept -> dept.getEmployees().size())
+        .build()
+    ));
+
     return new JpaDtoMapper(jpaEntities, customFieldResolvers, selectionHandler);
   }
 

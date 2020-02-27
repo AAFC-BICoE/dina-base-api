@@ -122,6 +122,7 @@ public class JpaResourceRepositoryIT {
     assertEquals(dept.getId(), departmentDto.getId());
     assertEquals("test department", departmentDto.getName());
     assertNull(departmentDto.getLocation());
+    assertNull(departmentDto.getEmployeeCount());
   }
   
   @Test

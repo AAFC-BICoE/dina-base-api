@@ -2,8 +2,10 @@ package ca.gc.aafc.dina.jpa;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -77,8 +79,8 @@ public class JpaDtoMapper {
   public Object toDto(Object entity, QuerySpec querySpec, ResourceRegistry resourceRegistry) {
     Class<?> dtoClass = this.getDtoClassForEntity(entity.getClass());
 
-    Map<Class<?>, List<String>> selectedFieldsPerClass = getSelectedFieldsPerClass(resourceRegistry, querySpec);
-    List<String> rootSelectedFields = selectedFieldsPerClass.get(dtoClass);
+    Map<Class<?>, Set<String>> selectedFieldsPerClass = getSelectedFieldsPerClass(resourceRegistry, querySpec);
+    Set<String> rootSelectedFields = selectedFieldsPerClass.get(dtoClass);
 
     Object dto = toSingleDto(entity, dtoClass, rootSelectedFields);
 
@@ -97,7 +99,7 @@ public class JpaDtoMapper {
       }
 
       if (relationEntity != null) {
-        List<String> relationSelectedFields = selectedFieldsPerClass.get(relationDtoClass);
+        Set<String> relationSelectedFields = selectedFieldsPerClass.get(relationDtoClass);
         Object relationDto = toSingleDto(relationEntity, relationDtoClass, relationSelectedFields);
         dtoParser.parseExpression(pathString).setValue(dtoContext, relationDto);
       }
@@ -109,7 +111,7 @@ public class JpaDtoMapper {
   /**
    * Converts an Entity to a DTO, only including the fields on this DTO, not included DTOs.
    */
-  private Object toSingleDto(Object entity, Class<?> dtoClass, List<String> selectedFields) {
+  private Object toSingleDto(Object entity, Class<?> dtoClass, Set<String> selectedFields) {
     Object dto = BeanUtils.instantiate(dtoClass);
 
     StandardEvaluationContext entityContext = new StandardEvaluationContext(entity);
@@ -131,8 +133,10 @@ public class JpaDtoMapper {
     List<CustomFieldResolverSpec<?>> resolverSpecs = customFieldResolvers.get(dtoClass);
     if (resolverSpecs != null) {
       for (CustomFieldResolverSpec spec : resolverSpecs) {
-        dtoParser.parseExpression(spec.getField())
-          .setValue(dtoContext, spec.getResolver().apply(entity));
+        if (selectedFields.contains(spec.getField())) {
+          dtoParser.parseExpression(spec.getField())
+            .setValue(dtoContext, spec.getResolver().apply(entity));
+        }
       }
     }
 
@@ -146,11 +150,11 @@ public class JpaDtoMapper {
    * @param root
    * @return
    */
-  private Map<Class<?>, List<String>> getSelectedFieldsPerClass(
+  private Map<Class<?>, Set<String>> getSelectedFieldsPerClass(
       ResourceRegistry resourceRegistry, QuerySpec querySpec) {
-    Map<Class<?>, List<String>> selectedFields = new HashMap<>();
+    Map<Class<?>, Set<String>> selectedFields = new HashMap<>();
     
-    List<String> selectedFieldsOfThisClass = new ArrayList<>();
+    Set<String> selectedFieldsOfThisClass = new HashSet<>();
     ResourceInformation resourceInformation = resourceRegistry
         .getEntry(querySpec.getResourceClass())
         .getResourceInformation();
