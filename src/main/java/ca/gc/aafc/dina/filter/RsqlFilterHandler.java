@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa.filter;
+package ca.gc.aafc.dina.filter;
 
 import javax.inject.Inject;
 import javax.inject.Named;

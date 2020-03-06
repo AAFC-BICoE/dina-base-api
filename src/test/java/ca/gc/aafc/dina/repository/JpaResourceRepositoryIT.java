@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa.repository;
+package ca.gc.aafc.dina.repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -26,8 +26,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ca.gc.aafc.dina.TestConfiguration;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
-import ca.gc.aafc.dina.entities.Department;
-import ca.gc.aafc.dina.entities.Employee;
+import ca.gc.aafc.dina.entity.Department;
+import ca.gc.aafc.dina.entity.Employee;
+import ca.gc.aafc.dina.repository.JpaResourceRepository;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.IncludeFieldSpec;

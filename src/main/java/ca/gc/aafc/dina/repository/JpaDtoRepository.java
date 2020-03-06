@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa.repository;
+package ca.gc.aafc.dina.repository;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -29,11 +29,10 @@ import com.google.common.collect.Streams;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Repository;
 
-import ca.gc.aafc.dina.jpa.JpaDtoMapper;
-import ca.gc.aafc.dina.jpa.annotation.DerivedDtoField;
-import ca.gc.aafc.dina.jpa.meta.JpaMetaInformationProvider;
-import ca.gc.aafc.dina.jpa.meta.JpaMetaInformationProvider.JpaMetaInformationParams;
-import ca.gc.aafc.dina.links.NoLinkInformation;
+import ca.gc.aafc.dina.mapper.DerivedDtoField;
+import ca.gc.aafc.dina.mapper.JpaDtoMapper;
+import ca.gc.aafc.dina.repository.meta.JpaMetaInformationProvider;
+import ca.gc.aafc.dina.repository.meta.JpaMetaInformationProvider.JpaMetaInformationParams;
 import ca.gc.aafc.dina.util.TriFunction;
 import io.crnk.core.engine.information.resource.ResourceField;
 import io.crnk.core.engine.information.resource.ResourceInformation;

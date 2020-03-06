@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa.annotation;
+package ca.gc.aafc.dina.mapper;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

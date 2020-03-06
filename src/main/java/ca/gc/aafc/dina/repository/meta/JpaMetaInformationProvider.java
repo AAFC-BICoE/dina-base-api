@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa.meta;
+package ca.gc.aafc.dina.repository.meta;
 
 import java.util.function.Function;
 

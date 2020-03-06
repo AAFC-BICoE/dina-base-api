@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa;
+package ca.gc.aafc.dina.mapper;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+import ca.gc.aafc.dina.repository.SelectionHandler;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.ExpressionParser;
@@ -18,7 +20,6 @@ import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
-import ca.gc.aafc.dina.jpa.repository.SelectionHandler;
 import io.crnk.core.engine.information.resource.ResourceField;
 import io.crnk.core.engine.information.resource.ResourceInformation;
 import io.crnk.core.engine.internal.utils.PropertyUtils;

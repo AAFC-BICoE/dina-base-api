@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa.meta;
+package ca.gc.aafc.dina.repository.meta;
 
 import java.util.function.Function;
 
@@ -7,7 +7,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.From;
 
-import ca.gc.aafc.dina.jpa.JpaDtoMapper;
+import ca.gc.aafc.dina.mapper.JpaDtoMapper;
 import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
 import lombok.RequiredArgsConstructor;
 

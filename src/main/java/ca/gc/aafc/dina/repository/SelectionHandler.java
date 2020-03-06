@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa.repository;
+package ca.gc.aafc.dina.repository;
 
 import java.util.List;
 

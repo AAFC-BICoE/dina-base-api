@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa.repository;
+package ca.gc.aafc.dina.repository;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,9 +11,9 @@ import javax.transaction.Transactional;
 
 import com.google.common.collect.Iterables;
 
-import ca.gc.aafc.dina.jpa.filter.FilterHandler;
-import ca.gc.aafc.dina.jpa.meta.JpaMetaInformationProvider;
-import ca.gc.aafc.dina.jpa.repository.JpaDtoRepository.FindAllParams;
+import ca.gc.aafc.dina.filter.FilterHandler;
+import ca.gc.aafc.dina.repository.JpaDtoRepository.FindAllParams;
+import ca.gc.aafc.dina.repository.meta.JpaMetaInformationProvider;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.engine.registry.ResourceRegistryAware;
 import io.crnk.core.exception.ResourceNotFoundException;

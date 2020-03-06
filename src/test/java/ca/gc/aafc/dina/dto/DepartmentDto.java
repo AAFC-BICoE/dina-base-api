@@ -2,7 +2,7 @@ package ca.gc.aafc.dina.dto;
 
 import java.util.List;
 
-import ca.gc.aafc.dina.jpa.annotation.DerivedDtoField;
+import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;

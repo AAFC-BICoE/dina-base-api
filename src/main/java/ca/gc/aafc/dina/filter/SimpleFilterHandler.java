@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa.filter;
+package ca.gc.aafc.dina.filter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.Predicate;
 
-import ca.gc.aafc.dina.jpa.repository.SelectionHandler;
+import ca.gc.aafc.dina.repository.SelectionHandler;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;

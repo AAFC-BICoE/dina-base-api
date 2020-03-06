@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa.filter;
+package ca.gc.aafc.dina.filter;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;

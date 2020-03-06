@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa.filter;
+package ca.gc.aafc.dina.filter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -20,7 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import ca.gc.aafc.dina.TestConfiguration;
 import ca.gc.aafc.dina.dto.EmployeeDto;
-import ca.gc.aafc.dina.entities.Employee;
+import ca.gc.aafc.dina.entity.Employee;
 import io.crnk.core.engine.information.resource.ResourceInformation;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.queryspec.FilterOperator;

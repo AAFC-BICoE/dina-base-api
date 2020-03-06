@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa.meta;
+package ca.gc.aafc.dina.repository.meta;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -15,10 +15,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ca.gc.aafc.dina.TestConfiguration;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
-import ca.gc.aafc.dina.entities.Department;
-import ca.gc.aafc.dina.entities.Employee;
-import ca.gc.aafc.dina.jpa.repository.JpaRelationshipRepository;
-import ca.gc.aafc.dina.jpa.repository.JpaResourceRepository;
+import ca.gc.aafc.dina.entity.Department;
+import ca.gc.aafc.dina.entity.Employee;
+import ca.gc.aafc.dina.repository.JpaRelationshipRepository;
+import ca.gc.aafc.dina.repository.JpaResourceRepository;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.QuerySpec;

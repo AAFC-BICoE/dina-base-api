@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.entities;
+package ca.gc.aafc.dina.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

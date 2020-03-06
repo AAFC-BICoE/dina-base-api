@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -15,17 +14,17 @@ import org.springframework.context.annotation.Bean;
 
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
-import ca.gc.aafc.dina.entities.Department;
-import ca.gc.aafc.dina.entities.Employee;
-import ca.gc.aafc.dina.jpa.JpaDtoMapper;
-import ca.gc.aafc.dina.jpa.JpaDtoMapper.CustomFieldResolverSpec;
-import ca.gc.aafc.dina.jpa.filter.RsqlFilterHandler;
-import ca.gc.aafc.dina.jpa.filter.SimpleFilterHandler;
-import ca.gc.aafc.dina.jpa.meta.JpaTotalMetaInformationProvider;
-import ca.gc.aafc.dina.jpa.repository.JpaDtoRepository;
-import ca.gc.aafc.dina.jpa.repository.JpaRelationshipRepository;
-import ca.gc.aafc.dina.jpa.repository.JpaResourceRepository;
-import ca.gc.aafc.dina.jpa.repository.SelectionHandler;
+import ca.gc.aafc.dina.entity.Department;
+import ca.gc.aafc.dina.entity.Employee;
+import ca.gc.aafc.dina.filter.RsqlFilterHandler;
+import ca.gc.aafc.dina.filter.SimpleFilterHandler;
+import ca.gc.aafc.dina.mapper.JpaDtoMapper;
+import ca.gc.aafc.dina.mapper.JpaDtoMapper.CustomFieldResolverSpec;
+import ca.gc.aafc.dina.repository.JpaDtoRepository;
+import ca.gc.aafc.dina.repository.JpaRelationshipRepository;
+import ca.gc.aafc.dina.repository.JpaResourceRepository;
+import ca.gc.aafc.dina.repository.SelectionHandler;
+import ca.gc.aafc.dina.repository.meta.JpaTotalMetaInformationProvider;
 import lombok.NonNull;
 
 /**

@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.links;
+package ca.gc.aafc.dina.repository;
 
 import io.crnk.core.resource.links.LinksInformation;
 
