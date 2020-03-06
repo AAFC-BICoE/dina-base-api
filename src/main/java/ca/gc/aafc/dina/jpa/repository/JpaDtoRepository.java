@@ -2,12 +2,9 @@ package ca.gc.aafc.dina.jpa.repository;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -16,25 +13,24 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.Tuple;
-import javax.persistence.TupleElement;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.FetchParent;
 import javax.persistence.criteria.From;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Selection;
 import javax.transaction.Transactional;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.Streams;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Repository;
 
 import ca.gc.aafc.dina.jpa.JpaDtoMapper;
+import ca.gc.aafc.dina.jpa.annotation.DerivedDtoField;
 import ca.gc.aafc.dina.jpa.meta.JpaMetaInformationProvider;
 import ca.gc.aafc.dina.jpa.meta.JpaMetaInformationProvider.JpaMetaInformationParams;
 import ca.gc.aafc.dina.links.NoLinkInformation;
@@ -44,6 +40,7 @@ import io.crnk.core.engine.information.resource.ResourceInformation;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.queryspec.Direction;
+import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.list.DefaultResourceList;
 import io.crnk.core.resource.list.ResourceList;
@@ -51,6 +48,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
 @Repository
 @Transactional
@@ -72,10 +70,6 @@ public class JpaDtoRepository {
   
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
-
-  private static final ObjectMapper MAPPER = new ObjectMapper()
-      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-      .registerModule(new JavaTimeModule()); // Provides support for LocalDate and other Java 8 date/time types. 
 
   /**
    * Query the DTO repository backed by a JPA datasource for a list of DTOs.
@@ -106,13 +100,20 @@ public class JpaDtoRepository {
     Class<D> targetDtoClass = (Class<D>) querySpec.getResourceClass();
     
     CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-    CriteriaQuery<Tuple> criteriaQuery = cb.createTupleQuery();
+    CriteriaQuery<?> criteriaQuery = cb.createQuery();
     From<?, ?> sourcePath = criteriaQuery.from(dtoJpaMapper.getEntityClassForDto(sourceDtoClass));
 
     From<?, ?> targetPath = customRoot != null ? customRoot.apply(sourcePath) : sourcePath;
 
-    criteriaQuery
-        .multiselect(this.selectionHandler.getSelections(querySpec, targetPath, resourceRegistry));
+    criteriaQuery.select((Selection) targetPath);
+
+    // Eager load any included entities:
+    for (IncludeRelationSpec relation : querySpec.getIncludedRelations()) {
+      FetchParent<?, ?> join = targetPath;
+      for (String path : relation.getAttributePath()) {
+        join = join.fetch(path, JoinType.LEFT);
+      }
+    }
 
     if (querySpec.getSort().isEmpty()) {
       // When no sorts are requested, sort by ascending ID by default.
@@ -135,19 +136,24 @@ public class JpaDtoRepository {
       criteriaQuery.where(customFilter.apply(targetPath, criteriaQuery, cb));
     }
 
-    List<Tuple> result = entityManager.createQuery(criteriaQuery)
+    List<?> result = entityManager.createQuery(criteriaQuery)
         .setFirstResult(
             Optional.ofNullable(querySpec.getOffset()).orElse(Long.valueOf(0)).intValue())
         .setMaxResults(
             Optional.ofNullable(querySpec.getLimit()).orElse(Long.valueOf(100)).intValue())
         .getResultList();
 
-    return new DefaultResourceList<>(result.stream().map(JpaDtoRepository::mapFromTuple)
-        .map(map -> JpaDtoRepository.MAPPER.convertValue(map, targetDtoClass)).collect(Collectors.toList()),
+    return new DefaultResourceList<>(
+      result.stream()
+        .map(entity -> (D) dtoJpaMapper.toDto(entity, querySpec, resourceRegistry))
+        .collect(Collectors.toList()),
         metaInformationProvider.getMetaInformation(
-            JpaMetaInformationParams.builder().sourceResourceClass(sourceDtoClass)
-                .customRoot(customRoot).customFilter(customFilter).build()),
-        NO_LINK_INFORMATION);
+            JpaMetaInformationParams.builder()
+              .sourceResourceClass(sourceDtoClass)
+              .customRoot(customRoot).customFilter(customFilter).build()
+        ),
+        NO_LINK_INFORMATION
+      );
   }
 
   /**
@@ -285,35 +291,6 @@ public class JpaDtoRepository {
   }
 
   /**
-   * Gets a Map&lt;String, Object&gt; from a JPA Tuple. This is used to convert JPA's data-fetching output
-   * to an object-graph-like structure that can more easily be deserialized to DTOs
-   *
-   * @param tuple
-   * @return map
-   */
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> mapFromTuple(Tuple tuple) {
-    Map<String, Object> map = new HashMap<>();
-    for (TupleElement<?> element : tuple.getElements()) {
-      Object value = tuple.get(element);
-      if (value == null) {
-        continue;
-      }
-      Map<String, Object> currentNode = map;
-      List<String> attributePath = Arrays.asList(element.getAlias().split("\\."));
-      for (int i = 0; i < attributePath.size() - 1; i++) {
-        String pathElement = attributePath.get(i);
-        if (!currentNode.containsKey(pathElement)) {
-          currentNode.put(pathElement, new HashMap<>());
-        }
-        currentNode = (Map<String, Object>) currentNode.get(pathElement);
-      }
-      currentNode.put(attributePath.get(attributePath.size() - 1), value);
-    }
-    return map;
-  }
-
-  /**
    * Apply the changed data held in a DTO object to a JPA entity.
    *
    * @param dto
@@ -328,6 +305,12 @@ public class JpaDtoRepository {
     List<ResourceField> attributeFields = resourceInformation.getAttributeFields();
     for (ResourceField attributeField : attributeFields) {
       String attributeName = attributeField.getUnderlyingName();
+
+      // Skip read-only derived fields:
+      if (isGenerated(dto.getClass(), attributeName)) {
+        continue;
+      }
+
       PropertyUtils.setProperty(entity, attributeName,
           PropertyUtils.getProperty(dto, attributeName));
     }
@@ -382,6 +365,12 @@ public class JpaDtoRepository {
       }
 
     }
+  }
+
+  /** Whether a dto field is generated and read-only. */
+  @SneakyThrows(NoSuchFieldException.class)
+  private boolean isGenerated(Class<?> dtoClass, String field) {
+    return dtoClass.getDeclaredField(field).isAnnotationPresent(DerivedDtoField.class);
   }
 
   /**

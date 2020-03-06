@@ -19,6 +19,7 @@ import javax.transaction.Transactional;
 
 import com.google.common.collect.Comparators;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -95,6 +96,7 @@ public class JpaResourceRepositoryIT {
     assertNotNull(empDto);
     assertEquals(emp.getId(), empDto.getId());
     assertEquals(emp.getName(), empDto.getName());
+    assertEquals(StringUtils.upperCase(emp.getName()), empDto.getNameUppercase());
     
     // The emp ID should be returned, but not the rest of the emp's attributes.
     assertNotNull(empDto.getDepartment().getId());
@@ -120,6 +122,7 @@ public class JpaResourceRepositoryIT {
     assertEquals(dept.getId(), departmentDto.getId());
     assertEquals("test department", departmentDto.getName());
     assertNull(departmentDto.getLocation());
+    assertNull(departmentDto.getEmployeeCount());
   }
   
   @Test
