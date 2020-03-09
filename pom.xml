@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.2.1.RELEASE</version>
+    <version>2.2.5.RELEASE</version>
   </parent>
 
   <properties>
@@ -23,17 +23,15 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <javax.inject.version>1</javax.inject.version>
     <jcip-annotations.version>1.0</jcip-annotations.version>
-    <spotbugs.version>3.1.12</spotbugs.version>
     <local-javax-jaxb.version>2.3.0.1</local-javax-jaxb.version>
     <javax.activation.version>1.1.1</javax.activation.version>
     <crnk.version>3.1.20191113192440</crnk.version>
-    <maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
-    <checkstyle.version>8.29</checkstyle.version>
-    <spotbugs-maven-plugin.version>3.1.12</spotbugs-maven-plugin.version>
+    <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
+    <checkstyle.version>8.30</checkstyle.version>
     <spotbugs.version>3.1.12</spotbugs.version>
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
     <guava.version>24.0-jre</guava.version>
-    <commons.beanutils.version>1.9.3</commons.beanutils.version>
+    <commons.beanutils.version>1.9.4</commons.beanutils.version>
   </properties>
 
   <repositories>
@@ -91,7 +89,6 @@
     <dependency>
       <groupId>javax.persistence</groupId>
       <artifactId>javax.persistence-api</artifactId>
-      <version>2.2</version>
     </dependency>
     <!-- crnk -->
     <dependency>
@@ -181,7 +178,7 @@
       <plugin>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>${spotbugs-maven-plugin.version}</version>
+        <version>${spotbugs.version}</version>
         <dependencies>
           <!-- Force SpotBug version to match the annotation -->
           <dependency>
