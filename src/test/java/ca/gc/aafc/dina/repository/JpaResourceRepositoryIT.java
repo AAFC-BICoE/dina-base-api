@@ -100,7 +100,7 @@ public class JpaResourceRepositoryIT {
     assertEquals(StringUtils.upperCase(emp.getName()), empDto.getNameUppercase());
     
     // The emp ID should be returned, but not the rest of the emp's attributes.
-    assertNotNull(empDto.getDepartment().getId());
+    assertNotNull(empDto.getDepartment().getUuid());
     assertNull(empDto.getDepartment().getName());
   }
 

@@ -88,7 +88,7 @@ public class JpaRelationshipRepositoryIT {
 
     DepartmentDto dept = employeeToDepartmentRepository.findOneTarget(employee.getId(), "department", querySpec);
 
-    assertNotNull(dept.getId());
+    assertNotNull(dept.getUuid());
     assertNotNull(dept.getName());
     assertNotNull(dept.getLocation());
   }
@@ -106,7 +106,7 @@ public class JpaRelationshipRepositoryIT {
     
     DepartmentDto dept = employeeToDepartmentRepository.findOneTarget(emp.getId(), "department", targetQuerySpec);
     
-    assertNotNull(dept.getId());
+    assertNotNull(dept.getUuid());
     assertNull(dept.getLocation());
   }
   
@@ -130,7 +130,7 @@ public class JpaRelationshipRepositoryIT {
     QuerySpec querySpec = new QuerySpec(EmployeeDto.class);
     
     ResourceList<EmployeeDto> empDtos = departmentToEmployeeRepository
-        .findManyTargets(dept.getId(), "employees", querySpec);
+        .findManyTargets(dept.getUuid(), "employees", querySpec);
     
     assertEquals(22, empDtos.size());
     assertEquals(
@@ -160,9 +160,9 @@ public class JpaRelationshipRepositoryIT {
     EmployeeDto testEmpDto = employeeRepository.findOne(testEmp.getId(),
         new QuerySpec(EmployeeDto.class));
 
-    employeeToDepartmentRepository.setRelation(testEmpDto, newDept.getId(), "department");
+    employeeToDepartmentRepository.setRelation(testEmpDto, newDept.getUuid(), "department");
 
-    assertEquals(newDept.getId(), testEmp.getDepartment().getId());
+    assertEquals(newDept.getUuid(), testEmp.getDepartment().getUuid());
   }
   
   @Test
@@ -179,7 +179,7 @@ public class JpaRelationshipRepositoryIT {
     );
 
     // Move the employee.
-    employeeToDepartmentRepository.setRelation(empDtoToMove, dept2.getId(), "department");
+    employeeToDepartmentRepository.setRelation(empDtoToMove, dept2.getUuid(), "department");
     
     assertEquals(dept2, empEntityToMove.getDepartment());
   }
@@ -194,7 +194,7 @@ public class JpaRelationshipRepositoryIT {
     );
     
     // Do the redundant setRelation.
-    employeeToDepartmentRepository.setRelation(empDto, dept.getId(), "department");
+    employeeToDepartmentRepository.setRelation(empDto, dept.getUuid(), "department");
     
     // Check that the emp is still linked to the same dept.
     assertEquals(dept, emp.getDepartment());
@@ -217,7 +217,7 @@ public class JpaRelationshipRepositoryIT {
     assertEquals(0, dept2.getEmployees().size());
     
     // Get the dept2 DTO.
-    DepartmentDto dept2Dto = departmentRepository.findOne(dept2.getId(), new QuerySpec(DepartmentDto.class));
+    DepartmentDto dept2Dto = departmentRepository.findOne(dept2.getUuid(), new QuerySpec(DepartmentDto.class));
     
     // Move dept1's emps to dept2
     departmentToEmployeeRepository.setRelations(
@@ -250,7 +250,7 @@ public class JpaRelationshipRepositoryIT {
     assertEquals(0, dept2.getEmployees().size());
     
     // Get the dept DTO.
-    DepartmentDto dept2Dto = departmentRepository.findOne(dept2.getId(), new QuerySpec(DepartmentDto.class));
+    DepartmentDto dept2Dto = departmentRepository.findOne(dept2.getUuid(), new QuerySpec(DepartmentDto.class));
     
     // Move 3 emps from dept1 to dept2.
     List<Serializable> empIds = Arrays.asList(
@@ -291,7 +291,7 @@ public class JpaRelationshipRepositoryIT {
     // Remove the emp's link to the dept.
     employeeToDepartmentRepository.removeRelations(
         empDto,
-        Arrays.asList(testEmp.getDepartment().getId()),
+        Arrays.asList(testEmp.getDepartment().getUuid()),
         "department"
     );
     
