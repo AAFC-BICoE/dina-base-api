@@ -21,7 +21,6 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.SelectionHandler;
 import ca.gc.aafc.dina.util.TriConsumer;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.SpelParserConfiguration;
@@ -290,8 +289,9 @@ public class JpaDtoMapper {
   /**
    * Converts an Entity to a DTO, only including the fields on this DTO, not included DTOs.
    */
+  @SneakyThrows
   private Object toSingleDto(Object entity, Class<?> dtoClass, Set<String> selectedFields) {
-    Object dto = BeanUtils.instantiate(dtoClass);
+    Object dto = dtoClass.getConstructor().newInstance();
 
     StandardEvaluationContext entityContext = new StandardEvaluationContext(entity);
     StandardEvaluationContext dtoContext = new StandardEvaluationContext(dto);

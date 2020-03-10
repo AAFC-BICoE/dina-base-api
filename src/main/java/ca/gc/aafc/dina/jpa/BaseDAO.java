@@ -90,24 +90,14 @@ public class BaseDAO {
     }
   }
 
+  /**
+   * Gets the Natural ID (if available) or database ID from an entity
+   */
   public Object getId(Object entity) {
-    Session session = entityManager.unwrap(Session.class);
-
-    boolean hasNaturalId = ((SessionFactoryImplementor) (session.getSessionFactory()))
-      .getMetamodel()
-      .entityPersister(entity.getClass())
-      .hasNaturalIdentifier();
-
-    if (hasNaturalId) {
-      return PropertyUtils.getProperty(
-        entity,
-        getIdFieldName(entity.getClass())
-      );
-    } else {
-      return entityManager.getEntityManagerFactory()
-        .getPersistenceUnitUtil()
-        .getIdentifier(entity);
-    }
+    return PropertyUtils.getProperty(
+      entity,
+      getIdFieldName(entity.getClass())
+    );
   }
   
   /**

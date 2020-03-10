@@ -86,7 +86,7 @@ public class JpaTotalMetaInformationProviderIT {
     QuerySpec querySpec = new QuerySpec(EmployeeDto.class);
     querySpec.addFilter(new FilterSpec(Arrays.asList("name"), FilterOperator.EQ, "test employee 3"));
     ResourceList<EmployeeDto> employees = departmentToEmployeeRepository
-        .findManyTargets(testDepartment.getId(), "employees", querySpec);
+        .findManyTargets(testDepartment.getUuid(), "employees", querySpec);
     DefaultPagedMetaInformation meta = (DefaultPagedMetaInformation) employees.getMeta();
     
     assertEquals(1, employees.size());

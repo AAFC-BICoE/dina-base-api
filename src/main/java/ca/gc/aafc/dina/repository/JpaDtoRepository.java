@@ -20,7 +20,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Selection;
 import javax.transaction.Transactional;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Repository;
 
 import ca.gc.aafc.dina.jpa.BaseDAO;
@@ -39,6 +38,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
 @Repository
 @Transactional
@@ -178,9 +178,11 @@ public class JpaDtoRepository {
    * @param resource
    * @return the created resource's ID
    */
+  @SneakyThrows
   public Serializable create(Object resource, ResourceRegistry resourceRegistry) {
-    Object entity = BeanUtils
-        .instantiate(this.dtoJpaMapper.getEntityClassForDto(resource.getClass()));
+    Object entity = this.dtoJpaMapper.getEntityClassForDto(resource.getClass())
+      .getConstructor()
+      .newInstance();
 
     this.dtoJpaMapper.applyDtoToEntity(resource, entity, resourceRegistry);
 
