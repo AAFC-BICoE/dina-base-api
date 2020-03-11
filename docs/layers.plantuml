@@ -1,0 +1,11 @@
+@startuml
+:Web Layer
+- crnk;
+#Yellow:DTO;
+:Service Layer
+- business validation
+- entity mapping;
+#Orange:Entity;
+:Repository Layer
+- EntityManager;
+@enduml

@@ -1,0 +1,16 @@
+= Testing
+
+Decisions and Guidelines related to testing for the seqdb-api project.
+Definitions are based on Testing Concepts.
+
+== Unit Tests
+
+General Definition: https://martinfowler.com/bliki/UnitTest.html
+
+Unit test shall follow the Unit tests naming convention: `unitOfWork_StateUnderTest_ExpectedBehavior`
+
+== Integration Tests
+
+General Definition: https://martinfowler.com/bliki/IntegrationTest.html
+
+Classes shall use the IT suffix. As per http://maven.apache.org/surefire/maven-failsafe-plugin/examples/inclusion-exclusion.html[Failsafe defaults]
