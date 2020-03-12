@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.dto;
 
 import java.util.List;
+import java.util.UUID;
 
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import io.crnk.core.resource.annotations.JsonApiId;
@@ -19,7 +20,7 @@ import lombok.NoArgsConstructor;
 public class DepartmentDto {
 
   @JsonApiId
-  private Integer id;
+  private UUID uuid;
 
   private String name;
 

@@ -28,7 +28,7 @@ import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
-import ca.gc.aafc.dina.repository.JpaResourceRepository;
+import ca.gc.aafc.dina.jpa.BaseDAO;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.IncludeFieldSpec;
@@ -49,6 +49,9 @@ public class JpaResourceRepositoryIT {
 
   @Inject
   private EntityManager entityManager;
+
+  @Inject
+  private BaseDAO baseDAO;
   
   // using factory methods from dbi to create a employee and dept and persist them in the repository
   // together
@@ -100,7 +103,7 @@ public class JpaResourceRepositoryIT {
     assertEquals(StringUtils.upperCase(emp.getName()), empDto.getNameUppercase());
     
     // The emp ID should be returned, but not the rest of the emp's attributes.
-    assertNotNull(empDto.getDepartment().getId());
+    assertNotNull(empDto.getDepartment().getUuid());
     assertNull(empDto.getDepartment().getName());
   }
 
@@ -115,12 +118,12 @@ public class JpaResourceRepositoryIT {
     QuerySpec querySpec = new QuerySpec(DepartmentDto.class);
     querySpec.setIncludedFields(includeFieldSpecs("name"));
 
-    DepartmentDto departmentDto = departmentRepository.findOne(dept.getId(), querySpec);
+    DepartmentDto departmentDto = departmentRepository.findOne(dept.getUuid(), querySpec);
 
     // Returned dept DTO must have correct values: selected fields are present, non-selected
     // fields are null.
     assertNotNull(departmentDto);
-    assertEquals(dept.getId(), departmentDto.getId());
+    assertEquals(dept.getUuid(), departmentDto.getUuid());
     assertEquals("test department", departmentDto.getName());
     assertNull(departmentDto.getLocation());
     assertNull(departmentDto.getEmployeeCount());
@@ -145,7 +148,7 @@ public class JpaResourceRepositoryIT {
     assertNull(empDto.getJob());
     
     assertNotNull(empDto.getDepartment());
-    assertNotNull(empDto.getDepartment().getId());
+    assertNotNull(empDto.getDepartment().getUuid());
     assertNotNull(empDto.getDepartment().getName());
     assertNull(empDto.getDepartment().getLocation());
   }
@@ -189,18 +192,18 @@ public class JpaResourceRepositoryIT {
   @Test
   public void findAll_whenNoSortSpecified_resultsAreUniqueAndSortedByAscendingId() {
     for (int i = 1; i <= 10; i++) {
-      Department dept = Department.builder().name("dept " + i).location("Ottawa").build();
-      entityManager.persist(dept);
+      Employee emp = Employee.builder().name("emp " + i).job("Developer").build();
+      entityManager.persist(emp);
     }
     
-    QuerySpec querySpec = new QuerySpec(DepartmentDto.class);
+    QuerySpec querySpec = new QuerySpec(EmployeeDto.class);
     querySpec.setLimit(Long.valueOf(10));
-    ResourceList<DepartmentDto> deptDtos = departmentRepository.findAll(querySpec);
+    ResourceList<EmployeeDto> empDtos = employeeRepository.findAll(querySpec);
     
     // Check that the IDs are in ascending sequence
-    Integer idIterator = deptDtos.get(0).getId();
-    for (DepartmentDto deptDto : deptDtos) {
-      assertEquals(idIterator++, deptDto.getId());
+    Integer idIterator = empDtos.get(0).getId();
+    for (EmployeeDto empDto : empDtos) {
+      assertEquals(idIterator++, empDto.getId());
     }
   }
   
@@ -357,7 +360,7 @@ public class JpaResourceRepositoryIT {
     
     DepartmentDto savedDept2Dto = departmentRepository.create(dept2Dto);
     
-    Department dept2Entity = entityManager.find(Department.class, savedDept2Dto.getId());
+    Department dept2Entity = baseDAO.findOneById(savedDept2Dto.getUuid(), Department.class);
     
     // Check that the emps were moved to dept2.
     emps.forEach(emp -> assertEquals(dept2Entity, emp.getDepartment()));
@@ -398,30 +401,30 @@ public class JpaResourceRepositoryIT {
     
     // Change the test employee's dept to the new department.
     DepartmentDto newDeptDto = new DepartmentDto();
-    newDeptDto.setId(testDept.getId());
+    newDeptDto.setUuid(testDept.getUuid());
     testEmpDto.setDepartment(newDeptDto);
     
     // Save the DTO using the repository.
     EmployeeDto updatedEmpDto = employeeRepository.save(testEmpDto);
     
     // Check that the updated employee has the new dept id.
-    assertNotNull(testEmp.getDepartment().getId());
-    assertEquals(testDept.getId(), updatedEmpDto.getDepartment().getId());
-    assertEquals(testDept.getId(), testEmp.getDepartment().getId());
+    assertNotNull(testEmp.getDepartment().getUuid());
+    assertEquals(testDept.getUuid(), updatedEmpDto.getDepartment().getUuid());
+    assertEquals(testDept.getUuid(), testEmp.getDepartment().getUuid());
   }
   
   @Test
   public void saveExistingEmployeeAndRemoveLinkedDept_onSuccess_employeeEntityIsModified() {
     Employee testEmp = createPersistedEmployeeWithDepartment();
     
-    assertNotNull(testEmp.getDepartment().getId());
+    assertNotNull(testEmp.getDepartment().getUuid());
     
     // Get the test emp's DTO.
     QuerySpec querySpec = new QuerySpec(EmployeeDto.class);
     EmployeeDto testEmpDto = employeeRepository.findOne(testEmp.getId(), querySpec);
     
     // The emp's dept id should not be null.
-    assertNotNull(testEmpDto.getDepartment().getId());
+    assertNotNull(testEmpDto.getDepartment().getUuid());
     
     testEmpDto.setDepartment(null);
 

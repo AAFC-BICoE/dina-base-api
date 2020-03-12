@@ -1,8 +1,7 @@
 package ca.gc.aafc.dina.jpa;
 
-import java.util.Arrays;
+import java.io.Serializable;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -24,7 +23,11 @@ import javax.validation.Validator;
 import org.hibernate.Session;
 import org.hibernate.SimpleNaturalIdLoadAccess;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.springframework.stereotype.Component;
+
+import io.crnk.core.engine.information.bean.BeanInformation;
+import io.crnk.core.engine.internal.utils.PropertyUtils;
 
 /**
  * Base Data Access Object layer. This class should be the only one holding a reference to the {@link EntityManager}.
@@ -65,17 +68,36 @@ public class BaseDAO {
   }
 
   /**
-   * Find an entity by it's naturalId. The method assumes that the naturalId is unique.
+   * Find an entity by it's natural ID or database ID.
+   * The method assumes that the naturalId is unique.
    * 
-   * @param uuid
+   * @param id
    * @param entityClass
    * @return
    */
-  public <T> T findOneByNaturalId(UUID uuid, Class<T> entityClass) {
-    T objectStoreMetadata = entityManager.unwrap(Session.class)
-        .bySimpleNaturalId(entityClass)
-        .load(uuid);
-    return objectStoreMetadata;
+  public <T> T findOneById(Object id, Class<T> entityClass) {
+    Session session = entityManager.unwrap(Session.class);
+
+    boolean hasNaturalId = ((SessionFactoryImplementor) (session.getSessionFactory()))
+      .getMetamodel()
+      .entityPersister(entityClass)
+      .hasNaturalIdentifier();
+
+    if (hasNaturalId) {
+      return session.bySimpleNaturalId(entityClass).load(id);
+    } else {
+      return entityManager.find(entityClass, id);
+    }
+  }
+
+  /**
+   * Gets the Natural ID (if available) or database ID from an entity
+   */
+  public Object getId(Object entity) {
+    return PropertyUtils.getProperty(
+      entity,
+      getIdFieldName(entity.getClass())
+    );
   }
   
   /**
@@ -115,7 +137,7 @@ public class BaseDAO {
     Root<?> from = cq.from(entityClass);
     
     cq.select(cb.count(from));
-    cq.where(cb.equal(from.get(extractNaturalIdFieldName(entityClass)), uuid));
+    cq.where(cb.equal(from.get(getIdFieldName(entityClass)), uuid));
 
     TypedQuery<Long> tq = entityManager.createQuery(cq);
     return tq.getSingleResult() > 0;
@@ -183,16 +205,21 @@ public class BaseDAO {
    * @param entityClass
    * @return name if the NaturalId field or null if none
    */
-  private String extractNaturalIdFieldName(Class<?> entityClass) {
-    Optional<Column> naturalIdColumn = Arrays.stream(entityClass.getDeclaredMethods())
-        .filter(m -> m.getAnnotation(NaturalId.class) != null)
-        .map(m -> m.getAnnotation(Column.class))
-        .findFirst();
+  public String getIdFieldName(Class<?> entityClass) {
+    BeanInformation beanInfo = BeanInformation.get(entityClass);
 
-    if (naturalIdColumn.isPresent()) {
-      return naturalIdColumn.get().name();
+    // Check for NaturalId:
+    for (String attrName : beanInfo.getAttributeNames()) {
+      if (beanInfo.getAttribute(attrName).getAnnotation(NaturalId.class).isPresent()) {
+        return attrName;
+      }
     }
-    return null;
+
+    // If there is no NaturalId then use the normal database ID:
+    return entityManager.getMetamodel()
+      .entity(entityClass)
+      .getId(Serializable.class)
+      .getName();
   }
   
 }

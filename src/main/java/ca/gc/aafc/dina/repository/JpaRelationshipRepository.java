@@ -60,7 +60,7 @@ public class JpaRelationshipRepository<S, T>
 
   @Override
   public void setRelation(S source, Serializable targetId, String fieldName) {
-    this.dtoRepository.modifyRelation(
+    this.dtoRepository.getDtoJpaMapper().modifyRelation(
         this.findEntityFromDto(source),
         Collections.singletonList(targetId),
         fieldName,
@@ -77,7 +77,7 @@ public class JpaRelationshipRepository<S, T>
 
   @Override
   public void setRelations(S source, Collection<Serializable> targetIds, String fieldName) {
-    this.dtoRepository.modifyRelation(
+    this.dtoRepository.getDtoJpaMapper().modifyRelation(
         this.findEntityFromDto(source),
         targetIds,
         fieldName,
@@ -97,7 +97,7 @@ public class JpaRelationshipRepository<S, T>
 
   @Override
   public void addRelations(S source, Collection<Serializable> targetIds, String fieldName) {
-    this.dtoRepository.modifyRelation(
+    this.dtoRepository.getDtoJpaMapper().modifyRelation(
         this.findEntityFromDto(source),
         targetIds,
         fieldName,
@@ -114,7 +114,7 @@ public class JpaRelationshipRepository<S, T>
 
   @Override
   public void removeRelations(S source, Collection<Serializable> targetIds, String fieldName) {
-    this.dtoRepository.modifyRelation(
+    this.dtoRepository.getDtoJpaMapper().modifyRelation(
         this.findEntityFromDto(source),
         targetIds,
         fieldName,
@@ -177,10 +177,8 @@ public class JpaRelationshipRepository<S, T>
               restrictions.add(
                   cb.equal(
                       sourcePath.get(
-                          dtoRepository.getEntityManager()
-                              .getMetamodel()
-                              .entity(sourceEntityClass)
-                              .getId(Serializable.class)
+                          dtoRepository.getBaseDAO()
+                              .getIdFieldName(sourceEntityClass)
                       ),
                       sourceId
                   )
@@ -202,12 +200,12 @@ public class JpaRelationshipRepository<S, T>
   }
 
   private Object findEntityFromDto(Object dto) {
-    return this.dtoRepository.getEntityManager().find(
-        this.dtoRepository.getDtoJpaMapper()
-            .getEntityClassForDto(dto.getClass()),
+    return this.dtoRepository.getBaseDAO().findOneById(
         this.resourceRegistry.findEntry(dto.getClass())
             .getResourceInformation()
-            .getId(dto)
+            .getId(dto),
+        this.dtoRepository.getDtoJpaMapper()
+            .getEntityClassForDto(dto.getClass())
     );
   }
   
