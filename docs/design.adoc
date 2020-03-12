@@ -1,0 +1,59 @@
+= Design and Implementation Considerations
+
+This page should be interpreted as a guideline to achieve consistent and predictable design during the entire lifecycle of the application.
+Some concepts are coming from the https://en.wikipedia.org/wiki/Domain-driven_design[Domain Driven Design] approach and it will also refer to the https://en.wikipedia.org/wiki/SOLID_(object-oriented_design)[SOLID principles] to back some design decisions.
+
+This page should not be considered a static set of rules. It will evolve over time as we iterate over the project. For all code produced, it should follow this guide or provide documentation explaining why. If the explanation can be generalized and the “concept” can be applied in the entire project this guide should be updated.
+
+
+=== Spring DI
+
+Use constructor injection for all mandatory dependencies and ensure dependencies are marked as final. It will make the class more testable and also make sure that class can be used without Spring DI (as opposed to field injection).
+
+
+=== Use of DTOs
+
+In order to detach the object exposed and the one that is stored we will use DTOs to transfer data between the web and the service layer. The changes at web layer are driven by how the user of the service wants to use it while the changes at the service/repository layers are driven by how we do business and how we store data.
+
+=== Domain Object/Entity
+
+For simplicity we will use the following descriptions:
+
+==== Domain Object
+Objects from the business specific area that represent something meaningful to the domain expert.
+
+==== Entity
+Domain Object + Identifier
+
+
+We should always try to push business logic inside the Entities when it makes sense. The current rules are the following:
+
+Business logic should be part of the entity if:
+ - The business logic doesn’t require external services (lazy loading is considered an external service)
+ - The business logic only requires the data available in the entity (including nested entities)
+
+If the business logic cannot follow those rules, it should live in the service layer.
+
+=== Always-Valid Entity
+When possible, we should try to make our entities always-valid even if it can be tricky with Hibernate.
+
+ - Throw exception if giving bad data (e.g. mandatory fields)
+ - Constructor always leaves the entity in a valid initial state. Sensible default values are provided and constructor allows providing mandatory values. A builder could also be provided.
+ - Update entities by a context-specific methods so that they are never in inconsistent states
+ - Use private setters if 2 or more fields are linked (e.g. Rectangle, setHeight and setWidth shall be private but setDimension should be public)
+ - The validations mentioned above refer to the business definition of valid. The maximum length of a field in the database is not part of the business; this should be handled by the entity validation (see Validation: General Principles section).
+
+== Validation: General Principles
+
+=== DTO
+
+Data coming from outside (command-line, web request) should but stored (upon arrival) inside a DTO. DTOs can be initially validated using Bean Validation annotations. After that, the DTO can be transferred to the Service layer. Validation should use the Notification pattern instead of throwing exceptions.
+
+=== Entities
+
+Most of the entities are not a simple data structure; they should have domain-level validation inside them so that they are always-valid. This is more a goal than the current reality.
+We should use a Validator based on Bean Validation 2.0 specification to validate the entities using their annotations.
+
+=== DTO - Entity Mapping
+
+Once we received and validated a DTO, we have to map it to one or more entities. This process could trigger some exception leading to more validation results.

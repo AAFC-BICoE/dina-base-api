@@ -31,6 +31,8 @@
     <spotbugs.version>3.1.12</spotbugs.version>
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
     <guava.version>24.0-jre</guava.version>
+    <asciidoctor-maven-plugin.version>1.6.0</asciidoctor-maven-plugin.version>
+    <asciidoctorj.diagram.version>2.0.1</asciidoctorj.diagram.version>
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
   </properties>
 
@@ -188,6 +190,40 @@
           </dependency>
         </dependencies>
       </plugin>
+	  <plugin>
+		<groupId>org.asciidoctor</groupId>
+		<artifactId>asciidoctor-maven-plugin</artifactId>
+		<version>${asciidoctor-maven-plugin.version}</version>
+		<dependencies>
+			<dependency>
+				<groupId>org.asciidoctor</groupId>
+				<artifactId>asciidoctorj-diagram</artifactId>
+				<version>${asciidoctorj.diagram.version}</version>
+			</dependency>
+		</dependencies>
+		<configuration>
+			<sourceDirectory>${basedir}/docs</sourceDirectory>
+			<requires>
+				<require>asciidoctor-diagram</require>
+			</requires>
+		</configuration>
+		<executions>
+			<execution>
+				<id>output-html</id>
+				<phase>generate-resources</phase>
+				<goals>
+					<goal>process-asciidoc</goal>
+				</goals>
+				<configuration>
+					<backend>html5</backend>
+					<sourceDocumentName>index.adoc</sourceDocumentName>
+					<attributes>
+						<toc>left</toc>
+					</attributes>
+				</configuration>
+			</execution>
+		</executions>
+	  </plugin>
     </plugins>
   </build>
 
