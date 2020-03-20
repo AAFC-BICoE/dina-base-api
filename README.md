@@ -9,3 +9,28 @@ Documentation can be generated using:
 `mvn clean compile`
 
 An `index.html` page will be generated in `target/generated-docs`
+
+## Artifact
+dina-base-api artifact is published on [BinTray](https://bintray.com/aafc-bice/BICoE/dina-base-api).
+
+
+```
+<dependency>
+  <groupId>ca.gc.aafc</groupId>
+  <artifactId>dina-base-api</artifactId>
+  <version>0.21</version>
+</dependency>
+```
+
+Add BICoE BinTray repository :
+
+```
+<repository>
+  <snapshots>
+    <enabled>false</enabled>
+  </snapshots>
+  <id>bintray-aafc-bice-BICoE</id>
+  <name>bintray</name>
+  <url>https://dl.bintray.com/aafc-bice/BICoE</url>
+</repository>
+```
