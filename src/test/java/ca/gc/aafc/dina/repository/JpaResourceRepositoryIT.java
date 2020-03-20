@@ -342,10 +342,7 @@ public class JpaResourceRepositoryIT {
     assertNotNull(empEntity.getId());
     assertEquals("test employee", empEntity.getName());
     // Custom field has custom field mapping of ComplexObject.name to ComplexObject
-    assertEquals(
-      ComplexObject.builder().name(newEmp.getCustomField()).build(),
-      empEntity.getCustomField()
-    );
+    assertEquals(newEmp.getCustomField(), empEntity.getCustomField().getName());
   }
   
   @Test
