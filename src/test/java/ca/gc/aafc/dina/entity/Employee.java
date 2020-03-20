@@ -28,6 +28,8 @@ public class Employee {
 
   private String job;
 
+  private Integer customField;
+
   @ManyToOne(fetch = FetchType.LAZY)
   private Department department;
 

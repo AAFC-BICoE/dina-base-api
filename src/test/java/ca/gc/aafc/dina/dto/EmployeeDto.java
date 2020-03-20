@@ -27,6 +27,8 @@ public class EmployeeDto {
 
   private String job;
 
+  private String customField;
+
   @JsonApiRelation
   private DepartmentDto department;
 

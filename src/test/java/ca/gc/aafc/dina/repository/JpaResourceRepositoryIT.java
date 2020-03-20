@@ -65,7 +65,7 @@ public class JpaResourceRepositoryIT {
 
   protected Employee createPersistedEmployeeWithDepartment() {
     Employee emp = persistEmployeeWithDepartment(
-      Employee.builder().name("employee").build(),
+      Employee.builder().name("employee").customField(1).build(),
       Department.builder().name("department").location("Ottawa").build()
     );
 
@@ -101,6 +101,7 @@ public class JpaResourceRepositoryIT {
     assertEquals(emp.getId(), empDto.getId());
     assertEquals(emp.getName(), empDto.getName());
     assertEquals(StringUtils.upperCase(emp.getName()), empDto.getNameUppercase());
+    assertEquals(emp.getCustomField(), empDto.getCustomField());
     
     // The emp ID should be returned, but not the rest of the emp's attributes.
     assertNotNull(empDto.getDepartment().getUuid());
@@ -325,11 +326,14 @@ public class JpaResourceRepositoryIT {
   public void createEmployee_onSuccess_returnEmployeeWithId() {
     EmployeeDto newEmp = new EmployeeDto();
     newEmp.setName("test employee");
+    newEmp.setCustomField("1");
     
     EmployeeDto createdEmp = employeeRepository.create(newEmp);
     
     assertNotNull(createdEmp.getId());
     assertEquals("test employee", createdEmp.getName());
+    //Custom field has custom field mapping of String to Integer
+    assertEquals(newEmp.getCustomField(), createdEmp.getCustomField());
     
     Employee empEntity = entityManager.find(Employee.class, createdEmp.getId());
     assertNotNull(empEntity.getId());
