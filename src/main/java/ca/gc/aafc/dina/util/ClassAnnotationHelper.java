@@ -16,7 +16,7 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
  * Helper class to find annotated classes.
  */
 @Log4j2
-public class ClassAnnotationHelper {
+public final class ClassAnnotationHelper {
 
   /**
    * Utility class
