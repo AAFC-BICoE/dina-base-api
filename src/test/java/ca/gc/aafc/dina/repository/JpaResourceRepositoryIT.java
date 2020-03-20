@@ -101,7 +101,8 @@ public class JpaResourceRepositoryIT {
     assertEquals(emp.getId(), empDto.getId());
     assertEquals(emp.getName(), empDto.getName());
     assertEquals(StringUtils.upperCase(emp.getName()), empDto.getNameUppercase());
-    assertEquals(emp.getCustomField(), empDto.getCustomField());
+    // Custom field has custom field mapping of String to Integer
+    assertEquals(Integer.toString(emp.getCustomField()), empDto.getCustomField());
     
     // The emp ID should be returned, but not the rest of the emp's attributes.
     assertNotNull(empDto.getDepartment().getUuid());
