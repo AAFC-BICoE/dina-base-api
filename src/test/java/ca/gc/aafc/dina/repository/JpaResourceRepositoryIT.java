@@ -333,12 +333,13 @@ public class JpaResourceRepositoryIT {
     
     assertNotNull(createdEmp.getId());
     assertEquals("test employee", createdEmp.getName());
-    //Custom field has custom field mapping of String to Integer
     assertEquals(newEmp.getCustomField(), createdEmp.getCustomField());
     
     Employee empEntity = entityManager.find(Employee.class, createdEmp.getId());
     assertNotNull(empEntity.getId());
     assertEquals("test employee", empEntity.getName());
+    // Custom field has custom field mapping of String to Integer
+    assertEquals(Integer.parseInt(newEmp.getCustomField()), empEntity.getCustomField());
   }
   
   @Test
