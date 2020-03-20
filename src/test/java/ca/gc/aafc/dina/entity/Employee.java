@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.entity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -30,7 +31,7 @@ public class Employee {
 
   private String job;
 
-  @OneToOne
+  @OneToOne(cascade = CascadeType.ALL )
   @JoinColumn(name = "custom_field_id")
   private ComplexObject customField;
 

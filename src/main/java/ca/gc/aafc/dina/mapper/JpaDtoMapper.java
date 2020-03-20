@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -21,6 +22,7 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.SelectionHandler;
 import ca.gc.aafc.dina.util.TriConsumer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.SpelParserConfiguration;
@@ -130,19 +132,7 @@ public class JpaDtoMapper {
     ResourceInformation resourceInformation = resourceRegistry.findEntry(dto.getClass())
         .getResourceInformation();
 
-    // Apply the DTO's attribute values to the entity.
-    List<ResourceField> attributeFields = resourceInformation.getAttributeFields();
-    for (ResourceField attributeField : attributeFields) {
-      String attributeName = attributeField.getUnderlyingName();
-
-      // Skip read-only derived fields:
-      if (isGenerated(dto.getClass(), attributeName)) {
-        continue;
-      }
-
-      PropertyUtils.setProperty(entity, attributeName,
-          PropertyUtils.getProperty(dto, attributeName));
-    }
+    applyDtoAttributesToEntity(dto, entity, resourceInformation);
 
     // Apply the DTO's relation values to the entity.
     List<ResourceField> relationFields = resourceInformation.getRelationshipFields();
@@ -194,6 +184,32 @@ public class JpaDtoMapper {
       }
 
     }
+  }
+
+  private void applyDtoAttributesToEntity(Object dto, Object entity, ResourceInformation resourceInformation) {
+    Set<String> fields = resourceInformation.getAttributeFields()
+        .stream()
+        .map(af -> af.getUnderlyingName())
+        .collect(Collectors.toSet());
+
+    // Apply the DTO's attribute values to the entity.
+    for (String attributeName : fields) {
+
+      // Skip read-only derived fields and fields with custom resolvers:
+      if (isGenerated(dto.getClass(), attributeName) ||
+          hasCustomFieldResolver(entity.getClass(), attributeName)) {
+        continue;
+      }
+
+      PropertyUtils.setProperty(entity, attributeName, PropertyUtils.getProperty(dto, attributeName));
+    }
+
+    // Apply the DTO's attribute values using custom resolvers.
+    consumeResolversforClass(entity.getClass(), cfr -> {
+      if (fields.contains(cfr.getField())) {
+        PropertyUtils.setProperty(entity, cfr.getField(), cfr.getResolver().apply(dto));
+      }
+    });
   }
 
   /**
@@ -286,6 +302,13 @@ public class JpaDtoMapper {
     return dtoClass.getDeclaredField(field).isAnnotationPresent(DerivedDtoField.class);
   }
 
+  private boolean hasCustomFieldResolver(Class<?> clazz, String field){
+    return !customFieldResolvers.getOrDefault(clazz, new ArrayList<>())
+        .stream()
+        .filter(cfr->StringUtils.equalsIgnoreCase(field, cfr.getField()))
+        .collect(Collectors.toList()).isEmpty();
+  }
+
   /**
    * Converts an Entity to a DTO, only including the fields on this DTO, not included DTOs.
    */
@@ -303,21 +326,17 @@ public class JpaDtoMapper {
       } catch (EvaluationException ee) {
         value = null;
       }
-      if (value != null) {
+      if (value != null && !hasCustomFieldResolver(dtoClass, field)) {
         dtoParser.parseExpression(field).setValue(dtoContext, value);
       }
     }
 
     // Apply custom field resolvers:
-    List<CustomFieldResolverSpec<?>> resolverSpecs = customFieldResolvers.get(dtoClass);
-    if (resolverSpecs != null) {
-      for (CustomFieldResolverSpec spec : resolverSpecs) {
-        if (selectedFields.contains(spec.getField())) {
-          dtoParser.parseExpression(spec.getField())
-            .setValue(dtoContext, spec.getResolver().apply(entity));
-        }
+    consumeResolversforClass(dtoClass, cfr -> {
+      if (selectedFields.contains(cfr.getField())) {
+        dtoParser.parseExpression(cfr.getField()).setValue(dtoContext, cfr.getResolver().apply(entity));
       }
-    }
+    });
 
     return dto;
   }
@@ -417,6 +436,15 @@ public class JpaDtoMapper {
       type = PropertyUtils.getPropertyClass(type, pathElement);
     }
     return type;
+  }
+
+  private void consumeResolversforClass(Class<?> clazz, Consumer<CustomFieldResolverSpec> consumer) {
+    List<CustomFieldResolverSpec<?>> resolverSpecs = customFieldResolvers.get(clazz);
+    if (resolverSpecs != null) {
+      for (CustomFieldResolverSpec<?> spec : resolverSpecs) {
+        consumer.accept(spec);
+      }
+    }
   }
 
   /**
