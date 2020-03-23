@@ -205,7 +205,7 @@ public class JpaDtoMapper {
     }
 
     // Apply the DTO's attribute values using custom resolvers.
-    consumeResolversforClass(entity.getClass(), cfr -> {
+    consumeFieldResolvers(entity.getClass(), cfr -> {
       if (fields.contains(cfr.getField())) {
         PropertyUtils.setProperty(entity, cfr.getField(), cfr.getResolver().apply(dto));
       }
@@ -332,7 +332,7 @@ public class JpaDtoMapper {
     }
 
     // Apply custom field resolvers:
-    consumeResolversforClass(dtoClass, cfr -> {
+    consumeFieldResolvers(dtoClass, cfr -> {
       if (selectedFields.contains(cfr.getField())) {
         dtoParser.parseExpression(cfr.getField()).setValue(dtoContext, cfr.getResolver().apply(entity));
       }
@@ -438,7 +438,7 @@ public class JpaDtoMapper {
     return type;
   }
 
-  private void consumeResolversforClass(Class<?> clazz, Consumer<CustomFieldResolverSpec> consumer) {
+  private void consumeFieldResolvers(Class<?> clazz, Consumer<CustomFieldResolverSpec> consumer) {
     List<CustomFieldResolverSpec<?>> resolverSpecs = customFieldResolvers.get(clazz);
     if (resolverSpecs != null) {
       for (CustomFieldResolverSpec<?> spec : resolverSpecs) {
