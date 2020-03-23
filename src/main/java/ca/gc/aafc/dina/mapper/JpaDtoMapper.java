@@ -132,7 +132,12 @@ public class JpaDtoMapper {
     ResourceInformation resourceInformation = resourceRegistry.findEntry(dto.getClass())
         .getResourceInformation();
 
-    applyDtoAttributesToEntity(dto, entity, resourceInformation);
+    Set<String> attributes = resourceInformation.getAttributeFields()
+        .stream()
+        .map(af -> af.getUnderlyingName())
+        .collect(Collectors.toSet());
+    // Apply the DTO's attribute values to the entity.
+    applyDtoAttributesToEntity(dto, entity, attributes);
 
     // Apply the DTO's relation values to the entity.
     List<ResourceField> relationFields = resourceInformation.getRelationshipFields();
@@ -186,14 +191,10 @@ public class JpaDtoMapper {
     }
   }
 
-  private void applyDtoAttributesToEntity(Object dto, Object entity, ResourceInformation resourceInformation) {
-    Set<String> fields = resourceInformation.getAttributeFields()
-        .stream()
-        .map(af -> af.getUnderlyingName())
-        .collect(Collectors.toSet());
+  private void applyDtoAttributesToEntity(Object dto, Object entity, Set<String> attributes) {
 
     // Apply the DTO's attribute values to the entity.
-    for (String attributeName : fields) {
+    for (String attributeName : attributes) {
 
       // Skip read-only derived fields and fields with custom resolvers:
       if (isGenerated(dto.getClass(), attributeName) ||
@@ -206,7 +207,7 @@ public class JpaDtoMapper {
 
     // Apply the DTO's attribute values using custom resolvers.
     consumeFieldResolvers(entity.getClass(), cfr -> {
-      if (fields.contains(cfr.getField())) {
+      if (attributes.contains(cfr.getField())) {
         PropertyUtils.setProperty(entity, cfr.getField(), cfr.getResolver().apply(dto));
       }
     });
