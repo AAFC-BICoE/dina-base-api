@@ -191,6 +191,13 @@ public class JpaDtoMapper {
     }
   }
 
+  /**
+   * Apply the given attributes of a DTO to an Entity.
+   * 
+   * @param dto        - dto to map
+   * @param entity     - entity to map too
+   * @param attributes - attributes to map
+   */
   private void applyDtoAttributesToEntity(Object dto, Object entity, Set<String> attributes) {
 
     // Apply the DTO's attribute values to the entity.
@@ -303,6 +310,14 @@ public class JpaDtoMapper {
     return dtoClass.getDeclaredField(field).isAnnotationPresent(DerivedDtoField.class);
   }
 
+  /**
+   * Returns true if the given class has custom field resolvers for a given field.
+   * 
+   * @param clazz - class with resolvers
+   * @param field - field with r resolver
+   * @return - true if the given class has custom field resolvers for a given
+   *         field.
+   */
   private boolean hasCustomFieldResolver(Class<?> clazz, String field){
     return !customFieldResolvers.getOrDefault(clazz, new ArrayList<>())
         .stream()
@@ -439,6 +454,12 @@ public class JpaDtoMapper {
     return type;
   }
 
+  /**
+   * Consume the field resolvers of a given class with a given consumer.
+   * 
+   * @param clazz    - class with field resolvers.
+   * @param consumer - consumer to consume resolvers.
+   */
   private void consumeFieldResolvers(Class<?> clazz, Consumer<CustomFieldResolverSpec> consumer) {
     List<CustomFieldResolverSpec<?>> resolverSpecs = customFieldResolvers.get(clazz);
     if (resolverSpecs != null) {
