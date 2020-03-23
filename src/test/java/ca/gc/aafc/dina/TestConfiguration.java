@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Bean;
 
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
+import ca.gc.aafc.dina.entity.ComplexObject;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.filter.RsqlFilterHandler;
@@ -61,8 +62,19 @@ public class TestConfiguration {
       CustomFieldResolverSpec.<Employee>builder()
         .field("nameUppercase")
         .resolver(employee -> StringUtils.upperCase(employee.getName()))
+        .build(),
+      CustomFieldResolverSpec.<Employee>builder()
+        .field("customField")
+        .resolver(employee ->  
+            employee.getCustomField() == null ? "" : employee.getCustomField().getName())
         .build()
     ));
+
+    customFieldResolvers.put(Employee.class, Arrays.asList(
+      CustomFieldResolverSpec.<EmployeeDto>builder()
+        .field("customField")
+        .resolver(employeeDto -> ComplexObject.builder().name(employeeDto.getCustomField()).build())
+        .build()));
 
     customFieldResolvers.put(DepartmentDto.class, Arrays.asList(
       CustomFieldResolverSpec.<Department>builder()

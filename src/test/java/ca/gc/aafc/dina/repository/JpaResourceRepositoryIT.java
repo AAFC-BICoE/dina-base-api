@@ -26,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ca.gc.aafc.dina.TestConfiguration;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
+import ca.gc.aafc.dina.entity.ComplexObject;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.jpa.BaseDAO;
@@ -64,8 +65,10 @@ public class JpaResourceRepositoryIT {
   }
 
   protected Employee createPersistedEmployeeWithDepartment() {
+    ComplexObject complexObj = ComplexObject.builder().name("testName").build();
+    entityManager.persist(complexObj);
     Employee emp = persistEmployeeWithDepartment(
-      Employee.builder().name("employee").build(),
+      Employee.builder().name("employee").customField(complexObj).build(),
       Department.builder().name("department").location("Ottawa").build()
     );
 
@@ -101,6 +104,8 @@ public class JpaResourceRepositoryIT {
     assertEquals(emp.getId(), empDto.getId());
     assertEquals(emp.getName(), empDto.getName());
     assertEquals(StringUtils.upperCase(emp.getName()), empDto.getNameUppercase());
+    // Custom field has custom field mapping of ComplexObject.name to ComplexObject
+    assertEquals(emp.getCustomField().getName(), empDto.getCustomField());
     
     // The emp ID should be returned, but not the rest of the emp's attributes.
     assertNotNull(empDto.getDepartment().getUuid());
@@ -325,15 +330,19 @@ public class JpaResourceRepositoryIT {
   public void createEmployee_onSuccess_returnEmployeeWithId() {
     EmployeeDto newEmp = new EmployeeDto();
     newEmp.setName("test employee");
+    newEmp.setCustomField("testName");
     
     EmployeeDto createdEmp = employeeRepository.create(newEmp);
     
     assertNotNull(createdEmp.getId());
     assertEquals("test employee", createdEmp.getName());
+    assertEquals(newEmp.getCustomField(), createdEmp.getCustomField());
     
     Employee empEntity = entityManager.find(Employee.class, createdEmp.getId());
     assertNotNull(empEntity.getId());
     assertEquals("test employee", empEntity.getName());
+    // Custom field has custom field mapping of ComplexObject.name to ComplexObject
+    assertEquals(newEmp.getCustomField(), empEntity.getCustomField().getName());
   }
   
   @Test
