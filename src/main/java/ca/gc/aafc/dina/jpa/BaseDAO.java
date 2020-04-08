@@ -30,18 +30,19 @@ import io.crnk.core.engine.information.bean.BeanInformation;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 
 /**
- * Base Data Access Object layer. This class should be the only one holding a reference to the {@link EntityManager}.
+ * Base Data Access Object layer. This class should be the only one holding a reference to the
+ * {@link EntityManager}.
  *
  */
 @Component
 public class BaseDAO {
-  
+
   @PersistenceContext
   private EntityManager entityManager;
-  
+
   @Inject
   private Validator validator;
-  
+
   /**
    * This method can be used to inject the EntityManager into an external object.
    * 
@@ -51,9 +52,10 @@ public class BaseDAO {
     Objects.requireNonNull(creator);
     return creator.apply(entityManager);
   }
-  
+
   /**
    * Utility function that can check if a lazy loaded attribute is actually loaded.
+   * 
    * @param entity
    * @param fieldName
    * @return
@@ -62,14 +64,13 @@ public class BaseDAO {
     Objects.requireNonNull(entity);
     Objects.requireNonNull(fieldName);
 
-    PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory()
-        .getPersistenceUnitUtil();
+    PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
     return unitUtil.isLoaded(entity, fieldName);
   }
 
   /**
-   * Find an entity by it's natural ID or database ID.
-   * The method assumes that the naturalId is unique.
+   * Find an entity by it's natural ID or database ID. The method assumes that the naturalId is
+   * unique.
    * 
    * @param id
    * @param entityClass
@@ -79,9 +80,9 @@ public class BaseDAO {
     Session session = entityManager.unwrap(Session.class);
 
     boolean hasNaturalId = ((SessionFactoryImplementor) (session.getSessionFactory()))
-      .getMetamodel()
-      .entityPersister(entityClass)
-      .hasNaturalIdentifier();
+        .getMetamodel()
+        .entityPersister(entityClass)
+        .hasNaturalIdentifier();
 
     if (hasNaturalId) {
       return session.bySimpleNaturalId(entityClass).load(id);
@@ -91,15 +92,24 @@ public class BaseDAO {
   }
 
   /**
+   * Find an entity by it's {@link NaturalId}. The method assumes that the naturalId is unique.
+   * 
+   * @param id
+   * @param entityClass
+   * @return
+   */
+  public <T> T findOneByNaturalId(Object id, Class<T> entityClass) {
+    Session session = entityManager.unwrap(Session.class);
+    return session.bySimpleNaturalId(entityClass).load(id);
+  }
+
+  /**
    * Gets the Natural ID (if available) or database ID from an entity
    */
   public Object getId(Object entity) {
-    return PropertyUtils.getProperty(
-      entity,
-      getIdFieldName(entity.getClass())
-    );
+    return PropertyUtils.getProperty(entity, getIdFieldName(entity.getClass()));
   }
-  
+
   /**
    * Find an entity by a specific property. The method assumes that the property is unique.
    * 
@@ -124,9 +134,10 @@ public class BaseDAO {
       return null;
     }
   }
-  
+
   /**
    * Check for the existence of a record by natural id (as uuid).
+   * 
    * @param uuid
    * @param entityClass
    * @return
@@ -135,14 +146,14 @@ public class BaseDAO {
     CriteriaBuilder cb = entityManager.getCriteriaBuilder();
     CriteriaQuery<Long> cq = cb.createQuery(Long.class);
     Root<?> from = cq.from(entityClass);
-    
+
     cq.select(cb.count(from));
     cq.where(cb.equal(from.get(getIdFieldName(entityClass)), uuid));
 
     TypedQuery<Long> tq = entityManager.createQuery(cq);
     return tq.getSingleResult() > 0;
   }
-  
+
   /**
    * Give a reference to an entity that should exist without actually loading it. Useful to set
    * relationships without loading the entity.
@@ -156,7 +167,7 @@ public class BaseDAO {
         .bySimpleNaturalId(entityClass);
     return loadAccess.getReference(uuid);
   }
-  
+
   /**
    * Set a relationship by calling the provided {@link Consumer} with a reference Entity loaded by
    * NaturalId.
@@ -168,7 +179,7 @@ public class BaseDAO {
   public <T> void setRelationshipUsing(Class<T> entityClass, UUID uuid, Consumer<T> objConsumer) {
     objConsumer.accept(getReferenceByNaturalId(entityClass, uuid));
   }
-  
+
   /**
    * Save the provided entity.
    * 
@@ -177,7 +188,7 @@ public class BaseDAO {
   public void save(Object entity) {
     entityManager.persist(entity);
   }
-  
+
   /**
    * Delete the provided entity.
    * 
@@ -186,7 +197,7 @@ public class BaseDAO {
   public void delete(Object entity) {
     entityManager.remove(entity);
   }
-  
+
   /**
    * Same as {@link Validator#validate(Object, Class...)}
    * 
@@ -197,7 +208,24 @@ public class BaseDAO {
   public <T> Set<ConstraintViolation<T>> validateEntity(T entity) {
     return validator.validate(entity);
   }
-  
+
+  /**
+   * Given a class, this method will extract the name of the field annotated with {@link NaturalId}.
+   * 
+   * @param entityClass
+   * @return
+   */
+  public String getNaturalIdFieldName(Class<?> entityClass) {
+    BeanInformation beanInfo = BeanInformation.get(entityClass);
+    // Check for NaturalId:
+    for (String attrName : beanInfo.getAttributeNames()) {
+      if (beanInfo.getAttribute(attrName).getAnnotation(NaturalId.class).isPresent()) {
+        return attrName;
+      }
+    }
+    return null;
+  }
+
   /**
    * Given a class, this method will extract the name of the field (using the {@link Column}
    * annotation when that field is annotated with {@link NaturalId}.
@@ -217,9 +245,9 @@ public class BaseDAO {
 
     // If there is no NaturalId then use the normal database ID:
     return entityManager.getMetamodel()
-      .entity(entityClass)
-      .getId(Serializable.class)
-      .getName();
+        .entity(entityClass)
+        .getId(Serializable.class)
+        .getName();
   }
-  
+
 }
