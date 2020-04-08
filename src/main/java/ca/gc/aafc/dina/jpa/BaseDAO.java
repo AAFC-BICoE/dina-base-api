@@ -74,7 +74,7 @@ public class BaseDAO {
    * @param entityClass
    * @return
    */
-  public <T> T findOneByDatabseId(Object id, Class<T> entityClass) {
+  public <T> T findOneByDatabaseId(Object id, Class<T> entityClass) {
     return entityManager.find(entityClass, id);
   }
 

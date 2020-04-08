@@ -232,7 +232,7 @@ public class JpaDtoRepository {
     }
 
     // fallback
-    return baseDAO.findOneByDatabseId(id, entityClass);
+    return baseDAO.findOneByDatabaseId(id, entityClass);
   }
 
   /**
