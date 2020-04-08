@@ -10,17 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Streams;
-
-import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.repository.SelectionHandler;
-import ca.gc.aafc.dina.util.TriConsumer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.expression.EvaluationException;
@@ -29,6 +22,12 @@ import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Streams;
+
+import ca.gc.aafc.dina.repository.SelectionHandler;
+import ca.gc.aafc.dina.util.TriConsumer;
 import io.crnk.core.engine.information.resource.ResourceField;
 import io.crnk.core.engine.information.resource.ResourceInformation;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
@@ -48,7 +47,6 @@ public class JpaDtoMapper {
   
   private final BiMap<Class<?>, Class<?>> jpaEntities;
   private final SelectionHandler selectionHandler;
-  private final BaseDAO baseDAO;
   private final Map<Class<?>, List<CustomFieldResolverSpec<?>>> customFieldResolvers;
 
   private final ExpressionParser entityParser = new SpelExpressionParser(
@@ -64,13 +62,11 @@ public class JpaDtoMapper {
   public JpaDtoMapper(
     @NonNull Map<Class<?>, Class<?>> jpaEntities,
     Map<Class<?>, List<CustomFieldResolverSpec<?>>> customFieldResolvers,
-    @NonNull SelectionHandler selectionHandler,
-    @NonNull BaseDAO baseDAO
+    @NonNull SelectionHandler selectionHandler
   ) {
     this.jpaEntities = HashBiMap.create(jpaEntities);
     this.customFieldResolvers = customFieldResolvers;
     this.selectionHandler = selectionHandler;
-    this.baseDAO = baseDAO;
   }
   
   public Class<?> getEntityClassForDto(Class<?> dtoClass) {
@@ -80,6 +76,8 @@ public class JpaDtoMapper {
   public Class<?> getDtoClassForEntity(Class<?> entityClass) {
     return jpaEntities.inverse().get(entityClass);
   }
+  
+
   
   /**
    * Converts an Entity to a DTO based on the selected fields and includes in the QuerySpec.
@@ -127,8 +125,9 @@ public class JpaDtoMapper {
    * @param dto
    * @param entity
    * @param resourceRegistry
+   * @param findFct function used to find an entity based on the exposed identifier
    */
-  public void applyDtoToEntity(Object dto, Object entity, ResourceRegistry resourceRegistry) {
+  public void applyDtoToEntity(Object dto, Object entity, ResourceRegistry resourceRegistry, BiFunction<Serializable, Class<?>,Object> findFct) {
     ResourceInformation resourceInformation = resourceRegistry.findEntry(dto.getClass())
         .getResourceInformation();
 
@@ -181,7 +180,7 @@ public class JpaDtoMapper {
       // which would set a to-one relation to null. targetIds being null means that no change is
       // made.
       if (targetIds != null) {
-        this.modifyRelation(entity, targetIds, relationName, (sourceCollection, targetEntities) -> {
+        this.modifyRelation(entity, targetIds, relationName, findFct, (sourceCollection, targetEntities) -> {
           sourceCollection.clear();
           sourceCollection.addAll(targetEntities);
         }, Collection::add, (targetEntity, oppositeFieldName, sourceEntity) -> PropertyUtils
@@ -229,6 +228,8 @@ public class JpaDtoMapper {
    *          The IDs of the target entities to add/remove to the relation.
    * @param fieldName
    *          The name of the relation field on the source entity.
+   @param findFct
+   *          Function used to find an entity based on the exposed identifier
    * @param handleSourceCollectionAndTargetEntities
    *          When the source entity's relation field is a collection, how to handle the target
    *          entities (e.g. add or remove them to the collection).
@@ -242,7 +243,7 @@ public class JpaDtoMapper {
    *          the Crnk ResourceRegistry
    */
   public void modifyRelation(@NonNull Object sourceEntity,
-      @NonNull Iterable<Serializable> targetIds, @NonNull String fieldName,
+      @NonNull Iterable<Serializable> targetIds, @NonNull String fieldName, BiFunction<Serializable, Class<?>,Object> findFct,
       BiConsumer<Collection<Object>, Collection<Object>> handleSourceCollectionAndTargetEntities,
       BiConsumer<Collection<Object>, Object> handleOppositeCollectionAndSourceEntity,
       TriConsumer<Object, String, Object> handleTargetEntityAndFieldNameAndSourceEntity,
@@ -256,8 +257,7 @@ public class JpaDtoMapper {
         .getResourceInformation().findRelationshipFieldByName(fieldName).getElementType();
 
     Collection<Object> targetEntities = Streams.stream(targetIds)
-        .map(id -> this.baseDAO
-            .findOneById(id, this.getEntityClassForDto(targetResourceClass)))
+        .map(id -> findFct.apply(id, this.getEntityClassForDto(targetResourceClass)))
         .collect(Collectors.toList());
 
     // Get the current value of the source object's relation field.

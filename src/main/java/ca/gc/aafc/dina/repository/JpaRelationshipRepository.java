@@ -63,7 +63,7 @@ public class JpaRelationshipRepository<S, T>
     this.dtoRepository.getDtoJpaMapper().modifyRelation(
         this.findEntityFromDto(source),
         Collections.singletonList(targetId),
-        fieldName,
+        fieldName, dtoRepository::findOneByExposedId,
         null,
         Collection::add,
         (targetEntity, oppositeFieldName, sourceEntity) -> PropertyUtils.setProperty(
@@ -80,7 +80,7 @@ public class JpaRelationshipRepository<S, T>
     this.dtoRepository.getDtoJpaMapper().modifyRelation(
         this.findEntityFromDto(source),
         targetIds,
-        fieldName,
+        fieldName, dtoRepository::findOneByExposedId,
         (sourceCollection, targetEntities) -> {
           sourceCollection.clear();
           sourceCollection.addAll(targetEntities);
@@ -100,7 +100,7 @@ public class JpaRelationshipRepository<S, T>
     this.dtoRepository.getDtoJpaMapper().modifyRelation(
         this.findEntityFromDto(source),
         targetIds,
-        fieldName,
+        fieldName, dtoRepository::findOneByExposedId,
         Collection::addAll,
         Collection::add,
         (targetEntity, oppositeFieldName, sourceEntity) -> PropertyUtils.setProperty(
@@ -117,7 +117,7 @@ public class JpaRelationshipRepository<S, T>
     this.dtoRepository.getDtoJpaMapper().modifyRelation(
         this.findEntityFromDto(source),
         targetIds,
-        fieldName,
+        fieldName, dtoRepository::findOneByExposedId,
         Collection::removeAll,
         Collection::remove,
         (targetEntity, oppositeFieldName, sourceEntity) -> PropertyUtils.setProperty(
@@ -177,8 +177,7 @@ public class JpaRelationshipRepository<S, T>
               restrictions.add(
                   cb.equal(
                       sourcePath.get(
-                          dtoRepository.getBaseDAO()
-                              .getIdFieldName(sourceEntityClass)
+                          dtoRepository.getExposedIdentifier(sourceEntityClass)
                       ),
                       sourceId
                   )
@@ -200,7 +199,7 @@ public class JpaRelationshipRepository<S, T>
   }
 
   private Object findEntityFromDto(Object dto) {
-    return this.dtoRepository.getBaseDAO().findOneById(
+    return this.dtoRepository.findOneByExposedId(
         this.resourceRegistry.findEntry(dto.getClass())
             .getResourceInformation()
             .getId(dto),

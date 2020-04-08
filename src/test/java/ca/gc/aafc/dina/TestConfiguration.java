@@ -19,7 +19,6 @@ import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.filter.RsqlFilterHandler;
 import ca.gc.aafc.dina.filter.SimpleFilterHandler;
-import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.JpaDtoMapper;
 import ca.gc.aafc.dina.mapper.JpaDtoMapper.CustomFieldResolverSpec;
 import ca.gc.aafc.dina.repository.JpaDtoRepository;
@@ -46,10 +45,7 @@ public class TestConfiguration {
   private RsqlFilterHandler rsqlFilterHandler;
 
   @Bean
-  public JpaDtoMapper jpaDtoMapper(
-    @NonNull SelectionHandler selectionHandler,
-    @NonNull BaseDAO baseDAO
-  ) {
+  public JpaDtoMapper jpaDtoMapper(@NonNull SelectionHandler selectionHandler) {
     Map<Class<?>, Class<?>> jpaEntities = new HashMap<>();
 
     jpaEntities.put(DepartmentDto.class, Department.class);
@@ -83,7 +79,7 @@ public class TestConfiguration {
         .build()
     ));
 
-    return new JpaDtoMapper(jpaEntities, customFieldResolvers, selectionHandler, baseDAO);
+    return new JpaDtoMapper(jpaEntities, customFieldResolvers, selectionHandler);
   }
 
   @Bean

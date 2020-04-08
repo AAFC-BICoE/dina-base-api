@@ -51,7 +51,6 @@ public class JpaDtoRepository {
   private final EntityManager entityManager;
 
   @NonNull
-  @Getter
   private final BaseDAO baseDAO;
 
   @NonNull
@@ -162,14 +161,14 @@ public class JpaDtoRepository {
         resource,
         selectionHandler.getIdAttribute(resource.getClass(), resourceRegistry)
     );
-    Object entity = baseDAO.findOneById(
+    Object entity = findOneByExposedId(
         id,
         dtoJpaMapper.getEntityClassForDto(resource.getClass())
     );
 
-    this.dtoJpaMapper.applyDtoToEntity(resource, entity, resourceRegistry);
+    this.dtoJpaMapper.applyDtoToEntity(resource, entity, resourceRegistry, this::findOneByExposedId);
 
-    return (Serializable) baseDAO.getId(entity);
+    return (Serializable) PropertyUtils.getProperty(entity, getExposedIdentifier(entity.getClass()));
   }
 
   /**
@@ -184,11 +183,11 @@ public class JpaDtoRepository {
       .getConstructor()
       .newInstance();
 
-    this.dtoJpaMapper.applyDtoToEntity(resource, entity, resourceRegistry);
+    this.dtoJpaMapper.applyDtoToEntity(resource, entity, resourceRegistry, this::findOneByExposedId);
 
     entityManager.persist(entity);
 
-    return (Serializable) baseDAO.getId(entity);
+    return (Serializable) PropertyUtils.getProperty(entity, getExposedIdentifier(entity.getClass()));
   }
 
   /**
@@ -200,11 +199,40 @@ public class JpaDtoRepository {
    *          the Crnk ResourceRegistry.
    */
   public void delete(Object resource, ResourceRegistry resourceRegistry) {
-    Object entity = baseDAO.findOneById(
+    Object entity = findOneByExposedId(
       resourceRegistry.findEntry(resource.getClass()).getResourceInformation().getId(resource),
       this.dtoJpaMapper.getEntityClassForDto(resource.getClass())
     );
     entityManager.remove(entity);
+  }
+  
+  /**
+   * Return the identifier field name on an entity exposed by a resource. NaturalId if available or
+   * Id (database id) otherwise.
+   * 
+   * @param clazz
+   * @return
+   */
+  public String getExposedIdentifier(Class<?> clazz) {
+    return Optional.ofNullable(baseDAO.getNaturalIdFieldName(clazz))
+        .orElse(baseDAO.getDatabaseIdFieldName(clazz));
+  }
+  
+  /**
+   * Find an entity but its exposed identifier. By NaturalId if available or Id (database id)
+   * otherwise.
+   * 
+   * @param id
+   * @param entityClass
+   * @return
+   */
+  public <T> T findOneByExposedId(Object id, Class<T> entityClass) {
+    if (baseDAO.getNaturalIdFieldName(entityClass) != null) {
+      return baseDAO.findOneByNaturalId(id, entityClass);
+    }
+
+    // fallback
+    return baseDAO.findOneByDatabseId(id, entityClass);
   }
 
   /**
