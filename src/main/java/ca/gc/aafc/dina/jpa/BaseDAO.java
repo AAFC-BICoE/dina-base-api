@@ -135,29 +135,35 @@ public class BaseDAO {
   }
 
   /**
-   * Give a reference to an entity that should exist without actually loading it. Useful to set
+   * Returns a reference to an entity that should exist without actually loading it. Useful to set
    * relationships without loading the entity.
    * 
    * @param entityClass
-   * @param uuid
+   * @param naturalId
    * @return
    */
-  public <T> T getReferenceByNaturalId(Class<T> entityClass, UUID uuid) {
+  public <T> T getReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
     SimpleNaturalIdLoadAccess<T> loadAccess = entityManager.unwrap(Session.class)
         .bySimpleNaturalId(entityClass);
-    return loadAccess.getReference(uuid);
+    return loadAccess.getReference(naturalId);
   }
 
   /**
    * Set a relationship by calling the provided {@link Consumer} with a reference Entity loaded by
-   * NaturalId.
+   * NaturalId. A reference to the entity allows to set a foreign key without loading the other entity.
+   * 
+   * Usage:
+   * 
+   * Using the object 'dep', set the relationship to DepartmentType using only its NaturalId (depTypeUUID).
+   * baseDAO.setRelationshipByNaturalIdReference(DepartmentType.class, depTypeUUID,
+        (x) -> dep.setDepartmentType(x));
    * 
    * @param entityClass entity to link to that will be loaded with a reference entity
-   * @param uuid
+   * @param naturalKey value 
    * @param objConsumer
    */
-  public <T> void setRelationshipUsing(Class<T> entityClass, UUID uuid, Consumer<T> objConsumer) {
-    objConsumer.accept(getReferenceByNaturalId(entityClass, uuid));
+  public <T> void setRelationshipByNaturalIdReference(Class<T> entityClass, Object naturalId, Consumer<T> objConsumer) {
+    objConsumer.accept(getReferenceByNaturalId(entityClass, naturalId));
   }
 
   /**
