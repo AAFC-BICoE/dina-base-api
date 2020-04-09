@@ -152,7 +152,7 @@ public class BaseDAO {
    * Set a relationship by calling the provided {@link Consumer} with a reference Entity loaded by
    * NaturalId.
    * 
-   * @param entityClass
+   * @param entityClass entity to link to that will be loaded with a reference entity
    * @param uuid
    * @param objConsumer
    */

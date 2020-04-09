@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.validation.constraints.NotNull;
@@ -37,13 +38,16 @@ public class Department {
   @Size(min = 1, max = 50)
   @NotNull
   private String name;
+  
+  @ManyToOne
+  private DepartmentType departmentType;
 
   @NotNull
   private String location;
 
   @Builder.Default
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "department", targetEntity = Employee.class)
-  private List<Employee> employees = new ArrayList<>();;
+  private List<Employee> employees = new ArrayList<>();
 
   public String toString() {
     return super.toString();
