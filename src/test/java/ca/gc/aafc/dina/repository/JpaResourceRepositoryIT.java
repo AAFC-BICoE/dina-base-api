@@ -369,7 +369,7 @@ public class JpaResourceRepositoryIT {
     
     DepartmentDto savedDept2Dto = departmentRepository.create(dept2Dto);
     
-    Department dept2Entity = baseDAO.findOneById(savedDept2Dto.getUuid(), Department.class);
+    Department dept2Entity = baseDAO.findOneByNaturalId(savedDept2Dto.getUuid(), Department.class);
     
     // Check that the emps were moved to dept2.
     emps.forEach(emp -> assertEquals(dept2Entity, emp.getDepartment()));
