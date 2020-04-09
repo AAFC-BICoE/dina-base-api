@@ -70,7 +70,7 @@ public class BaseDAOIT {
     
     UUID depTypeUUID = depType.getUuid();
     
-    baseDAO.setRelationshipUsing(DepartmentType.class, depTypeUUID,
+    baseDAO.setRelationshipByNaturalIdReference(DepartmentType.class, depTypeUUID,
         (x) -> dep.setDepartmentType(x));
     
     Department reloadedDep = baseDAO.findOneByDatabaseId(dep.getId(), Department.class);
