@@ -3,7 +3,7 @@
 /.project
 /.metadata/
 /RemoteSystemsTempFiles/
-/target/
+*/target/
 transactions.log
 /.checkstyle
 /.vscode
