@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>ca.gc.aafc</groupId>
-  <artifactId>dina-parent</artifactId>
+  <artifactId>dina-base-parent</artifactId>
   <version>${dina-version}</version>
 
   <packaging>pom</packaging>
