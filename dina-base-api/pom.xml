@@ -12,27 +12,20 @@
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.2.5.RELEASE</version>
+    <groupId>ca.gc.aafc</groupId>
+    <artifactId>dina-parent</artifactId>
+    <version>1.0</version>
   </parent>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <javax.inject.version>1</javax.inject.version>
     <jcip-annotations.version>1.0</jcip-annotations.version>
     <local-javax-jaxb.version>2.3.0.1</local-javax-jaxb.version>
     <javax.activation.version>1.1.1</javax.activation.version>
     <crnk.version>3.1.20191113192440</crnk.version>
-    <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
-    <checkstyle.version>8.30</checkstyle.version>
     <spotbugs.version>3.1.12</spotbugs.version>
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
     <guava.version>24.0-jre</guava.version>
-    <asciidoctor-maven-plugin.version>1.6.0</asciidoctor-maven-plugin.version>
-    <asciidoctorj.diagram.version>2.0.1</asciidoctorj.diagram.version>
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
   </properties>
 
@@ -149,110 +142,5 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>${maven-checkstyle-plugin.version}</version>
-        <dependencies>
-          <dependency>
-            <groupId>com.puppycrawl.tools</groupId>
-            <artifactId>checkstyle</artifactId>
-            <version>${checkstyle.version}</version>
-          </dependency>
-        </dependencies>
-        <configuration>
-          <configLocation>../checkstyle.xml</configLocation>
-          <failOnViolation>true</failOnViolation>
-          <logViolationsToConsole>true</logViolationsToConsole>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>com.github.spotbugs</groupId>
-        <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>${spotbugs.version}</version>
-        <dependencies>
-          <!-- Force SpotBug version to match the annotation -->
-          <dependency>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs</artifactId>
-            <version>${spotbugs.version}</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-	  <plugin>
-		<groupId>org.asciidoctor</groupId>
-		<artifactId>asciidoctor-maven-plugin</artifactId>
-		<version>${asciidoctor-maven-plugin.version}</version>
-		<dependencies>
-			<dependency>
-				<groupId>org.asciidoctor</groupId>
-				<artifactId>asciidoctorj-diagram</artifactId>
-				<version>${asciidoctorj.diagram.version}</version>
-			</dependency>
-		</dependencies>
-		<configuration>
-			<sourceDirectory>${basedir}/docs</sourceDirectory>
-			<requires>
-				<require>asciidoctor-diagram</require>
-			</requires>
-		</configuration>
-		<executions>
-			<execution>
-				<id>output-html</id>
-				<phase>generate-resources</phase>
-				<goals>
-					<goal>process-asciidoc</goal>
-				</goals>
-				<configuration>
-					<backend>html5</backend>
-					<sourceDocumentName>index.adoc</sourceDocumentName>
-					<attributes>
-						<toc>left</toc>
-					</attributes>
-				</configuration>
-			</execution>
-		</executions>
-	  </plugin>
-    </plugins>
-  </build>
-
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>${maven-checkstyle-plugin.version}</version>
-        <configuration>
-          <configLocation>checkstyle.xml</configLocation>
-          <failOnViolation>false</failOnViolation>
-          <logViolationsToConsole>false</logViolationsToConsole>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>com.github.spotbugs</groupId>
-        <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>${spotbugs-maven-plugin.version}</version>
-      </plugin>
-    </plugins>
-  </reporting>
-
-  <distributionManagement>
-    <repository>
-      <id>bintray-aafc-bice-BICoE</id>
-      <name>aafc-bice-BICoE</name>
-      <url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-base-api/;publish=1;</url>
-    </repository>
-  </distributionManagement>
 
 </project>
