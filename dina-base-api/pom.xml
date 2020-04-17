@@ -7,14 +7,13 @@
 
   <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-base-api</artifactId>
-  <version>0.23-SNAPSHOT</version>
   <name>dina-base-api</name>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <parent>
     <groupId>ca.gc.aafc</groupId>
     <artifactId>dina-parent</artifactId>
-    <version>1.0</version>
+    <version>${dina-version}</version>
   </parent>
 
   <properties>
