@@ -16,10 +16,6 @@
     <version>${dina-version}</version>
   </parent>
 
-  <properties>
-    <javax.inject.version>1</javax.inject.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>javax.inject</groupId>

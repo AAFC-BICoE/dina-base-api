@@ -30,12 +30,14 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <!-- Build properties -->
+    <!-- Build plugin properties -->
     <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
     <checkstyle.version>8.30</checkstyle.version>
     <spotbugs.version>3.1.12</spotbugs.version>
     <asciidoctor-maven-plugin.version>1.6.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.1</asciidoctorj.diagram.version>
+    <!-- Common sub-module dependency properties -->
+    <javax.inject.version>1</javax.inject.version>
   </properties>
 
   <build>
