@@ -20,6 +20,7 @@
 
   <modules>
     <module>dina-base-api</module>
+    <module>dina-test-support</module>
   </modules>
 
   <properties>
