@@ -1,6 +1,6 @@
-/.settings/
-/.classpath
-/.project
+*settings/
+*.classpath
+*.project
 /.metadata/
 /RemoteSystemsTempFiles/
 *target/
