@@ -38,7 +38,6 @@
     <asciidoctorj.diagram.version>2.0.1</asciidoctorj.diagram.version>
   </properties>
 
-
   <build>
     <plugins>
       <plugin>
