@@ -25,6 +25,8 @@
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
     <guava.version>24.0-jre</guava.version>
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
+    <!-- Needed  on modules to enable deployment -->
+    <maven.deploy.skip>false</maven.deploy.skip>
   </properties>
 
   <repositories>
@@ -140,5 +142,13 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <distributionManagement>
+    <repository>
+      <id>bintray-aafc-bice-BICoE</id>
+      <name>aafc-bice-BICoE</name>
+      <url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-base-api/;publish=1;</url>
+    </repository>
+  </distributionManagement>
 
 </project>

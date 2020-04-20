@@ -38,6 +38,8 @@
     <asciidoctorj.diagram.version>2.0.1</asciidoctorj.diagram.version>
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
+    <!-- Needed  on parent to skip deployment -->
+    <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 
   <build>
@@ -136,13 +138,5 @@
       </plugin>
     </plugins>
   </reporting>
-
-  <distributionManagement>
-    <repository>
-      <id>bintray-aafc-bice-BICoE</id>
-      <name>aafc-bice-BICoE</name>
-      <url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-base-api/;publish=1;</url>
-    </repository>
-  </distributionManagement>
 
 </project>

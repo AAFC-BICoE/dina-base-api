@@ -10,6 +10,11 @@
   <artifactId>dina-test-support</artifactId>
   <name>dina-test-support</name>
 
+  <properties>
+    <!-- Needed  on modules to enable deployment -->
+    <maven.deploy.skip>false</maven.deploy.skip>
+  </properties>
+
   <parent>
     <groupId>ca.gc.aafc</groupId>
     <artifactId>dina-base-parent</artifactId>
@@ -32,5 +37,13 @@
       <artifactId>commons-lang3</artifactId>
     </dependency>
   </dependencies>
+
+  <distributionManagement>
+    <repository>
+      <id>bintray-aafc-bice-BICoE</id>
+      <name>aafc-bice-BICoE</name>
+      <url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-test-support/;publish=1;</url>
+    </repository>
+  </distributionManagement>
 
 </project>
