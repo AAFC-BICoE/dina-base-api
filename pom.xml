@@ -25,7 +25,7 @@
 
   <properties>
     <!-- Dina global version -->
-    <dina-version>0.23</dina-version>
+    <dina-version>0.24-SNAPSHOT</dina-version>
     <!-- Compile properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
