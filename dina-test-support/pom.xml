@@ -10,11 +10,6 @@
   <artifactId>dina-test-support</artifactId>
   <name>dina-test-support</name>
 
-  <properties>
-    <!-- Needed  on modules to enable deployment -->
-    <maven.deploy.skip>false</maven.deploy.skip>
-  </properties>
-
   <parent>
     <groupId>ca.gc.aafc</groupId>
     <artifactId>dina-base-parent</artifactId>
