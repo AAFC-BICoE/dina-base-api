@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>ca.gc.aafc</groupId>
+  <artifactId>dina-base-api</artifactId>
+  <name>dina-base-api</name>
+  <url>https://github.com/AAFC-BICoE/dina-base-api</url>
+
+  <parent>
+    <groupId>ca.gc.aafc</groupId>
+    <artifactId>dina-base-parent</artifactId>
+    <version>${dina-version}</version>
+  </parent>
+
+  <properties>
+    <jcip-annotations.version>1.0</jcip-annotations.version>
+    <local-javax-jaxb.version>2.3.0.1</local-javax-jaxb.version>
+    <javax.activation.version>1.1.1</javax.activation.version>
+    <crnk.version>3.1.20191113192440</crnk.version>
+    <spotbugs.version>3.1.12</spotbugs.version>
+    <rsql-jpa.version>2.0.2</rsql-jpa.version>
+    <guava.version>24.0-jre</guava.version>
+    <commons.beanutils.version>1.9.4</commons.beanutils.version>
+  </properties>
+
+  <repositories>
+    <!-- Required for Crnk 3.0 -->
+    <repository>
+      <id>spring-libs-release</id>
+      <url>https://repo.spring.io/libs-release</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <!-- Spring -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <!-- Used by Spotbug annotation -->
+    <dependency>
+      <groupId>net.jcip</groupId>
+      <artifactId>jcip-annotations</artifactId>
+      <version>${jcip-annotations.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <version>${spotbugs.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <!-- Required for Java >= 9 -->
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-core</artifactId>
+      <version>${local-javax-jaxb.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <version>${local-javax-jaxb.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.activation</groupId>
+      <artifactId>activation</artifactId>
+      <version>${javax.activation.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <version>${javax.inject.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.persistence</groupId>
+      <artifactId>javax.persistence-api</artifactId>
+    </dependency>
+    <!-- crnk -->
+    <dependency>
+      <groupId>io.crnk</groupId>
+      <artifactId>crnk-setup-spring-boot2</artifactId>
+      <version>${crnk.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.crnk</groupId>
+      <artifactId>crnk-operations</artifactId>
+      <version>${crnk.version}</version>
+    </dependency>
+    <!-- RSQL -->
+    <dependency>
+      <groupId>com.github.tennaito</groupId>
+      <artifactId>rsql-jpa</artifactId>
+      <version>${rsql-jpa.version}</version>
+    </dependency>
+    <!--Util-->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-beanutils</groupId>
+      <artifactId>commons-beanutils</artifactId>
+      <version>${commons.beanutils.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+    </dependency>
+
+    <!-- TEST Scope -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <distributionManagement>
+    <repository>
+      <id>bintray-aafc-bice-BICoE</id>
+      <name>aafc-bice-BICoE</name>
+      <url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-base-api/;publish=1;</url>
+    </repository>
+  </distributionManagement>
+
+</project>
