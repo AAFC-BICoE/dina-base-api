@@ -15,6 +15,14 @@ public class MapperHelper {
 
   private MapperHelper() {}
 
+  /**
+   * Returns a Map of DTOs to their related Entities given a base class package to
+   * scan.
+   *
+   * @param basePackageClass - Class of the package to scan
+   * @throws NullPointerException When the given base package class is null
+   * @return Map of DTOs to their related Entities
+   */
   public static Map<Class<?>, Class<?>> getDtoToEntityMapping(@NonNull Class<?> basePackageClass) {
     return ClassAnnotationHelper
       .findAnnotatedClasses(basePackageClass, RelatedEntity.class)

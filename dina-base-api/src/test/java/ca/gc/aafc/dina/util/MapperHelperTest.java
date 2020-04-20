@@ -12,6 +12,9 @@ import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.mapper.MapperHelper;
 
+/**
+ * Test suite to validate methods from the {@link MapperHelper} class
+ */
 public class MapperHelperTest {
 
   @Test
