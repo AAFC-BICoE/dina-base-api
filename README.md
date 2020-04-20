@@ -18,9 +18,11 @@ dina-base-api artifact is published on [BinTray](https://bintray.com/aafc-bice/B
 <dependency>
   <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-base-api</artifactId>
-  <version>0.22</version>
+  <version>0.23</version>
 </dependency>
 ```
+
+Test related classes are included in an artifact named `dina-test-support`.
 
 Add BICoE BinTray repository :
 
