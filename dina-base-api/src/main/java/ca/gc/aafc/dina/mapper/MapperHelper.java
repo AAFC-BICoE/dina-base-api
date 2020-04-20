@@ -11,7 +11,7 @@ import lombok.NonNull;
 /**
  * Utility class to help map DTOs to their related Entities.
  */
-public class MapperHelper {
+public final class MapperHelper {
 
   private MapperHelper() {}
 
