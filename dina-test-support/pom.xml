@@ -13,7 +13,7 @@
   <parent>
     <groupId>ca.gc.aafc</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>${dina-version}</version>
+    <version>0.24-SNAPSHOT</version>
   </parent>
 
   <dependencies>
