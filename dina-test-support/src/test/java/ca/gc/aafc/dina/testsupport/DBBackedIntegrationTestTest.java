@@ -20,7 +20,7 @@ public class DBBackedIntegrationTestTest extends DBBackedIntegrationTest {
   public void deleteByProperty_NotInNewTransaction_EntityDeletes() {
     ComplexObject comp = persistEntity();
 
-    deleteByProperty(ComplexObject.class, "id", comp.getId(), false);
+    deleteByProperty(ComplexObject.class, "id", comp.getId());
     assertNull(find(ComplexObject.class, comp.getId()));
   }
 

@@ -126,6 +126,19 @@ public class DBBackedIntegrationTest {
    * Removes entitties from the database with a given property which equals a
    * given value.
    *
+   * @param <T>      - Type of entity
+   * @param clazz    - Class of the entity
+   * @param property - property of entity to match
+   * @param value    - value of the given property
+   */
+  protected <T> void deleteByProperty(Class<T> clazz, String property, Object value) {
+    deleteByProperty(clazz, property, value, false);
+  }
+
+  /**
+   * Removes entitties from the database with a given property which equals a
+   * given value.
+   *
    * @param <T>                 - Type of entity
    * @param clazz               - Class of the entity
    * @param property            - property of entity to match
@@ -151,7 +164,7 @@ public class DBBackedIntegrationTest {
    * @param value    - value of the given property
    * @param em       - Entity Manager to use
    */
-  protected static <T> void deleteByProperty(Class<T> clazz, String property, Object value, EntityManager em) {
+  private static <T> void deleteByProperty(Class<T> clazz, String property, Object value, EntityManager em) {
     Objects.requireNonNull(clazz, "class cannot be null");
     Objects.requireNonNull(property, "property cannot be null");
     Objects.requireNonNull(em, "Entity Manager cannot be null");
