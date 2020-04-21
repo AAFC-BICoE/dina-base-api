@@ -91,7 +91,14 @@ public class DBBackedIntegrationTest {
     return query.getSingleResult();
   }
 
-  protected <T> void remove(Class<T> clazz, Serializable id) {
+  /**
+   * Remove an entity with a given id from the database.
+   *
+   * @param <T>   - Type of entity
+   * @param clazz - Class of the entity
+   * @param id    - id of entity
+   */
+  protected <T> void deleteById(Class<T> clazz, Serializable id) {
     entityManager.remove(entityManager.find(clazz, id));
     entityManager.flush();
   }
