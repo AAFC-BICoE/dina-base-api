@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.testsupport;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import javax.inject.Inject;
@@ -9,6 +10,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
@@ -89,7 +91,14 @@ public class DBBackedIntegrationTest {
     return query.getSingleResult();
   }
 
-  protected <T> void remove(Class<T> clazz, Serializable id) {
+  /**
+   * Remove an entity with a given id from the database.
+   *
+   * @param <T>   - Type of entity
+   * @param clazz - Class of the entity
+   * @param id    - id of entity
+   */
+  protected <T> void deleteById(Class<T> clazz, Serializable id) {
     entityManager.remove(entityManager.find(clazz, id));
     entityManager.flush();
   }
@@ -113,4 +122,57 @@ public class DBBackedIntegrationTest {
     em.close();
   }
 
+  /**
+   * Removes entitties from the database with a given property which equals a
+   * given value.
+   *
+   * @param <T>      - Type of entity
+   * @param clazz    - Class of the entity
+   * @param property - property of entity to match
+   * @param value    - value of the given property
+   */
+  protected <T> void deleteByProperty(Class<T> clazz, String property, Object value) {
+    deleteByProperty(clazz, property, value, false);
+  }
+
+  /**
+   * Removes entitties from the database with a given property which equals a
+   * given value.
+   *
+   * @param <T>                 - Type of entity
+   * @param clazz               - Class of the entity
+   * @param property            - property of entity to match
+   * @param value               - value of the given property
+   * @param runInNewTransaction - True if you want to run in a seperate
+   *                            transaction.
+   */
+  protected <T> void deleteByProperty(Class<T> clazz, String property, Object value, boolean runInNewTransaction) {
+    if (runInNewTransaction) {
+      runInNewTransaction(em -> deleteByProperty(clazz, property, value, em));
+    } else {
+      deleteByProperty(clazz, property, value, entityManager);
+    }
+  }
+
+  /**
+   * Removes entitties from the database with a given property which equals a
+   * given value.
+   *
+   * @param <T>      - Type of entity
+   * @param clazz    - Class of the entity
+   * @param property - property of entity to match
+   * @param value    - value of the given property
+   * @param em       - Entity Manager to use
+   */
+  private static <T> void deleteByProperty(Class<T> clazz, String property, Object value, EntityManager em) {
+    Objects.requireNonNull(clazz, "class cannot be null");
+    Objects.requireNonNull(property, "property cannot be null");
+    Objects.requireNonNull(em, "Entity Manager cannot be null");
+
+    CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+    CriteriaDelete<T> query = criteriaBuilder.createCriteriaDelete(clazz);
+    Root<T> root = query.from(clazz);
+    query.where(criteriaBuilder.equal(root.get(property), value));
+    em.createQuery(query).executeUpdate();
+  }
 }
