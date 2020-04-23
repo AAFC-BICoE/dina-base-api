@@ -20,6 +20,16 @@ import ca.gc.aafc.dina.testsupport.entity.ComplexObject;
 public class DBBackedIntegrationTestTest extends DBBackedIntegrationTest {
 
   @Test
+  public void deleteById_GivenExistingId_DeletesEntity() {
+    ComplexObject comp = ComplexObject.builder().name("name").build();
+    
+    save(comp);
+
+    deleteById(ComplexObject.class, comp.getId());
+    assertNull(find(ComplexObject.class, comp.getId()));
+  }
+  
+  @Test
   public void deleteByProperty_NotInNewTransaction_EntityDeletes() {
     ComplexObject comp = persistEntity();
 
