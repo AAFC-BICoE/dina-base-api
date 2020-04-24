@@ -1,0 +1,192 @@
+openapi: 3.0.0
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/AAFC/test/1.0.0
+info:
+  description: Managed attributes schema
+  version: "1.0.0"
+  title: Managed attributes schema
+  contact:
+    email: you@your-company.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+paths:
+  /v1/managed-attribute:
+    get:
+      summary: get managed attributes
+      operationId: getManagedAttributes
+      description: By passing in query string, user can get available managed attributes authorised
+      parameters:
+        - in: query
+          name: filter[rsql]
+          description: pass an optional search string for looking up the managed attributes
+          schema:
+            type: string
+        - in: query
+          name: sort
+          description: optional sort string, can have sort order such as descending denoted by "-"
+          schema:
+            type: string
+        - in: query
+          name: page[offset]
+          description: number of records to skip when paging
+          schema:
+            type: integer
+            format: int32
+        - in: query
+          name: page[limit]
+          description: maximum number of records to return when paging
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 50
+      responses:
+        '200':
+          description: managed attributes satifying the query restrictions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagedAttribute'
+        '400':
+          description: bad input parameter
+        '404':
+          description: managed attribute not found
+    post:
+      summary: adds a managed attribute
+      operationId: addManagedAttribute
+      description: Adds a managed attribute
+      responses:
+        '201':
+          description: managed attribute created
+        '400':
+          description: 'invalid input, object invalid'
+        '409':
+          description: A managed attribute already exists
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagedAttribute'
+        description: Managed attribute to add
+  /v1/managed-attribute/{Id}:
+    get:
+      summary: Find managed attribute by ID
+      description: Returns a single managed attribute
+      operationId: getManagedAttributeById
+      parameters:
+        - name: Id
+          in: path
+          description: ID of managed attribute to return
+          required: true
+          schema:
+            type: string
+            format: uuid            
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagedAttribute'
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Managed attribute not found
+    patch:
+      summary: update a managed attribute
+      operationId: updateManagedAttribute
+      description: update a managed attribute
+      parameters:
+        - name: Id
+          in: path
+          description: managed attribute id to patch
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: managed attribute updated
+        '400':
+          description: 'invalid input, object invalid'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagedAttribute'
+        description: managed attribute to add
+    delete:
+      summary: delete a managed attribute
+      operationId: deleteManagedAttribute
+      description: delete a managed attribute
+      parameters:
+        - name: Id
+          in: path
+          description: managed attribute id to delete
+          required: true
+          schema:
+            type: string
+            format: uuid            
+      responses:
+        '200':
+          description: managed attribute marked as deleted
+        '400':
+          description: invalid ID supplied
+        '404':
+          description: managed attribute not found
+
+components:
+  schemas:
+    ManagedAttribute:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - id
+            - type
+            - attributes
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: d290f1ee-6c54-4b01-90e6-d701748f0851
+            type:
+              type: string
+            attributes:
+              type: object
+              required:
+                - name
+                - managedAttributeType
+              properties:
+                name:
+                  type: string
+                  description: name of the managed attribute
+                  example: 
+                    specimen_view
+                managedAttributeType:
+                  description: type of the managed attribute          
+                  enum: [
+                     string,
+                     integer]
+                acceptedValues:
+                  type: array
+                  description: accepted values of the named attribute (if any )      
+                  items: 
+                    type: object                  
+                  example: 
+                    - dorsal
+                    - 1 
+                createdDate:
+                  type: string							      
+                  description: initial date this managed attribute was created if any      
+                description:
+                  type: object
+                  description: A map where the language is the key and the value is the description of this managed attribute in that language                      
+                  example: {
+                     "fr":  Description en Français,
+                     "en":  English description}
