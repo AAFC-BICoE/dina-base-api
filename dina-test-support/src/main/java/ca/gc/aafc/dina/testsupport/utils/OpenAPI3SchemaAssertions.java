@@ -105,7 +105,8 @@ public final class OpenAPI3SchemaAssertions {
       e1.printStackTrace();
     }
     String validationResult = validateResponseAgainstSchema(schemaNode, "data", contentNode);
-    assertTrue((validationResult.length() == 0), validationResult.toString());
+    //System.out.println(validationResult);
+    assertTrue(!(validationResult.contains("Validation error")), validationResult.toString());
   }
 
   private static String validateResponseAgainstSchema(JsonNode schNode1, String prop, JsonNode dataNode1) {

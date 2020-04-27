@@ -47,7 +47,10 @@ paths:
           description: managed attributes satifying the query restrictions
           content:
             application/json:
+            # SYED responses would be array of data items, not just data object 
               schema:
+                type: array
+                items:
                 $ref: '#/components/schemas/ManagedAttribute'
         '400':
           description: bad input parameter
@@ -168,16 +171,23 @@ components:
                   description: name of the managed attribute
                   example: 
                     specimen_view
+                # SYED data file compliant to this schema may have value as - string or integer,  
+                # that too only in lowercase. 
+                # Otherwise we should include STRING and INTEGER also in enumerations in yaml file here.
                 managedAttributeType:
                   description: type of the managed attribute          
                   enum: [
                      string,
                      integer]
+                # SYED acceptedValues would be array of string or interger items. 
+                # This is implemented using oneOf keyword
                 acceptedValues:
                   type: array
-                  description: accepted values of the named attribute (if any )      
+                  description: accepted values of the named attribute (if any)      
                   items: 
-                    type: object                  
+                     oneOf:
+                        - $ref: '#/components/schemas/AcceptedValuesStr'
+                        - $ref: '#/components/schemas/AcceptedValuesInt'                  
                   example: 
                     - dorsal
                     - 1 
@@ -190,3 +200,8 @@ components:
                   example: {
                      "fr":  Description en Français,
                      "en":  English description}
+    AcceptedValuesStr:
+      type: string
+    AcceptedValuesInt:
+      type: integer
+      
