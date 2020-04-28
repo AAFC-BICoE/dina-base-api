@@ -14,11 +14,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ComplexObject {
+public class ComplexObject implements DinaEntity {
 
   @Id
   @GeneratedValue
-  private Integer id;
+  private Long id;
 
   private String name;
 
