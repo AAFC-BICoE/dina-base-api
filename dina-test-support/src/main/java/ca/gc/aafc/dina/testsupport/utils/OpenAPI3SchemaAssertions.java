@@ -22,7 +22,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public final class OpenAPI3SchemaAssertions {
 
-  public OpenAPI3SchemaAssertions() {
+  private OpenAPI3SchemaAssertions() {
   }
 
   public static JsonNode getJsonNodeForSchemaName(String schemaName, OpenApi3 api1)
