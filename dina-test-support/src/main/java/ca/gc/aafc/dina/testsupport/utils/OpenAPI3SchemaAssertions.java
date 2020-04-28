@@ -73,12 +73,10 @@ public final class OpenAPI3SchemaAssertions {
       ValidationException ve = (ValidationException) e;
       throw new Exception(ve.getMessage() + "\n" + ve.getResults());
     }
-    if (!results.equals(null)) {
-      if (!results.toString().trim().equals("")) {
-        String errors = results.toString();
-        if (errors.length() > 0) {
-          throw new Exception(errors);
-        }
+    if (!results.toString().trim().equals("")) {
+      String errors = results.toString();
+      if (errors.length() > 0) {
+        throw new Exception(errors);
       }
     }
     return api;
