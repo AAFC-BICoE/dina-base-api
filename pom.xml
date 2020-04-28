@@ -39,8 +39,6 @@
 		<javax.inject.version>1</javax.inject.version>
 		<openapi4j-parser.version>0.9</openapi4j-parser.version>
 		<openapi4j-schema-validator.version>0.9</openapi4j-schema-validator.version>
-		<openapi4j-operation-validator.version>0.9</openapi4j-operation-validator.version>
-		<openapi4j-operation-servlet.version>0.9</openapi4j-operation-servlet.version>
 	</properties>
 
 	<!-- Common sub module dependencies -->
@@ -89,16 +87,6 @@
 			<groupId>org.openapi4j</groupId>
 			<artifactId>openapi-schema-validator</artifactId>
 			<version>${openapi4j-schema-validator.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openapi4j</groupId>
-			<artifactId>openapi-operation-validator</artifactId>
-			<version>${openapi4j-operation-validator.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openapi4j</groupId>
-			<artifactId>openapi-operation-servlet</artifactId>
-			<version>${openapi4j-operation-servlet.version}</version>
 		</dependency>
 	</dependencies>
 
