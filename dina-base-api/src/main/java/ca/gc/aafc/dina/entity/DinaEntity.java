@@ -1,7 +1,8 @@
 package ca.gc.aafc.dina.entity;
 
 /**
- * Represents a dina-base entity with a valid id field.
+ * Represents a DINA entity with an id field.
+ * The id is usually the Primary Key and auto-generated.
  */
 public interface DinaEntity {
 
