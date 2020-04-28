@@ -17,9 +17,6 @@ import org.openapi4j.schema.validator.v3.SchemaValidator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import lombok.extern.log4j.Log4j2;
-
-@Log4j2
 public final class OpenAPI3SchemaAssertions {
 
   private OpenAPI3SchemaAssertions() {
@@ -47,7 +44,9 @@ public final class OpenAPI3SchemaAssertions {
     } catch (ResolutionException e) {
       return "Validation error in schema \n" + schNode1.toPrettyString();
     }
+    @SuppressWarnings("rawtypes")
     ValidationData validationData = new ValidationData();
+    @SuppressWarnings("unused")
     boolean out1 = schemaValidator.validate(dataNode1, validationData);
     validStr = validationData.results().toString();
     return validStr;
@@ -75,11 +74,12 @@ public final class OpenAPI3SchemaAssertions {
       ValidationException ve = (ValidationException) e;
       throw new Exception(ve.getMessage() + "\n" + ve.getResults());
     }
-    if (results != null) {
-      if (results.toString().trim() != "") {
+    if (results.equals(null)) {
+      if (results.toString().trim().equals("")) {
         String errors = results.toString();
-        if (errors.length() > 0)
+        if (errors.length() > 0) {
           throw new Exception(errors);
+        }
       }
     }
     return api;
