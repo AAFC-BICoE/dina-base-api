@@ -24,9 +24,7 @@ import ca.gc.aafc.dina.mapper.JpaDtoMapper.CustomFieldResolverSpec;
 import ca.gc.aafc.dina.repository.JpaDtoRepository;
 import ca.gc.aafc.dina.repository.JpaRelationshipRepository;
 import ca.gc.aafc.dina.repository.JpaResourceRepository;
-import ca.gc.aafc.dina.repository.SelectionHandler;
 import ca.gc.aafc.dina.repository.meta.JpaTotalMetaInformationProvider;
-import lombok.NonNull;
 
 /**
  * Small test application running on dina-base-api
@@ -45,7 +43,7 @@ public class TestConfiguration {
   private RsqlFilterHandler rsqlFilterHandler;
 
   @Bean
-  public JpaDtoMapper jpaDtoMapper(@NonNull SelectionHandler selectionHandler) {
+  public JpaDtoMapper jpaDtoMapper() {
     Map<Class<?>, Class<?>> jpaEntities = new HashMap<>();
 
     jpaEntities.put(DepartmentDto.class, Department.class);
@@ -79,7 +77,7 @@ public class TestConfiguration {
         .build()
     ));
 
-    return new JpaDtoMapper(jpaEntities, customFieldResolvers, selectionHandler);
+    return new JpaDtoMapper(jpaEntities, customFieldResolvers);
   }
 
   @Bean

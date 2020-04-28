@@ -14,7 +14,6 @@ import javax.persistence.criteria.Predicate;
 import ca.gc.aafc.dina.repository.SelectionHandler;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.QuerySpec;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -26,9 +25,6 @@ import lombok.RequiredArgsConstructor;
 //CHECKSTYLE:OFF AnnotationUseStyle
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class SimpleFilterHandler implements FilterHandler {
-
-  @NonNull
-  private final SelectionHandler selectionHandler;
 
   @Override
   public Predicate getRestriction(
@@ -43,7 +39,7 @@ public class SimpleFilterHandler implements FilterHandler {
     for (FilterSpec filterSpec : filterSpecs) {
       Expression<?> attributePath;
       try {
-        attributePath = this.selectionHandler.getExpression(root, filterSpec.getAttributePath());
+        attributePath = SelectionHandler.getExpression(root, filterSpec.getAttributePath());
       } catch(IllegalArgumentException e) {
         // This FilterHandler will ignore filter parameters that do not map to fields on the DTO,
         // like "rsql" or others that are only handled by other FilterHandlers.
