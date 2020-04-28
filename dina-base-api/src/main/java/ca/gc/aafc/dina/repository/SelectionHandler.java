@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.repository;
 
 import java.util.List;
 
-import javax.inject.Named;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.JoinType;
@@ -12,8 +11,9 @@ import io.crnk.core.engine.registry.ResourceRegistry;
 /**
  * Provides methods for handling sparse field sets and inclusion of related resources.
  */
-@Named
-public class SelectionHandler {
+public final class SelectionHandler {
+
+  private SelectionHandler(){}
   
   /**
    * Gets a JPA expression given a base path and an attributePath. Works as a short-hand method to
@@ -24,7 +24,7 @@ public class SelectionHandler {
    * @param attributePath the attribute path
    * @return the expression
    */
-  public Expression<?> getExpression(From<?, ?> basePath, List<String> attributePath) {
+  public static Expression<?> getExpression(From<?, ?> basePath, List<String> attributePath) {
     From<?, ?> from = basePath;
     for (String pathElement : attributePath.subList(0, attributePath.size() - 1)) {
       from = from.join(pathElement, JoinType.LEFT);
@@ -37,7 +37,7 @@ public class SelectionHandler {
    * 
    * @return
    */
-  public String getIdAttribute(Class<?> resourceClass, ResourceRegistry resourceRegistry) {
+  public static String getIdAttribute(Class<?> resourceClass, ResourceRegistry resourceRegistry) {
     return resourceRegistry.findEntry(resourceClass)
         .getResourceInformation()
         .getIdField()
@@ -49,12 +49,12 @@ public class SelectionHandler {
    * 
    * @return the JPA Expression of the Id attribute.
    */
-  public Expression<?> getIdExpression(
+  public static Expression<?> getIdExpression(
       From<?, ?> root,
       Class<?> resourceClass,
       ResourceRegistry resourceRegistry
   ) {
-    return root.get(this.getIdAttribute(resourceClass, resourceRegistry));
+    return root.get(getIdAttribute(resourceClass, resourceRegistry));
   }
   
 }
