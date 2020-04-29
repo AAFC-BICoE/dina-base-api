@@ -46,7 +46,7 @@ public class DinaMapperTest {
 
     StudentDto dto = mapper.toDto(friend, selectedFieldPerClass, relations);
 
-    assertEquals(entity.getName(), dto.getFriend().getName());
+    assertEquals(friend.getFriend().getName(), dto.getFriend().getName());
   }
 
 }
