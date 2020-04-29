@@ -13,6 +13,8 @@ public class Student {
 
   private String name;
 
+  private int iq;
+
   private Student friend;
 
 }

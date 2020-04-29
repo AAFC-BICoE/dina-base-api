@@ -13,6 +13,8 @@ public class StudentDto {
 
   private String name;
 
+  private int iq;
+
   private StudentDto friend;
 
 }

@@ -15,7 +15,7 @@ import ca.gc.aafc.dina.entity.Student;
 public class DinaMapperTest {
 
   private static DinaMapper<StudentDto, Student> mapper = new DinaMapper<>(StudentDto.class, Student.class);
-  private static Student entity = Student.builder().name("Test Name").build();
+  private static Student entity = Student.builder().name("Test Name").iq(9000).build();
 
   @Test
   public void toDto_BaseAttributesTest_AttributeMapped() {
@@ -28,6 +28,8 @@ public class DinaMapperTest {
     StudentDto dto = mapper.toDto(entity, selectedFieldPerClass, new HashSet<>());
 
     assertEquals(entity.getName(), dto.getName());
+    // Assert value not mapped - not included in selected fields
+    assertEquals(0, dto.getIq());
   }
 
   @Test
