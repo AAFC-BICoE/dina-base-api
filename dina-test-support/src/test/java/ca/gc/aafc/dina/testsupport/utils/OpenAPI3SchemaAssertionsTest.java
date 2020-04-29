@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.testsupport.utils;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.BufferedReader;
@@ -10,7 +9,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.util.Strings;
 import org.junit.Test;
 import org.openapi4j.core.model.AuthOption;
 import org.openapi4j.parser.model.v3.OpenApi3;
@@ -47,12 +45,15 @@ public class OpenAPI3SchemaAssertionsTest {
       fail(e2.getMessage());
       return;
     }
-
-    //FIXME
-/*
-    String validationResult = OpenAPI3SchemaAssertions.assertSchema(schemaNode,
-        "data", );
-    // System.out.println(validationResult);
-    assertTrue(!(validationResult.contains("Validation error")), validationResult.toString());*/
+    JsonNode contentNode = null;
+    try {
+      final ObjectMapper mapper = new ObjectMapper();
+      contentNode = mapper.readTree(apiResponse);
+    } catch (IOException e1) {
+      fail(e1.getMessage());
+      return;
+    }
+    String jsonStr = contentNode.toPrettyString();
+    OpenAPI3SchemaAssertions.assertSchema(schemaNode, "data", jsonStr);
   }
 }

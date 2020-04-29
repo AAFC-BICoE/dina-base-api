@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.testsupport.utils;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
@@ -43,6 +42,7 @@ public final class OpenAPI3SchemaAssertions {
       schemaValidator = new SchemaValidator(prop, schNode1);
     } catch (ResolutionException rEx) {
       fail(rEx);
+      return;
     }
 
     JsonNode apiResponseNode = null;
@@ -50,6 +50,7 @@ public final class OpenAPI3SchemaAssertions {
       apiResponseNode = MAPPER.readTree(apiResponse);
     } catch (IOException ioEx) {
       fail(ioEx);
+      return;
     }
 
     ValidationData<?> validationData = new ValidationData<>();
@@ -57,6 +58,7 @@ public final class OpenAPI3SchemaAssertions {
 
     if (!validationData.isValid()) {
       fail(validationData.results().toString());
+      return;
     }
   }
 
