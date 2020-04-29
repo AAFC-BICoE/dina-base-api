@@ -11,21 +11,21 @@
   <name>dina-test-support</name>
 
   <parent>
-	<groupId>ca.gc.aafc</groupId>
-	<artifactId>dina-base-parent</artifactId>
-	<version>0.25-SNAPSHOT</version>
+    <groupId>ca.gc.aafc</groupId>
+    <artifactId>dina-base-parent</artifactId>
+    <version>0.25-SNAPSHOT</version>
   </parent>
   <dependencies>
-	<dependency>
-	  <groupId>org.junit.jupiter</groupId>
-	  <artifactId>junit-jupiter-api</artifactId>
-	</dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+    </dependency>
   </dependencies>
   <distributionManagement>
-	<repository>
-	  <id>bintray-aafc-bice-BICoE</id>
-	  <name>aafc-bice-BICoE</name>
-	  <url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-test-support/;publish=1;</url>
-	</repository>
+    <repository>
+      <id>bintray-aafc-bice-BICoE</id>
+      <name>aafc-bice-BICoE</name>
+      <url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-test-support/;publish=1;</url>
+    </repository>
   </distributionManagement>
 </project>
