@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.testsupport.utils;
+package ca.gc.aafc.dina.testsupport.schema;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -16,10 +16,13 @@ import org.openapi4j.parser.model.v3.OpenApi3;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import ca.gc.aafc.dina.testsupport.TestResourceHelper;
+import ca.gc.aafc.dina.testsupport.schema.OpenAPI3SchemaAssertions;
+
 public class OpenAPI3SchemaAssertionsTest {
 
   @Test
-  public void assertJsonSchemaTest() {
+  public void assertJsonSchemaTest() throws IOException {
     URL url1 = this.getClass().getResource("/managedAttribute.yaml");
     OpenApi3 api;
     List<AuthOption> authOptions = new ArrayList<>();
@@ -37,23 +40,9 @@ public class OpenAPI3SchemaAssertionsTest {
       fail(e1.getMessage());
       return;
     }
-    URL url2 = this.getClass().getResource("/ma-response-example.txt");
-    BufferedReader apiResponse = null;
-    try {
-      apiResponse = new BufferedReader(new InputStreamReader(url2.openStream()));
-    } catch (IOException e2) {
-      fail(e2.getMessage());
-      return;
-    }
-    JsonNode contentNode = null;
-    try {
-      final ObjectMapper mapper = new ObjectMapper();
-      contentNode = mapper.readTree(apiResponse);
-    } catch (IOException e1) {
-      fail(e1.getMessage());
-      return;
-    }
-    String jsonStr = contentNode.toPrettyString();
+    
+    
+    String jsonStr = TestResourceHelper.readContentAsString("ma-response-example.txt");
     OpenAPI3SchemaAssertions.assertSchema(schemaNode, "data", jsonStr);
   }
 }

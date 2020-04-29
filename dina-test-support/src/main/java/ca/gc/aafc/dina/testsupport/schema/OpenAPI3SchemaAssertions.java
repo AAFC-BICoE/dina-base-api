@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.testsupport.utils;
+package ca.gc.aafc.dina.testsupport.schema;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
