@@ -55,10 +55,6 @@ public class JpaDtoRepository {
 
   @NonNull
   @Getter
-  private final SelectionHandler selectionHandler;
-
-  @NonNull
-  @Getter
   private final JpaDtoMapper dtoJpaMapper;
   
   /* Forces CRNK to not display any top-level links. */
@@ -111,14 +107,14 @@ public class JpaDtoRepository {
     if (querySpec.getSort().isEmpty()) {
       // When no sorts are requested, sort by ascending ID by default.
       criteriaQuery.orderBy(cb.asc(
-          this.selectionHandler.getIdExpression(targetPath, targetDtoClass, resourceRegistry)));
+          SelectionHandler.getIdExpression(targetPath, targetDtoClass, resourceRegistry)));
     } else {
       // Otherwise use the requested sorts.
       List<Order> orders = querySpec.getSort().stream().map(sort -> {
         Function<Expression<?>, Order> orderFunc = sort.getDirection() == Direction.ASC ? cb::asc
             : cb::desc;
         return orderFunc
-            .apply(this.selectionHandler.getExpression(targetPath, sort.getAttributePath()));
+            .apply(SelectionHandler.getExpression(targetPath, sort.getAttributePath()));
       }).collect(Collectors.toList());
 
       criteriaQuery.orderBy(orders);
@@ -159,7 +155,7 @@ public class JpaDtoRepository {
     // Get the entity of this DTO.
     Object id = PropertyUtils.getProperty(
         resource,
-        selectionHandler.getIdAttribute(resource.getClass(), resourceRegistry)
+        SelectionHandler.getIdAttribute(resource.getClass(), resourceRegistry)
     );
     Object entity = findOneByExposedId(
         id,

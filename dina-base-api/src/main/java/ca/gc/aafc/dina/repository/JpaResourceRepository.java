@@ -65,8 +65,7 @@ public class JpaResourceRepository<D>
             .querySpec(querySpec)
             .resourceRegistry(this.resourceRegistry)
             .customFilter((root, query, cb) -> cb.equal(
-                this.dtoRepository.getSelectionHandler()
-                    .getIdExpression(root, resourceClass, resourceRegistry),
+                SelectionHandler.getIdExpression(root, resourceClass, resourceRegistry),
                 id
             ))
             .build()
@@ -108,8 +107,7 @@ public class JpaResourceRepository<D>
               // If the list of IDs is given, filter by ID.
               if (ids != null) {
                 restrictions.add(
-                    this.dtoRepository.getSelectionHandler()
-                        .getIdExpression(root, resourceClass, resourceRegistry)
+                  SelectionHandler.getIdExpression(root, resourceClass, resourceRegistry)
                     .in(Iterables.toArray(ids, Object.class))
                 );
               }

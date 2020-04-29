@@ -46,7 +46,6 @@ import lombok.SneakyThrows;
 public class JpaDtoMapper {
   
   private final BiMap<Class<?>, Class<?>> jpaEntities;
-  private final SelectionHandler selectionHandler;
   private final Map<Class<?>, List<CustomFieldResolverSpec<?>>> customFieldResolvers;
 
   private final ExpressionParser entityParser = new SpelExpressionParser(
@@ -61,12 +60,10 @@ public class JpaDtoMapper {
   
   public JpaDtoMapper(
     @NonNull Map<Class<?>, Class<?>> jpaEntities,
-    Map<Class<?>, List<CustomFieldResolverSpec<?>>> customFieldResolvers,
-    @NonNull SelectionHandler selectionHandler
+    Map<Class<?>, List<CustomFieldResolverSpec<?>>> customFieldResolvers
   ) {
     this.jpaEntities = HashBiMap.create(jpaEntities);
     this.customFieldResolvers = customFieldResolvers;
-    this.selectionHandler = selectionHandler;
   }
   
   public Class<?> getEntityClassForDto(Class<?> dtoClass) {
@@ -409,7 +406,7 @@ public class JpaDtoMapper {
     }
 
     // The id field is always selected, even if not explicitly requested by the user.
-    String idAttribute = selectionHandler.getIdAttribute(
+    String idAttribute = SelectionHandler.getIdAttribute(
       querySpec.getResourceClass(),
       resourceRegistry
     );
