@@ -1,5 +1,9 @@
 package ca.gc.aafc.dina.testsupport.utils;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
@@ -16,10 +20,44 @@ import org.openapi4j.schema.validator.ValidationData;
 import org.openapi4j.schema.validator.v3.SchemaValidator;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class OpenAPI3SchemaAssertions {
+  
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 
   private OpenAPI3SchemaAssertions() {
+  }
+  
+  /**
+   * Assert an API response against a OpenAPI 3 Schema.
+   * 
+   * @param schNode1
+   * @param prop
+   * @param apiResponse
+   */
+  public static void assertSchema(JsonNode schNode1, String prop, String apiResponse) {
+
+    SchemaValidator schemaValidator = null;
+    try {
+      schemaValidator = new SchemaValidator(prop, schNode1);
+    } catch (ResolutionException rEx) {
+      fail(rEx);
+    }
+
+    JsonNode apiResponseNode = null;
+    try {
+      apiResponseNode = MAPPER.readTree(apiResponse);
+    } catch (IOException ioEx) {
+      fail(ioEx);
+    }
+
+    ValidationData<?> validationData = new ValidationData<>();
+    schemaValidator.validate(apiResponseNode, validationData);
+
+    if (!validationData.isValid()) {
+      fail(validationData.results().toString());
+    }
   }
 
   public static JsonNode getJsonNodeForSchemaName(String schemaName, OpenApi3 api1)
@@ -35,21 +73,7 @@ public final class OpenAPI3SchemaAssertions {
     return schemaNode;
   }
 
-  public static String validateResponseAgainstSchema(JsonNode schNode1, String prop,
-      JsonNode dataNode1) {
-    String validStr = "";
-    SchemaValidator schemaValidator = null;
-    try {
-      schemaValidator = new SchemaValidator(prop, schNode1);
-    } catch (ResolutionException e) {
-      return "Validation error in schema \n" + schNode1.toPrettyString();
-    }
-    @SuppressWarnings("rawtypes")
-    ValidationData validationData = new ValidationData();
-    schemaValidator.validate(dataNode1, validationData);
-    validStr = validationData.results().toString();
-    return validStr;
-  }
+
 
   public static OpenApi3 parseAndValidateOpenAPI3Doc(URL url1, List<AuthOption> authOptions)
       throws Exception {
