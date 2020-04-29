@@ -38,6 +38,7 @@ public class DinaMapperTest {
 
     HashSet<String> selectedFields = new HashSet<>();
     selectedFields.add("name");
+    selectedFields.add("iq");
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = new HashMap<>();
     selectedFieldPerClass.put(Student.class, selectedFields);
@@ -49,6 +50,7 @@ public class DinaMapperTest {
     StudentDto dto = mapper.toDto(friend, selectedFieldPerClass, relations);
 
     assertEquals(friend.getFriend().getName(), dto.getFriend().getName());
+    assertEquals(friend.getFriend().getIq(), dto.getFriend().getIq());
   }
 
 }
