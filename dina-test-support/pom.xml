@@ -1,32 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-	<modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
+  <groupId>ca.gc.aafc</groupId>
+  <artifactId>dina-test-support</artifactId>
+  <name>dina-test-support</name>
+
+  <parent>
 	<groupId>ca.gc.aafc</groupId>
-	<artifactId>dina-test-support</artifactId>
-	<name>dina-test-support</name>
-
-	<parent>
-		<groupId>ca.gc.aafc</groupId>
-		<artifactId>dina-base-parent</artifactId>
-		<version>0.25-SNAPSHOT</version>
-	</parent>
-	<dependencies>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-		</dependency>
-	</dependencies>
-	<distributionManagement>
-		<repository>
-			<id>bintray-aafc-bice-BICoE</id>
-			<name>aafc-bice-BICoE</name>
-			<url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-test-support/;publish=1;</url>
-		</repository>
-	</distributionManagement>
-
+	<artifactId>dina-base-parent</artifactId>
+	<version>0.25-SNAPSHOT</version>
+  </parent>
+  <dependencies>
+	<dependency>
+	  <groupId>org.junit.jupiter</groupId>
+	  <artifactId>junit-jupiter-api</artifactId>
+	</dependency>
+  </dependencies>
+  <distributionManagement>
+	<repository>
+	  <id>bintray-aafc-bice-BICoE</id>
+	  <name>aafc-bice-BICoE</name>
+	  <url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-test-support/;publish=1;</url>
+	</repository>
+  </distributionManagement>
 </project>
