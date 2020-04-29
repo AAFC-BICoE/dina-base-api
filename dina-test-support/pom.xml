@@ -6,9 +6,12 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-test-support</artifactId>
   <name>dina-test-support</name>
+
+  <properties>
+    <openapi4j.version>0.9</openapi4j.version>
+  </properties>
 
   <parent>
     <groupId>ca.gc.aafc</groupId>
@@ -19,6 +22,16 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openapi4j</groupId>
+      <artifactId>openapi-parser</artifactId>
+      <version>${openapi4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openapi4j</groupId>
+      <artifactId>openapi-schema-validator</artifactId>
+      <version>${openapi4j.version}</version>
     </dependency>
   </dependencies>
   <distributionManagement>

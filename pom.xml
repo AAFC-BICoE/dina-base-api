@@ -37,8 +37,6 @@
     <asciidoctorj.diagram.version>2.0.1</asciidoctorj.diagram.version>
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
-    <openapi4j-parser.version>0.9</openapi4j-parser.version>
-    <openapi4j-schema-validator.version>0.9</openapi4j-schema-validator.version>
   </properties>
 
   <!-- Common sub module dependencies -->
@@ -77,16 +75,6 @@
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.openapi4j</groupId>
-      <artifactId>openapi-parser</artifactId>
-      <version>${openapi4j-parser.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.openapi4j</groupId>
-      <artifactId>openapi-schema-validator</artifactId>
-      <version>${openapi4j-schema-validator.version}</version>
     </dependency>
   </dependencies>
 

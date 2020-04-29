@@ -5,7 +5,6 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-base-api</artifactId>
   <name>dina-base-api</name>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
