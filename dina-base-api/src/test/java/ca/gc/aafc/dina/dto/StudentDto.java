@@ -17,4 +17,6 @@ public class StudentDto {
 
   private StudentDto friend;
 
+  private String customField;
+
 }

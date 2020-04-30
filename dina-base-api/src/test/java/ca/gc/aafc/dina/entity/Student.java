@@ -17,4 +17,6 @@ public class Student {
 
   private Student friend;
 
+  private ComplexObject customField;
+
 }
