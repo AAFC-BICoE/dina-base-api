@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +45,7 @@ public class DinaMapperTest {
     assertEquals(entity.getName(), dto.getName());
     // Assert value not mapped - not included in selected fields
     assertEquals(0, dto.getIq());
+    assertNull(dto.getCustomField());
   }
 
   @Test
