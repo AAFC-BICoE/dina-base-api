@@ -5,7 +5,6 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-base-api</artifactId>
   <name>dina-base-api</name>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
@@ -21,7 +20,6 @@
     <local-javax-jaxb.version>2.3.0.1</local-javax-jaxb.version>
     <javax.activation.version>1.1.1</javax.activation.version>
     <crnk.version>3.1.20191113192440</crnk.version>
-    <spotbugs.version>3.1.12</spotbugs.version>
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
     <guava.version>24.0-jre</guava.version>
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
@@ -46,12 +44,6 @@
       <groupId>net.jcip</groupId>
       <artifactId>jcip-annotations</artifactId>
       <version>${jcip-annotations.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.spotbugs</groupId>
-      <artifactId>spotbugs-annotations</artifactId>
-      <version>${spotbugs.version}</version>
       <scope>provided</scope>
     </dependency>
     <!-- Required for Java >= 9 -->

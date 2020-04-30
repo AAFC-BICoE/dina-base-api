@@ -1,21 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-test-support</artifactId>
   <name>dina-test-support</name>
+
+  <properties>
+    <openapi4j.version>0.9</openapi4j.version>
+  </properties>
 
   <parent>
     <groupId>ca.gc.aafc</groupId>
     <artifactId>dina-base-parent</artifactId>
     <version>0.25-SNAPSHOT</version>
   </parent>
-
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openapi4j</groupId>
+      <artifactId>openapi-parser</artifactId>
+      <version>${openapi4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openapi4j</groupId>
+      <artifactId>openapi-schema-validator</artifactId>
+      <version>${openapi4j.version}</version>
+    </dependency>
+  </dependencies>
   <distributionManagement>
     <repository>
       <id>bintray-aafc-bice-BICoE</id>
@@ -23,5 +41,4 @@
       <url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-test-support/;publish=1;</url>
     </repository>
   </distributionManagement>
-
 </project>
