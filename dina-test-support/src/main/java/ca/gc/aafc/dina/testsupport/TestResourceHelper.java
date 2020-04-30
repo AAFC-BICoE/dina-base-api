@@ -13,7 +13,7 @@ import java.util.stream.Stream;
  * Utility static class to deal with test resources.
  *
  */
-public class TestResourceHelper {
+public final class TestResourceHelper {
   
   private TestResourceHelper(){
     
@@ -21,10 +21,10 @@ public class TestResourceHelper {
   
   /**
    * Read the content of a resource in the classpath. The resource encoding is assumed to be UTF8.
-   * Newline character is expected to be \n.
+   * Newline character is expected to be &bsol;n.
    * 
    * @param resourceName
-   * @return
+   * @return the content of the resource as String
    * @throws IOException resource not found or invalid
    */
   public static String readContentAsString(String resourceName) throws IOException {
