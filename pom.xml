@@ -32,7 +32,8 @@
     <!-- Build plugin properties -->
     <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
     <checkstyle.version>8.30</checkstyle.version>
-    <spotbugs.version>3.1.12</spotbugs.version>
+    <spotbugs.version>4.0.2</spotbugs.version>
+    <maven-spotbugs.version>4.0.0</maven-spotbugs.version>
     <asciidoctor-maven-plugin.version>1.6.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.1</asciidoctorj.diagram.version>
     <!-- Common sub-module dependency properties -->
@@ -108,9 +109,9 @@
       <plugin>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>${spotbugs.version}</version>
+        <version>${maven-spotbugs.version}</version>
         <dependencies>
-        <!-- Force SpotBug version to match the annotation -->
+        <!-- SpotBug itself can be ahead of the Maven plugin -->
           <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs</artifactId>
