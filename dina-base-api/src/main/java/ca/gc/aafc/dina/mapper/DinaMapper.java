@@ -86,7 +86,6 @@ public class DinaMapper<D, E> {
       .filter(cfr-> selectedFields.contains(cfr.getField()))
       .collect(Collectors.toList());
     mapCustomFieldsToTarget(dto, entity, selectedResolvers);
-
   }
 
   @SneakyThrows
