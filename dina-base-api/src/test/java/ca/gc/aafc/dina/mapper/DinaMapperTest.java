@@ -59,7 +59,7 @@ public class DinaMapperTest {
     selectedFields.add("iq");
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = new HashMap<>();
-    selectedFieldPerClass.put(StudentDto.class, selectedFields);
+    selectedFieldPerClass.put(Student.class, selectedFields);
 
     HashSet<String> relations = new HashSet<>();
     relations.add("friend");
@@ -125,7 +125,7 @@ public class DinaMapperTest {
     selectedFields.add("iq");
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = new HashMap<>();
-    selectedFieldPerClass.put(Student.class, selectedFields);
+    selectedFieldPerClass.put(StudentDto.class, selectedFields);
 
     HashSet<String> relations = new HashSet<>();
     relations.add("friend");
