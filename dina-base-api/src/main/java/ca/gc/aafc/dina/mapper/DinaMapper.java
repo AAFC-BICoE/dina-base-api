@@ -48,17 +48,8 @@ public class DinaMapper<D, E> {
       .collect(Collectors.toSet());
     mapFieldsToTarget(entity, dto, selectedBaseFields);
 
-    // Map relations
-    for (String relationFieldName : relations) {
-      Class<?> relationDtoType = PropertyUtils.getPropertyType(dto, relationFieldName);
-
-      Object relationDto = relationDtoType.getConstructor().newInstance();
-      Object entityRelationField = PropertyUtils.getProperty(entity, relationFieldName);
-      Set<String> selectedRelationFields = selectedFieldPerClass.getOrDefault(relationDtoType, new HashSet<>());
-
-      mapFieldsToTarget(entityRelationField, relationDto, selectedRelationFields);
-      PropertyUtils.setProperty(dto, relationFieldName, relationDto);
-    }
+    // Map Relations
+    mapRelationsToTarget(entity, dto, selectedFieldPerClass, relations);
 
     // Map Custom Fields
     for (CustomFieldResolverSpec<E> cfr : dtoResolvers) {
@@ -84,18 +75,10 @@ public class DinaMapper<D, E> {
       .stream()
       .filter(sf -> !hasCustomFieldResolver(sf))
       .collect(Collectors.toSet());
-    mapFieldsToTarget(entity, dto, selectedBaseFields);
+    mapFieldsToTarget(dto, entity, selectedBaseFields);
 
-    // Map relations
-    for (String relationFieldName : relations) {
-      Class<?> relationType = PropertyUtils.getPropertyType(entity, relationFieldName);
-
-      Object relationObj = relationType.getConstructor().newInstance();
-      Object relationValue = PropertyUtils.getProperty(dto, relationFieldName);
-
-      mapFieldsToTarget(relationValue, relationObj, selectedFieldPerClass.get(relationType));
-      PropertyUtils.setProperty(entity, relationFieldName, relationObj);
-    }
+    // Map Relations
+    mapRelationsToTarget(dto, entity, selectedFieldPerClass, relations);
 
     // Map Custom Fields
     for (CustomFieldResolverSpec<D> cfr : entityResolvers) {
@@ -103,6 +86,26 @@ public class DinaMapper<D, E> {
       if (selectedFieldPerClass.get(dtoClass).contains(fieldName)) {
         PropertyUtils.setProperty(entity, fieldName, cfr.getResolver().apply(dto));
       }
+    }
+  }
+
+  @SneakyThrows
+  private static <T, S> void mapRelationsToTarget(
+    S source,
+    T target,
+    Map<Class<?>, Set<String>> selectedFieldPerClass,
+    Set<String> relations
+  ) {
+    for (String relationFieldName : relations) {
+      Class<?> relationType = PropertyUtils.getPropertyType(target, relationFieldName);
+
+      Object targetRelationObject = relationType.getConstructor().newInstance();
+      Object sourceRelationObject = PropertyUtils.getProperty(source, relationFieldName);
+
+      Set<String> selectedRelationFields = selectedFieldPerClass.getOrDefault(relationType, new HashSet<>());
+
+      mapFieldsToTarget(sourceRelationObject, targetRelationObject, selectedRelationFields);
+      PropertyUtils.setProperty(target, relationFieldName, targetRelationObject);
     }
   }
 
