@@ -96,8 +96,11 @@ public class DinaMapperTest {
 
   @Test
   public void applyDtoToEntity_BaseAttributesTest_SelectedFieldsMapped() {
+    String expectedName = "expected name";
+
     Student result = new Student();
     StudentDto dtoToMap = createDTO();
+    dtoToMap.setName(expectedName);
 
     HashSet<String> selectedFields = new HashSet<>();
     selectedFields.add("name");
@@ -107,7 +110,7 @@ public class DinaMapperTest {
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, new HashSet<>());
 
-    assertEquals(dtoToMap.getName(), result.getName());
+    assertEquals(expectedName, result.getName());
     // Assert value not mapped - not included in selected fields
     assertEquals(0, result.getIq());
     assertNull(result.getCustomField());
