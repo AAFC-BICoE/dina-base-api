@@ -17,15 +17,18 @@ public class DinaMapper<D, E> {
   private final Class<E> entityClass;
 
   private final List<CustomFieldResolverSpec<E>> dtoResolvers;
+  private final List<CustomFieldResolverSpec<D>> entityResolvers;
 
   public DinaMapper(
     @NonNull Class<D> dtoClass,
     @NonNull Class<E> entityClass,
-    @NonNull List<CustomFieldResolverSpec<E>> dtoResolvers
+    @NonNull List<CustomFieldResolverSpec<E>> dtoResolvers,
+    @NonNull List<CustomFieldResolverSpec<D>> entityResolvers
   ) {
     this.dtoClass = dtoClass;
     this.entityClass = entityClass;
     this.dtoResolvers = dtoResolvers;
+    this.entityResolvers = entityResolvers;
   }
 
   @SneakyThrows
@@ -63,6 +66,41 @@ public class DinaMapper<D, E> {
     }
 
     return dto;
+  }
+
+  @SneakyThrows
+  public void applyDtoToEntity(
+    @NonNull D dto,
+    @NonNull E entity,
+    @NonNull Map<Class<?>, Set<String>> selectedFieldPerClass,
+    @NonNull Set<String> relations
+  ) {
+
+    // Map non relations and non custom resolved fields
+    Set<String> selectedBaseFields = selectedFieldPerClass.get(dtoClass)
+      .stream()
+      .filter(sf -> !hasCustomFieldResolver(sf))
+      .collect(Collectors.toSet());
+    mapFieldsToTarget(entity, dto, selectedBaseFields);
+
+    // Map relations
+    for (String relationFieldName : relations) {
+      Class<?> relationType = PropertyUtils.getPropertyType(entity, relationFieldName);
+
+      Object relationObj = relationType.getConstructor().newInstance();
+      Object relationValue = PropertyUtils.getProperty(dto, relationFieldName);
+
+      mapFieldsToTarget(relationValue, relationObj, selectedFieldPerClass.get(relationType));
+      PropertyUtils.setProperty(entity, relationFieldName, relationObj);
+    }
+
+    // Map Custom Fields
+    for (CustomFieldResolverSpec<D> cfr : entityResolvers) {
+      String fieldName = cfr.getField();
+      if (selectedFieldPerClass.get(dtoClass).contains(fieldName)) {
+        PropertyUtils.setProperty(entity, fieldName, cfr.getResolver().apply(dto));
+      }
+    }
   }
 
   @SneakyThrows

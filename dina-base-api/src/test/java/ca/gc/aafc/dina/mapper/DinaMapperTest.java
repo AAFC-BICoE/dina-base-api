@@ -22,6 +22,7 @@ public class DinaMapperTest {
   private static Student entity;
 
   private static List<CustomFieldResolverSpec<Student>> dtoResolvers = new ArrayList<>();
+  private static List<CustomFieldResolverSpec<StudentDto>> entityResolvers = new ArrayList<>();
 
   private static DinaMapper<StudentDto, Student> mapper;
 
@@ -29,7 +30,8 @@ public class DinaMapperTest {
   public static void init() {
     initEntity();
     initDtoResolvers();
-    mapper = new DinaMapper<>(StudentDto.class, Student.class, dtoResolvers);
+    initEntityResolvers();
+    mapper = new DinaMapper<>(StudentDto.class, Student.class, dtoResolvers, entityResolvers);
   }
 
   @Test
@@ -82,6 +84,75 @@ public class DinaMapperTest {
     assertEquals(entity.getCustomField().getName(), dto.getCustomField());
   }
 
+  @Test
+  public void applyDtoToEntity_BaseAttributesTest_SelectedFieldsMapped() {
+    Student result = new Student();
+    StudentDto dtoToMap = createDTO();
+
+    HashSet<String> selectedFields = new HashSet<>();
+    selectedFields.add("name");
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass = new HashMap<>();
+    selectedFieldPerClass.put(StudentDto.class, selectedFields);
+
+    mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, new HashSet<>());
+
+    assertEquals(dtoToMap.getName(), result.getName());
+    // Assert value not mapped - not included in selected fields
+    assertEquals(0, result.getIq());
+    assertNull(result.getCustomField());
+  }
+
+  @Test
+  public void applyDtoToEntity_RelationShipTest_RelationsMapped() {
+    Student result = new Student();
+    StudentDto dtoToMap = createDTO();
+
+    HashSet<String> selectedFields = new HashSet<>();
+    selectedFields.add("name");
+    selectedFields.add("iq");
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass = new HashMap<>();
+    selectedFieldPerClass.put(Student.class, selectedFields);
+    selectedFieldPerClass.put(StudentDto.class, selectedFields);
+
+    HashSet<String> relations = new HashSet<>();
+    relations.add("friend");
+
+    mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, relations);
+
+    assertEquals(dtoToMap.getFriend().getName(), result.getFriend().getName());
+    assertEquals(dtoToMap.getFriend().getIq(), result.getFriend().getIq());
+  }
+
+  @Test
+  public void applyDtoToEntity_ResolversTest_FieldResolversMapping() {
+    Student result = new Student();
+    StudentDto dtoToMap = createDTO();
+
+    HashSet<String> selectedFields = new HashSet<>();
+    selectedFields.add("customField");
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass = new HashMap<>();
+    selectedFieldPerClass.put(StudentDto.class, selectedFields);
+
+    mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, new HashSet<>());
+
+    // DTOs complex object (String) -> Entity (ComplexObject.name) 
+    assertEquals(dtoToMap.getCustomField(), result.getCustomField().getName());
+  }
+
+  private StudentDto createDTO() {
+    StudentDto dto = StudentDto
+      .builder()
+      .name("new Name")
+      .iq(2700)
+      .customField("customField")
+      .friend(StudentDto.builder().name("best friend").iq(10000).build())
+      .build();
+    return dto;
+  }
+
   private static void initEntity() {
     entity = Student.builder()
       .name("Test Name")
@@ -97,7 +168,22 @@ public class DinaMapperTest {
   private static void initDtoResolvers() {
     CustomFieldResolverSpec<Student> customFieldResolver = CustomFieldResolverSpec.<Student>builder()
         .field("customField")
-        .resolver(student -> student.getCustomField() == null ? "" : student.getCustomField().getName()).build();
+        .resolver(student -> student.getCustomField() == null ? "" : student.getCustomField().getName())
+        .build();
     dtoResolvers.add(customFieldResolver);
+  }
+
+  /*
+   * Init Dto resolver to map the Entity complex object name (ComplexObject.name)
+   * to DTOs complex object (String)
+   */
+  private static void initEntityResolvers() {
+    CustomFieldResolverSpec<StudentDto> customFieldResolver = CustomFieldResolverSpec.<StudentDto>builder()
+        .field("customField")
+        .resolver(
+          student -> student.getCustomField() == null ?
+          null : ComplexObject.builder().name(student.getCustomField()).build())
+        .build();
+    entityResolvers.add(customFieldResolver);
   }
 }
