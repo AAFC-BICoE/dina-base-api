@@ -51,13 +51,13 @@ public class DinaMapper<D, E> {
     // Map Relations
     mapRelationsToTarget(entity, dto, selectedFieldPerClass, relations);
 
-    // Map Custom Fields
-    for (CustomFieldResolverSpec<E> cfr : dtoResolvers) {
-      String fieldName = cfr.getField();
-      if (selectedFieldPerClass.getOrDefault(entityClass, new HashSet<>()).contains(fieldName)) {
-        PropertyUtils.setProperty(dto, fieldName, cfr.getResolver().apply(entity));
-      }
-    }
+        // Map Custom Fields
+    mapCustomFieldsToTarget(
+      entity,
+      dto,
+      selectedFieldPerClass.getOrDefault(entityClass, new HashSet<>()),
+      dtoResolvers
+    );
 
     return dto;
   }
@@ -82,12 +82,12 @@ public class DinaMapper<D, E> {
     mapRelationsToTarget(dto, entity, selectedFieldPerClass, relations);
 
     // Map Custom Fields
-    for (CustomFieldResolverSpec<D> cfr : entityResolvers) {
-      String fieldName = cfr.getField();
-      if (selectedFieldPerClass.getOrDefault(dtoClass, new HashSet<>()).contains(fieldName)) {
-        PropertyUtils.setProperty(entity, fieldName, cfr.getResolver().apply(dto));
-      }
-    }
+    mapCustomFieldsToTarget(
+      dto,
+      entity,
+      selectedFieldPerClass.getOrDefault(dtoClass, new HashSet<>()),
+      entityResolvers
+    );
   }
 
   @SneakyThrows
@@ -115,6 +115,21 @@ public class DinaMapper<D, E> {
   private static <T, S> void mapFieldsToTarget(S source, T target, Set<String> selectedFieldPerClass) {
     for (String attribute : selectedFieldPerClass) {
       PropertyUtils.setProperty(target, attribute, PropertyUtils.getProperty(source, attribute));
+    }
+  }
+
+  @SneakyThrows
+  private static <T, S> void mapCustomFieldsToTarget(
+    S source,
+    T target,
+    Set<String> selectedFields,
+    List<CustomFieldResolverSpec<S>> resolvers
+  ) {
+    for (CustomFieldResolverSpec<S> cfr : resolvers) {
+      String fieldName = cfr.getField();
+      if (selectedFields.contains(fieldName)) {
+        PropertyUtils.setProperty(target, fieldName, cfr.getResolver().apply(source));
+      }
     }
   }
 
