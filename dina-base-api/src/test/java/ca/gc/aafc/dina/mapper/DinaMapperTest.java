@@ -85,6 +85,16 @@ public class DinaMapperTest {
   }
 
   @Test
+  public void toDto_NothingSelected_NothingMapped() {
+    StudentDto dto = mapper.toDto(entity, new HashMap<>(), new HashSet<>());
+
+    assertNull(dto.getName());
+    assertNull(dto.getCustomField());
+    assertNull(dto.getFriend());
+    assertEquals(0, dto.getIq());
+  }
+
+  @Test
   public void applyDtoToEntity_BaseAttributesTest_SelectedFieldsMapped() {
     Student result = new Student();
     StudentDto dtoToMap = createDTO();

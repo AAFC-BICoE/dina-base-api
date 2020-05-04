@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.mapper;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +41,8 @@ public class DinaMapper<D, E> {
     D dto = dtoClass.getConstructor().newInstance();
 
     // Map non relations and non custom resolved fields
-    Set<String> selectedBaseFields = selectedFieldPerClass.get(entityClass)
+    Set<String> selectedBaseFields = selectedFieldPerClass
+      .getOrDefault(entityClass, new HashSet<>())
       .stream()
       .filter(sf -> !hasCustomFieldResolver(sf))
       .collect(Collectors.toSet());
@@ -52,15 +54,16 @@ public class DinaMapper<D, E> {
 
       Object relationDto = relationDtoType.getConstructor().newInstance();
       Object entityRelationField = PropertyUtils.getProperty(entity, relationFieldName);
+      Set<String> selectedRelationFields = selectedFieldPerClass.getOrDefault(relationDtoType, new HashSet<>());
 
-      mapFieldsToTarget(entityRelationField, relationDto, selectedFieldPerClass.get(relationDtoType));
+      mapFieldsToTarget(entityRelationField, relationDto, selectedRelationFields);
       PropertyUtils.setProperty(dto, relationFieldName, relationDto);
     }
 
     // Map Custom Fields
     for (CustomFieldResolverSpec<E> cfr : dtoResolvers) {
       String fieldName = cfr.getField();
-      if (selectedFieldPerClass.get(entityClass).contains(fieldName)) {
+      if (selectedFieldPerClass.getOrDefault(entityClass, new HashSet<>()).contains(fieldName)) {
         PropertyUtils.setProperty(dto, fieldName, cfr.getResolver().apply(entity));
       }
     }
