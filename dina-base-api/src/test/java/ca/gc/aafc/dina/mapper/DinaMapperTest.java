@@ -155,6 +155,19 @@ public class DinaMapperTest {
     assertEquals(dtoToMap.getCustomField(), result.getCustomField().getName());
   }
 
+  @Test
+  public void applyDtoToEntity_NothingSelected_NothingMapped() {
+    Student result = new Student();
+    StudentDto dtoToMap = createDTO();
+
+    mapper.applyDtoToEntity(dtoToMap, result, new HashMap<>(), new HashSet<>());
+
+    assertNull(result.getName());
+    assertNull(result.getCustomField());
+    assertNull(result.getFriend());
+    assertEquals(0, result.getIq());
+  }
+
   private StudentDto createDTO() {
     StudentDto dto = StudentDto
       .builder()

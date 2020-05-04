@@ -71,7 +71,8 @@ public class DinaMapper<D, E> {
   ) {
 
     // Map non relations and non custom resolved fields
-    Set<String> selectedBaseFields = selectedFieldPerClass.get(dtoClass)
+    Set<String> selectedBaseFields = selectedFieldPerClass
+      .getOrDefault(dtoClass, new HashSet<>())
       .stream()
       .filter(sf -> !hasCustomFieldResolver(sf))
       .collect(Collectors.toSet());
@@ -83,7 +84,7 @@ public class DinaMapper<D, E> {
     // Map Custom Fields
     for (CustomFieldResolverSpec<D> cfr : entityResolvers) {
       String fieldName = cfr.getField();
-      if (selectedFieldPerClass.get(dtoClass).contains(fieldName)) {
+      if (selectedFieldPerClass.getOrDefault(dtoClass, new HashSet<>()).contains(fieldName)) {
         PropertyUtils.setProperty(entity, fieldName, cfr.getResolver().apply(dto));
       }
     }
