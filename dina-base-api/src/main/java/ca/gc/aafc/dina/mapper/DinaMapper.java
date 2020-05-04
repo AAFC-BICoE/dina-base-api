@@ -39,10 +39,10 @@ public class DinaMapper<D, E> {
     @NonNull Set<String> relations
   ) {
     D dto = dtoClass.getConstructor().newInstance();
+    Set<String> selectedFields = selectedFieldPerClass.getOrDefault(entityClass, new HashSet<>());
 
     // Map non relations and non custom resolved fields
-    Set<String> selectedBaseFields = selectedFieldPerClass
-      .getOrDefault(entityClass, new HashSet<>())
+    Set<String> selectedBaseFields = selectedFields
       .stream()
       .filter(sf -> !hasCustomFieldResolver(sf))
       .collect(Collectors.toSet());
@@ -51,13 +51,12 @@ public class DinaMapper<D, E> {
     // Map Relations
     mapRelationsToTarget(entity, dto, selectedFieldPerClass, relations);
 
-        // Map Custom Fields
-    mapCustomFieldsToTarget(
-      entity,
-      dto,
-      selectedFieldPerClass.getOrDefault(entityClass, new HashSet<>()),
-      dtoResolvers
-    );
+    // Map selected Custom Fields
+    List<CustomFieldResolverSpec<E>> selectedResolvers = dtoResolvers
+      .stream()
+      .filter(cfr-> selectedFields.contains(cfr.getField()))
+      .collect(Collectors.toList());
+    mapCustomFieldsToTarget(entity, dto, selectedResolvers);
 
     return dto;
   }
@@ -69,10 +68,10 @@ public class DinaMapper<D, E> {
     @NonNull Map<Class<?>, Set<String>> selectedFieldPerClass,
     @NonNull Set<String> relations
   ) {
+    Set<String> selectedFields = selectedFieldPerClass.getOrDefault(dtoClass, new HashSet<>());
 
     // Map non relations and non custom resolved fields
-    Set<String> selectedBaseFields = selectedFieldPerClass
-      .getOrDefault(dtoClass, new HashSet<>())
+    Set<String> selectedBaseFields = selectedFields
       .stream()
       .filter(sf -> !hasCustomFieldResolver(sf))
       .collect(Collectors.toSet());
@@ -81,13 +80,13 @@ public class DinaMapper<D, E> {
     // Map Relations
     mapRelationsToTarget(dto, entity, selectedFieldPerClass, relations);
 
-    // Map Custom Fields
-    mapCustomFieldsToTarget(
-      dto,
-      entity,
-      selectedFieldPerClass.getOrDefault(dtoClass, new HashSet<>()),
-      entityResolvers
-    );
+    // Map selected Custom Fields
+    List<CustomFieldResolverSpec<D>> selectedResolvers = entityResolvers
+      .stream()
+      .filter(cfr-> selectedFields.contains(cfr.getField()))
+      .collect(Collectors.toList());
+    mapCustomFieldsToTarget(dto, entity, selectedResolvers);
+
   }
 
   @SneakyThrows
@@ -112,24 +111,17 @@ public class DinaMapper<D, E> {
   }
 
   @SneakyThrows
-  private static <T, S> void mapFieldsToTarget(S source, T target, Set<String> selectedFieldPerClass) {
-    for (String attribute : selectedFieldPerClass) {
+  private static <T, S> void mapFieldsToTarget(S source, T target, Set<String> selectedFields) {
+    for (String attribute : selectedFields) {
       PropertyUtils.setProperty(target, attribute, PropertyUtils.getProperty(source, attribute));
     }
   }
 
   @SneakyThrows
-  private static <T, S> void mapCustomFieldsToTarget(
-    S source,
-    T target,
-    Set<String> selectedFields,
-    List<CustomFieldResolverSpec<S>> resolvers
-  ) {
+  private static <T, S> void mapCustomFieldsToTarget(S source, T target, List<CustomFieldResolverSpec<S>> resolvers) {
     for (CustomFieldResolverSpec<S> cfr : resolvers) {
       String fieldName = cfr.getField();
-      if (selectedFields.contains(fieldName)) {
-        PropertyUtils.setProperty(target, fieldName, cfr.getResolver().apply(source));
-      }
+      PropertyUtils.setProperty(target, fieldName, cfr.getResolver().apply(source));
     }
   }
 
