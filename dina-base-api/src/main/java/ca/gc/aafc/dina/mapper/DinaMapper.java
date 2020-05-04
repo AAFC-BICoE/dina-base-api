@@ -99,9 +99,9 @@ public class DinaMapper<D, E> {
   ) {
     for (String relationFieldName : relations) {
       Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, relationFieldName);
-      Class<?> dtoRelationType = PropertyUtils.getPropertyType(target, relationFieldName);
+      Class<?> targetRelationType = PropertyUtils.getPropertyType(target, relationFieldName);
 
-      Object targetRelationObject = dtoRelationType.getConstructor().newInstance();
+      Object targetRelationObject = targetRelationType.getConstructor().newInstance();
       Object sourceRelationObject = PropertyUtils.getProperty(source, relationFieldName);
 
       Set<String> selectedRelationFields = selectedFieldPerClass.getOrDefault(sourceRelationType, new HashSet<>());
