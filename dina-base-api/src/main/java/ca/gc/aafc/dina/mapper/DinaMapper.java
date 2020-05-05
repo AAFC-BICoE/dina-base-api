@@ -131,9 +131,15 @@ public class DinaMapper<D, E> {
    * @return - true if the given field has custom resolvers.
    */
   private boolean hasCustomFieldResolver(String fieldName) {
-    return !dtoResolvers.stream()
+    boolean hasDtoResolvers = !dtoResolvers.stream()
         .filter(cfr->StringUtils.equalsIgnoreCase(fieldName, cfr.getField()))
-        .collect(Collectors.toList()).isEmpty();
+        .collect(Collectors.toList())
+        .isEmpty();
+    boolean hasEntityResolvers = !entityResolvers.stream()
+        .filter(cfr -> StringUtils.equalsIgnoreCase(fieldName, cfr.getField()))
+        .collect(Collectors.toList())
+        .isEmpty();
+    return hasDtoResolvers || hasEntityResolvers;
   }
 
 }
