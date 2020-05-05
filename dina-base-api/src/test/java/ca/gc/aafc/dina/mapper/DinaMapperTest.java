@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -122,6 +123,25 @@ public class DinaMapperTest {
   }
 
   @Test
+  public void applyDtoToEntity_CollectionRelation_RelationsMapped() {
+    Student result = new Student();
+    StudentDto dtoToMap = createDTO();
+    dtoToMap.getClassMates().addAll(Arrays.asList(createDTO(), createDTO(), createDTO()));
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
+      StudentDto.class, ImmutableSet.of("name", "iq"));
+
+    Set<String> relations = ImmutableSet.of("classMates");
+
+    mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, relations);
+
+    for (int i = 0; i < result.getClassMates().size(); i++) {
+      assertEquals(result.getClassMates().get(i).getName(), dtoToMap.getClassMates().get(i).getName());
+      assertEquals(result.getClassMates().get(i).getIq(), dtoToMap.getClassMates().get(i).getIq());
+    }
+  }
+
+  @Test
   public void applyDtoToEntity_ResolversTest_FieldResolversMapping() {
     Student result = new Student();
     StudentDto dtoToMap = createDTO();
@@ -155,6 +175,7 @@ public class DinaMapperTest {
       .iq(2700)
       .customField("customField")
       .friend(StudentDto.builder().name("best friend").iq(10000).build())
+      .classMates(new ArrayList<>())
       .build();
   }
 

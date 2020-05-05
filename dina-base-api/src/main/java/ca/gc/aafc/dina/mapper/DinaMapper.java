@@ -1,5 +1,8 @@
 package ca.gc.aafc.dina.mapper;
 
+import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -97,16 +100,66 @@ public class DinaMapper<D, E> {
   ) {
     for (String relationFieldName : relations) {
       Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, relationFieldName);
-      Class<?> targetRelationType = PropertyUtils.getPropertyType(target, relationFieldName);
 
-      Object targetRelationObject = targetRelationType.getConstructor().newInstance();
-      Object sourceRelationObject = PropertyUtils.getProperty(source, relationFieldName);
-
-      Set<String> selectedRelationFields = selectedFieldPerClass.getOrDefault(sourceRelationType, new HashSet<>());
-
-      mapFieldsToTarget(sourceRelationObject, targetRelationObject, selectedRelationFields);
-      PropertyUtils.setProperty(target, relationFieldName, targetRelationObject);
+      if (Collection.class.isAssignableFrom(sourceRelationType)) {
+        mapCollectionRelation(source, target, selectedFieldPerClass, relationFieldName);
+      } else {
+        mapSingleRelation(source, target, selectedFieldPerClass, relationFieldName);
+      }
     }
+  }
+
+  @SneakyThrows
+  private static <T, S> void mapCollectionRelation(
+    S source,
+    T target,
+    Map<Class<?>, Set<String>> selectedFieldPerClass,
+    String fieldName
+  ) {
+    Collection<Object> sourceCollection = (Collection<Object>) PropertyUtils.getProperty(source, fieldName);
+
+    if (sourceCollection != null) {
+      Collection<Object> targetCollection = null;
+
+      if (sourceCollection instanceof List<?>) {
+        targetCollection = new ArrayList<>();
+      }
+
+      Class<?> targetElementType = getGenericType(target.getClass(), fieldName);
+
+      for (Object relationElement : sourceCollection) {
+        Object targetElement = targetElementType.newInstance();
+        mapFieldsToTarget(
+          relationElement,
+          targetElement,
+          selectedFieldPerClass.getOrDefault(relationElement.getClass(), new HashSet<>())
+        );
+        targetCollection.add(targetElement);
+      }
+      PropertyUtils.setProperty(target, fieldName, targetCollection);
+    } else {
+      PropertyUtils.setProperty(target, fieldName, null);
+    }
+
+  }
+
+  @SneakyThrows
+  private static <T, S> void mapSingleRelation(
+    S source,
+    T target,
+    Map<Class<?>, Set<String>> selectedFieldPerClass,
+    String fieldName
+  ) {
+    Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, fieldName);
+    Class<?> targetRelationType = PropertyUtils.getPropertyType(target, fieldName);
+
+    Object targetRelationObject = targetRelationType.getConstructor().newInstance();
+    Object sourceRelationObject = PropertyUtils.getProperty(source, fieldName);
+
+    Set<String> selectedRelationFields = selectedFieldPerClass.getOrDefault(sourceRelationType, new HashSet<>());
+
+    mapFieldsToTarget(sourceRelationObject, targetRelationObject, selectedRelationFields);
+    PropertyUtils.setProperty(target, fieldName, targetRelationObject);
   }
 
   @SneakyThrows
@@ -140,6 +193,14 @@ public class DinaMapper<D, E> {
         .collect(Collectors.toList())
         .isEmpty();
     return hasDtoResolvers || hasEntityResolvers;
+  }
+
+  @SneakyThrows
+  private static <T> Class<?> getGenericType(Class<?> source, String fieldName) {
+    ParameterizedType genericType = (ParameterizedType) source
+        .getDeclaredField(fieldName)
+        .getGenericType();
+    return (Class<?>) genericType.getActualTypeArguments()[0];
   }
 
 }

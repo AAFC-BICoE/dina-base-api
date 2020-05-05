@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.dto;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,8 +17,13 @@ public class StudentDto {
 
   private int iq;
 
+  // Relation to test
   private StudentDto friend;
 
+  // Custom Resolved Field to test
   private String customField;
+
+  // Many to - Relation to test
+  private List<StudentDto> classMates;
 
 }

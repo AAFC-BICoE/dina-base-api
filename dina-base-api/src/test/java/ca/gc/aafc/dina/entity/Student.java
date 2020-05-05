@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.entity;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,8 +17,13 @@ public class Student {
 
   private int iq;
 
+  // Relation to test
   private Student friend;
 
+  // Custom Resolved Field to test
   private ComplexObject customField;
+
+  // Many to - Relation to test
+  private List<Student> classMates;
 
 }
