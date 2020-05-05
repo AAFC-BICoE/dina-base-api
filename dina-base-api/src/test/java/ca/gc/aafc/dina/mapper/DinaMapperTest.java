@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -19,8 +22,6 @@ import ca.gc.aafc.dina.entity.Student;
 
 public class DinaMapperTest {
 
-  private static Student entity;
-
   private static List<CustomFieldResolverSpec<Student>> dtoResolvers = new ArrayList<>();
   private static List<CustomFieldResolverSpec<StudentDto>> entityResolvers = new ArrayList<>();
 
@@ -28,7 +29,6 @@ public class DinaMapperTest {
 
   @BeforeAll
   public static void init() {
-    initEntity();
     initDtoResolvers();
     initEntityResolvers();
     mapper = new DinaMapper<>(StudentDto.class, Student.class, dtoResolvers, entityResolvers);
@@ -36,12 +36,9 @@ public class DinaMapperTest {
 
   @Test
   public void toDto_BaseAttributesTest_SelectedFieldsMapped() {
-    HashSet<String> selectedFields = new HashSet<>();
-    selectedFields.add("name");
+    Student entity = createEntity();
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = new HashMap<>();
-    selectedFieldPerClass.put(Student.class, selectedFields);
-
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(Student.class, ImmutableSet.of("name"));
     StudentDto dto = mapper.toDto(entity, selectedFieldPerClass, new HashSet<>());
 
     assertEquals(entity.getName(), dto.getName());
@@ -52,17 +49,12 @@ public class DinaMapperTest {
 
   @Test
   public void toDto_RelationShipTest_RelationsMapped() {
+    Student entity = createEntity();
     Student friend = Student.builder().name("Friend").friend(entity).build();
 
-    HashSet<String> selectedFields = new HashSet<>();
-    selectedFields.add("name");
-    selectedFields.add("iq");
-
-    Map<Class<?>, Set<String>> selectedFieldPerClass = new HashMap<>();
-    selectedFieldPerClass.put(Student.class, selectedFields);
-
-    HashSet<String> relations = new HashSet<>();
-    relations.add("friend");
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap
+      .of(Student.class, ImmutableSet.of("name","iq"));
+    Set<String> relations = ImmutableSet.of("friend");
 
     StudentDto dto = mapper.toDto(friend, selectedFieldPerClass, relations);
 
@@ -72,19 +64,20 @@ public class DinaMapperTest {
 
   @Test
   public void toDto_ResolversTest_FieldResolversMapping() {
-    HashSet<String> selectedFields = new HashSet<>();
-    selectedFields.add("customField");
+    Student entity = createEntity();
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = new HashMap<>();
-    selectedFieldPerClass.put(Student.class, selectedFields);
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
+      Student.class, ImmutableSet.of("customField"));
 
     StudentDto dto = mapper.toDto(entity, selectedFieldPerClass, new HashSet<>());
+
     // Entity (ComplexObject.name) DTOs complex object (String)
     assertEquals(entity.getCustomField().getName(), dto.getCustomField());
   }
 
   @Test
   public void toDto_NothingSelected_NothingMapped() {
+    Student entity = createEntity();
     StudentDto dto = mapper.toDto(entity, new HashMap<>(), new HashSet<>());
 
     assertNull(dto.getName());
@@ -95,17 +88,14 @@ public class DinaMapperTest {
 
   @Test
   public void applyDtoToEntity_BaseAttributesTest_SelectedFieldsMapped() {
-    String expectedName = "expected name";
-
     Student result = new Student();
     StudentDto dtoToMap = createDTO();
+
+    String expectedName = "expected name";
     dtoToMap.setName(expectedName);
 
-    HashSet<String> selectedFields = new HashSet<>();
-    selectedFields.add("name");
-
-    Map<Class<?>, Set<String>> selectedFieldPerClass = new HashMap<>();
-    selectedFieldPerClass.put(StudentDto.class, selectedFields);
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
+      StudentDto.class, ImmutableSet.of("name"));
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, new HashSet<>());
 
@@ -120,15 +110,10 @@ public class DinaMapperTest {
     Student result = new Student();
     StudentDto dtoToMap = createDTO();
 
-    HashSet<String> selectedFields = new HashSet<>();
-    selectedFields.add("name");
-    selectedFields.add("iq");
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
+      StudentDto.class, ImmutableSet.of("name", "iq"));
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = new HashMap<>();
-    selectedFieldPerClass.put(StudentDto.class, selectedFields);
-
-    HashSet<String> relations = new HashSet<>();
-    relations.add("friend");
+    Set<String> relations = ImmutableSet.of("friend");
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, relations);
 
@@ -141,15 +126,12 @@ public class DinaMapperTest {
     Student result = new Student();
     StudentDto dtoToMap = createDTO();
 
-    HashSet<String> selectedFields = new HashSet<>();
-    selectedFields.add("customField");
-
-    Map<Class<?>, Set<String>> selectedFieldPerClass = new HashMap<>();
-    selectedFieldPerClass.put(StudentDto.class, selectedFields);
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
+      StudentDto.class, ImmutableSet.of("customField"));
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, new HashSet<>());
 
-    // DTOs complex object (String) -> Entity (ComplexObject.name) 
+    // DTOs complex object (String) -> Entity (ComplexObject.name)
     assertEquals(dtoToMap.getCustomField(), result.getCustomField().getName());
   }
 
@@ -166,19 +148,18 @@ public class DinaMapperTest {
     assertEquals(0, result.getIq());
   }
 
-  private StudentDto createDTO() {
-    StudentDto dto = StudentDto
+  private static StudentDto createDTO() {
+    return StudentDto
       .builder()
       .name("new Name")
       .iq(2700)
       .customField("customField")
       .friend(StudentDto.builder().name("best friend").iq(10000).build())
       .build();
-    return dto;
   }
 
-  private static void initEntity() {
-    entity = Student.builder()
+  private static Student createEntity() {
+    return Student.builder()
       .name("Test Name")
       .iq(9000)
       .customField(ComplexObject.builder().name("complex obj name").build())
