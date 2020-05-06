@@ -116,10 +116,11 @@ public class DinaMapper<D, E> {
     Map<Class<?>, Set<String>> selectedFieldPerClass,
     String fieldName
   ) {
+    @SuppressWarnings("unchecked")
     Collection<Object> sourceCollection = (Collection<Object>) PropertyUtils.getProperty(source, fieldName);
+    Collection<Object> targetCollection = null;
 
     if (sourceCollection != null) {
-      Collection<Object> targetCollection = null;
 
       if (sourceCollection instanceof List<?>) {
         targetCollection = new ArrayList<>();
@@ -127,20 +128,17 @@ public class DinaMapper<D, E> {
 
       Class<?> targetElementType = getGenericType(target.getClass(), fieldName);
 
-      for (Object relationElement : sourceCollection) {
+      for (Object sourceElement : sourceCollection) {
         Object targetElement = targetElementType.newInstance();
         mapFieldsToTarget(
-          relationElement,
+          sourceElement,
           targetElement,
-          selectedFieldPerClass.getOrDefault(relationElement.getClass(), new HashSet<>())
+          selectedFieldPerClass.getOrDefault(sourceElement.getClass(), new HashSet<>())
         );
         targetCollection.add(targetElement);
       }
-      PropertyUtils.setProperty(target, fieldName, targetCollection);
-    } else {
-      PropertyUtils.setProperty(target, fieldName, null);
     }
-
+    PropertyUtils.setProperty(target, fieldName, targetCollection);
   }
 
   @SneakyThrows
