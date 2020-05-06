@@ -1,6 +1,8 @@
 *settings/
 *.classpath
 *.project
+*.factorypath
+*.versionsBackup
 /.metadata/
 /RemoteSystemsTempFiles/
 *target/
