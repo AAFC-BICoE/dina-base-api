@@ -64,6 +64,23 @@ public class DinaMapperTest {
   }
 
   @Test
+  public void toDto_CollectionRelation_RelationsMapped() {
+    Student entityToMap = createEntity();
+    entityToMap.getClassMates().addAll(Arrays.asList(createEntity(), createEntity(), createEntity()));
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(Student.class, ImmutableSet.of("name", "iq"));
+
+    Set<String> relations = ImmutableSet.of("classMates");
+
+    StudentDto result = mapper.toDto(entityToMap, selectedFieldPerClass, relations);
+
+    for (int i = 0; i < entityToMap.getClassMates().size(); i++) {
+      assertEquals(entityToMap.getClassMates().get(i).getName(), result.getClassMates().get(i).getName());
+      assertEquals(entityToMap.getClassMates().get(i).getIq(), result.getClassMates().get(i).getIq());
+    }
+  }
+
+  @Test
   public void toDto_ResolversTest_FieldResolversMapping() {
     Student entity = createEntity();
 
@@ -184,6 +201,7 @@ public class DinaMapperTest {
       .name("Test Name")
       .iq(9000)
       .customField(ComplexObject.builder().name("complex obj name").build())
+      .classMates(new ArrayList<>())
       .build();
   }
 
