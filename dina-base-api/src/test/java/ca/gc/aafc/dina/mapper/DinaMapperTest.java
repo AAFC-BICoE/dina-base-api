@@ -14,6 +14,8 @@ import java.util.Set;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -186,21 +188,30 @@ public class DinaMapperTest {
   }
 
   private static StudentDto createDTO() {
+    StudentDto friend = StudentDto
+      .builder()
+      .name(RandomStringUtils.random(5, true, false))
+      .iq(RandomUtils.nextInt(5, 1000))
+      .build();
     return StudentDto
       .builder()
-      .name("new Name")
-      .iq(2700)
-      .customField("customField")
-      .friend(StudentDto.builder().name("best friend").iq(10000).build())
+      .name(RandomStringUtils.random(5, true, false))
+      .iq(RandomUtils.nextInt(5, 1000))
+      .customField(RandomStringUtils.random(5, true, false))
+      .friend(friend)
       .classMates(new ArrayList<>())
       .build();
   }
 
   private static Student createEntity() {
+    ComplexObject customField = ComplexObject
+      .builder()
+      .name(RandomStringUtils.random(5, true, false))
+      .build();
     return Student.builder()
-      .name("Test Name")
-      .iq(9000)
-      .customField(ComplexObject.builder().name("complex obj name").build())
+      .name(RandomStringUtils.random(5, true, false))
+      .iq(RandomUtils.nextInt(5, 1000))
+      .customField(customField)
       .classMates(new ArrayList<>())
       .build();
   }
