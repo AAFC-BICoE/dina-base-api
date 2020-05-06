@@ -17,6 +17,8 @@ public class StudentDto {
 
   private int iq;
 
+  private String[] nickNames;
+
   // Relation to test
   private StudentDto friend;
 

@@ -41,10 +41,12 @@ public class DinaMapperTest {
   public void toDto_BaseAttributesTest_SelectedFieldsMapped() {
     Student entity = createEntity();
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(Student.class, ImmutableSet.of("name"));
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
+      Student.class, ImmutableSet.of("name","nickNames"));
     StudentDto dto = mapper.toDto(entity, selectedFieldPerClass, new HashSet<>());
 
     assertEquals(entity.getName(), dto.getName());
+    assertEquals(entity.getNickNames(), dto.getNickNames());
     // Assert value not mapped - not included in selected fields
     assertEquals(0, dto.getIq());
     assertNull(dto.getCustomField());
@@ -103,6 +105,7 @@ public class DinaMapperTest {
     assertNull(dto.getName());
     assertNull(dto.getCustomField());
     assertNull(dto.getFriend());
+    assertNull(dto.getNickNames());
     assertEquals(0, dto.getIq());
   }
 
@@ -111,15 +114,18 @@ public class DinaMapperTest {
     Student entity = createEntity();
     entity.setName(null);
     entity.setFriend(null);
+    entity.setNickNames(null);
     entity.setClassMates(null);
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(Student.class, ImmutableSet.of("name", "iq"));
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
+      Student.class, ImmutableSet.of("name", "iq", "nickNames"));
     Set<String> relations = ImmutableSet.of("classMates", "friend");
 
     StudentDto dto = mapper.toDto(entity, selectedFieldPerClass, relations);
 
     assertNull(dto.getName());
     assertNull(dto.getFriend());
+    assertNull(dto.getNickNames());
     assertNull(dto.getClassMates());
   }
 
@@ -132,11 +138,12 @@ public class DinaMapperTest {
     dtoToMap.setName(expectedName);
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
-      StudentDto.class, ImmutableSet.of("name"));
+      StudentDto.class, ImmutableSet.of("name", "nickNames"));
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, new HashSet<>());
 
     assertEquals(expectedName, result.getName());
+    assertEquals(dtoToMap.getNickNames(), result.getNickNames());
     // Assert value not mapped - not included in selected fields
     assertEquals(0, result.getIq());
     assertNull(result.getCustomField());
@@ -201,6 +208,7 @@ public class DinaMapperTest {
     assertNull(result.getName());
     assertNull(result.getCustomField());
     assertNull(result.getFriend());
+    assertNull(result.getNickNames());
     assertEquals(0, result.getIq());
   }
 
@@ -211,16 +219,18 @@ public class DinaMapperTest {
     StudentDto dtoToMap = createDTO();
     dtoToMap.setName(null);
     dtoToMap.setFriend(null);
+    dtoToMap.setNickNames(null);
     dtoToMap.setClassMates(null);
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
-      StudentDto.class, ImmutableSet.of("name", "iq"));
+      StudentDto.class, ImmutableSet.of("name", "iq", "nickNames"));
     Set<String> relations = ImmutableSet.of("classMates", "friend");
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, relations);
 
     assertNull(result.getName());
     assertNull(result.getFriend());
+    assertNull(result.getNickNames());
     assertNull(result.getClassMates());
   }
 
@@ -232,6 +242,7 @@ public class DinaMapperTest {
       .build();
     return StudentDto
       .builder()
+      .nickNames(Arrays.asList("d","z","q").toArray(new String[0]))
       .name(RandomStringUtils.random(5, true, false))
       .iq(RandomUtils.nextInt(5, 1000))
       .customField(RandomStringUtils.random(5, true, false))
@@ -247,6 +258,7 @@ public class DinaMapperTest {
       .build();
     return Student.builder()
       .name(RandomStringUtils.random(5, true, false))
+      .nickNames(Arrays.asList("a","b","c").toArray(new String[0]))
       .iq(RandomUtils.nextInt(5, 1000))
       .customField(customField)
       .classMates(new ArrayList<>())
