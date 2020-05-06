@@ -107,6 +107,23 @@ public class DinaMapperTest {
   }
 
   @Test
+  public void toDto_AllSelectedButNull_NullsMap() {
+    Student entity = createEntity();
+    entity.setName(null);
+    entity.setFriend(null);
+    entity.setClassMates(null);
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(Student.class, ImmutableSet.of("name", "iq"));
+    Set<String> relations = ImmutableSet.of("classMates", "friend");
+
+    StudentDto dto = mapper.toDto(entity, selectedFieldPerClass, relations);
+
+    assertNull(dto.getName());
+    assertNull(dto.getCustomField());
+    assertNull(dto.getFriend());
+  }
+
+  @Test
   public void applyDtoToEntity_BaseAttributesTest_SelectedFieldsMapped() {
     Student result = new Student();
     StudentDto dtoToMap = createDTO();

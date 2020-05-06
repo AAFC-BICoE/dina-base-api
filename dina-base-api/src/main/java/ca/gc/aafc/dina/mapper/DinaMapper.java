@@ -148,15 +148,19 @@ public class DinaMapper<D, E> {
     Map<Class<?>, Set<String>> selectedFieldPerClass,
     String fieldName
   ) {
-    Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, fieldName);
-    Class<?> targetRelationType = PropertyUtils.getPropertyType(target, fieldName);
-
-    Object targetRelationObject = targetRelationType.getConstructor().newInstance();
     Object sourceRelationObject = PropertyUtils.getProperty(source, fieldName);
+    Object targetRelationObject = null;
 
-    Set<String> selectedRelationFields = selectedFieldPerClass.getOrDefault(sourceRelationType, new HashSet<>());
+    if (sourceRelationObject != null) {
+      Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, fieldName);
+      Class<?> targetRelationType = PropertyUtils.getPropertyType(target, fieldName);
 
-    mapFieldsToTarget(sourceRelationObject, targetRelationObject, selectedRelationFields);
+      targetRelationObject = targetRelationType.getConstructor().newInstance();
+
+      Set<String> selectedRelationFields = selectedFieldPerClass.getOrDefault(sourceRelationType, new HashSet<>());
+
+      mapFieldsToTarget(sourceRelationObject, targetRelationObject, selectedRelationFields);
+    }
     PropertyUtils.setProperty(target, fieldName, targetRelationObject);
   }
 
