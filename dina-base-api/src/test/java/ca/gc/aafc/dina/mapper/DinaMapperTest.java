@@ -119,8 +119,8 @@ public class DinaMapperTest {
     StudentDto dto = mapper.toDto(entity, selectedFieldPerClass, relations);
 
     assertNull(dto.getName());
-    assertNull(dto.getCustomField());
     assertNull(dto.getFriend());
+    assertNull(dto.getClassMates());
   }
 
   @Test
@@ -202,6 +202,26 @@ public class DinaMapperTest {
     assertNull(result.getCustomField());
     assertNull(result.getFriend());
     assertEquals(0, result.getIq());
+  }
+
+  @Test
+  public void applyDtoToEntity_AllSelectedButNull_NullsMap() {
+    Student result = createEntity();
+
+    StudentDto dtoToMap = createDTO();
+    dtoToMap.setName(null);
+    dtoToMap.setFriend(null);
+    dtoToMap.setClassMates(null);
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
+      StudentDto.class, ImmutableSet.of("name", "iq"));
+    Set<String> relations = ImmutableSet.of("classMates", "friend");
+
+    mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, relations);
+
+    assertNull(result.getName());
+    assertNull(result.getFriend());
+    assertNull(result.getClassMates());
   }
 
   private static StudentDto createDTO() {
