@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -292,15 +293,10 @@ public class DinaMapper<D, E> {
    * @return - true if the given field has custom resolvers.
    */
   private boolean hasCustomFieldResolver(String fieldName) {
-    boolean hasDtoResolvers = !dtoResolvers.stream()
-        .filter(cfr->StringUtils.equalsIgnoreCase(fieldName, cfr.getField()))
-        .collect(Collectors.toList())
-        .isEmpty();
-    boolean hasEntityResolvers = !entityResolvers.stream()
+    return !Stream.concat(dtoResolvers.stream(), entityResolvers.stream())
         .filter(cfr -> StringUtils.equalsIgnoreCase(fieldName, cfr.getField()))
         .collect(Collectors.toList())
         .isEmpty();
-    return hasDtoResolvers || hasEntityResolvers;
   }
 
   /**
