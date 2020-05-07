@@ -15,6 +15,12 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
+/**
+ * DTO to Entity Bean mapper. Used to map fields between DTO's and Entities.
+ *
+ * @param <D> - Type of Dto
+ * @param <E> - Type of Entity
+ */
 public class DinaMapper<D, E> {
 
   private final Class<D> dtoClass;
@@ -35,6 +41,29 @@ public class DinaMapper<D, E> {
     this.entityResolvers = entityResolvers;
   }
 
+  /**
+   * <p>
+   * Returns a new dto mapped with the fields of a given entity. The given
+   * selected fields per class map which fields to apply from a source class to a
+   * target. A set of given relation field names designates which fields are
+   * mapped as relations.
+   * <p>
+   *
+   * <p>
+   * The base attributes of a source are assumed to be of the same type as the
+   * target. Relations fields of a source are NOT expected to be of the same type.
+   * <p>
+   *
+   * <p>
+   * Selected fields per class should also contain the relations source class and
+   * target fields to map.
+   * <p>
+   * 
+   * @param entity                - source of the mapping
+   * @param selectedFieldPerClass - selected fields of the relations source class
+   * @param relations             - Set of relation field names
+   * @return - A new instance of a class with the mapped fields
+   */
   @SneakyThrows
   public D toDto(
     @NonNull E entity,
@@ -64,6 +93,28 @@ public class DinaMapper<D, E> {
     return dto;
   }
 
+  /**
+   * <p>
+   * Apply the fields of a given dto to a given entity. The given selected fields
+   * per class map which fields to apply from a source class to a target. A set of
+   * given relation field names designates which fields are mapped as relations.
+   * <p>
+   *
+   * <p>
+   * The base attributes of a source are assumed to be of the same type as the
+   * target. Relations fields of a source are NOT expected to be of the same type.
+   * <p>
+   *
+   * <p>
+   * Selected fields per class should also contain the relations source class and
+   * target fields to map.
+   * <p>
+   *
+   * @param dto                   - source of the mapping
+   * @param entity                - target of the mapping
+   * @param selectedFieldPerClass - selected fields of the relations source class
+   * @param relations             - Set of relation field names
+   */
   @SneakyThrows
   public void applyDtoToEntity(
     @NonNull D dto,
@@ -91,6 +142,18 @@ public class DinaMapper<D, E> {
     mapCustomFieldsToTarget(dto, entity, selectedResolvers);
   }
 
+  /**
+   * Maps the relation of a given source to a given target. The relation is
+   * designated from the given field name and only the given fields per relation
+   * source class are mapped.
+   *
+   * @param <T>                   - Type of target
+   * @param <S>                   - Type of source
+   * @param source                - source of the mapping
+   * @param target                - target of the mapping
+   * @param selectedFieldPerClass - selected fields of the relations source class
+   * @param fieldName             - field name of the relation
+   */
   @SneakyThrows
   private static <T, S> void mapRelationsToTarget(
     S source,
@@ -109,6 +172,19 @@ public class DinaMapper<D, E> {
     }
   }
 
+  /**
+   * Maps the relation of a given source to a given target. The relation is
+   * designated from the given field name and only the given fields per relation
+   * source class are mapped. Relations are assumed to be {@link Collection}
+   * objects.
+   *
+   * @param <T>                   - Type of target
+   * @param <S>                   - Type of source
+   * @param source                - source of the mapping
+   * @param target                - target of the mapping
+   * @param selectedFieldPerClass - selected fields of the relations source class
+   * @param fieldName             - field name of the relation
+   */
   @SneakyThrows
   private static <T, S> void mapCollectionRelation(
     S source,
@@ -141,6 +217,19 @@ public class DinaMapper<D, E> {
     PropertyUtils.setProperty(target, fieldName, targetCollection);
   }
 
+  /**
+   * Maps the relation of a given source to a given target. The relation is
+   * designated from the given field name and only the given fields per relation
+   * source class are mapped. Single relations are objects which are not
+   * collections or arrays.
+   *
+   * @param <T>                   - Type of target
+   * @param <S>                   - Type of source
+   * @param source                - source of the mapping
+   * @param target                - target of the mapping
+   * @param selectedFieldPerClass - selected fields of the relations source class
+   * @param fieldName             - field name of the relation
+   */
   @SneakyThrows
   private static <T, S> void mapSingleRelation(
     S source,
@@ -164,6 +253,15 @@ public class DinaMapper<D, E> {
     PropertyUtils.setProperty(target, fieldName, targetRelationObject);
   }
 
+  /**
+   * Maps the given fields of a given source to a given target.
+   *
+   * @param <T>            - Type of target
+   * @param <S>            - Type of source
+   * @param source         - source of the mapping
+   * @param target         - target of the mapping
+   * @param selectedFields - Selected fields to apply
+   */
   @SneakyThrows
   private static <T, S> void mapFieldsToTarget(S source, T target, Set<String> selectedFields) {
     for (String attribute : selectedFields) {
@@ -171,6 +269,15 @@ public class DinaMapper<D, E> {
     }
   }
 
+  /**
+   * Maps the custom field resolvers of a given source to a given target.
+   *
+   * @param <T>       - Type of target
+   * @param <S>       - Type of source
+   * @param source    - source of the mapping
+   * @param target    - target of the mapping
+   * @param resolvers - custom resolvers to apply
+   */
   @SneakyThrows
   private static <T, S> void mapCustomFieldsToTarget(S source, T target, List<CustomFieldResolverSpec<S>> resolvers) {
     for (CustomFieldResolverSpec<S> cfr : resolvers) {
@@ -181,7 +288,7 @@ public class DinaMapper<D, E> {
 
   /**
    * Returns true if the given field name has a custom resolver
-   * 
+   *
    * @param fieldName - field name of field to check
    * @return - true if the given field has custom resolvers.
    */
@@ -197,6 +304,17 @@ public class DinaMapper<D, E> {
     return hasDtoResolvers || hasEntityResolvers;
   }
 
+  /**
+   * Returns the class of the paramterized type at the first position of a given
+   * class's given field.
+   *
+   * given class is assumed to be a {@link ParameterizedType}
+   *
+   * @param <T>
+   * @param source    given class
+   * @param fieldName field name of the given class to parse
+   * @return class of the paramterized type at the first position
+   */
   @SneakyThrows
   private static <T> Class<?> getGenericType(Class<?> source, String fieldName) {
     ParameterizedType genericType = (ParameterizedType) source
