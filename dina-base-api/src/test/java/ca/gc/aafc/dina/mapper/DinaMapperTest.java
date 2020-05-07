@@ -19,9 +19,11 @@ import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import ca.gc.aafc.dina.dto.StudentDto;
 import ca.gc.aafc.dina.entity.ComplexObject;
-import ca.gc.aafc.dina.entity.Student;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 public class DinaMapperTest {
 
@@ -289,5 +291,51 @@ public class DinaMapperTest {
           null : ComplexObject.builder().name(student.getCustomField()).build())
         .build();
     entityResolvers.add(customFieldResolver);
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static final class StudentDto {
+
+    private String name;
+
+    private int iq;
+
+    private String[] nickNames;
+
+    // Relation to test
+    private StudentDto friend;
+
+    // Custom Resolved Field to test
+    private String customField;
+
+    // Many to - Relation to test
+    private List<StudentDto> classMates;
+
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static final class Student {
+
+    private String name;
+
+    private int iq;
+
+    private String[] nickNames;
+
+    // Relation to test
+    private Student friend;
+
+    // Custom Resolved Field to test
+    private ComplexObject customField;
+
+    // Many to - Relation to test
+    private List<Student> classMates;
+
   }
 }
