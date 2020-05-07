@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,8 +34,6 @@ import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.queryspec.IncludeFieldSpec;
 import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.QuerySpec;
-import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -464,16 +461,6 @@ public class JpaDtoMapper {
         consumer.accept(spec);
       }
     }
-  }
-
-  /**
-   * @param <E> Entity type
-   */
-  @Builder
-  @Getter
-  public static class CustomFieldResolverSpec<E> {
-    @NonNull private String field;
-    @NonNull private Function<E, Object> resolver;
   }
 
 }
