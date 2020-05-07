@@ -192,8 +192,7 @@ public class DinaMapper<D, E> {
     Map<Class<?>, Set<String>> selectedFieldPerClass,
     String fieldName
   ) {
-    @SuppressWarnings("unchecked")
-    Collection<Object> sourceCollection = (Collection<Object>) PropertyUtils.getProperty(source, fieldName);
+    Collection<?> sourceCollection = (Collection<?>) PropertyUtils.getProperty(source, fieldName);
     Collection<Object> targetCollection = null;
 
     if (sourceCollection != null) {
