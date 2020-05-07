@@ -17,7 +17,8 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 
 /**
- * DTO to Entity Bean mapper. Used to map fields between DTO's and Entities.
+ * DTO to Entity Bean mapper (and vice-versa). Used to map fields between DTO's
+ * and Entities.
  *
  * @param <D> - Type of Dto
  * @param <E> - Type of Entity
@@ -61,7 +62,7 @@ public class DinaMapper<D, E> {
    * <p>
    * 
    * @param entity                - source of the mapping
-   * @param selectedFieldPerClass - selected fields of the relations source class
+   * @param selectedFieldPerClass - selected fields of source classes to map
    * @param relations             - Set of relation field names
    * @return - A new instance of a class with the mapped fields
    */
@@ -113,7 +114,7 @@ public class DinaMapper<D, E> {
    *
    * @param dto                   - source of the mapping
    * @param entity                - target of the mapping
-   * @param selectedFieldPerClass - selected fields of the relations source class
+   * @param selectedFieldPerClass - selected fields of source classes to map
    * @param relations             - Set of relation field names
    */
   @SneakyThrows
