@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.jpa;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.UUID;
@@ -38,6 +39,24 @@ public class DinaServiceTest {
     assertEquals(expected.getUuid(), result.getUuid());
     assertEquals(expected.getName(), result.getName());
     assertEquals(expected.getLocation(), result.getLocation());
+  }
+
+  @Test
+  public void update_ValidInput_EntityUpdated() {
+    String expectedName = RandomStringUtils.random(5);
+    String expectedLocation = RandomStringUtils.random(5);
+
+    Department expected = persistDepartment();
+    assertNotEquals(expectedName, expected.getName());
+    assertNotEquals(expectedLocation, expected.getLocation());
+
+    expected.setName(expectedName);
+    expected.setLocation(expectedLocation);
+    serviceUnderTest.update(expected);
+
+    Department result = serviceUnderTest.findOne(expected.getUuid(), Department.class);
+    assertEquals(expectedName, result.getName());
+    assertEquals(expectedLocation, result.getLocation());
   }
 
   @Test

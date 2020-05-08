@@ -24,7 +24,9 @@ public class DinaService<E extends DinaEntity> {
   }
 
   public E update(E entity) {
-    return null;// TODO
+    return baseDAO.createWithEntityManager((em) -> {
+      return em.merge(entity);
+    });
   }
 
   public void delete(E entity) {
