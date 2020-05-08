@@ -20,7 +20,8 @@ public class DinaService<E extends DinaEntity> {
   private final BaseDAO baseDAO;
 
   public E create(E entity) {
-    return null;// TODO
+    baseDAO.save(entity);
+    return entity;
   }
 
   public E update(E entity) {
