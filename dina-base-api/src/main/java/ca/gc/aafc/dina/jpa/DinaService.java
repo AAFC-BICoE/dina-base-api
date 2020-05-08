@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.jpa;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -36,8 +35,8 @@ public class DinaService<E extends DinaEntity> {
     return null;// TODO
   }
 
-  public E findOne(UUID uuid) {
-    return null;// TODO
+  public E findOne(Object naturalId, Class<E> entityClass) {
+    return baseDAO.findOneByNaturalId(naturalId, entityClass);
   }
 
   public E preCreate(E entity) {

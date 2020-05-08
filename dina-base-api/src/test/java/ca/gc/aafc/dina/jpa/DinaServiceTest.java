@@ -1,7 +1,10 @@
 package ca.gc.aafc.dina.jpa;
 
 import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -28,9 +31,22 @@ public class DinaServiceTest {
     assertNotNull(result.getId());
   }
 
+  @Test
+  public void findOne_ValidInput_FindsOne() {
+    Department expected = createDepartment();
+    serviceUnderTest.create(expected);
+
+    Department result = serviceUnderTest.findOne(expected.getUuid(), Department.class);
+    assertEquals(expected.getId(), result.getId());
+    assertEquals(expected.getUuid(), result.getUuid());
+    assertEquals(expected.getName(), result.getName());
+    assertEquals(expected.getLocation(), result.getLocation());
+  }
+
   private static Department createDepartment() {
     return Department
       .builder()
+      .uuid(UUID.randomUUID())
       .name(RandomStringUtils.random(5))
       .location(RandomStringUtils.random(5))
       .build();
