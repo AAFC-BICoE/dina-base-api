@@ -26,11 +26,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Department {
+public class Department implements DinaEntity {
 
   @Id
   @GeneratedValue
-  private Integer id;
+  private Long id;
 
   @NaturalId
   private UUID uuid;
