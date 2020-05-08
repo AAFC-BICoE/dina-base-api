@@ -25,16 +25,13 @@ public class DinaServiceTest {
 
   @Test
   public void create_ValidEntity_EntityPersists() {
-    Department result = createDepartment();
-    assertNull(result.getId());
-    serviceUnderTest.create(result);
+    Department result = persistDepartment();
     assertNotNull(result.getId());
   }
 
   @Test
   public void findOne_ValidInput_FindsOne() {
-    Department expected = createDepartment();
-    serviceUnderTest.create(expected);
+    Department expected = persistDepartment();
 
     Department result = serviceUnderTest.findOne(expected.getUuid(), Department.class);
     assertEquals(expected.getId(), result.getId());
@@ -45,12 +42,17 @@ public class DinaServiceTest {
 
   @Test
   public void delete_ValidInput_EntityDeleted() {
-    Department result = createDepartment();
-    serviceUnderTest.create(result);
-    assertNotNull(result.getId());
+    Department result = persistDepartment();
 
     serviceUnderTest.delete(result);
     assertNull(serviceUnderTest.findOne(result.getUuid(), Department.class));
+  }
+
+  private Department persistDepartment() {
+    Department result = createDepartment();
+    assertNull(result.getId());
+    serviceUnderTest.create(result);
+    return result;
   }
 
   private static Department createDepartment() {
