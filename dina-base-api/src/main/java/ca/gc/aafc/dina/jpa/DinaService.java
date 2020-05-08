@@ -4,9 +4,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import ca.gc.aafc.dina.entity.DinaEntity;
+import javax.inject.Inject;
 
+import org.springframework.stereotype.Component;
+
+import ca.gc.aafc.dina.entity.DinaEntity;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+@Component
+@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class DinaService<E extends DinaEntity> {
+
+  @NonNull
+  private final BaseDAO baseDAO;
 
   public E create(E entity) {
     return null;// TODO
