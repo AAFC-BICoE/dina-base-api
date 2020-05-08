@@ -43,6 +43,16 @@ public class DinaServiceTest {
     assertEquals(expected.getLocation(), result.getLocation());
   }
 
+  @Test
+  public void delete_ValidInput_EntityDeleted() {
+    Department result = createDepartment();
+    serviceUnderTest.create(result);
+    assertNotNull(result.getId());
+
+    serviceUnderTest.delete(result);
+    assertNull(serviceUnderTest.findOne(result.getUuid(), Department.class));
+  }
+
   private static Department createDepartment() {
     return Department
       .builder()

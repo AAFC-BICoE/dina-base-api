@@ -28,7 +28,7 @@ public class DinaService<E extends DinaEntity> {
   }
 
   public void delete(E entity) {
-    // TODO
+    baseDAO.delete(entity);
   }
 
   public List<E> findAllWhere(E entity, Map<String, Object> where) {
