@@ -36,7 +36,6 @@ public class Department implements DinaEntity {
   private UUID uuid;
 
   @Size(min = 1, max = 50)
-  @NotNull
   private String name;
   
   @ManyToOne
