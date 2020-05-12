@@ -19,6 +19,8 @@ import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.filter.RsqlFilterHandler;
 import ca.gc.aafc.dina.filter.SimpleFilterHandler;
+import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.jpa.DinaServiceTest.DinaServiceTestImplementation;
 import ca.gc.aafc.dina.mapper.CustomFieldResolverSpec;
 import ca.gc.aafc.dina.mapper.JpaDtoMapper;
 import ca.gc.aafc.dina.repository.JpaDtoRepository;
@@ -126,6 +128,11 @@ public class TestConfiguration {
       ),
       metaInformationProvider
     );
+  }
+
+  @Bean
+  public DinaServiceTestImplementation serviceUnderTest(BaseDAO baseDAO) {
+    return new DinaServiceTestImplementation(baseDAO);
   }
 
 }

@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-public class DinaService<E extends DinaEntity> {
+public abstract class DinaService<E extends DinaEntity> {
 
   @NonNull
   private final BaseDAO baseDAO;
@@ -65,15 +65,10 @@ public class DinaService<E extends DinaEntity> {
     return baseDAO.findOneByNaturalId(naturalId, entityClass);
   }
 
-  public E preCreate(E entity) {
-    return null;// TODO
-  }
+  public abstract E preCreate(E entity);
 
-  public E preUpdate(E entity) {
-    return null;// TODO
-  }
+  public abstract E preUpdate(E entity);
 
-  public void preDelete(E entity) {
-    // TODO
-  }
+  public abstract void preDelete(E entity);
+
 }

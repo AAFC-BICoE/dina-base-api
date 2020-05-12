@@ -22,13 +22,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import ca.gc.aafc.dina.TestConfiguration;
 import ca.gc.aafc.dina.entity.Department;
+import lombok.NonNull;
 
 @Transactional
 @SpringBootTest(classes = TestConfiguration.class)
 public class DinaServiceTest {
 
   @Inject
-  private DinaService<Department> serviceUnderTest;
+  private DinaServiceTestImplementation serviceUnderTest;
 
   @Test
   public void create_ValidEntity_EntityPersists() {
@@ -139,6 +140,31 @@ public class DinaServiceTest {
       toPersist.setName(name);
       serviceUnderTest.create(toPersist);
     }
+  }
+
+  public static class DinaServiceTestImplementation extends DinaService<Department> {
+
+    public DinaServiceTestImplementation(@NonNull BaseDAO baseDAO) {
+      super(baseDAO);
+    }
+
+    @Override
+    public Department preCreate(Department entity) {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    @Override
+    public Department preUpdate(Department entity) {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    @Override
+    public void preDelete(Department entity) {
+      // TODO Auto-generated method stub
+    }
+
   }
 
 }
