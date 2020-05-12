@@ -22,6 +22,7 @@ import ca.gc.aafc.dina.TestConfiguration;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.entity.Employee;
 import io.crnk.core.engine.information.resource.ResourceInformation;
+import io.crnk.core.engine.query.QueryContext;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
@@ -129,7 +130,7 @@ public class RsqlFilterHandlerIT {
     Map<String, Set<String>> paramMap = new HashMap<>();
     paramMap.put("filter[rsql]", Sets.newHashSet("name==asd,asd,asd,asd"));
     
-    QuerySpec querySpec = querySpecUrlMapper.deserialize(empInfo, paramMap);
+    QuerySpec querySpec = querySpecUrlMapper.deserialize(empInfo, paramMap, new QueryContext());
     
     assertEquals(
         "name==asd,asd,asd,asd",
