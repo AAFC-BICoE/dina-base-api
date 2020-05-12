@@ -176,6 +176,17 @@ public class BaseDAO {
   }
 
   /**
+   * Merge the state of a given entity into the current persistence context.
+   * 
+   * @param <E>    Type of the entity
+   * @param entity entity to update
+   * @return returns the managed instance the state was merged to.
+   */
+  public <E> E update(E entity) {
+    return entityManager.merge(entity);
+  }
+
+  /**
    * Delete the provided entity.
    * 
    * @param entity

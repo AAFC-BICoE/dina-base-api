@@ -10,6 +10,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -90,6 +91,22 @@ public class BaseDAOIT {
 
     assertNull(baseDAO.findOneByDatabaseId(generatedId, Department.class));
   }
-  
-  
+
+  @Test
+  public void update_OnUpdate_EntityUpdated() {
+    String expectedName = RandomStringUtils.random(5);
+    String expectedLocation = RandomStringUtils.random(5);
+
+    Department dep = Department.builder().name("dep1").location("dep location").build();
+    baseDAO.save(dep);
+
+    dep.setName(expectedName);
+    dep.setLocation(expectedLocation);
+    baseDAO.update(dep);
+
+    Department result = baseDAO.findOneByNaturalId(dep.getUuid(), Department.class);
+    assertEquals(expectedName, result.getName());
+    assertEquals(expectedLocation, result.getLocation());
+  }
+
 }
