@@ -118,9 +118,16 @@ public class DinaServiceTest {
     assertNull(serviceUnderTest.findOne(result.getUuid(), Department.class));
   }
 
+  @Test
+  public void preCreate_SetUuid_RunsBeforeCreate() {
+    Department result = persistDepartment();
+    assertNotNull(result.getUuid());
+  }
+
   private Department persistDepartment() {
     Department result = createDepartment();
     assertNull(result.getId());
+    assertNull(result.getUuid());
     serviceUnderTest.create(result);
     return result;
   }
@@ -128,7 +135,6 @@ public class DinaServiceTest {
   private static Department createDepartment() {
     return Department
       .builder()
-      .uuid(UUID.randomUUID())
       .name(RandomStringUtils.random(5))
       .location(RandomStringUtils.random(5))
       .build();
@@ -150,8 +156,8 @@ public class DinaServiceTest {
 
     @Override
     public Department preCreate(Department entity) {
-      // TODO Auto-generated method stub
-      return null;
+      entity.setUuid(UUID.randomUUID());
+      return entity;
     }
 
     @Override
