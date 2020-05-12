@@ -48,7 +48,7 @@ public abstract class DinaService<E extends DinaEntity> {
    */
   public E update(E entity) {
     preUpdate(entity);
-    return baseDAO.createWithEntityManager(em -> em.merge(entity));
+    return baseDAO.update(entity);
   }
 
   /**
