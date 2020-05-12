@@ -177,13 +177,13 @@ public class DinaServiceTest {
     }
 
     @Override
-    public Department preCreate(Department entity) {
+    protected Department preCreate(Department entity) {
       entity.setUuid(UUID.randomUUID());
       return entity;
     }
 
     @Override
-    public Department preUpdate(Department entity) {
+    protected Department preUpdate(Department entity) {
       DepartmentType type = DepartmentType.builder().name("name").build();
       baseDAO.save(type);
       entity.setDepartmentType(type);
@@ -191,7 +191,7 @@ public class DinaServiceTest {
     }
 
     @Override
-    public void preDelete(Department entity) {
+    protected void preDelete(Department entity) {
       entity.setName(null);
       entity.setLocation(null);
     }

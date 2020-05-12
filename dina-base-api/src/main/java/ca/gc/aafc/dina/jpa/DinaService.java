@@ -68,10 +68,10 @@ public abstract class DinaService<E extends DinaEntity> {
     return baseDAO.findOneByNaturalId(naturalId, entityClass);
   }
 
-  public abstract E preCreate(E entity);
+  protected abstract E preCreate(E entity);
 
-  public abstract E preUpdate(E entity);
+  protected abstract E preUpdate(E entity);
 
-  public abstract void preDelete(E entity);
+  protected abstract void preDelete(E entity);
 
 }
