@@ -35,6 +35,7 @@ public abstract class DinaService<E extends DinaEntity> {
   }
 
   public void delete(E entity) {
+    preDelete(entity);
     baseDAO.delete(entity);
   }
 

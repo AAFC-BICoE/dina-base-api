@@ -133,6 +133,16 @@ public class DinaServiceTest {
     assertNotNull(result.getDepartmentType());
   }
 
+  @Test
+  public void preDelete_SetNameAndLocationNull_RunsBeforeDelete() {
+    Department result = persistDepartment();
+    assertNotNull(result.getName());
+    assertNotNull(result.getLocation());
+    serviceUnderTest.delete(result);
+    assertNull(result.getName());
+    assertNull(result.getLocation());
+  }
+
   private Department persistDepartment() {
     Department result = createDepartment();
     assertNull(result.getId());
@@ -182,7 +192,8 @@ public class DinaServiceTest {
 
     @Override
     public void preDelete(Department entity) {
-      // TODO Auto-generated method stub
+      entity.setName(null);
+      entity.setLocation(null);
     }
 
   }
