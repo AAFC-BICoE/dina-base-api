@@ -22,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import ca.gc.aafc.dina.TestConfiguration;
 import ca.gc.aafc.dina.entity.Department;
+import ca.gc.aafc.dina.entity.DepartmentType;
 import lombok.NonNull;
 
 @Transactional
@@ -124,6 +125,14 @@ public class DinaServiceTest {
     assertNotNull(result.getUuid());
   }
 
+  @Test
+  public void preUpdate_SetDepartType_RunsBeforeUpdate() {
+    Department result = persistDepartment();
+    assertNull(result.getDepartmentType());
+    serviceUnderTest.update(result);
+    assertNotNull(result.getDepartmentType());
+  }
+
   private Department persistDepartment() {
     Department result = createDepartment();
     assertNull(result.getId());
@@ -150,6 +159,9 @@ public class DinaServiceTest {
 
   public static class DinaServiceTestImplementation extends DinaService<Department> {
 
+    @Inject
+    private BaseDAO baseDAO;
+
     public DinaServiceTestImplementation(@NonNull BaseDAO baseDAO) {
       super(baseDAO);
     }
@@ -162,8 +174,10 @@ public class DinaServiceTest {
 
     @Override
     public Department preUpdate(Department entity) {
-      // TODO Auto-generated method stub
-      return null;
+      DepartmentType type = DepartmentType.builder().name("name").build();
+      baseDAO.save(type);
+      entity.setDepartmentType(type);
+      return entity;
     }
 
     @Override
