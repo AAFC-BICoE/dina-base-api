@@ -80,25 +80,20 @@ public abstract class DinaService<E extends DinaEntity> {
     Objects.requireNonNull(entityClass);
     Objects.requireNonNull(where);
 
-    return baseDAO.createWithEntityManager(em -> {
-      CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
-      CriteriaQuery<E> criteria = criteriaBuilder.createQuery(entityClass);
-      Root<E> root = criteria.from(entityClass);
+    CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
+    CriteriaQuery<E> criteria = criteriaBuilder.createQuery(entityClass);
+    Root<E> root = criteria.from(entityClass);
 
-      Predicate[] predicates = where.entrySet()
-        .stream()
-        .map(entry -> {
-            if (entry.getValue() == null) {
-              return criteriaBuilder.isNull(root.get(entry.getKey()));
-            }
-            return criteriaBuilder.equal(root.get(entry.getKey()), entry.getValue());
-        })
-        .toArray(Predicate[]::new);
+    Predicate[] predicates = where.entrySet().stream().map(entry -> {
+      if (entry.getValue() == null) {
+        return criteriaBuilder.isNull(root.get(entry.getKey()));
+      }
+      return criteriaBuilder.equal(root.get(entry.getKey()), entry.getValue());
+    }).toArray(Predicate[]::new);
 
-      criteria.where(predicates).select(root);
+    criteria.where(predicates).select(root);
 
-      return em.createQuery(criteria).getResultList();
-    });
+    return baseDAO.getResultList(criteria);
   }
 
   /**
