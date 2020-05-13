@@ -93,7 +93,7 @@ public abstract class DinaService<E extends DinaEntity> {
 
     criteria.where(predicates).select(root);
 
-    return baseDAO.getResultList(criteria);
+    return baseDAO.resultListFromCriteria(criteria);
   }
 
   /**

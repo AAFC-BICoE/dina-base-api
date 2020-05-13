@@ -256,7 +256,7 @@ public class BaseDAO {
    * @param criteria - criteria to generate the typed query
    * @return List of entities
    */
-  public <E> List<E> getResultList(CriteriaQuery<E> criteria) {
+  public <E> List<E> resultListFromCriteria(CriteriaQuery<E> criteria) {
     return entityManager.createQuery(criteria).getResultList();
   }
 
