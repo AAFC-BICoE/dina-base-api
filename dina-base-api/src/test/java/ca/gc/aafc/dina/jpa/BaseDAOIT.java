@@ -35,7 +35,7 @@ public class BaseDAOIT {
   public void findOne_onValidIdentifier_returnsEntity() {
     Department dep = Department.builder().name("dep1").location("dep location").build();
     
-    baseDAO.save(dep);
+    baseDAO.create(dep);
     
     Long generatedId = dep.getId();
     UUID generatedUUID = dep.getUuid();
@@ -49,10 +49,10 @@ public class BaseDAOIT {
   public void findOneByProperty_onValidProperty_returnsEntity() {
     
     Department dep = Department.builder().name("dep1").location("dep location").build();
-    baseDAO.save(dep);
+    baseDAO.create(dep);
     
     Department dep2 = Department.builder().name("dep2").location("dep2 location").build();
-    baseDAO.save(dep2);
+    baseDAO.create(dep2);
     
     Long generatedId = dep2.getId();
     
@@ -64,10 +64,10 @@ public class BaseDAOIT {
   @Test
   public void setRelationshipUsing_onExistingIdentifer_relationshipIsSet () {
     Department dep = Department.builder().name("dep1").location("dep location").build();
-    baseDAO.save(dep);
+    baseDAO.create(dep);
     
     DepartmentType depType = DepartmentType.builder().name("type1").build();
-    baseDAO.save(depType);
+    baseDAO.create(depType);
     
     UUID depTypeUUID = depType.getUuid();
     
@@ -80,9 +80,9 @@ public class BaseDAOIT {
   }
 
   @Test
-  public void saveDelete_onSaveAndDelete_entitySavedAndDeleted() {
+  public void createDelete_onCreateAndDelete_entitySavedAndDeleted() {
     Department dep = Department.builder().name("dep1").location("dep location").build();
-    baseDAO.save(dep);
+    baseDAO.create(dep);
 
     Long generatedId = dep.getId();
     assertNotNull(generatedId);
@@ -98,7 +98,7 @@ public class BaseDAOIT {
     String expectedLocation = RandomStringUtils.random(5);
 
     Department dep = Department.builder().name("dep1").location("dep location").build();
-    baseDAO.save(dep);
+    baseDAO.create(dep);
 
     dep.setName(expectedName);
     dep.setLocation(expectedLocation);

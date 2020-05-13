@@ -36,7 +36,7 @@ public abstract class DinaService<E extends DinaEntity> {
    */
   public E create(E entity) {
     preCreate(entity);
-    baseDAO.save(entity);
+    baseDAO.create(entity);
     return entity;
   }
 

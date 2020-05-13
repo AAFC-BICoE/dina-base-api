@@ -185,7 +185,7 @@ public class DinaServiceTest {
     @Override
     protected Department preUpdate(Department entity) {
       DepartmentType type = DepartmentType.builder().name("name").build();
-      baseDAO.save(type);
+      baseDAO.create(type);
       entity.setDepartmentType(type);
       return entity;
     }

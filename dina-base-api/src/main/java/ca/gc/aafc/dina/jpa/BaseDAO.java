@@ -171,7 +171,7 @@ public class BaseDAO {
    * 
    * @param entity
    */
-  public void save(Object entity) {
+  public void create(Object entity) {
     entityManager.persist(entity);
   }
 
