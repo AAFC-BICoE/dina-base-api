@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.jpa;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -16,6 +17,8 @@ import javax.persistence.PersistenceUnitUtil;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
@@ -171,8 +174,19 @@ public class BaseDAO {
    * 
    * @param entity
    */
-  public void save(Object entity) {
+  public void create(Object entity) {
     entityManager.persist(entity);
+  }
+
+  /**
+   * Merge the state of a given entity into the current persistence context.
+   * 
+   * @param <E>    Type of the entity
+   * @param entity entity to update
+   * @return returns the managed instance the state was merged to.
+   */
+  public <E> E update(E entity) {
+    return entityManager.merge(entity);
   }
 
   /**
@@ -223,6 +237,27 @@ public class BaseDAO {
         .entity(entityClass)
         .getId(Serializable.class)
         .getName();
+  }
+
+  /**
+   * returns a {@link CriteriaBuilder} for the creation of {@link CriteriaQuery},
+   * {@link Predicate}, {@link Expression}, and compound selections.
+   * 
+   * @return {@link CriteriaBuilder}
+   */
+  public CriteriaBuilder getCriteriaBuilder() {
+    return entityManager.getCriteriaBuilder();
+  }
+
+  /**
+   * Returns a List of entities based off a given criteria.
+   *
+   * @param <E>      - Type of result list
+   * @param criteria - criteria to generate the typed query
+   * @return List of entities
+   */
+  public <E> List<E> resultListFromCriteria(CriteriaQuery<E> criteria) {
+    return entityManager.createQuery(criteria).getResultList();
   }
 
 }

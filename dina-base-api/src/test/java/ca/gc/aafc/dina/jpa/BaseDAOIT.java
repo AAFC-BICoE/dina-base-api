@@ -10,6 +10,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -34,9 +35,9 @@ public class BaseDAOIT {
   public void findOne_onValidIdentifier_returnsEntity() {
     Department dep = Department.builder().name("dep1").location("dep location").build();
     
-    baseDAO.save(dep);
+    baseDAO.create(dep);
     
-    Integer generatedId = dep.getId();
+    Long generatedId = dep.getId();
     UUID generatedUUID = dep.getUuid();
     assertNotNull(generatedId);
     
@@ -48,12 +49,12 @@ public class BaseDAOIT {
   public void findOneByProperty_onValidProperty_returnsEntity() {
     
     Department dep = Department.builder().name("dep1").location("dep location").build();
-    baseDAO.save(dep);
+    baseDAO.create(dep);
     
     Department dep2 = Department.builder().name("dep2").location("dep2 location").build();
-    baseDAO.save(dep2);
+    baseDAO.create(dep2);
     
-    Integer generatedId = dep2.getId();
+    Long generatedId = dep2.getId();
     
     assertEquals(generatedId, baseDAO.findOneByProperty(Department.class, "name", "dep2").getId());
     assertNotEquals(generatedId, baseDAO.findOneByProperty(Department.class, "name", "dep1").getId());
@@ -63,10 +64,10 @@ public class BaseDAOIT {
   @Test
   public void setRelationshipUsing_onExistingIdentifer_relationshipIsSet () {
     Department dep = Department.builder().name("dep1").location("dep location").build();
-    baseDAO.save(dep);
+    baseDAO.create(dep);
     
     DepartmentType depType = DepartmentType.builder().name("type1").build();
-    baseDAO.save(depType);
+    baseDAO.create(depType);
     
     UUID depTypeUUID = depType.getUuid();
     
@@ -79,17 +80,33 @@ public class BaseDAOIT {
   }
 
   @Test
-  public void saveDelete_onSaveAndDelete_entitySavedAndDeleted() {
+  public void createDelete_onCreateAndDelete_entitySavedAndDeleted() {
     Department dep = Department.builder().name("dep1").location("dep location").build();
-    baseDAO.save(dep);
+    baseDAO.create(dep);
 
-    Integer generatedId = dep.getId();
+    Long generatedId = dep.getId();
     assertNotNull(generatedId);
 
     baseDAO.delete(dep);
 
     assertNull(baseDAO.findOneByDatabaseId(generatedId, Department.class));
   }
-  
-  
+
+  @Test
+  public void update_OnUpdate_EntityUpdated() {
+    String expectedName = RandomStringUtils.random(5);
+    String expectedLocation = RandomStringUtils.random(5);
+
+    Department dep = Department.builder().name("dep1").location("dep location").build();
+    baseDAO.create(dep);
+
+    dep.setName(expectedName);
+    dep.setLocation(expectedLocation);
+    baseDAO.update(dep);
+
+    Department result = baseDAO.findOneByNaturalId(dep.getUuid(), Department.class);
+    assertEquals(expectedName, result.getName());
+    assertEquals(expectedLocation, result.getLocation());
+  }
+
 }
