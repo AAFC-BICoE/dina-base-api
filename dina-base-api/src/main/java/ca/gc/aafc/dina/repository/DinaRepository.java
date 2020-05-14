@@ -11,8 +11,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import com.google.common.collect.ImmutableMap;
-
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.DinaService;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
