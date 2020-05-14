@@ -76,13 +76,13 @@ public abstract class DinaService<E extends DinaEntity> {
    * @param where       - map of fieldName::Values to match on
    * @return list of Entities
    */
-  public List<E> findAllWhere(Class<E> entityClass, Map<String, Object> where) {
+  public <T> List<T> findAllWhere(Class<T> entityClass, Map<String, Object> where) {
     Objects.requireNonNull(entityClass);
     Objects.requireNonNull(where);
 
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
-    CriteriaQuery<E> criteria = criteriaBuilder.createQuery(entityClass);
-    Root<E> root = criteria.from(entityClass);
+    CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
+    Root<T> root = criteria.from(entityClass);
 
     Predicate[] predicates = where.entrySet().stream().map(entry -> {
       if (entry.getValue() == null) {
@@ -104,7 +104,7 @@ public abstract class DinaService<E extends DinaEntity> {
    * @param entityClass - class of entity
    * @return the matched entity
    */
-  public E findOne(Object naturalId, Class<E> entityClass) {
+  public <T> T findOne(Object naturalId, Class<T> entityClass) {
     return baseDAO.findOneByNaturalId(naturalId, entityClass);
   }
 
