@@ -9,13 +9,14 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import ca.gc.aafc.dina.TestConfiguration;
-import ca.gc.aafc.dina.dto.EmployeeDto;
+import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
-import ca.gc.aafc.dina.entity.Employee;
+import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jpa.DinaService;
@@ -33,10 +34,10 @@ public class DinaRepositoryIT {
 
   @Test
   public void create_ValidResource_ResourceCreated() {
-    EmployeeDto employeeRelation = persistEmployee();
+    DepartmentDto departRelation = persistDepartment();
 
     PersonDTO dto = createPersonDto();
-    dto.setEmployee(employeeRelation);
+    dto.setDepartment(departRelation);
 
     dinaRepository.create(dto);
 
@@ -44,17 +45,25 @@ public class DinaRepositoryIT {
     assertNotNull(result);
     assertEquals(dto.getUuid(), result.getUuid());
     assertEquals(dto.getName(), result.getName());
-    assertEquals(employeeRelation.getId(), result.getEmployee().getId());
+    assertEquals(departRelation.getUuid(), result.getDepartment().getUuid());
   }
 
   private PersonDTO createPersonDto() {
     return PersonDTO.builder().uuid(UUID.randomUUID()).name(RandomStringUtils.random(4)).build();
   }
 
-  private EmployeeDto persistEmployee() {
-    Employee emp = Employee.builder().name("name").job("").build();
-    baseDAO.create(emp);
-    return EmployeeDto.builder().id(emp.getId()).name(emp.getName()).job(emp.getJob()).build();
+  private DepartmentDto persistDepartment() {
+    Department depart = Department.builder()
+      .uuid(UUID.randomUUID())
+      .name("name")
+      .location("location")
+      .build();
+    baseDAO.create(depart);
+    return DepartmentDto.builder()
+      .uuid(depart.getUuid())
+      .name(depart.getName())
+      .location(depart.getLocation())
+      .build();
   }
 
   public static class DinaPersonService extends DinaService<Person> {

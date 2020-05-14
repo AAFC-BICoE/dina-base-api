@@ -32,7 +32,7 @@ public class Person implements DinaEntity {
   private String name;
 
   @OneToOne()
-  @JoinColumn(name = "employee_id")
-  private Employee employee;
+  @JoinColumn(name = "department_id")
+  private Department department;
 
 }
