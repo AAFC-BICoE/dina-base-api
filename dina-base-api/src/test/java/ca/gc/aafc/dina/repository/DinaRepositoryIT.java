@@ -48,25 +48,20 @@ public class DinaRepositoryIT {
 
     public DinaPersonService(@NonNull BaseDAO baseDAO) {
       super(baseDAO);
-      // TODO Auto-generated constructor stub
     }
 
     @Override
     protected Person preCreate(Person entity) {
-      // TODO Auto-generated method stub
       return null;
     }
 
     @Override
     protected Person preUpdate(Person entity) {
-      // TODO Auto-generated method stub
       return null;
     }
 
     @Override
     protected void preDelete(Person entity) {
-      // TODO Auto-generated method stub
-
     }
 
   }

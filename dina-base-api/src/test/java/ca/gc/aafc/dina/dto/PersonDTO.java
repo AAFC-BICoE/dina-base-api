@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.dto;
 import java.util.UUID;
 
 import io.crnk.core.resource.annotations.JsonApiId;
+import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,5 +21,8 @@ public class PersonDTO {
   private UUID uuid;
 
   private String name;
+
+  @JsonApiRelation
+  private EmployeeDto employee;
 
 }

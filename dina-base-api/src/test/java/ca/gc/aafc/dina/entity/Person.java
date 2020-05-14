@@ -5,6 +5,8 @@ import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 
 import org.hibernate.annotations.NaturalId;
 
@@ -28,5 +30,9 @@ public class Person implements DinaEntity {
   private UUID uuid;
 
   private String name;
+
+  @OneToOne()
+  @JoinColumn(name = "employee_id")
+  private Employee employee;
 
 }
