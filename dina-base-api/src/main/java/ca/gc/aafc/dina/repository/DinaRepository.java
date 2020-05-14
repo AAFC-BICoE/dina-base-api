@@ -153,9 +153,7 @@ public class DinaRepository<D, E extends DinaEntity>
         String relationIdFieldName = relationInfo.getIdField().getUnderlyingName();
         Object relationID = PropertyUtils.getProperty(relation, relationIdFieldName);
 
-        Object persistedRelationObject = dinaService
-          .findAllWhere(relation.getClass(), ImmutableMap.of(relationIdFieldName, relationID))
-          .stream().findFirst().get();
+        Object persistedRelationObject = dinaService.findOne(relationID, relation.getClass());
         PropertyUtils.setProperty(entity, relationFieldName, persistedRelationObject);
       }
     }
