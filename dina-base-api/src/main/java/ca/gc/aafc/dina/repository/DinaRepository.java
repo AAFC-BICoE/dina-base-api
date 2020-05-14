@@ -3,19 +3,23 @@ package ca.gc.aafc.dina.repository;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import com.google.common.collect.ImmutableMap;
+
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.DinaService;
+import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import io.crnk.core.engine.information.resource.ResourceField;
 import io.crnk.core.engine.information.resource.ResourceInformation;
+import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.engine.registry.ResourceRegistryAware;
 import io.crnk.core.queryspec.QuerySpec;
@@ -77,22 +81,21 @@ public class DinaRepository<D, E extends DinaEntity>
   public <S extends D> S create(S resource) {
     E entity = entityClass.newInstance();
 
-    ResourceInformation resourceInformation =
-        this.resourceRegistry.findEntry(resourceClass).getResourceInformation();
+    Map<Class<?>, Set<String>> fieldsPerClass = parseFieldsPerClass(resourceClass, new HashMap<>());
+    fieldsPerClass.forEach((clazz, fields) -> fields.removeIf(f -> isGenerated(clazz, f)));
 
-    Set<String> attributes = resourceInformation.getAttributeFields().stream()
-        .map(af -> af.getUnderlyingName()).collect(Collectors.toSet());
-    attributes.add(resourceInformation.getIdField().getUnderlyingName());
+    ResourceInformation resourceInformation =this.resourceRegistry
+      .findEntry(resourceClass)
+      .getResourceInformation();
 
-    Map<Class<?>, Set<String>> fieldsPerClass = new HashMap<>();
-    fieldsPerClass.put(resourceClass, attributes);
+    Set<String> relations = resourceInformation.getRelationshipFields()
+      .stream()
+      .map(af -> af.getUnderlyingName())
+      .collect(Collectors.toSet());
 
-    List<ResourceField> relationFields = resourceInformation.getRelationshipFields();
-    for (ResourceField relationField : relationFields) {
-      //TODO
-    }
+    dinaMapper.applyDtoToEntity(resource, entity, fieldsPerClass, relations);
 
-    dinaMapper.applyDtoToEntity(resource, entity, fieldsPerClass, new HashSet<>());
+    linkRelations(entity, resourceInformation.getRelationshipFields());
 
     dinaService.create(entity);
 
@@ -103,6 +106,64 @@ public class DinaRepository<D, E extends DinaEntity>
   public void delete(Serializable id) {
     // TODO Auto-generated method stub
 
+  }
+
+  private <T> Map<Class<?>, Set<String>> parseFieldsPerClass(Class<T> clazz,
+      Map<Class<?>, Set<String>> fieldsPerClass) {
+    Objects.requireNonNull(clazz);
+    Objects.requireNonNull(fieldsPerClass);
+
+    if (fieldsPerClass.containsKey(clazz)) {
+      return fieldsPerClass;
+    }
+
+    ResourceInformation resourceInformation =this.resourceRegistry
+      .findEntry(clazz)
+      .getResourceInformation();
+
+    Set<String> attributes = resourceInformation.getAttributeFields()
+      .stream()
+      .map(af -> af.getUnderlyingName())
+      .collect(Collectors.toSet());
+    attributes.add(resourceInformation.getIdField().getUnderlyingName());
+
+    fieldsPerClass.put(clazz, attributes);
+
+    List<ResourceField> relationFields = resourceInformation.getRelationshipFields();
+    for (ResourceField relationField : relationFields) {
+      parseFieldsPerClass(relationField.getElementType(), fieldsPerClass);
+    }
+
+    return fieldsPerClass;
+  }
+
+  private void linkRelations(E entity, List<ResourceField> relations) {
+    Objects.requireNonNull(entity);
+    Objects.requireNonNull(relations);
+
+    for (ResourceField relationField : relations) {
+      ResourceInformation relationInfo =this.resourceRegistry
+        .findEntry(relationField.getElementType())
+        .getResourceInformation();
+
+      String relationFieldName = relationField.getUnderlyingName();
+      Object relation = PropertyUtils.getProperty(entity, relationFieldName);
+
+      if (relation != null) {
+        String relationIdFieldName = relationInfo.getIdField().getUnderlyingName();
+        Object relationID = PropertyUtils.getProperty(relation, relationIdFieldName);
+
+        Object persistedRelationObject = dinaService
+          .findAllWhere(relation.getClass(), ImmutableMap.of(relationIdFieldName, relationID))
+          .stream().findFirst().get();
+        PropertyUtils.setProperty(entity, relationFieldName, persistedRelationObject);
+      }
+    }
+  }
+
+  @SneakyThrows(NoSuchFieldException.class)
+  private <T> boolean isGenerated(Class<T> clazz, String field) {
+    return clazz.getDeclaredField(field).isAnnotationPresent(DerivedDtoField.class);
   }
 
 }

@@ -13,7 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
+import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jpa.DinaService;
@@ -31,17 +33,28 @@ public class DinaRepositoryIT {
 
   @Test
   public void create_ValidResource_ResourceCreated() {
+    EmployeeDto employeeRelation = persistEmployee();
+
     PersonDTO dto = createPersonDto();
+    dto.setEmployee(employeeRelation);
+
     dinaRepository.create(dto);
 
     Person result = baseDAO.findOneByNaturalId(dto.getUuid(), Person.class);
     assertNotNull(result);
     assertEquals(dto.getUuid(), result.getUuid());
     assertEquals(dto.getName(), result.getName());
+    assertEquals(employeeRelation.getId(), result.getEmployee().getId());
   }
 
   private PersonDTO createPersonDto() {
     return PersonDTO.builder().uuid(UUID.randomUUID()).name(RandomStringUtils.random(4)).build();
+  }
+
+  private EmployeeDto persistEmployee() {
+    Employee emp = Employee.builder().name("name").job("").build();
+    baseDAO.create(emp);
+    return EmployeeDto.builder().id(emp.getId()).name(emp.getName()).job(emp.getJob()).build();
   }
 
   public static class DinaPersonService extends DinaService<Person> {
