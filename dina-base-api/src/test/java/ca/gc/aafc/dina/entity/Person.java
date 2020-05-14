@@ -27,4 +27,6 @@ public class Person implements DinaEntity {
   @NaturalId
   private UUID uuid;
 
+  private String name;
+
 }

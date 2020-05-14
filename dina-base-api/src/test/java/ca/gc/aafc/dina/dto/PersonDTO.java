@@ -19,4 +19,6 @@ public class PersonDTO {
   @JsonApiId
   private UUID uuid;
 
+  private String name;
+
 }
