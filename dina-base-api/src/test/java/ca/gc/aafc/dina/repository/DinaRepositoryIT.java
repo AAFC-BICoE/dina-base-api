@@ -1,18 +1,21 @@
 package ca.gc.aafc.dina.repository;
 
+import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.hamcrest.core.Is;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -64,28 +67,9 @@ public class DinaRepositoryIT {
     assertNotNull(result);
     assertEquals(dto.getUuid(), result.getUuid());
     assertEquals(dto.getName(), result.getName());
-
-    assertEquals(singleRelationUnderTest.getId(), result.getDepartment().getId());
-    assertEquals(singleRelationUnderTest.getUuid(), result.getDepartment().getUuid());
-    assertEquals(singleRelationUnderTest.getName(), result.getDepartment().getName());
-    assertEquals(singleRelationUnderTest.getLocation(), result.getDepartment().getLocation());
-
-    assertCollectionRelationEquals(collectionRelationUnderTest, result.getDepartments());
-  }
-
-  private static void assertCollectionRelationEquals(List<Department> expected, List<Department> result) {
-    assertEquals(expected.size(), result.size());
-    expected.stream()
-      .collect(Collectors.toMap(Department::getUuid, Function.identity()))
-      .entrySet()
-      .forEach(
-        e->{
-          Department resultingDto = result.stream().filter(d->d.getUuid().equals(e.getKey())).findFirst().get();
-          assertEquals(e.getValue().getId(), resultingDto.getId());
-          assertEquals(e.getValue().getUuid(), resultingDto.getUuid());
-          assertEquals(e.getValue().getName(), resultingDto.getName());
-          assertEquals(e.getValue().getLocation(), resultingDto.getLocation());
-        });
+    // Validate Relations
+    assertTrue(EqualsBuilder.reflectionEquals(singleRelationUnderTest, result.getDepartment()));
+    assertThat(collectionRelationUnderTest, Is.is(result.getDepartments()));
   }
 
   private PersonDTO createPersonDto() {
