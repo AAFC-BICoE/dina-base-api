@@ -144,17 +144,31 @@ public class DinaRepository<D, E extends DinaEntity>
         .findEntry(relationField.getElementType())
         .getResourceInformation();
 
-      String relationFieldName = relationField.getUnderlyingName();
-      Object relation = PropertyUtils.getProperty(entity, relationFieldName);
+      String fieldName = relationField.getUnderlyingName();
+      String idFieldName = relationInfo.getIdField().getUnderlyingName();
 
-      if (relation != null) {
-        String relationIdFieldName = relationInfo.getIdField().getUnderlyingName();
-        Object relationID = PropertyUtils.getProperty(relation, relationIdFieldName);
-
-        Object persistedRelationObject = dinaService.findOne(relationID, relation.getClass());
-        PropertyUtils.setProperty(entity, relationFieldName, persistedRelationObject);
+      if (relationField.isCollection()) {
+        Collection<?> relation = (Collection<?>) PropertyUtils.getProperty(entity, fieldName);
+        if (relation != null) {
+          Collection<?> mappedCollection = relation.stream()
+              .map(rel -> returnPersistedObject(idFieldName, rel))
+              .collect(Collectors.toList());
+          PropertyUtils.setProperty(entity, fieldName, mappedCollection);
+        }
+      } else {
+        Object relation = PropertyUtils.getProperty(entity, fieldName);
+        if (relation != null) {
+          Object persistedRelationObject = returnPersistedObject(idFieldName, relation);
+          PropertyUtils.setProperty(entity, fieldName, persistedRelationObject);
+        }
       }
     }
+  }
+
+  private Object returnPersistedObject(String idFieldName, Object object) {
+    Object relationID = PropertyUtils.getProperty(object, idFieldName);
+    Object persistedRelationObject = dinaService.findOne(relationID, object.getClass());
+    return persistedRelationObject;
   }
 
   @SneakyThrows(NoSuchFieldException.class)
