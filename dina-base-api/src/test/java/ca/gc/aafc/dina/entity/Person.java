@@ -33,6 +33,8 @@ public class Person implements DinaEntity {
 
   private String name;
 
+  private String[] nickNames;
+
   @OneToOne()
   @JoinColumn(name = "department_id")
   private Department department;

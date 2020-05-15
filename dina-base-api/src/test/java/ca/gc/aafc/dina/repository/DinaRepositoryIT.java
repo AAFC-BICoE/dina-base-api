@@ -1,11 +1,13 @@
 package ca.gc.aafc.dina.repository;
 
 import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -67,13 +69,18 @@ public class DinaRepositoryIT {
     assertNotNull(result);
     assertEquals(dto.getUuid(), result.getUuid());
     assertEquals(dto.getName(), result.getName());
+    assertArrayEquals(dto.getNickNames(), result.getNickNames());
     // Validate Relations
     assertTrue(EqualsBuilder.reflectionEquals(singleRelationUnderTest, result.getDepartment()));
     assertThat(collectionRelationUnderTest, Is.is(result.getDepartments()));
   }
 
   private PersonDTO createPersonDto() {
-    return PersonDTO.builder().uuid(UUID.randomUUID()).name(RandomStringUtils.random(4)).build();
+    return PersonDTO.builder()
+    .uuid(UUID.randomUUID())
+    .nickNames(Arrays.asList("d","z","q").toArray(new String[0]))
+    .name(RandomStringUtils.random(4))
+    .build();
   }
 
   private Department createDepartment(String name, String Location) {

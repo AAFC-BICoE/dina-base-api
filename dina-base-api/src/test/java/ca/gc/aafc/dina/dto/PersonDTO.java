@@ -23,6 +23,8 @@ public class PersonDTO {
 
   private String name;
 
+  private String[] nickNames;
+
   @JsonApiRelation
   private DepartmentDto department;
 
