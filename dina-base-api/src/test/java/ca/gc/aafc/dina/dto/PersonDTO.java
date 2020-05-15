@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.dto;
 
+import java.util.List;
 import java.util.UUID;
 
 import io.crnk.core.resource.annotations.JsonApiId;
@@ -24,5 +25,8 @@ public class PersonDTO {
 
   @JsonApiRelation
   private DepartmentDto department;
+
+  @JsonApiRelation
+  private List<DepartmentDto> departments;
 
 }
