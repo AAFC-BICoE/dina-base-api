@@ -65,6 +65,7 @@ public class DinaRepositoryIT {
     assertEquals(dto.getUuid(), result.getUuid());
     assertEquals(dto.getName(), result.getName());
 
+    assertEquals(singleRelationUnderTest.getId(), result.getDepartment().getId());
     assertEquals(singleRelationUnderTest.getUuid(), result.getDepartment().getUuid());
     assertEquals(singleRelationUnderTest.getName(), result.getDepartment().getName());
     assertEquals(singleRelationUnderTest.getLocation(), result.getDepartment().getLocation());
@@ -80,6 +81,7 @@ public class DinaRepositoryIT {
       .forEach(
         e->{
           Department resultingDto = result.stream().filter(d->d.getUuid().equals(e.getKey())).findFirst().get();
+          assertEquals(e.getValue().getId(), resultingDto.getId());
           assertEquals(e.getValue().getUuid(), resultingDto.getUuid());
           assertEquals(e.getValue().getName(), resultingDto.getName());
           assertEquals(e.getValue().getLocation(), resultingDto.getLocation());
