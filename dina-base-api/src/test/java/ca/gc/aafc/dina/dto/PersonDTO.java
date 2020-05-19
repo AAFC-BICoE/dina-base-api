@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.dto;
 import java.util.List;
 import java.util.UUID;
 
+import ca.gc.aafc.dina.entity.Person;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
@@ -16,6 +17,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@RelatedEntity(Person.class)
 public class PersonDTO {
 
   @JsonApiId
