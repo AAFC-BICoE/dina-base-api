@@ -22,7 +22,6 @@
     <javax.activation.version>1.1.1</javax.activation.version>
     <crnk.version>3.2.20200419165537</crnk.version>
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
-    <guava.version>24.0-jre</guava.version>
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
   </properties>
 
@@ -93,11 +92,6 @@
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>${guava.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-beanutils</groupId>
