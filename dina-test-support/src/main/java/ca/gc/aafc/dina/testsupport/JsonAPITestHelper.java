@@ -8,9 +8,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
 
-public class JsonAPITestHelper {
+public final class JsonAPITestHelper {
+
   private static final ObjectMapper IT_OBJECT_MAPPER = new ObjectMapper();
   private static final TypeReference<Map<String, Object>> IT_OM_TYPE_REF = new TypeReference<Map<String, Object>>() {};
+  
+  private  JsonAPITestHelper() {
+    
+  }  
   
   /**
    * Create an attribute map for the provided object. Attributes with nulls will be skipped.
@@ -18,6 +23,7 @@ public class JsonAPITestHelper {
    * @param obj
    * @return attribute map for the provided object
    */
+  
   public static Map<String, Object> toAttributeMap(Object obj) {
     return IT_OBJECT_MAPPER.convertValue(obj, IT_OM_TYPE_REF);
   }

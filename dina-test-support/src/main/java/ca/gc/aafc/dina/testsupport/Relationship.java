@@ -4,7 +4,7 @@ package ca.gc.aafc.dina.testsupport;
  * Immutable class (for testing) representing a Relationship.
  *
  */
-public class Relationship {
+public final class Relationship {
 
   private final String name;
   private final String type;
