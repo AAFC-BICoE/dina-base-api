@@ -102,6 +102,12 @@ public class DinaRepositoryIT {
 
   }
 
+  @Test
+  public void findAll_NothingPersisted_ReturnsEmpty() {
+    List<PersonDTO> result = dinaRepository.findAll(null, new QuerySpec(PersonDTO.class));
+    assertEquals(0, result.size());
+  }
+
   private void assertEqualsPersonDtos(PersonDTO dto, PersonDTO result, boolean testRelations) {
     assertEquals(dto.getUuid(), result.getUuid());
     assertEquals(dto.getName(), result.getName());
