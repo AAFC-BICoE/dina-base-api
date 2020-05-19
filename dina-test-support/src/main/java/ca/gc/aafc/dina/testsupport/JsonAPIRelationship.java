@@ -4,17 +4,17 @@ package ca.gc.aafc.dina.testsupport;
  * Immutable class (for testing) representing a Relationship.
  *
  */
-public final class Relationship {
+public final class JsonAPIRelationship {
 
   private final String name;
   private final String type;
   private final String id;
   
-  public static Relationship of(String name, String type, String id) {
-    return new Relationship(name, type, id);
+  public static JsonAPIRelationship of(String name, String type, String id) {
+    return new JsonAPIRelationship(name, type, id);
   }
   
-  private Relationship(String name, String type, String id) {
+  private JsonAPIRelationship(String name, String type, String id) {
     this.name = name;
     this.type = type;
     this.id = id;

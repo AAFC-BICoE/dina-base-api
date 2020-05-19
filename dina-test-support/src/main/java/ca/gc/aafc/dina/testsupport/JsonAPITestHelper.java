@@ -3,8 +3,11 @@ package ca.gc.aafc.dina.testsupport;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableMap;
 
 
@@ -13,7 +16,13 @@ public final class JsonAPITestHelper {
   private static final ObjectMapper IT_OBJECT_MAPPER = new ObjectMapper();
   private static final TypeReference<Map<String, Object>> IT_OM_TYPE_REF = new TypeReference<Map<String, Object>>() {};
   
-  private  JsonAPITestHelper() {
+  static {
+    IT_OBJECT_MAPPER.registerModule(new JavaTimeModule());
+    IT_OBJECT_MAPPER.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    IT_OBJECT_MAPPER.setSerializationInclusion(Include.NON_NULL);    
+  }
+  
+  private  JsonAPITestHelper() {   
     
   }  
   
@@ -53,19 +62,19 @@ public final class JsonAPITestHelper {
     return ImmutableMap.of("data", bldr.build());
   }
   
-  protected static Map<String, Object> toRelationshipMap(List<Relationship> relationship) {
+  public static Map<String, Object> toRelationshipMap(List<JsonAPIRelationship> relationship) {
     if( relationship == null) {
       return null;
     }
     
     ImmutableMap.Builder<String, Object> relationships = new ImmutableMap.Builder<>();
-    for (Relationship rel : relationship) {
+    for (JsonAPIRelationship rel : relationship) {
       relationships.putAll(toRelationshipMap(rel));
     }
     return relationships.build();
   }
     
-  private static Map<String, Object> toRelationshipMap(Relationship relationship) {
+  private static Map<String, Object> toRelationshipMap(JsonAPIRelationship relationship) {
     ImmutableMap.Builder<String, Object> relationships = new ImmutableMap.Builder<>();
     relationships.put("type", relationship.getType()).put("id", relationship.getId()).build();
     
