@@ -4,7 +4,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -91,6 +93,55 @@ public class DinaServiceTest {
       Department.class,
       Collections.<String,Object>emptyMap());
     assertEquals(expectedNumberOfEntities, resultList.size());
+  }
+
+  @Test
+  public void findAllWhere_IdsInCollection_FindsAllByIds() {
+    int expectedNumberOfEntities = 10;
+
+    List<UUID> idList = new ArrayList<>();
+    for (int i = 0; i < expectedNumberOfEntities; i++) {
+      Department dept = persistDepartment();
+      idList.add(dept.getUuid());
+    }
+    // Persist extra departments to validate correct number returned
+    persistDepartmentsWithName("name", expectedNumberOfEntities);
+
+    Map<String, Object> where = Collections.<String, Object> emptyMap();
+    Map<String, List<UUID>> in = ImmutableMap.of("uuid", idList);
+
+    List<Department> resultList = serviceUnderTest.findAllWhere(Department.class, where, in);
+    assertEquals(expectedNumberOfEntities, resultList.size());
+    resultList.forEach(result -> assertTrue(idList.contains(result.getUuid())));
+  }
+
+  @Test
+  public void findAllWhere_WhereNameIsAndIdsIn_FindsAllByIdsAndName() {
+    int expectedNumberOfEntities = 10;
+    String expectedName = RandomStringUtils.random(15);
+
+    List<UUID> idList = new ArrayList<>();
+    for (int i = 0; i < expectedNumberOfEntities; i++) {
+      Department toPersist = createDepartment();
+      toPersist.setName(expectedName);
+      serviceUnderTest.create(toPersist);
+      idList.add(toPersist.getUuid());
+      //Persist extra department with different name but in id list
+      Department extra = persistDepartment();
+      idList.add(extra.getUuid());
+    }
+    // Persist extra departments with same name but NOT IN id list
+    persistDepartmentsWithName(expectedName, expectedNumberOfEntities);
+
+    Map<String, Object> where = ImmutableMap.of("name", expectedName);
+    Map<String, List<UUID>> in = ImmutableMap.of("uuid", idList);
+    List<Department> resultList = serviceUnderTest.findAllWhere(Department.class, where, in);
+
+    assertEquals(expectedNumberOfEntities, resultList.size());
+    resultList.forEach(result -> {
+      assertTrue(idList.contains(result.getUuid()));
+      assertEquals(expectedName, result.getName());
+    });
   }
 
   @Test

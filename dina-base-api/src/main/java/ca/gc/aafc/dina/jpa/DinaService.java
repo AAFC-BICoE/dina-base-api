@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.jpa;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -9,7 +10,9 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.CriteriaBuilder.In;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
@@ -77,21 +80,55 @@ public abstract class DinaService<E extends DinaEntity> {
    * @return list of Entities
    */
   public <T> List<T> findAllWhere(Class<T> entityClass, Map<String, Object> where) {
+    return findAllWhere(entityClass, where, new HashMap<>());
+  }
+
+  /**
+   * <p>
+   * Returns a list of Entities of a given class where fields match a given
+   * 'Where' map and fields are present in a given 'In' map.
+   * <p>
+   *
+   * <p>
+   * Given WHERE map maps field names to values. WHERE map can be empty to find
+   * all. Where map can search on null values.
+   * <p>
+   * 
+   * <p>
+   * Given IN map maps field names to a List of Values the field value is contained in. 
+   * IN map can be empty when not matching an In clause.
+   * <p>
+   *
+   * @param <T>         - Type of entity
+   * @param <O>         - Type of Object
+   * @param entityClass - entity class to search on
+   * @param where       - map of fieldName::Values to match on
+   * @param in          - map of fieldName::List to match in
+   * @return list of Entities
+   */
+  public <T, O> List<T> findAllWhere(Class<T> entityClass, Map<String, Object> where, Map<String, List<O>> in) {
     Objects.requireNonNull(entityClass);
     Objects.requireNonNull(where);
+    Objects.requireNonNull(in);
 
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
     CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
     Root<T> root = criteria.from(entityClass);
 
-    Predicate[] predicates = where.entrySet().stream().map(entry -> {
+    Predicate[] wherePredicates = where.entrySet().stream().map(entry -> {
       if (entry.getValue() == null) {
         return criteriaBuilder.isNull(root.get(entry.getKey()));
       }
       return criteriaBuilder.equal(root.get(entry.getKey()), entry.getValue());
     }).toArray(Predicate[]::new);
 
-    criteria.where(predicates).select(root);
+    Predicate[] inPredicates = in.entrySet().stream().map(entry -> {
+      In<O> inClause = criteriaBuilder.in(root.get(entry.getKey()));
+      entry.getValue().forEach(val -> inClause.value(val));
+      return inClause;
+    }).toArray(Predicate[]::new);
+
+    criteria.where(ArrayUtils.addAll(wherePredicates, inPredicates)).select(root);
 
     return baseDAO.resultListFromCriteria(criteria);
   }
