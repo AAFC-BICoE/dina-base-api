@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.DinaService;
@@ -80,8 +82,19 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
+    HashMap<String, Object> where = new HashMap<>();
+    HashMap<String, Collection<Serializable>> in = new HashMap<>();
 
-    List<E> entities = dinaService.findAllWhere(entityClass, new HashMap<>());
+    if (CollectionUtils.isNotEmpty(ids)) {
+      String idFieldName = this.resourceRegistry
+        .findEntry(resourceClass)
+        .getResourceInformation()
+        .getIdField()
+        .getUnderlyingName();
+      in.put(idFieldName, ids);
+    }
+
+    List<E> entities = dinaService.findAllWhere(entityClass, where, in);
 
     Map<Class<?>, Set<String>> fieldsPerEntity = getFieldsPerEntity();
 

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -100,6 +101,25 @@ public class DinaRepositoryIT {
       assertEqualsPersonDtos(expectedDto, resultElement, false);
     }
 
+  }
+
+  @Test
+  public void findAll_FilterByIds_FindsById() {
+    List<Serializable> idList = new ArrayList<>();
+
+    for (int i = 0; i < 10; i++) {
+      PersonDTO dto = createPersonDto();
+      dinaRepository.create(dto);
+      idList.add(dto.getUuid());
+      // Persist extra Person NOT IN idList
+      PersonDTO extra = createPersonDto();
+      dinaRepository.create(extra);
+    }
+
+    List<PersonDTO> resultList = dinaRepository.findAll(idList, new QuerySpec(PersonDTO.class));
+
+    assertEquals(idList.size(), resultList.size());
+    resultList.forEach(result -> assertTrue(idList.contains(result.getUuid())));
   }
 
   @Test
