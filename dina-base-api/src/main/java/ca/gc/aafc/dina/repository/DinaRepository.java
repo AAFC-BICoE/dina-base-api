@@ -62,12 +62,7 @@ public class DinaRepository<D, E extends DinaEntity>
           resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    Map<Class<?>, Set<String>> fieldsPerDto = parseFieldsPerClass(resourceClass, new HashMap<>());
-    fieldsPerDto.forEach((clazz, fields) -> fields.removeIf(f -> isGenerated(clazz, f)));
-
-    Map<Class<?>, Set<String>> fieldsPerEntity = fieldsPerDto.entrySet().stream().map(e -> {
-      return new SimpleEntry<>(getRelatedEntity(e.getKey()), e.getValue());
-    }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    Map<Class<?>, Set<String>> fieldsPerEntity = getFieldsPerEntity();
 
     Set<String> includedRelations = querySpec.getIncludedRelations().stream()
         .map(ir -> ir.getAttributePath().get(0)).collect(Collectors.toSet());
@@ -85,8 +80,19 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
-    // TODO Auto-generated method stub
-    return null;
+
+    List<E> entities = dinaService.findAllWhere(entityClass, new HashMap<>());
+
+    Map<Class<?>, Set<String>> fieldsPerEntity = getFieldsPerEntity();
+
+    Set<String> includedRelations = querySpec.getIncludedRelations().stream()
+        .map(ir -> ir.getAttributePath().get(0)).collect(Collectors.toSet());
+
+    List<D> dtos =
+        entities.stream().map(e -> dinaMapper.toDto(e, fieldsPerEntity, includedRelations))
+            .collect(Collectors.toList());
+
+    return querySpec.apply(dtos);
   }
 
   @Override
@@ -118,13 +124,23 @@ public class DinaRepository<D, E extends DinaEntity>
 
     dinaService.create(entity);
 
-    return null;
+    return null;//TODO use findOne
   }
 
   @Override
   public void delete(Serializable id) {
     // TODO Auto-generated method stub
 
+  }
+
+  private Map<Class<?>, Set<String>> getFieldsPerEntity() {
+    Map<Class<?>, Set<String>> fieldsPerDto = parseFieldsPerClass(resourceClass, new HashMap<>());
+    fieldsPerDto.forEach((clazz, fields) -> fields.removeIf(f -> isGenerated(clazz, f)));
+
+    Map<Class<?>, Set<String>> fieldsPerEntity = fieldsPerDto.entrySet().stream().map(e -> {
+      return new SimpleEntry<>(getRelatedEntity(e.getKey()), e.getValue());
+    }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return fieldsPerEntity;
   }
 
   private <T> Map<Class<?>, Set<String>> parseFieldsPerClass(Class<T> clazz,

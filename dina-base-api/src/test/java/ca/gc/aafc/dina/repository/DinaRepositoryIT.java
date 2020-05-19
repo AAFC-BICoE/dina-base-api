@@ -8,7 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -76,6 +78,28 @@ public class DinaRepositoryIT {
 
     PersonDTO result = dinaRepository.findOne(dto.getUuid(), querySpec);
     assertEqualsPersonDtos(dto, result, true);
+  }
+
+  // Add find one test for 404 not found
+
+  @Test
+  public void findAll_NoFilters_FindsAll() {
+    Map<UUID, PersonDTO> expectedPersons = new HashMap<>();
+
+    for (int i = 0; i < 10; i++) {
+      PersonDTO dto = createPersonDto();
+      dinaRepository.create(dto);
+      expectedPersons.put(dto.getUuid(), dto);
+    }
+
+    List<PersonDTO> result = dinaRepository.findAll(null, new QuerySpec(PersonDTO.class));
+
+    assertEquals(expectedPersons.size(), result.size());
+    for (PersonDTO resultElement : result) {
+      PersonDTO expectedDto = expectedPersons.get(resultElement.getUuid());
+      assertEqualsPersonDtos(expectedDto, resultElement, false);
+    }
+
   }
 
   private void assertEqualsPersonDtos(PersonDTO dto, PersonDTO result, boolean testRelations) {
