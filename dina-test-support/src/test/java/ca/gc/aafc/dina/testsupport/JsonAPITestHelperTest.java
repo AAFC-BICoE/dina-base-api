@@ -4,7 +4,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +22,7 @@ public class JsonAPITestHelperTest {
   class TestObject  extends ComplexObject{
     private String email;
     private String displayName;
-    private OffsetDateTime createDate;
+    private LocalDateTime createDate;
   };    
   
   private TestObject myTestObj = new TestObject();
@@ -32,7 +32,7 @@ public class JsonAPITestHelperTest {
   private JsonAPIRelationship relationship = JsonAPIRelationship.of("derivedFrom", "metadata", 
       "947f77ee-d144-45b5-b559-e239db0caa18");
   
-  private final OffsetDateTime TEST_OFFSET_DT = OffsetDateTime.now();  
+  private final LocalDateTime TEST_LOCAL_DT = LocalDateTime.now();  
  
   
   @BeforeEach
@@ -40,7 +40,7 @@ public class JsonAPITestHelperTest {
  
     myTestObj.setDisplayName("agent");
     myTestObj.setEmail("xuemei.gan@canada.ca");
-    myTestObj.setCreateDate(TEST_OFFSET_DT);    
+    myTestObj.setCreateDate(TEST_LOCAL_DT);    
     
     attributeMap.put("bucket","myBucket");
     attributeMap.put("dcFormat","image");
@@ -63,7 +63,7 @@ public class JsonAPITestHelperTest {
     assertTrue(attrMap.values().contains("agent"));
     assertTrue(attrMap.values().contains("xuemei.gan@canada.ca"));
 
-    assertEquals(OffsetDateTime.parse((CharSequence) attrMap.get("createDate")), TEST_OFFSET_DT);
+    assertEquals(LocalDateTime.parse((CharSequence) attrMap.get("createDate")), TEST_LOCAL_DT);
     
   }
   
