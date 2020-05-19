@@ -29,6 +29,8 @@ import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jpa.DinaService;
+import io.crnk.core.queryspec.IncludeRelationSpec;
+import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
 
 @Transactional
@@ -52,35 +54,68 @@ public class DinaRepositoryIT {
 
   @Test
   public void create_ValidResource_ResourceCreated() {
-    DepartmentDto singleRelationDto = DepartmentDto.builder()
-      .uuid(singleRelationUnderTest.getUuid())
-      .build();
-    List<DepartmentDto> collectionRelationDtos = collectionRelationUnderTest.stream()
-      .map(c -> DepartmentDto.builder().uuid(c.getUuid()).build())
-      .collect(Collectors.toList());
-
     PersonDTO dto = createPersonDto();
-    dto.setDepartment(singleRelationDto);
-    dto.setDepartments(collectionRelationDtos);
-
     dinaRepository.create(dto);
 
     Person result = baseDAO.findOneByNaturalId(dto.getUuid(), Person.class);
     assertNotNull(result);
+    assertEqualsPersonDtoAndEntity(dto, result, true);
+  }
+
+  @Test
+  public void findOne_ResourceAndRelations_FindsResourceAndRelations() {
+    PersonDTO dto = createPersonDto();
+    dinaRepository.create(dto);
+
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.setIncludedRelations(
+      Arrays.asList("department", "departments").stream()
+        .map(Arrays::asList)
+        .map(IncludeRelationSpec::new)
+        .collect(Collectors.toList()));
+
+    PersonDTO result = dinaRepository.findOne(dto.getUuid(), querySpec);
+    assertEqualsPersonDtos(dto, result, true);
+  }
+
+  private void assertEqualsPersonDtos(PersonDTO dto, PersonDTO result, boolean testRelations) {
     assertEquals(dto.getUuid(), result.getUuid());
     assertEquals(dto.getName(), result.getName());
     assertArrayEquals(dto.getNickNames(), result.getNickNames());
-    // Validate Relations
-    assertTrue(EqualsBuilder.reflectionEquals(singleRelationUnderTest, result.getDepartment()));
-    assertThat(collectionRelationUnderTest, Is.is(result.getDepartments()));
+    if (testRelations) {
+      assertEquals(singleRelationUnderTest.getUuid(), result.getDepartment().getUuid());
+      for (int i = 0; i < collectionRelationUnderTest.size(); i++) {
+        assertEquals(
+          collectionRelationUnderTest.get(i).getUuid(),
+          result.getDepartments().get(i).getUuid()
+        );
+      }
+    }
+  }
+
+  private void assertEqualsPersonDtoAndEntity(PersonDTO dto, Person entity, boolean testRelations) {
+    assertEquals(dto.getUuid(), entity.getUuid());
+    assertEquals(dto.getName(), entity.getName());
+    assertArrayEquals(dto.getNickNames(), entity.getNickNames());
+    if (testRelations) {
+      assertTrue(EqualsBuilder.reflectionEquals(singleRelationUnderTest, entity.getDepartment()));
+      assertThat(collectionRelationUnderTest, Is.is(entity.getDepartments()));
+    }
   }
 
   private PersonDTO createPersonDto() {
+    DepartmentDto singleRelationDto = DepartmentDto.builder()
+        .uuid(singleRelationUnderTest.getUuid())
+        .build();
+    List<DepartmentDto> collectionRelationDtos = collectionRelationUnderTest.stream()
+        .map(c -> DepartmentDto.builder().uuid(c.getUuid()).build())
+        .collect(Collectors.toList());
     return PersonDTO.builder()
-    .uuid(UUID.randomUUID())
-    .nickNames(Arrays.asList("d","z","q").toArray(new String[0]))
-    .name(RandomStringUtils.random(4))
-    .build();
+        .uuid(UUID.randomUUID())
+        .department(singleRelationDto)
+        .departments(collectionRelationDtos)
+        .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
+        .name(RandomStringUtils.random(4)).build();
   }
 
   private Department createDepartment(String name, String Location) {

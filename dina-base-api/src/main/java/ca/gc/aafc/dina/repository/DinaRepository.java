@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.repository;
 
 import java.io.Serializable;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.DinaService;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
@@ -20,6 +22,7 @@ import io.crnk.core.engine.information.resource.ResourceInformation;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.engine.registry.ResourceRegistryAware;
+import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepository;
 import io.crnk.core.resource.list.ResourceList;
@@ -52,8 +55,26 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public D findOne(Serializable id, QuerySpec querySpec) {
-    // TODO Auto-generated method stub
-    return null;
+    E entity = dinaService.findOne(id, entityClass);
+
+    if (entity == null) {
+      throw new ResourceNotFoundException(
+          resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
+    }
+
+    Map<Class<?>, Set<String>> fieldsPerDto = parseFieldsPerClass(resourceClass, new HashMap<>());
+    fieldsPerDto.forEach((clazz, fields) -> fields.removeIf(f -> isGenerated(clazz, f)));
+
+    Map<Class<?>, Set<String>> fieldsPerEntity = fieldsPerDto.entrySet().stream().map(e -> {
+      return new SimpleEntry<>(getRelatedEntity(e.getKey()), e.getValue());
+    }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+    Set<String> includedRelations = querySpec.getIncludedRelations().stream()
+        .map(ir -> ir.getAttributePath().get(0)).collect(Collectors.toSet());
+
+    D dto = dinaMapper.toDto(entity, fieldsPerEntity, includedRelations);
+
+    return dto;
   }
 
   @Override
@@ -107,7 +128,7 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   private <T> Map<Class<?>, Set<String>> parseFieldsPerClass(Class<T> clazz,
-      Map<Class<?>, Set<String>> fieldsPerClass) {
+      Map<Class<?>, Set<String>> fieldsPerClass) {//TODO change to use reflection instead of crnk
     Objects.requireNonNull(clazz);
     Objects.requireNonNull(fieldsPerClass);
 
@@ -174,6 +195,10 @@ public class DinaRepository<D, E extends DinaEntity>
   @SneakyThrows(NoSuchFieldException.class)
   private <T> boolean isGenerated(Class<T> clazz, String field) {
     return clazz.getDeclaredField(field).isAnnotationPresent(DerivedDtoField.class);
+  }
+
+  private <T> Class<?> getRelatedEntity(Class<T> clazz){
+    return clazz.getAnnotation(RelatedEntity.class).value();
   }
 
 }
