@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.jpa;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +107,7 @@ public abstract class DinaService<E extends DinaEntity> {
    * @param in          - map of fieldName::List to match in
    * @return list of Entities
    */
-  public <T, O> List<T> findAllWhere(Class<T> entityClass, Map<String, Object> where, Map<String, List<O>> in) {
+  public <T, O> List<T> findAllWhere(Class<T> entityClass, Map<String, Object> where, Map<String, Collection<O>> in) {
     Objects.requireNonNull(entityClass);
     Objects.requireNonNull(where);
     Objects.requireNonNull(in);

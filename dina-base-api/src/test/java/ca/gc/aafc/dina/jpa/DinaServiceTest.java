@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -108,7 +109,7 @@ public class DinaServiceTest {
     persistDepartmentsWithName("name", expectedNumberOfEntities);
 
     Map<String, Object> where = Collections.<String, Object> emptyMap();
-    Map<String, List<UUID>> in = ImmutableMap.of("uuid", idList);
+    Map<String, Collection<UUID>> in = ImmutableMap.of("uuid", idList);
 
     List<Department> resultList = serviceUnderTest.findAllWhere(Department.class, where, in);
     assertEquals(expectedNumberOfEntities, resultList.size());
@@ -134,7 +135,7 @@ public class DinaServiceTest {
     persistDepartmentsWithName(expectedName, expectedNumberOfEntities);
 
     Map<String, Object> where = ImmutableMap.of("name", expectedName);
-    Map<String, List<UUID>> in = ImmutableMap.of("uuid", idList);
+    Map<String, Collection<UUID>> in = ImmutableMap.of("uuid", idList);
     List<Department> resultList = serviceUnderTest.findAllWhere(Department.class, where, in);
 
     assertEquals(expectedNumberOfEntities, resultList.size());
