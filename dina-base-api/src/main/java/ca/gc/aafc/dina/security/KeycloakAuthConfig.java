@@ -6,6 +6,8 @@ import org.keycloak.adapters.KeycloakConfigResolver;
 import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
+import org.keycloak.adapters.springsecurity.filter.KeycloakAuthenticationProcessingFilter;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +25,9 @@ import lombok.extern.log4j.Log4j2;
 @ConditionalOnProperty(value = "keycloak.enabled", matchIfMissing = true)
 @Log4j2
 public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
+  
+  @Inject
+  private AutowireCapableBeanFactory beanFactory;
 
   public KeycloakAuthConfig() {
     super();
@@ -57,7 +62,10 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
     http.csrf().disable();
     
     http.authorizeRequests().anyRequest().authenticated();
-    log.debug("Configured HttpSecurity");
+    
+    http.addFilterAfter(beanFactory.createBean(TestKeycloakFilter.class), KeycloakAuthenticationProcessingFilter.class);
+    
+    log.info("Configured HttpSecurity with filter");
   }
   
   @Override
