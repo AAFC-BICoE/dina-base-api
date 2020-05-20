@@ -125,7 +125,7 @@ public class DinaRepositoryIT {
   }
 
   @Test
-  public void findAll_FilterOnField_FiltersOnField() {
+  public void findAll_FilterOnFieldEquals_FiltersOnField() {
     String expectedName = RandomStringUtils.random(4);
     int expectedNumberOfResults = 10;
 
@@ -147,7 +147,7 @@ public class DinaRepositoryIT {
   }
 
   @Test
-  public void findAll_FilterOnNestedField_FiltersOnNestedField() {
+  public void findAll_FilterOnNestedFieldEquals_FiltersOnNestedField() {
     PersonDTO expectedDto = createPersonDto();
     dinaRepository.create(expectedDto);
 
