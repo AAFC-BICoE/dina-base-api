@@ -32,7 +32,9 @@ import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jpa.DinaService;
+import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.IncludeRelationSpec;
+import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
 
@@ -120,6 +122,28 @@ public class DinaRepositoryIT {
 
     assertEquals(idList.size(), resultList.size());
     resultList.forEach(result -> assertTrue(idList.contains(result.getUuid())));
+  }
+
+  @Test
+  public void findAll_FilterOnField_FiltersOnField() {
+    String expectedName = RandomStringUtils.random(4);
+    int expectedNumberOfResults = 10;
+
+    for (int i = 0; i < expectedNumberOfResults; i++) {
+      PersonDTO dto = createPersonDto();
+      dto.setName(expectedName);
+      dinaRepository.create(dto);
+      // Persist extra Person with different name
+      PersonDTO extra = createPersonDto();
+      dinaRepository.create(extra);
+    }
+
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.addFilter(PathSpec.of("name").filter(FilterOperator.EQ, expectedName));
+
+    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    assertEquals(expectedNumberOfResults, resultList.size());
+    resultList.forEach(result -> assertEquals(expectedName, result.getName()));
   }
 
   @Test
