@@ -25,6 +25,7 @@ import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.engine.registry.ResourceRegistryAware;
 import io.crnk.core.exception.ResourceNotFoundException;
+import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepository;
 import io.crnk.core.resource.list.ResourceList;
@@ -82,13 +83,24 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
-    HashMap<String, Object> where = new HashMap<>();
-    HashMap<String, Collection<Serializable>> in = new HashMap<>();
+    ResourceInformation resourceInformation = this.resourceRegistry
+      .findEntry(resourceClass)
+      .getResourceInformation();
 
+    Map<String, Object> where =  querySpec.getFilters().stream()
+      .filter(
+        fs -> //Place Holder Filtering untill we can handle nested filtering
+          fs.getAttributePath() != null 
+          && fs.getAttributePath().size() == 1 
+          && FilterOperator.EQ == fs.getOperator())
+      .collect(Collectors.toMap(
+        fs -> fs.getAttributePath().get(0),
+        fs -> fs.getValue()));
+      
+
+    HashMap<String, Collection<Serializable>> in = new HashMap<>();
     if (CollectionUtils.isNotEmpty(ids)) {
-      String idFieldName = this.resourceRegistry
-        .findEntry(resourceClass)
-        .getResourceInformation()
+      String idFieldName = resourceInformation
         .getIdField()
         .getUnderlyingName();
       in.put(idFieldName, ids);
@@ -98,12 +110,14 @@ public class DinaRepository<D, E extends DinaEntity>
 
     Map<Class<?>, Set<String>> fieldsPerEntity = getFieldsPerEntity();
 
-    Set<String> includedRelations = querySpec.getIncludedRelations().stream()
-        .map(ir -> ir.getAttributePath().get(0)).collect(Collectors.toSet());
+    Set<String> relations = resourceInformation
+      .getRelationshipFields()
+      .stream().map(rf->rf.getUnderlyingName())
+      .collect(Collectors.toSet());
 
-    List<D> dtos =
-        entities.stream().map(e -> dinaMapper.toDto(e, fieldsPerEntity, includedRelations))
-            .collect(Collectors.toList());
+    List<D> dtos = entities.stream()
+      .map(e -> dinaMapper.toDto(e, fieldsPerEntity, relations))
+      .collect(Collectors.toList());
 
     return querySpec.apply(dtos);
   }
