@@ -32,14 +32,14 @@ public class JsonAPITestHelperTest {
   private JsonAPIRelationship relationship = JsonAPIRelationship.of("derivedFrom", "metadata", 
       "947f77ee-d144-45b5-b559-e239db0caa18");
   
-  private final LocalDateTime TEST_LOCAL_DT = LocalDateTime.now();  
+  private final LocalDateTime TEST_LOCAL_DT = LocalDateTime.of(2019, 1, 26, 6, 26);  
  
   
   @BeforeEach
   void setup() {    
  
     myTestObj.setDisplayName("agent");
-    myTestObj.setEmail("xuemei.gan@canada.ca");
+    myTestObj.setEmail("bicoe@canada.ca");
     myTestObj.setCreateDate(TEST_LOCAL_DT);    
     
     attributeMap.put("bucket","myBucket");
@@ -61,7 +61,7 @@ public class JsonAPITestHelperTest {
     assertTrue(attrMap.keySet().contains("createDate"));
     
     assertTrue(attrMap.values().contains("agent"));
-    assertTrue(attrMap.values().contains("xuemei.gan@canada.ca"));
+    assertTrue(attrMap.values().contains("bicoe@canada.ca"));
 
     assertEquals(LocalDateTime.parse((CharSequence) attrMap.get("createDate")), TEST_LOCAL_DT);
     

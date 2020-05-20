@@ -39,7 +39,7 @@
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
     <guava.version>24.0-jre</guava.version>
-    <jackson-datatype-jsr310.version>2.11.0</jackson-datatype-jsr310.version>    
+   
   </properties>
 
   <!-- Common sub module dependencies -->
@@ -60,11 +60,6 @@
       <artifactId>javax.persistence-api</artifactId>
     </dependency>
     <!--Util -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-      <version>${jackson-datatype-jsr310.version}</version>
-    </dependency>    
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>

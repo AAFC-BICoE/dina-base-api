@@ -10,6 +10,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableMap;
 
+/**
+ * The class provides some helper methods to build JSON API compliant Map
+ * 
+ */
 
 public final class JsonAPITestHelper {
 
@@ -74,7 +78,7 @@ public final class JsonAPITestHelper {
     return relationships.build();
   }
     
-  private static Map<String, Object> toRelationshipMap(JsonAPIRelationship relationship) {
+  public static Map<String, Object> toRelationshipMap(JsonAPIRelationship relationship) {
     ImmutableMap.Builder<String, Object> relationships = new ImmutableMap.Builder<>();
     relationships.put("type", relationship.getType()).put("id", relationship.getId()).build();
     
