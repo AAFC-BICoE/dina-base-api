@@ -147,6 +147,28 @@ public class DinaRepositoryIT {
   }
 
   @Test
+  public void findAll_FilterOnNestedField_FiltersOnNestedField() {
+    PersonDTO expectedDto = createPersonDto();
+    dinaRepository.create(expectedDto);
+
+    for (int i = 0; i < 10; i++) {
+      PersonDTO toPersist = createPersonDto();
+      toPersist.setDepartment(null);
+      dinaRepository.create(toPersist);
+    }
+
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.addFilter(
+      PathSpec.of("department", "uuid").filter(
+        FilterOperator.EQ,
+        singleRelationUnderTest.getUuid()));
+
+    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    assertEquals(1, resultList.size());
+    assertEquals(singleRelationUnderTest.getUuid(), resultList.get(0).getDepartment().getUuid());
+  }
+
+  @Test
   public void findAll_NothingPersisted_ReturnsEmpty() {
     List<PersonDTO> result = dinaRepository.findAll(null, new QuerySpec(PersonDTO.class));
     assertEquals(0, result.size());
