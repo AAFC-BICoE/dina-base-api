@@ -191,6 +191,22 @@ public class DinaRepositoryIT {
   }
 
   @Test
+  public void findAll_whenPageLimitIsSet_pageSizeIsLimited() {
+    long pageLimit = 10;
+
+    for (int i = 0; i < pageLimit * 2; i++) {
+      PersonDTO dto = createPersonDto();
+      dinaRepository.create(dto);
+    }
+
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.setLimit(pageLimit);
+
+    List<PersonDTO> result = dinaRepository.findAll(null, querySpec);
+    assertEquals(pageLimit, result.size());
+  }
+
+  @Test
   public void findAll_NothingPersisted_ReturnsEmpty() {
     List<PersonDTO> result = dinaRepository.findAll(null, new QuerySpec(PersonDTO.class));
     assertEquals(0, result.size());
