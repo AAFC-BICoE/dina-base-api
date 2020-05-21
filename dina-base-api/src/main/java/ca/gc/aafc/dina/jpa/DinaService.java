@@ -20,6 +20,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import io.crnk.data.jpa.query.criteria.JpaCriteriaQueryFactory;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -180,6 +181,10 @@ public abstract class DinaService<E extends DinaEntity> {
    */
   public <T> T findOne(Object naturalId, Class<T> entityClass) {
     return baseDAO.findOneByNaturalId(naturalId, entityClass);
+  }
+
+  public JpaCriteriaQueryFactory createJpaCritFactory() {
+    return baseDAO.createWithEntityManager(JpaCriteriaQueryFactory::newInstance);
   }
 
   /**
