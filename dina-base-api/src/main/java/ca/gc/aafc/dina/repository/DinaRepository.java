@@ -87,8 +87,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public ResourceList<D> findAll(QuerySpec querySpec) {
-    // TODO Auto-generated method stub
-    return null;
+    return findAll(null, querySpec);
   }
 
   @Override
