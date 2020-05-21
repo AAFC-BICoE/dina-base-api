@@ -1,14 +1,17 @@
 package ca.gc.aafc.dina.jpa;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.CriteriaBuilder.In;
@@ -92,7 +95,8 @@ public abstract class DinaService<E extends DinaEntity> {
    *
    * <p>
    * Given WHERE map maps field names to values. WHERE map can be empty to find
-   * all. Where map can search on null values.
+   * all. Where map can search on null values. WHERE map field names can be a dot ('.')
+   * seperated path for filtering on nested values.
    * <p>
    * 
    * <p>
@@ -116,12 +120,9 @@ public abstract class DinaService<E extends DinaEntity> {
     CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
     Root<T> root = criteria.from(entityClass);
 
-    Predicate[] wherePredicates = where.entrySet().stream().map(entry -> {
-      if (entry.getValue() == null) {
-        return criteriaBuilder.isNull(root.get(entry.getKey()));
-      }
-      return criteriaBuilder.equal(root.get(entry.getKey()), entry.getValue());
-    }).toArray(Predicate[]::new);
+    Predicate[] wherePredicates = where.entrySet().stream()
+      .map(entry -> generateWherePredicate(criteriaBuilder, root, entry.getValue(), entry.getKey()))
+      .toArray(Predicate[]::new);
 
     Predicate[] inPredicates = in.entrySet().stream().map(entry -> {
       In<O> inClause = criteriaBuilder.in(root.get(entry.getKey()));
@@ -132,6 +133,41 @@ public abstract class DinaService<E extends DinaEntity> {
     criteria.where(ArrayUtils.addAll(wherePredicates, inPredicates)).select(root);
 
     return baseDAO.resultListFromCriteria(criteria);
+  }
+
+  /**
+   * <p>
+   * Generates a Predicate from a given root and criteria builder, where an entites attribute 
+   * equals a given value. The field path is a dot ('.') seperated path to the root entities
+   * attribute. The field path can handle nested paths using the dot notations.
+   * <P>
+   * 
+   * <P>
+   * Given value can be null to match where field is null.
+   * <p>
+   *
+   * @param <T>             - Type of the root
+   * @param criteriaBuilder - criteriaBuilder to generate predicate
+   * @param root            - root of the original entity
+   * @param value           - value the field path equals
+   * @param fieldPath       - dot ('.') seperated path to the roots attribute.
+   * @return Predicate matching the root entites attribute to a given value
+   */
+  private static <T> Predicate generateWherePredicate(
+    CriteriaBuilder criteriaBuilder,
+    Root<T> root,
+    Object value,
+    String fieldPath
+  ) {
+    String[] path = fieldPath.split(Pattern.quote("."));
+    Path<Object> attributePath = root.get(path[0]);
+    for (String pathString : Arrays.asList(path).subList(1, path.length)) {
+      attributePath = attributePath.get(pathString);
+    }
+    if (value == null) {
+      return criteriaBuilder.isNull(attributePath);
+    }
+    return criteriaBuilder.equal(attributePath, value);
   }
 
   /**

@@ -35,6 +35,9 @@ public class DinaServiceTest {
   @Inject
   private DinaServiceTestImplementation serviceUnderTest;
 
+  @Inject
+  private BaseDAO baseDAO;
+
   @Test
   public void create_ValidEntity_EntityPersists() {
     Department result = persistDepartment();
@@ -66,6 +69,28 @@ public class DinaServiceTest {
     List<Department> resultList = serviceUnderTest.findAllWhere(Department.class, where);
     assertEquals(expectedNumberOfEntities, resultList.size());
     resultList.forEach(result -> assertEquals(expectedName, result.getName()));
+  }
+
+  @Test
+  public void findAllWhere_WhereNestedFieldIs_FindsAllByNestedField() {
+    DepartmentType type = DepartmentType.builder().name(RandomStringUtils.random(15)).build();
+    baseDAO.create(type);
+
+    Department expected = createDepartment();
+    expected.setDepartmentType(type);
+    serviceUnderTest.create(expected);
+
+    // Persist extra departments to validate correct number returned
+    persistDepartmentsWithName(RandomStringUtils.random(15), 5);
+
+    Map<String, Object> where = ImmutableMap.of("departmentType.name", type.getName());
+
+    List<Department> resultList = serviceUnderTest.findAllWhere(Department.class, where);
+    assertEquals(1, resultList.size());
+
+    Department result = resultList.get(0);
+    assertEquals(type.getName(), result.getDepartmentType().getName());
+    assertEquals(expected.getUuid(), result.getUuid());
   }
 
   @Test
