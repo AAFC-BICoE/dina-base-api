@@ -121,8 +121,32 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public <S extends D> S save(S resource) {
-    // TODO Auto-generated method stub
-    return null;
+    ResourceInformation resourceInformation = this.resourceRegistry
+      .findEntry(resourceClass).getResourceInformation();
+
+    String idFieldName = resourceInformation.getIdField().getUnderlyingName();
+    Object id = PropertyUtils.getProperty(resource, idFieldName);
+
+    E entity = dinaService.findOne(id, entityClass);
+
+    if (entity == null) {
+      throw new ResourceNotFoundException(
+          resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
+    }
+
+    Map<Class<?>, Set<String>> fieldsPerClass = parseFieldsPerClass(resourceClass, new HashMap<>());
+    fieldsPerClass.forEach((clazz, fields) -> fields.removeIf(f -> isGenerated(clazz, f)));
+
+    Set<String> relations = resourceInformation.getRelationshipFields().stream()
+        .map(rf -> rf.getUnderlyingName()).collect(Collectors.toSet());
+
+    dinaMapper.applyDtoToEntity(resource, entity, fieldsPerClass, relations);
+
+    linkRelations(entity, resourceInformation.getRelationshipFields());
+
+    dinaService.update(entity);
+
+    return null;// TODO use findOne
   }
 
   @Override

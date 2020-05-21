@@ -66,7 +66,7 @@ public class DinaRepositoryIT {
 
     Person result = baseDAO.findOneByNaturalId(dto.getUuid(), Person.class);
     assertNotNull(result);
-    assertEqualsPersonDtoAndEntity(dto, result, true);
+    assertEqualsPersonDtoAndEntity(dto, result, singleRelationUnderTest, collectionRelationUnderTest);
   }
 
   @Test
@@ -233,6 +233,33 @@ public class DinaRepositoryIT {
     assertEquals(0, result.size());
   }
 
+  @Test
+  public void save_UpdateAllFields_AllFieldsUpdated() {
+    Department expectedDept = persistDepartment();
+    DepartmentDto newDepart = DepartmentDto.builder().uuid(expectedDept.getUuid()).build();
+
+    List<Department> expectedDepts = persistDepartments();
+    List<DepartmentDto> newDepartments = expectedDepts.stream()
+      .map(d -> DepartmentDto.builder().uuid(d.getUuid()).build())
+      .collect(Collectors.toList());
+
+    String expectedName = "new name";
+    String[] expectedNickNames = Arrays.asList("new", "nick", "names").toArray(new String[0]);
+
+    PersonDTO dto = createPersonDto();
+    dinaRepository.create(dto);
+
+    dto.setName(expectedName);
+    dto.setNickNames(expectedNickNames);
+    dto.setDepartments(newDepartments);
+    dto.setDepartment(newDepart);
+
+    dinaRepository.save(dto);
+
+    Person result = baseDAO.findOneByNaturalId(dto.getUuid(), Person.class);
+    assertEqualsPersonDtoAndEntity(dto, result, expectedDept, expectedDepts);
+  }
+
   private void assertEqualsPersonDtos(PersonDTO dto, PersonDTO result, boolean testRelations) {
     assertEquals(dto.getUuid(), result.getUuid());
     assertEquals(dto.getName(), result.getName());
@@ -248,14 +275,17 @@ public class DinaRepositoryIT {
     }
   }
 
-  private void assertEqualsPersonDtoAndEntity(PersonDTO dto, Person entity, boolean testRelations) {
+  private static void assertEqualsPersonDtoAndEntity(
+    PersonDTO dto,
+    Person entity,
+    Department expectedDepartment,
+    List<Department> expectedDepartments
+  ) {
     assertEquals(dto.getUuid(), entity.getUuid());
     assertEquals(dto.getName(), entity.getName());
     assertArrayEquals(dto.getNickNames(), entity.getNickNames());
-    if (testRelations) {
-      assertTrue(EqualsBuilder.reflectionEquals(singleRelationUnderTest, entity.getDepartment()));
-      assertThat(collectionRelationUnderTest, Is.is(entity.getDepartments()));
-    }
+    assertTrue(EqualsBuilder.reflectionEquals(expectedDepartment, entity.getDepartment()));
+    assertThat(expectedDepartments, Is.is(entity.getDepartments()));
   }
 
   private PersonDTO createPersonDto() {
