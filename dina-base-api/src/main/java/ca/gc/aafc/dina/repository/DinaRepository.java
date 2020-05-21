@@ -28,6 +28,7 @@ import io.crnk.core.engine.registry.ResourceRegistryAware;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepository;
+import io.crnk.core.resource.list.DefaultResourceList;
 import io.crnk.core.resource.list.ResourceList;
 import io.crnk.data.jpa.query.criteria.JpaCriteriaQuery;
 import io.crnk.data.jpa.query.criteria.JpaCriteriaQueryFactory;
@@ -116,7 +117,7 @@ public class DinaRepository<D, E extends DinaEntity>
         .collect(Collectors.toList());
     }
 
-    return querySpec.apply(dtos);
+    return new DefaultResourceList<>(dtos, null, null);
   }
 
   @Override
