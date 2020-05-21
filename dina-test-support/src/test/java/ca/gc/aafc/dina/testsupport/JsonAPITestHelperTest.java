@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import ca.gc.aafc.dina.testsupport.entity.ComplexObject;
@@ -19,49 +18,36 @@ import lombok.Data;
 public class JsonAPITestHelperTest {
   
   @Data   
-  class TestObject  extends ComplexObject{
+  static class TestObject  extends ComplexObject{
     private String email;
     private String displayName;
     private LocalDateTime createDate;
   };    
-  
-  private TestObject myTestObj = new TestObject();
-  private Map<String, Object> attributeMap = new HashMap<String, Object>();
-  private Map<String, Object> relationshipMap = new HashMap<String, Object>();
-  private List<JsonAPIRelationship> relationshipList = new ArrayList<JsonAPIRelationship>();
-  private JsonAPIRelationship relationship = JsonAPIRelationship.of("derivedFrom", "metadata", 
+
+  private final static JsonAPIRelationship RELATIONSHIP = JsonAPIRelationship.of("derivedFrom", "metadata", 
       "947f77ee-d144-45b5-b559-e239db0caa18");
-  
-  private final LocalDateTime TEST_LOCAL_DT = LocalDateTime.of(2019, 1, 26, 6, 26);  
+
+  private final static LocalDateTime TEST_LOCAL_DT = LocalDateTime.of(2019, 1, 26, 6, 26);  
  
-  
-  @BeforeEach
-  void setup() {    
- 
+  private static TestObject createTestObject() {
+    TestObject myTestObj = new TestObject();
     myTestObj.setDisplayName("agent");
-    myTestObj.setEmail("bicoe@canada.ca");
-    myTestObj.setCreateDate(TEST_LOCAL_DT);    
-    
-    attributeMap.put("bucket","myBucket");
-    attributeMap.put("dcFormat","image");
-    
-    relationshipMap.put("uploadedBy", myTestObj);
-    
-    relationshipList.add(relationship);    
-    
+    myTestObj.setEmail("a@a.ca");
+    myTestObj.setCreateDate(TEST_LOCAL_DT);
+    return myTestObj;
   }
   
   
   @Test
   public void toAttributeMap_whenGivenAnObject_thenReturnProperAttributeMap() {
-    
-    Map<String, Object> attrMap = JsonAPITestHelper.toAttributeMap(myTestObj);
+
+    Map<String, Object> attrMap = JsonAPITestHelper.toAttributeMap(createTestObject());
     assertTrue(attrMap.keySet().contains("displayName"));
     assertTrue(attrMap.keySet().contains("email"));
     assertTrue(attrMap.keySet().contains("createDate"));
     
     assertTrue(attrMap.values().contains("agent"));
-    assertTrue(attrMap.values().contains("bicoe@canada.ca"));
+    assertTrue(attrMap.values().contains("a@a.ca"));
 
     assertEquals(LocalDateTime.parse((CharSequence) attrMap.get("createDate")), TEST_LOCAL_DT);
     
@@ -70,6 +56,15 @@ public class JsonAPITestHelperTest {
   @SuppressWarnings("unchecked")
   @Test
   public void toJsonAPIMap_whenGivenAllParameters_thenReturnProperJsonMap() {
+
+    Map<String, Object> attributeMap = new HashMap<String, Object>();
+    attributeMap.put("bucket","myBucket");
+    attributeMap.put("dcFormat","image");
+
+    TestObject myTestObj = createTestObject();
+
+    Map<String, Object> relationshipMap = new HashMap<String, Object>();
+    relationshipMap.put("uploadedBy", myTestObj);
 
     Map<String, Object> jsonAPIMap = JsonAPITestHelper.toJsonAPIMap("metadata", attributeMap, 
         relationshipMap, "30ef7300-baf4-4ab0-b3e0-7f841c3d211e");
@@ -101,7 +96,9 @@ public class JsonAPITestHelperTest {
   @SuppressWarnings("unchecked")
   @Test
   public void toRelationshipMap_whenGivenRelationshipObjectList_thenReturnProperRelationshipMap() {
-   
+    List<JsonAPIRelationship> relationshipList = new ArrayList<JsonAPIRelationship>();
+    relationshipList.add(RELATIONSHIP);  
+
     Map<String, Object> relationshipMap = JsonAPITestHelper.toRelationshipMap(relationshipList);
     assertTrue(relationshipMap.containsKey("derivedFrom"));
     

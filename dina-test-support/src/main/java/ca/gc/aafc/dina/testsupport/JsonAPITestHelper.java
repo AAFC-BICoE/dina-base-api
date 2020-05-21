@@ -12,9 +12,9 @@ import com.google.common.collect.ImmutableMap;
 
 /**
  * The class provides some helper methods to build JSON API compliant Map
+ * that can be serialized by Jackson to send to a running api for testing.
  * 
  */
-
 public final class JsonAPITestHelper {
 
   private static final ObjectMapper IT_OBJECT_MAPPER = new ObjectMapper();
