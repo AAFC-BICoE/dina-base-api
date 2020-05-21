@@ -38,6 +38,8 @@
     <asciidoctorj.diagram.version>2.0.1</asciidoctorj.diagram.version>
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
+    <guava.version>24.0-jre</guava.version>
+   
   </properties>
 
   <!-- Common sub module dependencies -->
@@ -58,6 +60,11 @@
       <artifactId>javax.persistence-api</artifactId>
     </dependency>
     <!--Util -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
