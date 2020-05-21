@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.testsupport;
+package ca.gc.aafc.dina.testsupport.jsonapi;
 
 import java.util.List;
 import java.util.Map;

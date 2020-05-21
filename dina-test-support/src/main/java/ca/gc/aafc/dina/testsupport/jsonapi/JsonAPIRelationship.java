@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.testsupport;
+package ca.gc.aafc.dina.testsupport.jsonapi;
 
 /**
  * Immutable class (for testing) representing a Relationship.

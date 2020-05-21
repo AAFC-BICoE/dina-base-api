@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.testsupport;
+package ca.gc.aafc.dina.testsupport.jsonapi;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -14,6 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import ca.gc.aafc.dina.testsupport.entity.ComplexObject;
+import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
+import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import lombok.Data;
 
 public class JsonAPITestHelperTest {
