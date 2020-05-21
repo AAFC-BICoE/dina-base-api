@@ -207,6 +207,27 @@ public class DinaRepositoryIT {
   }
 
   @Test
+  public void findAll_whenPageOffsetIsSet_pageStartsAfterOffset() {
+    long offset = 2;
+    List<PersonDTO> dtos = new ArrayList<>();
+
+    for (int i = 0; i < 10; i++) {
+      PersonDTO dto = createPersonDto();
+      dinaRepository.create(dto);
+      dtos.add(dto);
+    }
+
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.setOffset(offset);
+    List<PersonDTO> result = dinaRepository.findAll(null, querySpec);
+
+    List<PersonDTO> expectedDtos = dtos.subList((int) offset, dtos.size());
+    for (int i = 0; i < expectedDtos.size(); i++) {
+      assertEqualsPersonDtos(expectedDtos.get(i), result.get(i), false);
+    }
+  }
+
+  @Test
   public void findAll_NothingPersisted_ReturnsEmpty() {
     List<PersonDTO> result = dinaRepository.findAll(null, new QuerySpec(PersonDTO.class));
     assertEquals(0, result.size());
