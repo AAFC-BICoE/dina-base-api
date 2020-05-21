@@ -32,10 +32,12 @@ import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jpa.DinaService;
+import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
+import io.crnk.core.queryspec.SortSpec;
 import lombok.NonNull;
 
 @Transactional
@@ -166,6 +168,26 @@ public class DinaRepositoryIT {
     List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
     assertEquals(1, resultList.size());
     assertEquals(singleRelationUnderTest.getUuid(), resultList.get(0).getDepartment().getUuid());
+  }
+
+  @Test
+  public void findAll_SortingByName_ReturnsSorted() {
+    List<String> names = Arrays.asList("a", "b", "c", "d");
+    List<String> shuffledNames = Arrays.asList("b", "a", "d", "c");
+
+    for (String name : shuffledNames) {
+      PersonDTO toPersist = createPersonDto();
+      toPersist.setName(name);
+      dinaRepository.create(toPersist);
+    }
+
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.setSort(Arrays.asList(new SortSpec(Arrays.asList("name"), Direction.ASC)));
+
+    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    for (int i = 0; i < names.size(); i++) {
+      assertEquals(names.get(i), resultList.get(i).getName());
+    }
   }
 
   @Test
