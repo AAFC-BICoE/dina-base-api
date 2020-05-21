@@ -6,6 +6,6 @@ package ca.gc.aafc.dina.entity;
  */
 public interface DinaEntity {
 
-    Long getId();
+    Integer getId();
 
 }
