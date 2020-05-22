@@ -64,8 +64,7 @@ public class DinaRepositoryIT {
 
   @Test
   public void create_ValidResource_ResourceCreated() {
-    PersonDTO dto = createPersonDto();
-    dinaRepository.create(dto);
+    PersonDTO dto = persistPerson();
 
     Person result = baseDAO.findOneByNaturalId(dto.getUuid(), Person.class);
     assertNotNull(result);
@@ -74,8 +73,7 @@ public class DinaRepositoryIT {
 
   @Test
   public void findOne_ResourceAndRelations_FindsResourceAndRelations() {
-    PersonDTO dto = createPersonDto();
-    dinaRepository.create(dto);
+    PersonDTO dto = persistPerson();
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setIncludedRelations(createIncludeRelationSpecs("department", "departments"));
@@ -86,8 +84,7 @@ public class DinaRepositoryIT {
 
   @Test
   public void findOne_ExcludeRelations_RelationsExcluded() {
-    PersonDTO dto = createPersonDto();
-    dinaRepository.create(dto);
+    PersonDTO dto = persistPerson();
 
     PersonDTO result = dinaRepository.findOne(dto.getUuid(), new QuerySpec(PersonDTO.class));
     assertEqualsPersonDtos(dto, result, false);
@@ -108,8 +105,7 @@ public class DinaRepositoryIT {
     Map<UUID, PersonDTO> expectedPersons = new HashMap<>();
 
     for (int i = 0; i < 10; i++) {
-      PersonDTO dto = createPersonDto();
-      dinaRepository.create(dto);
+      PersonDTO dto = persistPerson();
       expectedPersons.put(dto.getUuid(), dto);
     }
 
@@ -129,8 +125,7 @@ public class DinaRepositoryIT {
     Map<UUID, PersonDTO> expectedPersons = new HashMap<>();
 
     for (int i = 0; i < 10; i++) {
-      PersonDTO dto = createPersonDto();
-      dinaRepository.create(dto);
+      PersonDTO dto = persistPerson();
       expectedPersons.put(dto.getUuid(), dto);
     }
 
@@ -151,12 +146,10 @@ public class DinaRepositoryIT {
     List<Serializable> idList = new ArrayList<>();
 
     for (int i = 0; i < 10; i++) {
-      PersonDTO dto = createPersonDto();
-      dinaRepository.create(dto);
+      PersonDTO dto = persistPerson();
       idList.add(dto.getUuid());
-      // Persist extra Person NOT IN idList
-      PersonDTO extra = createPersonDto();
-      dinaRepository.create(extra);
+      // Persist extra person not in list
+      persistPerson();
     }
 
     List<PersonDTO> resultList = dinaRepository.findAll(idList, new QuerySpec(PersonDTO.class));
@@ -174,9 +167,8 @@ public class DinaRepositoryIT {
       PersonDTO dto = createPersonDto();
       dto.setName(expectedName);
       dinaRepository.create(dto);
-      // Persist extra Person with different name
-      PersonDTO extra = createPersonDto();
-      dinaRepository.create(extra);
+      // Persist extra person with different name
+      persistPerson();
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
@@ -189,9 +181,9 @@ public class DinaRepositoryIT {
 
   @Test
   public void findAll_FilterOnNestedFieldEquals_FiltersOnNestedField() {
-    PersonDTO expectedDto = createPersonDto();
-    dinaRepository.create(expectedDto);
+    persistPerson();
 
+    // Persist extra people with no department
     for (int i = 0; i < 10; i++) {
       PersonDTO toPersist = createPersonDto();
       toPersist.setDepartment(null);
@@ -235,8 +227,7 @@ public class DinaRepositoryIT {
     long pageLimit = 10;
 
     for (int i = 0; i < pageLimit * 2; i++) {
-      PersonDTO dto = createPersonDto();
-      dinaRepository.create(dto);
+      persistPerson();
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
@@ -252,8 +243,7 @@ public class DinaRepositoryIT {
     List<PersonDTO> dtos = new ArrayList<>();
 
     for (int i = 0; i < 10; i++) {
-      PersonDTO dto = createPersonDto();
-      dinaRepository.create(dto);
+      PersonDTO dto = persistPerson();
       dtos.add(dto);
     }
 
@@ -286,8 +276,7 @@ public class DinaRepositoryIT {
     String expectedName = "new name";
     String[] expectedNickNames = Arrays.asList("new", "nick", "names").toArray(new String[0]);
 
-    PersonDTO dto = createPersonDto();
-    dinaRepository.create(dto);
+    PersonDTO dto = persistPerson();
 
     dto.setName(expectedName);
     dto.setNickNames(expectedNickNames);
@@ -302,8 +291,7 @@ public class DinaRepositoryIT {
 
   @Test
   public void save_NullAllFields_AllFieldsNulled() {
-    PersonDTO dto = createPersonDto();
-    dinaRepository.create(dto);
+    PersonDTO dto = persistPerson();
 
     dto.setName(null);
     dto.setNickNames(null);
@@ -317,6 +305,16 @@ public class DinaRepositoryIT {
     assertNull(result.getNickNames());
     assertNull(result.getDepartment());
     assertNull(result.getDepartments());
+  }
+
+  @Test
+  public void delete_ValidResource_ResourceRemoved() {
+    PersonDTO dto = persistPerson();
+
+    assertNotNull(baseDAO.findOneByNaturalId(dto.getUuid(), Person.class));
+
+    dinaRepository.delete(dto.getUuid());
+    assertNull(baseDAO.findOneByNaturalId(dto.getUuid(), Person.class));
   }
 
   private void assertEqualsPersonDtos(PersonDTO dto, PersonDTO result, boolean testRelations) {
@@ -334,17 +332,6 @@ public class DinaRepositoryIT {
     }
   }
 
-  @Test
-  public void delete_ValidResource_ResourceRemoved() {
-    PersonDTO dto = createPersonDto();
-    dinaRepository.create(dto);
-
-    assertNotNull(baseDAO.findOneByNaturalId(dto.getUuid(), Person.class));
-
-    dinaRepository.delete(dto.getUuid());
-    assertNull(baseDAO.findOneByNaturalId(dto.getUuid(), Person.class));
-  }
-
   private static void assertEqualsPersonDtoAndEntity(
     PersonDTO dto,
     Person entity,
@@ -356,6 +343,12 @@ public class DinaRepositoryIT {
     assertArrayEquals(dto.getNickNames(), entity.getNickNames());
     assertTrue(EqualsBuilder.reflectionEquals(expectedDepartment, entity.getDepartment()));
     assertThat(expectedDepartments, Is.is(entity.getDepartments()));
+  }
+
+  private PersonDTO persistPerson() {
+    PersonDTO dto = createPersonDto();
+    dinaRepository.create(dto);
+    return dto;
   }
 
   private PersonDTO createPersonDto() {
@@ -373,7 +366,7 @@ public class DinaRepositoryIT {
         .name(RandomStringUtils.random(4)).build();
   }
 
-  private Department createDepartment(String name, String Location) {
+  private static Department createDepartment(String name, String Location) {
     Department depart = Department.builder()
       .uuid(UUID.randomUUID())
       .name(name)
@@ -396,7 +389,7 @@ public class DinaRepositoryIT {
     return departments;
   }
 
-  private List<IncludeRelationSpec> createIncludeRelationSpecs(String... args) {
+  private static List<IncludeRelationSpec> createIncludeRelationSpecs(String... args) {
     return Arrays.asList(args).stream()
       .map(Arrays::asList)
       .map(IncludeRelationSpec::new)
