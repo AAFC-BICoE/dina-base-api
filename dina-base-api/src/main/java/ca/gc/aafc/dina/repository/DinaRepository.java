@@ -1,6 +1,9 @@
 package ca.gc.aafc.dina.repository;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,6 +17,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
@@ -28,17 +32,16 @@ import io.crnk.core.engine.registry.ResourceRegistryAware;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepository;
+import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.list.DefaultResourceList;
 import io.crnk.core.resource.list.ResourceList;
 import io.crnk.data.jpa.query.criteria.JpaCriteriaQuery;
 import io.crnk.data.jpa.query.criteria.JpaCriteriaQueryFactory;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
-@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class DinaRepository<D, E extends DinaEntity>
     implements ResourceRepository<D, Serializable>, ResourceRegistryAware {
 
@@ -55,11 +58,35 @@ public class DinaRepository<D, E extends DinaEntity>
   @NonNull
   private final Class<E> entityClass;
 
+  private Map<Class<?>, Set<String>> resourceFieldsPerClass;
+
+  private Map<Class<?>, Set<String>> entityFieldsPerClass;
+
   @Getter
   @Setter(onMethod_ = @Override)
   private ResourceRegistry resourceRegistry;
 
   private JpaCriteriaQueryFactory queryFactory;
+
+  @Inject
+  public DinaRepository(
+    @NonNull DinaService<E> dinaService,
+    @NonNull DinaMapper<D, E> dinaMapper,
+    @NonNull Class<D> resourceClass,
+    @NonNull Class<E> entityClass
+  ) {
+    this.dinaService = dinaService;
+    this.dinaMapper = dinaMapper;
+    this.resourceClass = resourceClass;
+    this.entityClass = entityClass;
+
+    this.resourceFieldsPerClass = parseFieldsPerClass(resourceClass, new HashMap<>());
+    this.resourceFieldsPerClass.forEach(
+      (clazz, fields) -> fields.removeIf(f -> isGenerated(clazz, f))
+    );
+
+    this.entityFieldsPerClass = getFieldsPerEntity();
+  }
 
   @PostConstruct
   void setup() {
@@ -75,12 +102,10 @@ public class DinaRepository<D, E extends DinaEntity>
           resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    Map<Class<?>, Set<String>> fieldsPerEntity = getFieldsPerEntity();
-
     Set<String> includedRelations = querySpec.getIncludedRelations().stream()
         .map(ir -> ir.getAttributePath().get(0)).collect(Collectors.toSet());
 
-    D dto = dinaMapper.toDto(entity, fieldsPerEntity, includedRelations);
+    D dto = dinaMapper.toDto(entity, entityFieldsPerClass, includedRelations);
 
     return dto;
   }
@@ -106,7 +131,7 @@ public class DinaRepository<D, E extends DinaEntity>
     List<D> dtos = query.buildExecutor(querySpec)
       .getResultList()
       .stream()
-      .map(e -> dinaMapper.toDto(e, getFieldsPerEntity(), relations))
+      .map(e -> dinaMapper.toDto(e, entityFieldsPerClass, relations))
       .collect(Collectors.toList());
 
     if (CollectionUtils.isNotEmpty(ids)) {
@@ -134,13 +159,10 @@ public class DinaRepository<D, E extends DinaEntity>
           resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    Map<Class<?>, Set<String>> fieldsPerClass = parseFieldsPerClass(resourceClass, new HashMap<>());
-    fieldsPerClass.forEach((clazz, fields) -> fields.removeIf(f -> isGenerated(clazz, f)));
-
     Set<String> relations = resourceInformation.getRelationshipFields().stream()
         .map(rf -> rf.getUnderlyingName()).collect(Collectors.toSet());
 
-    dinaMapper.applyDtoToEntity(resource, entity, fieldsPerClass, relations);
+    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
 
     linkRelations(entity, resourceInformation.getRelationshipFields());
 
@@ -154,9 +176,6 @@ public class DinaRepository<D, E extends DinaEntity>
   public <S extends D> S create(S resource) {
     E entity = entityClass.newInstance();
 
-    Map<Class<?>, Set<String>> fieldsPerClass = parseFieldsPerClass(resourceClass, new HashMap<>());
-    fieldsPerClass.forEach((clazz, fields) -> fields.removeIf(f -> isGenerated(clazz, f)));
-
     ResourceInformation resourceInformation =this.resourceRegistry
       .findEntry(resourceClass)
       .getResourceInformation();
@@ -166,7 +185,7 @@ public class DinaRepository<D, E extends DinaEntity>
       .map(af -> af.getUnderlyingName())
       .collect(Collectors.toSet());
 
-    dinaMapper.applyDtoToEntity(resource, entity, fieldsPerClass, relations);
+    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
 
     linkRelations(entity, resourceInformation.getRelationshipFields());
 
@@ -181,17 +200,17 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   private Map<Class<?>, Set<String>> getFieldsPerEntity() {
-    Map<Class<?>, Set<String>> fieldsPerDto = parseFieldsPerClass(resourceClass, new HashMap<>());
-    fieldsPerDto.forEach((clazz, fields) -> fields.removeIf(f -> isGenerated(clazz, f)));
-
-    Map<Class<?>, Set<String>> fieldsPerEntity = fieldsPerDto.entrySet().stream().map(e -> {
-      return new SimpleEntry<>(getRelatedEntity(e.getKey()), e.getValue());
-    }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    return fieldsPerEntity;
+    return resourceFieldsPerClass.entrySet()
+      .stream()
+      .map(e -> new SimpleEntry<>(getRelatedEntity(e.getKey()), e.getValue()))
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
-  private <T> Map<Class<?>, Set<String>> parseFieldsPerClass(Class<T> clazz,
-      Map<Class<?>, Set<String>> fieldsPerClass) {//TODO change to use reflection instead of crnk
+  @SneakyThrows
+  private <T> Map<Class<?>, Set<String>> parseFieldsPerClass(
+    Class<T> clazz,
+    Map<Class<?>, Set<String>> fieldsPerClass
+  ) {
     Objects.requireNonNull(clazz);
     Objects.requireNonNull(fieldsPerClass);
 
@@ -199,21 +218,31 @@ public class DinaRepository<D, E extends DinaEntity>
       return fieldsPerClass;
     }
 
-    ResourceInformation resourceInformation =this.resourceRegistry
-      .findEntry(clazz)
-      .getResourceInformation();
+    List<Field> relationFields = FieldUtils.getFieldsListWithAnnotation(
+      clazz,
+      JsonApiRelation.class
+    );
 
-    Set<String> attributes = resourceInformation.getAttributeFields()
-      .stream()
-      .map(af -> af.getUnderlyingName())
-      .collect(Collectors.toSet());
-    attributes.add(resourceInformation.getIdField().getUnderlyingName());
+    List<Field> attributeFields = FieldUtils.getAllFieldsList(clazz).stream()
+      .filter(f -> !relationFields.contains(f))
+      .collect(Collectors.toList());
 
-    fieldsPerClass.put(clazz, attributes);
+    fieldsPerClass.put(
+      clazz,
+      attributeFields.stream().map(af -> af.getName()).collect(Collectors.toSet())
+    );
 
-    List<ResourceField> relationFields = resourceInformation.getRelationshipFields();
-    for (ResourceField relationField : relationFields) {
-      parseFieldsPerClass(relationField.getElementType(), fieldsPerClass);
+    for (Field relationField : relationFields) {
+      if (Collection.class.isAssignableFrom(relationField.getType())) {
+        ParameterizedType genericType = (ParameterizedType) clazz
+          .getDeclaredField(relationField.getName())
+          .getGenericType();
+        for (Type elementType : genericType.getActualTypeArguments()) {
+          parseFieldsPerClass((Class<?>) elementType, fieldsPerClass);
+        }
+      } else {
+        parseFieldsPerClass(relationField.getType(), fieldsPerClass);
+      }
     }
 
     return fieldsPerClass;
