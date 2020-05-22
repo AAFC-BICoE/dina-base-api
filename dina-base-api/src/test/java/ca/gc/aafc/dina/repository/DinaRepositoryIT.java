@@ -308,6 +308,11 @@ public class DinaRepositoryIT {
   }
 
   @Test
+  public void save_NoResourceFound_ThrowsResourceNotFoundException() {
+    assertThrows(ResourceNotFoundException.class, () -> dinaRepository.save(createPersonDto()));
+  }
+
+  @Test
   public void delete_ValidResource_ResourceRemoved() {
     PersonDTO dto = persistPerson();
 
@@ -315,6 +320,11 @@ public class DinaRepositoryIT {
 
     dinaRepository.delete(dto.getUuid());
     assertNull(baseDAO.findOneByNaturalId(dto.getUuid(), Person.class));
+  }
+
+  @Test
+  public void delete_NoResourceFound_ThrowsResourceNotFoundException() {
+    assertThrows(ResourceNotFoundException.class, () -> dinaRepository.delete(UUID.randomUUID()));
   }
 
   private void assertEqualsPersonDtos(PersonDTO dto, PersonDTO result, boolean testRelations) {
