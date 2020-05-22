@@ -117,10 +117,6 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
-    ResourceInformation resourceInformation = this.resourceRegistry
-      .findEntry(resourceClass)
-      .getResourceInformation();
-
     Set<String> includedRelations = querySpec.getIncludedRelations()
       .stream()
       .map(ir-> ir.getAttributePath().get(0))
@@ -135,7 +131,11 @@ public class DinaRepository<D, E extends DinaEntity>
       .collect(Collectors.toList());
 
     if (CollectionUtils.isNotEmpty(ids)) {
-      String idFieldName = resourceInformation.getIdField().getUnderlyingName();
+      String idFieldName = this.resourceRegistry
+        .findEntry(resourceClass)
+        .getResourceInformation()
+        .getIdField()
+        .getUnderlyingName();
       dtos = dtos.stream()
         .filter(dto -> ids.contains(PropertyUtils.getProperty(dto, idFieldName)))
         .collect(Collectors.toList());
@@ -147,7 +147,8 @@ public class DinaRepository<D, E extends DinaEntity>
   @Override
   public <S extends D> S save(S resource) {
     ResourceInformation resourceInformation = this.resourceRegistry
-      .findEntry(resourceClass).getResourceInformation();
+      .findEntry(resourceClass)
+      .getResourceInformation();
 
     String idFieldName = resourceInformation.getIdField().getUnderlyingName();
     Object id = PropertyUtils.getProperty(resource, idFieldName);
@@ -179,7 +180,7 @@ public class DinaRepository<D, E extends DinaEntity>
   public <S extends D> S create(S resource) {
     E entity = entityClass.newInstance();
 
-    ResourceInformation resourceInformation =this.resourceRegistry
+    ResourceInformation resourceInformation = this.resourceRegistry
       .findEntry(resourceClass)
       .getResourceInformation();
 
@@ -288,8 +289,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private Object returnPersistedObject(String idFieldName, Object object) {
     Object relationID = PropertyUtils.getProperty(object, idFieldName);
-    Object persistedRelationObject = dinaService.findOne(relationID, object.getClass());
-    return persistedRelationObject;
+    return dinaService.findOne(relationID, object.getClass());
   }
 
   @SneakyThrows(NoSuchFieldException.class)
