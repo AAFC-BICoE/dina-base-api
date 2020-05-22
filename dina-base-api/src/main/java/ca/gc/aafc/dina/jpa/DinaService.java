@@ -1,22 +1,15 @@
 package ca.gc.aafc.dina.jpa;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.persistence.criteria.CriteriaBuilder.In;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
@@ -84,91 +77,24 @@ public abstract class DinaService<E extends DinaEntity> {
    * @param where       - map of fieldName::Values to match on
    * @return list of Entities
    */
-  public <T> List<T> findAllWhere(Class<T> entityClass, Map<String, Object> where) {
-    return findAllWhere(entityClass, where, new HashMap<>());
-  }
-
-  /**
-   * <p>
-   * Returns a list of Entities of a given class where fields match a given
-   * 'Where' map and fields are present in a given 'In' map.
-   * <p>
-   *
-   * <p>
-   * Given WHERE map maps field names to values. WHERE map can be empty to find
-   * all. Where map can search on null values. WHERE map field names can be a dot ('.')
-   * seperated path for filtering on nested values.
-   * <p>
-   * 
-   * <p>
-   * Given IN map maps field names to a List of Values the field value is contained in. 
-   * IN map can be empty when not matching an In clause.
-   * <p>
-   *
-   * @param <T>         - Type of entity
-   * @param <O>         - Type of Object
-   * @param entityClass - entity class to search on
-   * @param where       - map of fieldName::Values to match on
-   * @param in          - map of fieldName::List to match in
-   * @return list of Entities
-   */
-  public <T, O> List<T> findAllWhere(Class<T> entityClass, Map<String, Object> where, Map<String, Collection<O>> in) {
+  public List<E> findAllWhere(Class<E> entityClass, Map<String, Object> where) {
     Objects.requireNonNull(entityClass);
     Objects.requireNonNull(where);
-    Objects.requireNonNull(in);
 
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
-    CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
-    Root<T> root = criteria.from(entityClass);
+    CriteriaQuery<E> criteria = criteriaBuilder.createQuery(entityClass);
+    Root<E> root = criteria.from(entityClass);
 
-    Predicate[] wherePredicates = where.entrySet().stream()
-      .map(entry -> generateWherePredicate(criteriaBuilder, root, entry.getValue(), entry.getKey()))
-      .toArray(Predicate[]::new);
-
-    Predicate[] inPredicates = in.entrySet().stream().map(entry -> {
-      In<O> inClause = criteriaBuilder.in(root.get(entry.getKey()));
-      entry.getValue().forEach(val -> inClause.value(val));
-      return inClause;
+    Predicate[] predicates = where.entrySet().stream().map(entry -> {
+      if (entry.getValue() == null) {
+        return criteriaBuilder.isNull(root.get(entry.getKey()));
+      }
+      return criteriaBuilder.equal(root.get(entry.getKey()), entry.getValue());
     }).toArray(Predicate[]::new);
 
-    criteria.where(ArrayUtils.addAll(wherePredicates, inPredicates)).select(root);
+    criteria.where(predicates).select(root);
 
     return baseDAO.resultListFromCriteria(criteria);
-  }
-
-  /**
-   * <p>
-   * Generates a Predicate from a given root and criteria builder, where an entites attribute 
-   * equals a given value. The field path is a dot ('.') seperated path to the root entities
-   * attribute. The field path can handle nested paths using the dot notations.
-   * <P>
-   * 
-   * <P>
-   * Given value can be null to match where field is null.
-   * <p>
-   *
-   * @param <T>             - Type of the root
-   * @param criteriaBuilder - criteriaBuilder to generate predicate
-   * @param root            - root of the original entity
-   * @param value           - value the field path equals
-   * @param fieldPath       - dot ('.') seperated path to the roots attribute.
-   * @return Predicate matching the root entites attribute to a given value
-   */
-  private static <T> Predicate generateWherePredicate(
-    CriteriaBuilder criteriaBuilder,
-    Root<T> root,
-    Object value,
-    String fieldPath
-  ) {
-    String[] path = fieldPath.split(Pattern.quote("."));
-    Path<Object> attributePath = root.get(path[0]);
-    for (String pathString : Arrays.asList(path).subList(1, path.length)) {
-      attributePath = attributePath.get(pathString);
-    }
-    if (value == null) {
-      return criteriaBuilder.isNull(attributePath);
-    }
-    return criteriaBuilder.equal(attributePath, value);
   }
 
   /**
