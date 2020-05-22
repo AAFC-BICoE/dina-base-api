@@ -102,12 +102,12 @@ public class DinaRepository<D, E extends DinaEntity>
           resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    Set<String> includedRelations = querySpec.getIncludedRelations().stream()
-        .map(ir -> ir.getAttributePath().get(0)).collect(Collectors.toSet());
+    Set<String> includedRelations = querySpec.getIncludedRelations()
+      .stream()
+      .map(ir -> ir.getAttributePath().get(0))
+      .collect(Collectors.toSet());
 
-    D dto = dinaMapper.toDto(entity, entityFieldsPerClass, includedRelations);
-
-    return dto;
+    return dinaMapper.toDto(entity, entityFieldsPerClass, includedRelations);
   }
 
   @Override

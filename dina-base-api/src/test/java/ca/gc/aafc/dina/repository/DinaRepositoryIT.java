@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.Serializable;
@@ -33,6 +34,7 @@ import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jpa.DinaService;
+import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.IncludeRelationSpec;
@@ -86,7 +88,24 @@ public class DinaRepositoryIT {
     assertEqualsPersonDtos(dto, result, true);
   }
 
-  // Add find one test for 404 not found
+  @Test
+  public void findOne_ExcludeRelations_RelationsExcluded() {
+    PersonDTO dto = createPersonDto();
+    dinaRepository.create(dto);
+
+    PersonDTO result = dinaRepository.findOne(dto.getUuid(), new QuerySpec(PersonDTO.class));
+    assertEqualsPersonDtos(dto, result, false);
+    assertNull(result.getDepartment());
+    assertNull(result.getDepartments());
+  }
+
+  @Test
+  public void findOne_NoResourceFound_ThrowsResourceNotFoundException() {
+    assertThrows(
+      ResourceNotFoundException.class,
+      ()-> dinaRepository.findOne(UUID.randomUUID(), new QuerySpec(PersonDTO.class))
+    );
+  }
 
   @Test
   public void findAll_NoFilters_FindsAll() {
