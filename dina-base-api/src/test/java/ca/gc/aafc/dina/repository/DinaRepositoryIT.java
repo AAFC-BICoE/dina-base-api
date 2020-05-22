@@ -357,8 +357,7 @@ public class DinaRepositoryIT {
 
   private PersonDTO persistPerson() {
     PersonDTO dto = createPersonDto();
-    dinaRepository.create(dto);
-    return dto;
+    return dinaRepository.create(dto);
   }
 
   private PersonDTO createPersonDto() {
@@ -369,7 +368,6 @@ public class DinaRepositoryIT {
         .map(c -> DepartmentDto.builder().uuid(c.getUuid()).build())
         .collect(Collectors.toList());
     return PersonDTO.builder()
-        .uuid(UUID.randomUUID())
         .department(singleRelationDto)
         .departments(collectionRelationDtos)
         .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
@@ -414,7 +412,8 @@ public class DinaRepositoryIT {
 
     @Override
     protected Person preCreate(Person entity) {
-      return null;
+      entity.setUuid(UUID.randomUUID());
+      return entity;
     }
 
     @Override

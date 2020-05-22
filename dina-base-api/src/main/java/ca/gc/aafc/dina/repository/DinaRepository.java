@@ -181,6 +181,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   @SneakyThrows
+  @SuppressWarnings("unchecked")
   public <S extends D> S create(S resource) {
     E entity = entityClass.newInstance();
 
@@ -199,7 +200,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
     dinaService.create(entity);
 
-    return resource;
+    return (S) dinaMapper.toDto(entity, entityFieldsPerClass, relations);
   }
 
   @Override
