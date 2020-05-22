@@ -177,8 +177,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public void delete(Serializable id) {
-    // TODO Auto-generated method stub
-
+    dinaService.delete(dinaService.findOne(id, entityClass));
   }
 
   private Map<Class<?>, Set<String>> getFieldsPerEntity() {

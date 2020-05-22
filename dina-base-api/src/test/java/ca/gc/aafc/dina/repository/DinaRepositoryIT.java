@@ -295,6 +295,17 @@ public class DinaRepositoryIT {
     }
   }
 
+  @Test
+  public void delete_ValidResource_ResourceRemoved() {
+    PersonDTO dto = createPersonDto();
+    dinaRepository.create(dto);
+
+    assertNotNull(baseDAO.findOneByNaturalId(dto.getUuid(), Person.class));
+
+    dinaRepository.delete(dto.getUuid());
+    assertNull(baseDAO.findOneByNaturalId(dto.getUuid(), Person.class));
+  }
+
   private static void assertEqualsPersonDtoAndEntity(
     PersonDTO dto,
     Person entity,
