@@ -121,9 +121,15 @@ public class DinaRepository<D, E extends DinaEntity>
       .findEntry(resourceClass)
       .getResourceInformation();
 
+    Set<String> includedRelations = querySpec.getIncludedRelations()
+      .stream()
+      .map(ir-> ir.getAttributePath().get(0))
+      .collect(Collectors.toSet());
+
     Set<String> relations = resourceInformation
       .getRelationshipFields()
       .stream().map(rf->rf.getUnderlyingName())
+      .filter( rf -> includedRelations.contains(rf))
       .collect(Collectors.toSet());
 
     JpaCriteriaQuery<E> query = queryFactory.query(entityClass);

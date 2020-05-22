@@ -78,11 +78,7 @@ public class DinaRepositoryIT {
     dinaRepository.create(dto);
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
-    querySpec.setIncludedRelations(
-      Arrays.asList("department", "departments").stream()
-        .map(Arrays::asList)
-        .map(IncludeRelationSpec::new)
-        .collect(Collectors.toList()));
+    querySpec.setIncludedRelations(createIncludeRelationSpecs("department", "departments"));
 
     PersonDTO result = dinaRepository.findOne(dto.getUuid(), querySpec);
     assertEqualsPersonDtos(dto, result, true);
@@ -108,7 +104,7 @@ public class DinaRepositoryIT {
   }
 
   @Test
-  public void findAll_NoFilters_FindsAll() {
+  public void findAll_NoFilters_FindsAllAndExcludesRelationships() {
     Map<UUID, PersonDTO> expectedPersons = new HashMap<>();
 
     for (int i = 0; i < 10; i++) {
@@ -123,8 +119,31 @@ public class DinaRepositoryIT {
     for (PersonDTO resultElement : result) {
       PersonDTO expectedDto = expectedPersons.get(resultElement.getUuid());
       assertEqualsPersonDtos(expectedDto, resultElement, false);
+      assertNull(resultElement.getDepartment());
+      assertNull(resultElement.getDepartments());
+    }
+  }
+
+  @Test
+  public void findAll_ResourceAndRelations_FindsResourceAndRelations() {
+    Map<UUID, PersonDTO> expectedPersons = new HashMap<>();
+
+    for (int i = 0; i < 10; i++) {
+      PersonDTO dto = createPersonDto();
+      dinaRepository.create(dto);
+      expectedPersons.put(dto.getUuid(), dto);
     }
 
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.setIncludedRelations(createIncludeRelationSpecs("department", "departments"));
+
+    List<PersonDTO> result = dinaRepository.findAll(null, querySpec);
+
+    assertEquals(expectedPersons.size(), result.size());
+    for (PersonDTO resultElement : result) {
+      PersonDTO expectedDto = expectedPersons.get(resultElement.getUuid());
+      assertEqualsPersonDtos(expectedDto, resultElement, true);
+    }
   }
 
   @Test
@@ -180,6 +199,7 @@ public class DinaRepositoryIT {
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.setIncludedRelations(createIncludeRelationSpecs("department", "departments"));
     querySpec.addFilter(
       PathSpec.of("department", "uuid").filter(
         FilterOperator.EQ,
@@ -374,6 +394,13 @@ public class DinaRepositoryIT {
       departments.add(persistDepartment());
     }
     return departments;
+  }
+
+  private List<IncludeRelationSpec> createIncludeRelationSpecs(String... args) {
+    return Arrays.asList(args).stream()
+      .map(Arrays::asList)
+      .map(IncludeRelationSpec::new)
+      .collect(Collectors.toList());
   }
 
   public static class DinaPersonService extends DinaService<Person> {
