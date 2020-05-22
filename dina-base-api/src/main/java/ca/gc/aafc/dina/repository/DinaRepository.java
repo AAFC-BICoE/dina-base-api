@@ -146,7 +146,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
     dinaService.update(entity);
 
-    return null;// TODO use findOne
+    return resource;
   }
 
   @Override
@@ -172,7 +172,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
     dinaService.create(entity);
 
-    return null;//TODO use findOne
+    return resource;
   }
 
   @Override
