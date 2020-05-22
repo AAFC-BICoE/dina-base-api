@@ -196,7 +196,12 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public void delete(Serializable id) {
-    dinaService.delete(dinaService.findOne(id, entityClass));
+    E entity = dinaService.findOne(id, entityClass);
+    if (entity == null) {
+      throw new ResourceNotFoundException(
+          resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
+    }
+    dinaService.delete(entity);
   }
 
   private Map<Class<?>, Set<String>> getFieldsPerEntity() {
