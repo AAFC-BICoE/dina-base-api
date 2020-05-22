@@ -181,7 +181,7 @@ public class DinaRepositoryIT {
 
   @Test
   public void findAll_FilterOnNestedFieldEquals_FiltersOnNestedField() {
-    persistPerson();
+    PersonDTO expected = persistPerson();
 
     // Persist extra people with no department
     for (int i = 0; i < 10; i++) {
@@ -191,7 +191,6 @@ public class DinaRepositoryIT {
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
-    querySpec.setIncludedRelations(createIncludeRelationSpecs("department", "departments"));
     querySpec.addFilter(
       PathSpec.of("department", "uuid").filter(
         FilterOperator.EQ,
@@ -199,7 +198,7 @@ public class DinaRepositoryIT {
 
     List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
     assertEquals(1, resultList.size());
-    assertEquals(singleRelationUnderTest.getUuid(), resultList.get(0).getDepartment().getUuid());
+    assertEqualsPersonDtos(expected, resultList.get(0), false);
   }
 
   @Test
