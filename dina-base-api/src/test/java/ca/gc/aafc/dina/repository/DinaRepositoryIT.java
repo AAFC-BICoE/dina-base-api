@@ -4,6 +4,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.Serializable;
@@ -258,6 +259,25 @@ public class DinaRepositoryIT {
 
     Person result = baseDAO.findOneByNaturalId(dto.getUuid(), Person.class);
     assertEqualsPersonDtoAndEntity(dto, result, expectedDept, expectedDepts);
+  }
+
+  @Test
+  public void save_NullAllFields_AllFieldsNulled() {
+    PersonDTO dto = createPersonDto();
+    dinaRepository.create(dto);
+
+    dto.setName(null);
+    dto.setNickNames(null);
+    dto.setDepartments(null);
+    dto.setDepartment(null);
+
+    dinaRepository.save(dto);
+
+    Person result = baseDAO.findOneByNaturalId(dto.getUuid(), Person.class);
+    assertNull(result.getName());
+    assertNull(result.getNickNames());
+    assertNull(result.getDepartment());
+    assertNull(result.getDepartments());
   }
 
   private void assertEqualsPersonDtos(PersonDTO dto, PersonDTO result, boolean testRelations) {
