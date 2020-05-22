@@ -149,8 +149,8 @@ public class TestConfiguration {
   @Bean
   public DinaRepository<PersonDTO, Person> dinaRepository(DinaPersonService service) {
     DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(
-        PersonDTO.class,
-        Person.class,
+      PersonDTO.class,
+      Person.class,
       new ArrayList<>(),
       new ArrayList<>()
     );

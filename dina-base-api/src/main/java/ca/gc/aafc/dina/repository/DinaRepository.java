@@ -165,8 +165,10 @@ public class DinaRepository<D, E extends DinaEntity>
           resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    Set<String> relations = resourceInformation.getRelationshipFields().stream()
-        .map(rf -> rf.getUnderlyingName()).collect(Collectors.toSet());
+    Set<String> relations = resourceInformation.getRelationshipFields()
+      .stream()
+      .map(rf -> rf.getUnderlyingName())
+      .collect(Collectors.toSet());
 
     dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
 
