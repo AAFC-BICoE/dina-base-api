@@ -216,7 +216,7 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   @SneakyThrows
-  private <T> Map<Class<?>, Set<String>> parseFieldsPerClass(
+  private static <T> Map<Class<?>, Set<String>> parseFieldsPerClass(
     Class<T> clazz,
     Map<Class<?>, Set<String>> fieldsPerClass
   ) {
@@ -293,11 +293,11 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   @SneakyThrows(NoSuchFieldException.class)
-  private <T> boolean isGenerated(Class<T> clazz, String field) {
+  private static <T> boolean isGenerated(Class<T> clazz, String field) {
     return clazz.getDeclaredField(field).isAnnotationPresent(DerivedDtoField.class);
   }
 
-  private <T> Class<?> getRelatedEntity(Class<T> clazz){
+  private static <T> Class<?> getRelatedEntity(Class<T> clazz){
     return clazz.getAnnotation(RelatedEntity.class).value();
   }
 
