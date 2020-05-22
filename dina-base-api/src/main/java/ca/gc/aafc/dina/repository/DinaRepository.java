@@ -126,18 +126,12 @@ public class DinaRepository<D, E extends DinaEntity>
       .map(ir-> ir.getAttributePath().get(0))
       .collect(Collectors.toSet());
 
-    Set<String> relations = resourceInformation
-      .getRelationshipFields()
-      .stream().map(rf->rf.getUnderlyingName())
-      .filter( rf -> includedRelations.contains(rf))
-      .collect(Collectors.toSet());
-
     JpaCriteriaQuery<E> query = queryFactory.query(entityClass);
 
     List<D> dtos = query.buildExecutor(querySpec)
       .getResultList()
       .stream()
-      .map(e -> dinaMapper.toDto(e, entityFieldsPerClass, relations))
+      .map(e -> dinaMapper.toDto(e, entityFieldsPerClass, includedRelations))
       .collect(Collectors.toList());
 
     if (CollectionUtils.isNotEmpty(ids)) {
