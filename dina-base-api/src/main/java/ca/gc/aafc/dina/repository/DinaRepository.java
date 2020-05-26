@@ -43,6 +43,15 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
+/**
+ * JSONAPI repository that interfaces using DTOs, and uses JPA entities
+ * internally.
+ * 
+ * @param <D>
+ *              - Dto type
+ * @param <E>
+ *              - Entity type
+ */
 @Transactional
 public class DinaRepository<D, E extends DinaEntity>
     implements ResourceRepository<D, Serializable>, ResourceRegistryAware {
@@ -210,6 +219,11 @@ public class DinaRepository<D, E extends DinaEntity>
     dinaService.delete(entity);
   }
 
+  /**
+   * Returns a map of fields per entity class.
+   *
+   * @return a map of fields per entity class.
+   */
   private Map<Class<?>, Set<String>> getFieldsPerEntity() {
     return resourceFieldsPerClass.entrySet()
       .stream()
@@ -217,6 +231,20 @@ public class DinaRepository<D, E extends DinaEntity>
       .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
+  /**
+   * Transverses a given class to return a map of fields per class parsed from the
+   * given class. Used to determine the nessesasry classes and fields per class
+   * when mapping a java bean. Fields marked with {@link JsonApiRelation} will be
+   * teated as seperate classes to map and will be transversed and mapped.
+   * 
+   * @param <T>
+   *                         - Type of class
+   * @param clazz
+   *                         - Class to parse
+   * @param fieldsPerClass
+   *                         - initial map to use
+   * @return a map of fields per class
+   */
   @SneakyThrows
   private static <T> Map<Class<?>, Set<String>> parseFieldsPerClass(
     Class<T> clazz,
@@ -234,15 +262,37 @@ public class DinaRepository<D, E extends DinaEntity>
       JsonApiRelation.class
     );
 
-    List<Field> attributeFields = FieldUtils.getAllFieldsList(clazz).stream()
+    Set<String> attributeFields = FieldUtils.getAllFieldsList(clazz).stream()
       .filter(f -> !relationFields.contains(f) && !f.isSynthetic())
-      .collect(Collectors.toList());
+      .map(af -> af.getName())
+      .collect(Collectors.toSet());
 
-    fieldsPerClass.put(
-      clazz,
-      attributeFields.stream().map(af -> af.getName()).collect(Collectors.toSet())
-    );
+    fieldsPerClass.put(clazz, attributeFields);
 
+    parseRelations(clazz, fieldsPerClass, relationFields);
+
+    return fieldsPerClass;
+  }
+
+  /**
+   * Helper method to parse the fields of a given list of relations and add them
+   * to a given map.
+   *
+   * @param <T>
+   *                         - Type of class
+   * @param clazz
+   *                         - class containing the relations
+   * @param fieldsPerClass
+   *                         - map to add to
+   * @param relationFields
+   *                         - relation fields to transverse
+   */
+  @SneakyThrows
+  private static <T> void parseRelations(
+    Class<T> clazz,
+    Map<Class<?>, Set<String>> fieldsPerClass,
+    List<Field> relationFields
+  ) {
     for (Field relationField : relationFields) {
       if (Collection.class.isAssignableFrom(relationField.getType())) {
         ParameterizedType genericType = (ParameterizedType) clazz
@@ -255,10 +305,17 @@ public class DinaRepository<D, E extends DinaEntity>
         parseFieldsPerClass(relationField.getType(), fieldsPerClass);
       }
     }
-
-    return fieldsPerClass;
   }
 
+  /**
+   * Replaces the given relations of given entity with there JPA entity
+   * equivalent. Relations id's are used to map a relation to its JPA equivalent.
+   *
+   * @param entity
+   *                    - entity containing the relations
+   * @param relations
+   *                    - list of relations to map
+   */
   private void linkRelations(E entity, List<ResourceField> relations) {
     Objects.requireNonNull(entity);
     Objects.requireNonNull(relations);
@@ -289,16 +346,48 @@ public class DinaRepository<D, E extends DinaEntity>
     }
   }
 
+  /**
+   * Returns the jpa entity representing a given object with an id field of a
+   * given id field name.
+   *
+   * @param idFieldName
+   *                      - name of the id field
+   * @param object
+   *                      - object to map
+   * @return - jpa entity representing a given object
+   */
   private Object returnPersistedObject(String idFieldName, Object object) {
     Object relationID = PropertyUtils.getProperty(object, idFieldName);
     return dinaService.findOne(relationID, object.getClass());
   }
 
+  /**
+   * Returns true if a dto field is generated and read-only (Marked with
+   * {@link DerivedDtoField}).
+   * 
+   * @param <T>
+   *                - Class type
+   * @param clazz
+   *                - class of the field
+   * @param field
+   *                - field to check
+   * @return true if a dto field is generated and read-only
+   */
   @SneakyThrows(NoSuchFieldException.class)
   private static <T> boolean isGenerated(Class<T> clazz, String field) {
     return clazz.getDeclaredField(field).isAnnotationPresent(DerivedDtoField.class);
   }
 
+  /**
+   * Returns a Dto's related entity (Marked with {@link RelatedEntity}) or else
+   * null.
+   * 
+   * @param <T>
+   *                - Class type
+   * @param clazz
+   *                - Class with a related entity.
+   * @return a Dto's related entity, or else null
+   */
   private static <T> Class<?> getRelatedEntity(Class<T> clazz){
     return clazz.getAnnotation(RelatedEntity.class).value();
   }
