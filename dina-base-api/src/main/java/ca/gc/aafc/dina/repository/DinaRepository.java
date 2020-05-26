@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -42,6 +43,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
+@Transactional
 public class DinaRepository<D, E extends DinaEntity>
     implements ResourceRepository<D, Serializable>, ResourceRegistryAware {
 
@@ -233,7 +235,7 @@ public class DinaRepository<D, E extends DinaEntity>
     );
 
     List<Field> attributeFields = FieldUtils.getAllFieldsList(clazz).stream()
-      .filter(f -> !relationFields.contains(f))
+      .filter(f -> !relationFields.contains(f) && !f.isSynthetic())
       .collect(Collectors.toList());
 
     fieldsPerClass.put(
