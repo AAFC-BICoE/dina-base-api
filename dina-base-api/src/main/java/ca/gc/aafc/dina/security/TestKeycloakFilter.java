@@ -1,7 +1,9 @@
 package ca.gc.aafc.dina.security;
 
 import java.io.IOException;
+import java.util.UUID;
 
+import javax.annotation.Resource;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -24,6 +26,12 @@ public class TestKeycloakFilter extends GenericFilterBean {
   public static final String AGENT_ID_REQUEST_ATTR = "ca.gc.aafc.dina.agent.identifier";
   
   private static final String AGENT_IDENTIFIER_CLAIM_KEY = "agent-identifier";
+  
+  @Resource(name = "authenticatedUserInfo")
+  private AuthenticatedUserInfo authenticatedUserInfo;
+  
+//  @Resource(name = "dinaAuthenticatedUser")
+//  private DinaAuthenticatedUser dinaAuthenticatedUser;
   
   private void logme(final Object o, final String n) {
     if (!log.isDebugEnabled()) {
@@ -61,12 +69,31 @@ public class TestKeycloakFilter extends GenericFilterBean {
       logme(secContext, "secContext");
       logme(accessToken, "accessToken");
       
+      String agentId = null;
+      
       if (accessToken.getOtherClaims().containsKey(AGENT_IDENTIFIER_CLAIM_KEY)) {
-        final String agentId = (String) accessToken.getOtherClaims().get(AGENT_IDENTIFIER_CLAIM_KEY);
+        agentId = (String) accessToken.getOtherClaims().get(AGENT_IDENTIFIER_CLAIM_KEY);
         log.info("Got agent id {}", agentId);
         request.setAttribute(AGENT_ID_REQUEST_ATTR, agentId);
       } else {
         log.error("No agent id");
+      }
+      
+//      DinaAuthenticatedUser userInfo = dinaAuthenticatedUser;
+//      if (userInfo == null) {
+//        log.error("no user info");
+//      } else {
+//        log.info("got user info - agent id {}", userInfo.getAgentIdentifer());
+//      }
+      
+      AuthenticatedUserInfo userInfo = authenticatedUserInfo;
+      
+      if (userInfo.isInited()) {
+        final String infoAgentId = userInfo.getAgentId().toString();
+        log.info("Authenticated user - agent id {}", infoAgentId);
+      } else {
+        log.info("Authentication not initialized - setting agent ID");
+        userInfo.setAgentId(UUID.fromString(agentId));
       }
       
     }

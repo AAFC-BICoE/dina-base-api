@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.security;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.adapters.KeycloakConfigResolver;
@@ -10,7 +11,9 @@ import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
 import org.keycloak.adapters.springsecurity.filter.KeycloakAuthenticationProcessingFilter;
+import org.keycloak.representations.AccessToken;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.config.CustomScopeConfigurer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,8 +21,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
@@ -41,6 +45,14 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
     log.info("KeycloakAuthConfig created");
   }
   
+  @Bean
+  public static CustomScopeConfigurer keycloakScopeConfig() {
+    log.info("Registering custom scope");
+    final CustomScopeConfigurer config = new CustomScopeConfigurer();
+    config.addScope("keycloakSession", new KeycloakSessionScope());
+    return config;
+  }
+  
   @Inject
   public void configureGlobal(AuthenticationManagerBuilder auth) {
     KeycloakAuthenticationProvider keycloakAuthProvider = keycloakAuthenticationProvider();
@@ -60,21 +72,50 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
     log.debug("Creating RegisterSessionAuthenticationStrategy bean");
     return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
   }
-
+  
   @Bean
-  @Scope("session")
-  public DinaAuthenticatedUser dinaAuthenticatedUser(@AuthenticationPrincipal KeycloakAuthenticationToken token) {
-    Object principal = token.getPrincipal();
-    if (principal instanceof KeycloakPrincipal<?>) {
-      AccessToken accessToken = ((KeycloakPrincipal<?>) principal).getKeycloakSecurityContext().getToken();
-      if (accessToken.getOtherClaims().containsKey(AGENT_IDENTIFIER_CLAIM_KEY)) {
-        String agentId = (String) accessToken.getOtherClaims().get(AGENT_IDENTIFIER_CLAIM_KEY);
-        //TODO handle failure
-        return new DinaAuthenticatedUser(UUID.fromString(agentId));
+//  @SessionScope
+  @Scope("keycloakSession")
+  public AuthenticatedUserInfo authenticatedUserInfo(HttpServletRequest request) {
+    log.info("*** creating authenticated user info bean w/ request");
+    final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    
+    if (authentication != null) {
+      Object principal = authentication.getPrincipal();
+      if (principal instanceof KeycloakPrincipal<?>) {
+        final AccessToken accessToken = ((KeycloakPrincipal<?>) principal).getKeycloakSecurityContext().getToken();
+        
+        if (accessToken.getOtherClaims().containsKey(AGENT_IDENTIFIER_CLAIM_KEY)) {
+          final String agentIdString = accessToken.getOtherClaims().get(AGENT_IDENTIFIER_CLAIM_KEY).toString();
+          log.info("Woohoo!" + agentIdString);
+          final AuthenticatedUserInfo info = new AuthenticatedUserInfo();
+          info.setAgentId(UUID.fromString(agentIdString));
+          return info;
+        }
+        
       }
+    } else {
+      log.warn("No authentication");
     }
-    return null;
+    
+    return new AuthenticatedUserInfo();
   }
+
+//  @Bean
+//  @SessionScope
+//  public DinaAuthenticatedUser dinaAuthenticatedUser(@AuthenticationPrincipal KeycloakAuthenticationToken token) {
+//    log.info("*** creating authenticated user session bean ***");
+//    Object principal = token.getPrincipal();
+//    if (principal instanceof KeycloakPrincipal<?>) {
+//      AccessToken accessToken = ((KeycloakPrincipal<?>) principal).getKeycloakSecurityContext().getToken();
+//      if (accessToken.getOtherClaims().containsKey(AGENT_IDENTIFIER_CLAIM_KEY)) {
+//        String agentId = (String) accessToken.getOtherClaims().get(AGENT_IDENTIFIER_CLAIM_KEY);
+//        //TODO handle failure
+//        return new DinaAuthenticatedUser(UUID.fromString(agentId));
+//      }
+//    }
+//    return null;
+//  }
   
   @Override
   protected void configure(HttpSecurity http) throws Exception {
