@@ -109,10 +109,6 @@ public abstract class DinaService<E extends DinaEntity> {
     return baseDAO.findOneByNaturalId(naturalId, entityClass);
   }
 
-  public JpaCriteriaQueryFactory createJpaCritFactory() {
-    return baseDAO.createWithEntityManager(JpaCriteriaQueryFactory::newInstance);
-  }
-
   /**
    * Returns a new instance of a {@link JpaCriteriaQueryFactory} for crnk JPA data
    * access.
