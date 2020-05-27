@@ -37,7 +37,7 @@ public class BaseDAOIT {
     
     baseDAO.create(dep);
     
-    Long generatedId = dep.getId();
+    Integer generatedId = dep.getId();
     UUID generatedUUID = dep.getUuid();
     assertNotNull(generatedId);
     
@@ -54,7 +54,7 @@ public class BaseDAOIT {
     Department dep2 = Department.builder().name("dep2").location("dep2 location").build();
     baseDAO.create(dep2);
     
-    Long generatedId = dep2.getId();
+    Integer generatedId = dep2.getId();
     
     assertEquals(generatedId, baseDAO.findOneByProperty(Department.class, "name", "dep2").getId());
     assertNotEquals(generatedId, baseDAO.findOneByProperty(Department.class, "name", "dep1").getId());
@@ -84,7 +84,7 @@ public class BaseDAOIT {
     Department dep = Department.builder().name("dep1").location("dep location").build();
     baseDAO.create(dep);
 
-    Long generatedId = dep.getId();
+    Integer generatedId = dep.getId();
     assertNotNull(generatedId);
 
     baseDAO.delete(dep);

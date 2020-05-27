@@ -18,7 +18,7 @@ public class ComplexObject implements DinaEntity {
 
   @Id
   @GeneratedValue
-  private Long id;
+  private Integer id;
 
   private String name;
 
