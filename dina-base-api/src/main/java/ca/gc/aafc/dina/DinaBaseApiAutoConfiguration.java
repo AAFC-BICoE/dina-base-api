@@ -9,6 +9,7 @@ import org.springframework.context.annotation.DependsOn;
 
 import ca.gc.aafc.dina.mapper.JpaDtoMapper;
 import ca.gc.aafc.dina.repository.meta.JpaTotalMetaInformationProvider;
+import io.crnk.core.engine.transaction.TransactionRunner;
 import io.crnk.core.queryspec.mapper.DefaultQuerySpecUrlMapper;
 import io.crnk.operations.server.OperationsModule;
 import io.crnk.operations.server.TransactionOperationFilter;
@@ -46,7 +47,7 @@ public class DinaBaseApiAutoConfiguration {
    * @return the transaction runner.
    */
   @Bean
-  public SpringTransactionRunner crnkSpringTransactionRunner() {
+  public TransactionRunner crnkSpringTransactionRunner() {
     return new SpringTransactionRunner();
   }
 
