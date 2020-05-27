@@ -56,17 +56,13 @@ import lombok.SneakyThrows;
 public class DinaRepository<D, E extends DinaEntity>
     implements ResourceRepository<D, Serializable>, ResourceRegistryAware {
 
-  @NonNull
   private final DinaService<E> dinaService;
 
-  @NonNull
   private final DinaMapper<D, E> dinaMapper;
 
   @Getter
-  @NonNull
   private final Class<D> resourceClass;
 
-  @NonNull
   private final Class<E> entityClass;
 
   private Map<Class<?>, Set<String>> resourceFieldsPerClass;
