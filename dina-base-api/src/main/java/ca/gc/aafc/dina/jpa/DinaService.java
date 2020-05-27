@@ -13,6 +13,7 @@ import javax.persistence.criteria.Root;
 import org.springframework.stereotype.Component;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import io.crnk.data.jpa.query.criteria.JpaCriteriaQueryFactory;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -104,8 +105,16 @@ public abstract class DinaService<E extends DinaEntity> {
    * @param entityClass - class of entity
    * @return the matched entity
    */
-  public E findOne(Object naturalId, Class<E> entityClass) {
+  public <T> T findOne(Object naturalId, Class<T> entityClass) {
     return baseDAO.findOneByNaturalId(naturalId, entityClass);
+  }
+
+  /**
+   * Returns a new instance of a {@link JpaCriteriaQueryFactory} for crnk JPA data
+   * access.
+   */
+  public JpaCriteriaQueryFactory createJpaCritFactory() {
+    return baseDAO.createWithEntityManager(JpaCriteriaQueryFactory::newInstance);
   }
 
   /**
