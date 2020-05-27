@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.function.Predicate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -87,10 +88,10 @@ public class DinaRepository<D, E extends DinaEntity>
     this.resourceClass = resourceClass;
     this.entityClass = entityClass;
 
-    this.resourceFieldsPerClass = parseFieldsPerClass(resourceClass, new HashMap<>());
-    this.resourceFieldsPerClass.forEach(
-      (clazz, fields) -> fields.removeIf(f -> isGenerated(clazz, f))
-    );
+    this.resourceFieldsPerClass = parseFieldsPerClass(
+      resourceClass,
+      new HashMap<>(),
+      field -> isGenerated(field.getDeclaringClass(), field.getName()));
 
     this.entityFieldsPerClass = getFieldsPerEntity();
   }
@@ -239,12 +240,15 @@ public class DinaRepository<D, E extends DinaEntity>
    *                         - Class to parse
    * @param fieldsPerClass
    *                         - initial map to use
+   * @param removeIf
+   *                         - predicate to return true for fields to be removed
    * @return a map of fields per class
    */
   @SneakyThrows
   private static <T> Map<Class<?>, Set<String>> parseFieldsPerClass(
     Class<T> clazz,
-    Map<Class<?>, Set<String>> fieldsPerClass
+    Map<Class<?>, Set<String>> fieldsPerClass,
+    Predicate<Field> removeIf
   ) {
     Objects.requireNonNull(clazz);
     Objects.requireNonNull(fieldsPerClass);
@@ -258,14 +262,21 @@ public class DinaRepository<D, E extends DinaEntity>
       JsonApiRelation.class
     );
 
-    Set<String> attributeFields = FieldUtils.getAllFieldsList(clazz).stream()
+    List<Field> attributeFields = FieldUtils.getAllFieldsList(clazz).stream()
       .filter(f -> !relationFields.contains(f) && !f.isSynthetic())
+      .collect(Collectors.toList());
+
+    if (removeIf != null) {
+      attributeFields.removeIf(removeIf);
+    }
+
+    Set<String> fieldsToInclude = attributeFields.stream()
       .map(af -> af.getName())
       .collect(Collectors.toSet());
 
-    fieldsPerClass.put(clazz, attributeFields);
+    fieldsPerClass.put(clazz, fieldsToInclude);
 
-    parseRelations(clazz, fieldsPerClass, relationFields);
+    parseRelations(clazz, fieldsPerClass, relationFields, removeIf);
 
     return fieldsPerClass;
   }
@@ -287,7 +298,8 @@ public class DinaRepository<D, E extends DinaEntity>
   private static <T> void parseRelations(
     Class<T> clazz,
     Map<Class<?>, Set<String>> fieldsPerClass,
-    List<Field> relationFields
+    List<Field> relationFields,
+    Predicate<Field> removeIf
   ) {
     for (Field relationField : relationFields) {
       if (Collection.class.isAssignableFrom(relationField.getType())) {
@@ -295,10 +307,10 @@ public class DinaRepository<D, E extends DinaEntity>
           .getDeclaredField(relationField.getName())
           .getGenericType();
         for (Type elementType : genericType.getActualTypeArguments()) {
-          parseFieldsPerClass((Class<?>) elementType, fieldsPerClass);
+          parseFieldsPerClass((Class<?>) elementType, fieldsPerClass, removeIf);
         }
       } else {
-        parseFieldsPerClass(relationField.getType(), fieldsPerClass);
+        parseFieldsPerClass(relationField.getType(), fieldsPerClass, removeIf);
       }
     }
   }
