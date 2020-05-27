@@ -240,19 +240,16 @@ public class DinaRepository<D, E extends DinaEntity>
    *                         - Class to parse
    * @param fieldsPerClass
    *                         - initial map to use
-   * @param removeIf
+   * @param ignoreIf
    *                         - predicate to return true for fields to be removed
    * @return a map of fields per class
    */
   @SneakyThrows
   private static <T> Map<Class<?>, Set<String>> parseFieldsPerClass(
-    Class<T> clazz,
-    Map<Class<?>, Set<String>> fieldsPerClass,
-    Predicate<Field> removeIf
+    @NonNull Class<T> clazz,
+    @NonNull Map<Class<?>, Set<String>> fieldsPerClass,
+    @NonNull Predicate<Field> ignoreIf
   ) {
-    Objects.requireNonNull(clazz);
-    Objects.requireNonNull(fieldsPerClass);
-
     if (fieldsPerClass.containsKey(clazz)) {
       return fieldsPerClass;
     }
@@ -263,12 +260,8 @@ public class DinaRepository<D, E extends DinaEntity>
     );
 
     List<Field> attributeFields = FieldUtils.getAllFieldsList(clazz).stream()
-      .filter(f -> !relationFields.contains(f) && !f.isSynthetic())
+      .filter(f -> !relationFields.contains(f) && !f.isSynthetic() && !ignoreIf.test(f))
       .collect(Collectors.toList());
-
-    if (removeIf != null) {
-      attributeFields.removeIf(removeIf);
-    }
 
     Set<String> fieldsToInclude = attributeFields.stream()
       .map(af -> af.getName())
@@ -276,7 +269,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
     fieldsPerClass.put(clazz, fieldsToInclude);
 
-    parseRelations(clazz, fieldsPerClass, relationFields, removeIf);
+    parseRelations(clazz, fieldsPerClass, relationFields, ignoreIf);
 
     return fieldsPerClass;
   }
