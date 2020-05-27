@@ -317,10 +317,7 @@ public class DinaRepository<D, E extends DinaEntity>
    * @param relations
    *                    - list of relations to map
    */
-  private void linkRelations(E entity, List<ResourceField> relations) {
-    Objects.requireNonNull(entity);
-    Objects.requireNonNull(relations);
-
+  private void linkRelations(@NonNull E entity, @NonNull List<ResourceField> relations) {
     for (ResourceField relationField : relations) {
       ResourceInformation relationInfo =this.resourceRegistry
         .findEntry(relationField.getElementType())
