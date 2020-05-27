@@ -111,10 +111,9 @@ public abstract class DinaService<E extends DinaEntity> {
 
   /**
    * Returns a reference to an entity that should exist without actually loading
-   * it. Useful to set relationships without loading the entity and should be used instead of
-   * findOne.
+   * it. Useful to set relationships without loading the entity instead of findOne.
    * 
-   * @param naturalId   - id of entity
+   * @param naturalId   - natural id of entity
    * @param entityClass - class of entity
    * @return the matched reference
    */
