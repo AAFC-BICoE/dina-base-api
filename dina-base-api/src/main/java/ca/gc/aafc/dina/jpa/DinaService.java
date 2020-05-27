@@ -110,6 +110,19 @@ public abstract class DinaService<E extends DinaEntity> {
   }
 
   /**
+   * Returns a reference to an entity that should exist without actually loading
+   * it. Useful to set relationships without loading the entity and should be used instead of
+   * findOne.
+   * 
+   * @param naturalId   - id of entity
+   * @param entityClass - class of entity
+   * @return the matched reference
+   */
+  public <T> T findOneReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
+    return baseDAO.getReferenceByNaturalId(entityClass, naturalId);
+  }
+
+  /**
    * Returns a new instance of a {@link JpaCriteriaQueryFactory} for crnk JPA data
    * access.
    */
