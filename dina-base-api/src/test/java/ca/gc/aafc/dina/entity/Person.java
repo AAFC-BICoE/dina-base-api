@@ -26,7 +26,7 @@ public class Person implements DinaEntity {
 
   @Id
   @GeneratedValue
-  private Long id;
+  private Integer id;
 
   @NaturalId
   private UUID uuid;
