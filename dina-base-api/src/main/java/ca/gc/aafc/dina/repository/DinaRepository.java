@@ -65,9 +65,9 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private final Class<E> entityClass;
 
-  private Map<Class<?>, Set<String>> resourceFieldsPerClass;
+  private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
 
-  private Map<Class<?>, Set<String>> entityFieldsPerClass;
+  private final Map<Class<?>, Set<String>> entityFieldsPerClass;
 
   @Getter
   @Setter(onMethod_ = @Override)
