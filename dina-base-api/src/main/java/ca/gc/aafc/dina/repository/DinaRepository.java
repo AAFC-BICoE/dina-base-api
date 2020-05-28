@@ -355,7 +355,7 @@ public class DinaRepository<D, E extends DinaEntity>
    */
   private Object returnPersistedObject(String idFieldName, Object object) {
     Object relationID = PropertyUtils.getProperty(object, idFieldName);
-    return dinaService.findOne(relationID, object.getClass());
+    return dinaService.findOneReferenceByNaturalId(object.getClass(), relationID);
   }
 
   /**
