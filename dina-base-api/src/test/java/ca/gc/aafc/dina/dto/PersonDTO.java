@@ -1,7 +1,9 @@
 package ca.gc.aafc.dina.dto;
 
-import ca.gc.aafc.dina.entity.Employee;
-import ca.gc.aafc.dina.mapper.DerivedDtoField;
+import java.util.List;
+import java.util.UUID;
+
+import ca.gc.aafc.dina.entity.Person;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
@@ -11,27 +13,24 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@JsonApiResource(type = "employee")
+@JsonApiResource(type = "person")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@RelatedEntity(Employee.class)
-public class EmployeeDto {
+@RelatedEntity(Person.class)
+public class PersonDTO {
 
   @JsonApiId
-  private Integer id;
+  private UUID uuid;
 
   private String name;
 
-  /** This field is generated from the name field. */
-  @DerivedDtoField
-  private String nameUppercase;
-
-  private String job;
-
-  private String customField;
+  private String[] nickNames;
 
   @JsonApiRelation
   private DepartmentDto department;
+
+  @JsonApiRelation
+  private List<DepartmentDto> departments;
 
 }

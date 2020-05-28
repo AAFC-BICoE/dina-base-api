@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -14,15 +15,20 @@ import org.springframework.context.annotation.Bean;
 
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
+import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.ComplexObject;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
+import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.filter.RsqlFilterHandler;
 import ca.gc.aafc.dina.filter.SimpleFilterHandler;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jpa.DinaServiceTest.DinaServiceTestImplementation;
 import ca.gc.aafc.dina.mapper.CustomFieldResolverSpec;
+import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.JpaDtoMapper;
+import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
 import ca.gc.aafc.dina.repository.JpaDtoRepository;
 import ca.gc.aafc.dina.repository.JpaRelationshipRepository;
 import ca.gc.aafc.dina.repository.JpaResourceRepository;
@@ -133,6 +139,23 @@ public class TestConfiguration {
   @Bean
   public DinaServiceTestImplementation serviceUnderTest(BaseDAO baseDAO) {
     return new DinaServiceTestImplementation(baseDAO);
+  }
+
+  @Bean
+  public DinaPersonService personService(BaseDAO baseDAO) {
+    return new DinaPersonService(baseDAO);
+  }
+
+  @Bean
+  public DinaRepository<PersonDTO, Person> dinaRepository(DinaPersonService service) {
+    DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(
+      PersonDTO.class,
+      Person.class,
+      new ArrayList<>(),
+      new ArrayList<>()
+    );
+
+    return new DinaRepository<>(service , dinaMapper, PersonDTO.class, Person.class);
   }
 
 }
