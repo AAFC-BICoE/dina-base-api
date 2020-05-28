@@ -223,7 +223,8 @@ public class DinaRepository<D, E extends DinaEntity>
   private Map<Class<?>, Set<String>> getFieldsPerEntity() {
     return resourceFieldsPerClass.entrySet()
       .stream()
-      .map(e -> new SimpleEntry<>(getRelatedEntity(e.getKey()), e.getValue()))
+      .filter(e -> getRelatedEntity(e.getKey()) != null)
+      .map(e -> new SimpleEntry<>(getRelatedEntity(e.getKey()).value(), e.getValue()))
       .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
@@ -385,8 +386,8 @@ public class DinaRepository<D, E extends DinaEntity>
    *                - Class with a related entity.
    * @return a Dto's related entity, or else null
    */
-  private static <T> Class<?> getRelatedEntity(Class<T> clazz){
-    return clazz.getAnnotation(RelatedEntity.class).value();
+  private static <T> RelatedEntity getRelatedEntity(Class<T> clazz) {
+    return clazz.getAnnotation(RelatedEntity.class);
   }
 
 }
