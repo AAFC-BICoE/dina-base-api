@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -73,7 +72,7 @@ public class DinaRepository<D, E extends DinaEntity>
   @Setter(onMethod_ = @Override)
   private ResourceRegistry resourceRegistry;
 
-  private JpaCriteriaQueryFactory queryFactory;
+  private final JpaCriteriaQueryFactory queryFactory;
 
   @Inject
   public DinaRepository(
@@ -93,11 +92,7 @@ public class DinaRepository<D, E extends DinaEntity>
       field -> isGenerated(field.getDeclaringClass(), field.getName()));
 
     this.entityFieldsPerClass = getFieldsPerEntity();
-  }
-
-  @PostConstruct
-  void setup() {
-    queryFactory = dinaService.createJpaCritFactory();
+    this.queryFactory = dinaService.createJpaCritFactory();
   }
 
   @Override
