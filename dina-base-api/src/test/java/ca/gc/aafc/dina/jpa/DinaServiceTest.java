@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ca.gc.aafc.dina.TestConfiguration;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.DepartmentType;
+import ca.gc.aafc.dina.service.DinaService;
 import lombok.NonNull;
 
 @Transactional
