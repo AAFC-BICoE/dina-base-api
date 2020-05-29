@@ -45,7 +45,8 @@ import lombok.SneakyThrows;
 
 /**
  * JSONAPI repository that interfaces using DTOs, and uses JPA entities
- * internally.
+ * internally. Sparse fields sets are handled by the underlying Crnk
+ * ResourceRepository.
  * 
  * @param <D>
  *              - Dto type
