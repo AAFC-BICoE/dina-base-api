@@ -57,6 +57,9 @@ import lombok.SneakyThrows;
 public class DinaRepository<D, E extends DinaEntity>
     implements ResourceRepository<D, Serializable>, ResourceRegistryAware {
 
+  /* Forces CRNK to not display any top-level links. */
+  private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
+
   private final DinaService<E> dinaService;
 
   private final DinaMapper<D, E> dinaMapper;
@@ -151,7 +154,7 @@ public class DinaRepository<D, E extends DinaEntity>
       metaInformation.setTotalResourceCount(Long.valueOf(dtos.size()));
     }
 
-    return new DefaultResourceList<>(dtos, metaInformation, new NoLinkInformation());
+    return new DefaultResourceList<>(dtos, metaInformation, NO_LINK_INFORMATION);
   }
 
   @Override
