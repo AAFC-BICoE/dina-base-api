@@ -23,7 +23,6 @@ import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.filter.RsqlFilterHandler;
 import ca.gc.aafc.dina.filter.SimpleFilterHandler;
 import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.jpa.DinaServiceTest.DinaServiceTestImplementation;
 import ca.gc.aafc.dina.mapper.CustomFieldResolverSpec;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.JpaDtoMapper;
@@ -33,6 +32,7 @@ import ca.gc.aafc.dina.repository.JpaDtoRepository;
 import ca.gc.aafc.dina.repository.JpaRelationshipRepository;
 import ca.gc.aafc.dina.repository.JpaResourceRepository;
 import ca.gc.aafc.dina.repository.meta.JpaTotalMetaInformationProvider;
+import ca.gc.aafc.dina.service.DinaServiceTest.DinaServiceTestImplementation;
 
 /**
  * Small test application running on dina-base-api

@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa;
+package ca.gc.aafc.dina.service;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,6 +23,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ca.gc.aafc.dina.TestConfiguration;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.DepartmentType;
+import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.jpa.DinaService;
 import lombok.NonNull;
 
 @Transactional
