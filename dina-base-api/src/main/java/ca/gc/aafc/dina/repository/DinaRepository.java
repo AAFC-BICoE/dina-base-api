@@ -35,6 +35,7 @@ import io.crnk.core.repository.ResourceRepository;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.list.DefaultResourceList;
 import io.crnk.core.resource.list.ResourceList;
+import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
 import io.crnk.data.jpa.query.criteria.JpaCriteriaQuery;
 import io.crnk.data.jpa.query.criteria.JpaCriteriaQueryFactory;
 import lombok.Getter;
@@ -119,6 +120,8 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
+    DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
+
     Set<String> includedRelations = querySpec.getIncludedRelations()
       .stream()
       .map(ir-> ir.getAttributePath().get(0))
@@ -132,6 +135,8 @@ public class DinaRepository<D, E extends DinaEntity>
       .map(e -> dinaMapper.toDto(e, entityFieldsPerClass, includedRelations))
       .collect(Collectors.toList());
 
+    metaInformation.setTotalResourceCount(query.buildExecutor(querySpec).getTotalRowCount());
+
     if (CollectionUtils.isNotEmpty(ids)) {
       String idFieldName = this.resourceRegistry
         .findEntry(resourceClass)
@@ -141,9 +146,10 @@ public class DinaRepository<D, E extends DinaEntity>
       dtos = dtos.stream()
         .filter(dto -> ids.contains(PropertyUtils.getProperty(dto, idFieldName)))
         .collect(Collectors.toList());
+      metaInformation.setTotalResourceCount(Long.valueOf(dtos.size()));
     }
 
-    return new DefaultResourceList<>(dtos, null, null);
+    return new DefaultResourceList<>(dtos, metaInformation, new NoLinkInformation());
   }
 
   @Override
