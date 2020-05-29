@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa;
+package ca.gc.aafc.dina.service;
 
 import java.util.List;
 import java.util.Map;
@@ -13,6 +13,7 @@ import javax.persistence.criteria.Root;
 import org.springframework.stereotype.Component;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.jpa.BaseDAO;
 import io.crnk.data.jpa.query.criteria.JpaCriteriaQueryFactory;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
