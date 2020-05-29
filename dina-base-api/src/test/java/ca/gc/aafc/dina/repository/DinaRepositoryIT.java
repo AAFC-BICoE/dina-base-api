@@ -259,7 +259,7 @@ public class DinaRepositoryIT {
   }
 
   @Test
-  public void findAll_FilterByIds_ReturnsMetaInformation() {
+  public void findAll_FilterByIds_ReturnsTotalCount() {
     List<Serializable> idList = new ArrayList<>();
 
     for (int i = 0; i < 10; i++) {
