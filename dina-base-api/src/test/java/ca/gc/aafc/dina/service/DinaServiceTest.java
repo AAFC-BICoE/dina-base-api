@@ -24,7 +24,7 @@ import ca.gc.aafc.dina.TestConfiguration;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.DepartmentType;
 import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.jpa.DinaService;
+import ca.gc.aafc.dina.service.DinaService;
 import lombok.NonNull;
 
 @Transactional
