@@ -11,7 +11,7 @@ import lombok.NonNull;
  */
 @Builder
 @Getter
-public class CustomFieldResolverSpec<E> {
+public class CustomFieldResolverSpec<E> implements CustomFieldResolver<E> {
   @NonNull
   private String field;
   @NonNull
