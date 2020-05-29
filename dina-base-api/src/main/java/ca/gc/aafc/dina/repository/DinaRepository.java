@@ -136,6 +136,7 @@ public class DinaRepository<D, E extends DinaEntity>
       .map(e -> dinaMapper.toDto(e, entityFieldsPerClass, includedRelations))
       .collect(Collectors.toList());
 
+    // Uses an actual count from the database
     metaInformation.setTotalResourceCount(query.buildExecutor(querySpec).getTotalRowCount());
 
     if (CollectionUtils.isNotEmpty(ids)) {
