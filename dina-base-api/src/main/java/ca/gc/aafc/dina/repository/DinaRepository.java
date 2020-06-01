@@ -139,9 +139,6 @@ public class DinaRepository<D, E extends DinaEntity>
       .map(e -> dinaMapper.toDto(e, entityFieldsPerClass, includedRelations))
       .collect(Collectors.toList());
 
-    // Uses an actual count from the database
-    metaInformation.setTotalResourceCount(query.buildExecutor(querySpec).getTotalRowCount());
-
     if (CollectionUtils.isNotEmpty(ids)) {
       String idFieldName = this.resourceRegistry
         .findEntry(resourceClass)
@@ -152,6 +149,9 @@ public class DinaRepository<D, E extends DinaEntity>
         .filter(dto -> ids.contains(PropertyUtils.getProperty(dto, idFieldName)))
         .collect(Collectors.toList());
       metaInformation.setTotalResourceCount(Long.valueOf(dtos.size()));
+    } else {
+      // Uses an actual count from the database
+      metaInformation.setTotalResourceCount(query.buildExecutor(querySpec).getTotalRowCount());
     }
 
     return new DefaultResourceList<>(dtos, metaInformation, NO_LINK_INFORMATION);
