@@ -21,9 +21,9 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.jpa.DinaService;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.engine.information.resource.ResourceField;
 import io.crnk.core.engine.information.resource.ResourceInformation;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
