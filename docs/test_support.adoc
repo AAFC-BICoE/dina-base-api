@@ -1,0 +1,8 @@
+= Test Support
+`dina-test-support` package is a set of utility classes to simplify testing in the different DINA Modules.
+
+
+== OpenAPI3Assertions
+
+`OpenAPI3Assertions` contains methods to run assertions between an API response and an OpenAPI 3 specification's schema. Some of the Open API 3 files could be
+stored on remote servers potentially making the tests unstable. When `OpenAPI3Assertions.assertRemoteSchema` is used, the system propety `testing.skip-remote-schema-validation` can be used to temporarly skip the validation of an API response against a remote schema.
