@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a field is resolved through the use of Custom Field Resolvers.
+ * Marks a method is used to resolve a custom field mapping.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
