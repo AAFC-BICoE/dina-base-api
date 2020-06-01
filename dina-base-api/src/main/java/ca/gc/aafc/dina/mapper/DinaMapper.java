@@ -97,10 +97,8 @@ public class DinaMapper<D, E> {
     mapRelationsToTarget(entity, dto, selectedFieldPerClass, relations);
 
     // Map selected Custom Fields
-    Map<String, Method> selectedResolvers = new HashMap<>(dtoResolvers)
-      .entrySet().stream()
-      .filter(e -> selectedFields.contains(e.getKey()))
-      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    Map<String, Method> selectedResolvers = new HashMap<>(dtoResolvers);
+    selectedResolvers.entrySet().removeIf(e-> !selectedFields.contains(e.getKey()));
     mapCustomFieldsToTarget(entity, dto, dto, selectedResolvers);
 
     return dto;
@@ -148,10 +146,8 @@ public class DinaMapper<D, E> {
     mapRelationsToTarget(dto, entity, selectedFieldPerClass, relations);
 
     // Map selected Custom Fields
-    Map<String, Method> selectedResolvers = new HashMap<>(entityResolvers)
-      .entrySet().stream()
-      .filter(e -> selectedFields.contains(e.getKey()))
-      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    Map<String, Method> selectedResolvers = new HashMap<>(entityResolvers);
+    selectedResolvers.entrySet().removeIf(e-> !selectedFields.contains(e.getKey()));
     mapCustomFieldsToTarget(dto, entity, dto, selectedResolvers);
   }
 
