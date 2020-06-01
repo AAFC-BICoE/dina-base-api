@@ -41,6 +41,8 @@ import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.queryspec.SortSpec;
+import io.crnk.core.resource.list.ResourceList;
+import io.crnk.core.resource.meta.PagedMetaInformation;
 import lombok.NonNull;
 
 @Transactional
@@ -254,6 +256,40 @@ public class DinaRepositoryIT {
     for (int i = 0; i < expectedDtos.size(); i++) {
       assertEqualsPersonDtos(expectedDtos.get(i), result.get(i), false);
     }
+  }
+
+  @Test
+  public void findAll_FilterByIds_ReturnsTotalCount() {
+    List<Serializable> idList = new ArrayList<>();
+
+    for (int i = 0; i < 10; i++) {
+      PersonDTO dto = persistPerson();
+      idList.add(dto.getUuid());
+      // Persist extra person not in list
+      persistPerson();
+    }
+
+    ResourceList<PersonDTO> resultList = dinaRepository.findAll(idList, new QuerySpec(PersonDTO.class));
+    PagedMetaInformation metadata = (PagedMetaInformation) resultList.getMeta();
+
+    assertEquals(idList.size(), metadata.getTotalResourceCount());
+  }
+
+  @Test
+  public void findAll_whenPageLimitIsSet_ReturnsTotalCount() {
+    long pageLimit = 10;
+    long totalResouceCount = pageLimit * 2;
+
+    for (int i = 0; i < totalResouceCount; i++) {
+      persistPerson();
+    }
+
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.setLimit(pageLimit);
+
+    ResourceList<PersonDTO> result = dinaRepository.findAll(null, querySpec);
+    PagedMetaInformation metadata = (PagedMetaInformation) result.getMeta();
+    assertEquals(totalResouceCount, metadata.getTotalResourceCount());
   }
 
   @Test
