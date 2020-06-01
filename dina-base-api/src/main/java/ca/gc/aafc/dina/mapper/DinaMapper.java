@@ -37,10 +37,10 @@ public class DinaMapper<D, E> {
   public DinaMapper(@NonNull Class<D> dtoClass, @NonNull Class<E> entityClass) {
     this.dtoClass = dtoClass;
     this.entityClass = entityClass;
-    initDtoResolvers();
+    initResolvers();
   }
 
-  private void initDtoResolvers() {
+  private void initResolvers() {
     List<Method> methods =
         MethodUtils.getMethodsListWithAnnotation(dtoClass, CustomFieldResolver.class);
 
