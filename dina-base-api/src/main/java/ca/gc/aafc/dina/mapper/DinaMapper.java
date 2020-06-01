@@ -45,11 +45,11 @@ public class DinaMapper<D, E> {
         MethodUtils.getMethodsListWithAnnotation(dtoClass, CustomFieldResolver.class);
 
     for (Method method : methods) {
-      CustomFieldResolver reolver = method.getAnnotation(CustomFieldResolver.class);
-      if (reolver.getDirection() == Direction.TO_DTO) {
-        dtoResolvers.put(reolver.field(), method);
+      CustomFieldResolver resolver = method.getAnnotation(CustomFieldResolver.class);
+      if (resolver.getDirection() == Direction.TO_DTO) {
+        dtoResolvers.put(resolver.field(), method);
       } else {
-        entityResolvers.put(reolver.field(), method);
+        entityResolvers.put(resolver.field(), method);
       }
     }
   }
