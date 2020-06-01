@@ -38,7 +38,7 @@ public class OpenAPI3AssertionsTest {
   }
 
   @Test
-  public void assertJsonSchemaTest() throws IOException {
+  public void assertSchemaTest() throws IOException {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     String responseJson = TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json");
     OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson);
