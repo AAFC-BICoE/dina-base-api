@@ -17,14 +17,20 @@ import org.openapi4j.parser.validation.v3.OpenApi3Validator;
 import org.openapi4j.schema.validator.ValidationData;
 import org.openapi4j.schema.validator.v3.SchemaValidator;
 
+import lombok.extern.log4j.Log4j2;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Collections of utility test methods related to OpenAPI 3 specifications and schemas.
+ * Collections of utility test methods related to OpenAPI 3 specifications and
+ * schemas.
  *
  */
+@Log4j2
 public final class OpenAPI3Assertions {
+
+  public static final String SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY = "testing.skip-remote-schema-validation";
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -32,7 +38,25 @@ public final class OpenAPI3Assertions {
   }
 
   /**
-   * Assert an API response against an OpenAPI 3 Specification located at specsUrl.
+   * Same as {@link #assertSchema(URL, String, String)} but the assertion can be
+   * skipped by setting the System property
+   * {@link #SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY} to true.
+   * 
+   * @param specsUrl
+   * @param schemaName
+   * @param apiResponse
+   */
+  public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse) {
+    if (!Boolean.valueOf(System.getProperty(SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY))) {
+      assertSchema(specsUrl, schemaName, apiResponse);
+    } else {
+      log.warn("Skipping schema validation." + "System property testing.skip-remote-schema-validation set to true.");
+    }
+  }
+
+  /**
+   * Assert an API response against an OpenAPI 3 Specification located at
+   * specsUrl.
    * 
    * @param specsUrl
    * @param schemaName
@@ -42,7 +66,7 @@ public final class OpenAPI3Assertions {
     Objects.requireNonNull(specsUrl, "specsUrl shall be provided");
     Objects.requireNonNull(schemaName, "schemaName shall be provided");
     Objects.requireNonNull(apiResponse, "apiResponse shall be provided");
-    
+
     OpenApi3 openApi = null;
     try {
       openApi = parseAndValidateOpenAPI3Specs(specsUrl);
@@ -96,8 +120,7 @@ public final class OpenAPI3Assertions {
    * @return the schema as {@link JsonNode}
    * @throws EncodeException
    */
-  private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName)
-      throws EncodeException {
+  private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName) throws EncodeException {
     Schema schema = openApi.getComponents().getSchema(schemaName);
     return schema.toNode(openApi.getContext(), true);
   }
@@ -110,8 +133,7 @@ public final class OpenAPI3Assertions {
    * @throws ValidationException
    * @throws ResolutionException
    */
-  public static OpenApi3 parseAndValidateOpenAPI3Specs(URL specsURL)
-      throws ResolutionException, ValidationException {
+  public static OpenApi3 parseAndValidateOpenAPI3Specs(URL specsURL) throws ResolutionException, ValidationException {
 
     OpenApi3 api = new OpenApi3Parser().parse(specsURL, new ArrayList<>(), false);
     OpenApi3Validator.instance().validate(api);
