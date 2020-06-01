@@ -1,7 +1,6 @@
 package ca.gc.aafc.dina.security;
 
 import java.util.Map;
-import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -92,7 +91,7 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
       .getToken()
       .getOtherClaims();
 
-    UUID agentId = UUID.fromString((String) otherClaims.get(AGENT_IDENTIFIER_CLAIM_KEY));
+    String agentId = (String) otherClaims.get(AGENT_IDENTIFIER_CLAIM_KEY);
 
     return DinaAuthenticatedUser.builder()
       .agentIdentifer(agentId)

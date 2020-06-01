@@ -1,7 +1,5 @@
 package ca.gc.aafc.dina.security;
 
-import java.util.UUID;
-
 import lombok.Builder;
 import lombok.Getter;
 
@@ -13,7 +11,7 @@ import lombok.Getter;
 @Getter
 public class DinaAuthenticatedUser {
 
-  private UUID agentIdentifer;
+  private String agentIdentifer;
   private String username;
 
 } 
