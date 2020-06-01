@@ -16,10 +16,10 @@ import com.google.common.collect.ImmutableSet;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import ca.gc.aafc.dina.entity.ComplexObject;
+import ca.gc.aafc.dina.mapper.CustomFieldResolver.Direction;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,17 +27,10 @@ import lombok.NoArgsConstructor;
 
 public class DinaMapperTest {
 
-  private static List<CustomFieldResolverSpec<Student>> dtoResolvers = new ArrayList<>();
-  private static List<CustomFieldResolverSpec<StudentDto>> entityResolvers = new ArrayList<>();
-
-  private static DinaMapper<StudentDto, Student> mapper;
-
-  @BeforeAll
-  public static void init() {
-    initDtoResolvers();
-    initEntityResolvers();
-    mapper = new DinaMapper<>(StudentDto.class, Student.class, dtoResolvers, entityResolvers);
-  }
+  private static DinaMapper<StudentDto, Student> mapper = new DinaMapper<>(
+    StudentDto.class,
+    Student.class
+  );
 
   @Test
   public void toDto_BaseAttributesTest_SelectedFieldsMapped() {
@@ -267,32 +260,6 @@ public class DinaMapperTest {
       .build();
   }
 
-  /*
-   * Init Dto resolver to map the Entity complex object name (ComplexObject.name) to DTOs complex
-   * object (String)
-   */
-  private static void initDtoResolvers() {
-    CustomFieldResolverSpec<Student> customFieldResolver = CustomFieldResolverSpec.<Student>builder()
-        .field("customField")
-        .resolver(student -> student.getCustomField() == null ? "" : student.getCustomField().getName())
-        .build();
-    dtoResolvers.add(customFieldResolver);
-  }
-
-  /*
-   * Init Dto resolver to map the Entity complex object name (ComplexObject.name)
-   * to DTOs complex object (String)
-   */
-  private static void initEntityResolvers() {
-    CustomFieldResolverSpec<StudentDto> customFieldResolver = CustomFieldResolverSpec.<StudentDto>builder()
-        .field("customField")
-        .resolver(
-          student -> student.getCustomField() == null ?
-          null : ComplexObject.builder().name(student.getCustomField()).build())
-        .build();
-    entityResolvers.add(customFieldResolver);
-  }
-
   @Data
   @Builder
   @NoArgsConstructor
@@ -313,6 +280,17 @@ public class DinaMapperTest {
 
     // Many to - Relation to test
     private List<StudentDto> classMates;
+
+    @CustomFieldResolver(field = "customField", getDirection = Direction.TO_DTO)
+    public String customFieldToDto(Student entity) {
+      return entity.getCustomField() == null ? "" : entity.getCustomField().getName();
+    }
+
+    @CustomFieldResolver(field = "customField", getDirection = Direction.TO_ENTITY)
+    public ComplexObject customFieldToEntity(StudentDto entity) {
+      return entity.getCustomField() == null ? null
+          : ComplexObject.builder().name(entity.getCustomField()).build();
+    }
 
   }
 

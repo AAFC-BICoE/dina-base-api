@@ -1,18 +1,21 @@
 package ca.gc.aafc.dina.mapper;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 
+import ca.gc.aafc.dina.mapper.CustomFieldResolver.Direction;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -28,19 +31,27 @@ public class DinaMapper<D, E> {
   private final Class<D> dtoClass;
   private final Class<E> entityClass;
 
-  private final List<CustomFieldResolverSpec<E>> dtoResolvers;
-  private final List<CustomFieldResolverSpec<D>> entityResolvers;
+  private final Map<String, Method> dtoResolvers = new HashMap<>();
+  private final Map<String, Method> entityResolvers = new HashMap<>();
 
-  public DinaMapper(
-    @NonNull Class<D> dtoClass,
-    @NonNull Class<E> entityClass,
-    @NonNull List<CustomFieldResolverSpec<E>> dtoResolvers,
-    @NonNull List<CustomFieldResolverSpec<D>> entityResolvers
-  ) {
+  public DinaMapper(@NonNull Class<D> dtoClass, @NonNull Class<E> entityClass) {
     this.dtoClass = dtoClass;
     this.entityClass = entityClass;
-    this.dtoResolvers = dtoResolvers;
-    this.entityResolvers = entityResolvers;
+    initDtoResolvers();
+  }
+
+  private void initDtoResolvers() {
+    List<Method> methods =
+        MethodUtils.getMethodsListWithAnnotation(dtoClass, CustomFieldResolver.class);
+
+    for (Method method : methods) {
+      CustomFieldResolver reolver = method.getAnnotation(CustomFieldResolver.class);
+      if (reolver.getDirection() == Direction.TO_DTO) {
+        dtoResolvers.put(reolver.field(), method);
+      } else {
+        entityResolvers.put(reolver.field(), method);
+      }
+    }
   }
 
   /**
@@ -86,11 +97,11 @@ public class DinaMapper<D, E> {
     mapRelationsToTarget(entity, dto, selectedFieldPerClass, relations);
 
     // Map selected Custom Fields
-    List<CustomFieldResolverSpec<E>> selectedResolvers = dtoResolvers
-      .stream()
-      .filter(cfr-> selectedFields.contains(cfr.getField()))
-      .collect(Collectors.toList());
-    mapCustomFieldsToTarget(entity, dto, selectedResolvers);
+    Map<String, Method> selectedResolvers = new HashMap<>(dtoResolvers)
+      .entrySet().stream()
+      .filter(e -> selectedFields.contains(e.getKey()))
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    mapCustomFieldsToTarget(entity, dto, dto, selectedResolvers);
 
     return dto;
   }
@@ -137,11 +148,11 @@ public class DinaMapper<D, E> {
     mapRelationsToTarget(dto, entity, selectedFieldPerClass, relations);
 
     // Map selected Custom Fields
-    List<CustomFieldResolverSpec<D>> selectedResolvers = entityResolvers
-      .stream()
-      .filter(cfr-> selectedFields.contains(cfr.getField()))
-      .collect(Collectors.toList());
-    mapCustomFieldsToTarget(dto, entity, selectedResolvers);
+    Map<String, Method> selectedResolvers = new HashMap<>(entityResolvers)
+      .entrySet().stream()
+      .filter(e -> selectedFields.contains(e.getKey()))
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    mapCustomFieldsToTarget(dto, entity, dto, selectedResolvers);
   }
 
   /**
@@ -273,17 +284,25 @@ public class DinaMapper<D, E> {
   /**
    * Maps the custom field resolvers of a given source to a given target.
    *
-   * @param <T>       - Type of target
-   * @param <S>       - Type of source
-   * @param source    - source of the mapping
-   * @param target    - target of the mapping
-   * @param resolvers - custom resolvers to apply
+   * @param <T>          - Type of target
+   * @param <S>          - Type of source
+   * @param source       - source of the mapping
+   * @param target       - target of the mapping
+   * @param methodHolder - object containing the field resolvers.
+   * @param resolvers    - custom resolvers to apply
    */
   @SneakyThrows
-  private static <T, S> void mapCustomFieldsToTarget(S source, T target, List<CustomFieldResolverSpec<S>> resolvers) {
-    for (CustomFieldResolverSpec<S> cfr : resolvers) {
-      String fieldName = cfr.getField();
-      PropertyUtils.setProperty(target, fieldName, cfr.getResolver().apply(source));
+  private static <T, S> void mapCustomFieldsToTarget(
+    S source,
+    T target,
+    Object methodHolder,
+    Map<String, Method> resolvers
+  ) {
+    for (Entry<String, Method> entry : resolvers.entrySet()) {
+       PropertyUtils.setProperty(
+         target,
+         entry.getKey(),
+         entry.getValue().invoke(methodHolder, source));
     }
   }
 
@@ -294,10 +313,8 @@ public class DinaMapper<D, E> {
    * @return - true if the given field has custom resolvers.
    */
   private boolean hasCustomFieldResolver(String fieldName) {
-    return !Stream.concat(dtoResolvers.stream(), entityResolvers.stream())
-        .filter(cfr -> StringUtils.equalsIgnoreCase(fieldName, cfr.getField()))
-        .collect(Collectors.toList())
-        .isEmpty();
+    return dtoResolvers.keySet().contains(fieldName)
+        || entityResolvers.keySet().contains(fieldName);
   }
 
   /**
