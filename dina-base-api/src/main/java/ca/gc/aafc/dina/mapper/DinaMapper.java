@@ -40,6 +40,10 @@ public class DinaMapper<D, E> {
     initResolvers();
   }
 
+  /**
+   * Scans the dto class and adds the custom field resolvers to the appropriate
+   * resolver maps.
+   */
   private void initResolvers() {
     List<Method> methods =
         MethodUtils.getMethodsListWithAnnotation(dtoClass, CustomFieldResolver.class);
