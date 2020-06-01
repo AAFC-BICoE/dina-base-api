@@ -20,6 +20,6 @@ public @interface CustomFieldResolver {
 
   String field();
 
-  Direction getDirection();
+  Direction direction();
 
 }

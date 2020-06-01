@@ -50,7 +50,7 @@ public class DinaMapper<D, E> {
 
     for (Method method : methods) {
       CustomFieldResolver resolver = method.getAnnotation(CustomFieldResolver.class);
-      if (resolver.getDirection() == Direction.TO_DTO) {
+      if (resolver.direction() == Direction.TO_DTO) {
         dtoResolvers.put(resolver.field(), method);
       } else {
         entityResolvers.put(resolver.field(), method);

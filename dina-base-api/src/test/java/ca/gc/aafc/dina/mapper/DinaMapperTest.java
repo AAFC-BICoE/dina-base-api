@@ -281,12 +281,12 @@ public class DinaMapperTest {
     // Many to - Relation to test
     private List<StudentDto> classMates;
 
-    @CustomFieldResolver(field = "customField", getDirection = Direction.TO_DTO)
+    @CustomFieldResolver(field = "customField", direction = Direction.TO_DTO)
     public String customFieldToDto(Student entity) {
       return entity.getCustomField() == null ? "" : entity.getCustomField().getName();
     }
 
-    @CustomFieldResolver(field = "customField", getDirection = Direction.TO_ENTITY)
+    @CustomFieldResolver(field = "customField", direction = Direction.TO_ENTITY)
     public ComplexObject customFieldToEntity(StudentDto entity) {
       return entity.getCustomField() == null ? null
           : ComplexObject.builder().name(entity.getCustomField()).build();
