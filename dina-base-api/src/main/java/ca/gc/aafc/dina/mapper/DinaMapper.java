@@ -43,9 +43,9 @@ public class DinaMapper<D, E> {
    * Scans the dto class and adds the custom field resolvers to the appropriate
    * resolver maps.
    * 
-   * @throws {@link
-   *                  IllegalStateException} - if the custom field resolver has
-   *                  incorrect parameters or return types.
+   * @throws IllegalStateException
+   *                                 - if the custom field resolver has incorrect
+   *                                 parameters or return types.
    */
   private void initResolvers() {
     List<Method> methods =
@@ -82,9 +82,9 @@ public class DinaMapper<D, E> {
    *                    - Given class to compare
    * @param resolvers
    *                    - resolvers to validate
-   * @throws {@link
-   *                  IllegalStateException} - if the custom field resolver has
-   *                  return types.
+   * @throws IllegalStateException
+   *                                 - if the custom field resolver has return
+   *                                 types.
    */
   @SneakyThrows
   private static <T> void validateResolverReturnType(Class<T> claz, Map<String, Method> resolvers) {
