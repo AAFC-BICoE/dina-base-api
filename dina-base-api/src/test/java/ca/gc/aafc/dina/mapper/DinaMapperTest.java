@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -228,6 +229,20 @@ public class DinaMapperTest {
     assertNull(result.getClassMates());
   }
 
+    @Test
+  public void mapperInit_IncorrectResolverReturnTypes_ThrowsIllegalState() {
+    assertThrows(
+      IllegalStateException.class,
+      ()-> new DinaMapper<>(IncorrectFieldResolversReturnType.class, Student.class));
+  }
+
+  @Test
+  public void mapperInit_IncorrectResolverParaMeterCount_ThrowsIllegalState() {
+    assertThrows(
+      IllegalStateException.class,
+      ()-> new DinaMapper<>(IncorrectFieldResolversParaCount.class, Student.class));
+  }
+
   private static StudentDto createDTO() {
     StudentDto friend = StudentDto
       .builder()
@@ -314,5 +329,40 @@ public class DinaMapperTest {
     // Many to - Relation to test
     private List<Student> classMates;
 
+  }
+
+  /**
+   * Class used to test invalid custom resolvers.
+   */
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static final class IncorrectFieldResolversReturnType{
+
+    private String customField;
+
+    @CustomFieldResolver(field = "customField")
+    public ComplexObject customFieldToDto(Student entity) {
+      return null;
+    }
+  }
+
+  
+  /**
+   * Class used to test invalid custom resolvers.
+   */
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static final class IncorrectFieldResolversParaCount {
+
+    private String customField;
+
+    @CustomFieldResolver(field = "customField")
+    public String customFieldToDto(Student entity, StudentDto dto) {
+      return null;
+    }
   }
 }
