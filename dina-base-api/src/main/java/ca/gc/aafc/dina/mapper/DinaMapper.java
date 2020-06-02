@@ -63,8 +63,11 @@ public class DinaMapper<D, E> {
 
       if (methodParamType.equals(entityClass)) {
         dtoResolvers.put(resolver.field(), method);
-      } else {
+      } else if (methodParamType.equals(dtoClass)) {
         entityResolvers.put(resolver.field(), method);
+      } else {
+        throw new IllegalStateException("Custom field resolver " + method.getName()
+            + " should accept one parameter of type entity or dto");
       }
     }
 
