@@ -9,3 +9,5 @@ include::general_design.adoc[]
 include::design.adoc[]
 
 include::testing.adoc[]
+
+include::authentication.adoc[]
