@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
-import ca.gc.aafc.dina.mapper.CustomFieldResolver.Direction;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -43,6 +42,10 @@ public class DinaMapper<D, E> {
   /**
    * Scans the dto class and adds the custom field resolvers to the appropriate
    * resolver maps.
+   * 
+   * @throws {@link
+   *                  IllegalStateException} - if the custom field resolver has
+   *                  incorrect parameters or return types.
    */
   private void initResolvers() {
     List<Method> methods =
@@ -50,10 +53,49 @@ public class DinaMapper<D, E> {
 
     for (Method method : methods) {
       CustomFieldResolver resolver = method.getAnnotation(CustomFieldResolver.class);
-      if (resolver.direction() == Direction.TO_DTO) {
+
+      if (method.getParameterCount() != 1) {
+        throw new IllegalStateException("Custom field resolver " + method.getName()
+            + " should accept one parameter of type entity or dto");
+      }
+
+      Class<?> methodParamType = method.getParameterTypes()[0];
+
+      if (methodParamType.equals(entityClass)) {
         dtoResolvers.put(resolver.field(), method);
       } else {
         entityResolvers.put(resolver.field(), method);
+      }
+    }
+
+    validateResolverReturnType(dtoClass, dtoResolvers);
+    validateResolverReturnType(entityClass, entityResolvers);
+  }
+
+  /**
+   * Validates the given resolvers have return types matching the fields for the
+   * given class.
+   * 
+   * @param <T>
+   *                    - Class type
+   * @param claz
+   *                    - Given class to compare
+   * @param resolvers
+   *                    - resolvers to validate
+   * @throws {@link
+   *                  IllegalStateException} - if the custom field resolver has
+   *                  return types.
+   */
+  @SneakyThrows
+  private static <T> void validateResolverReturnType(Class<T> claz, Map<String, Method> resolvers) {
+    for (Entry<String, Method> entry : resolvers.entrySet()) {
+      Class<?> fieldType = claz.getDeclaredField(entry.getKey()).getType();
+      Class<?> methodReturnType = entry.getValue().getReturnType();
+
+      if (!fieldType.equals(methodReturnType)) {
+        throw new IllegalStateException(
+            "Custom field resolver " + entry.getValue().getName() + " expected return type "
+                + fieldType.getName() + " but was " + methodReturnType.getName());
       }
     }
   }

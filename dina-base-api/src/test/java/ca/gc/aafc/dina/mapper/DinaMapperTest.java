@@ -19,7 +19,6 @@ import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.Test;
 
 import ca.gc.aafc.dina.entity.ComplexObject;
-import ca.gc.aafc.dina.mapper.CustomFieldResolver.Direction;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -281,12 +280,12 @@ public class DinaMapperTest {
     // Many to - Relation to test
     private List<StudentDto> classMates;
 
-    @CustomFieldResolver(field = "customField", direction = Direction.TO_DTO)
+    @CustomFieldResolver(field = "customField")
     public String customFieldToDto(Student entity) {
       return entity.getCustomField() == null ? "" : entity.getCustomField().getName();
     }
 
-    @CustomFieldResolver(field = "customField", direction = Direction.TO_ENTITY)
+    @CustomFieldResolver(field = "customField")
     public ComplexObject customFieldToEntity(StudentDto entity) {
       return entity.getCustomField() == null ? null
           : ComplexObject.builder().name(entity.getCustomField()).build();
