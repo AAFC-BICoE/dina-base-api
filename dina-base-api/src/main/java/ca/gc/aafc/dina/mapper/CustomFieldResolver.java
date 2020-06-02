@@ -12,14 +12,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CustomFieldResolver {
 
-  enum Direction {
-
-    TO_DTO, TO_ENTITY
-
-  }
-
   String field();
-
-  Direction direction();
 
 }
