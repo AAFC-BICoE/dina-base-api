@@ -8,4 +8,6 @@ include::general_design.adoc[]
 
 include::design.adoc[]
 
+include::test_support.adoc[]
+
 include::testing.adoc[]

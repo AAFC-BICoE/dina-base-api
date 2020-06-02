@@ -35,6 +35,7 @@ import io.crnk.core.repository.ResourceRepository;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.list.DefaultResourceList;
 import io.crnk.core.resource.list.ResourceList;
+import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
 import io.crnk.data.jpa.query.criteria.JpaCriteriaQuery;
 import io.crnk.data.jpa.query.criteria.JpaCriteriaQueryFactory;
 import lombok.Getter;
@@ -44,7 +45,8 @@ import lombok.SneakyThrows;
 
 /**
  * JSONAPI repository that interfaces using DTOs, and uses JPA entities
- * internally.
+ * internally. Sparse fields sets are handled by the underlying Crnk
+ * ResourceRepository.
  * 
  * @param <D>
  *              - Dto type
@@ -54,6 +56,9 @@ import lombok.SneakyThrows;
 @Transactional
 public class DinaRepository<D, E extends DinaEntity>
     implements ResourceRepository<D, Serializable>, ResourceRegistryAware {
+
+  /* Forces CRNK to not display any top-level links. */
+  private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
 
   private final DinaService<E> dinaService;
 
@@ -119,6 +124,8 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
+    DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
+
     Set<String> includedRelations = querySpec.getIncludedRelations()
       .stream()
       .map(ir-> ir.getAttributePath().get(0))
@@ -141,9 +148,13 @@ public class DinaRepository<D, E extends DinaEntity>
       dtos = dtos.stream()
         .filter(dto -> ids.contains(PropertyUtils.getProperty(dto, idFieldName)))
         .collect(Collectors.toList());
+      metaInformation.setTotalResourceCount(Long.valueOf(dtos.size()));
+    } else {
+      // Uses an actual count from the database
+      metaInformation.setTotalResourceCount(query.buildExecutor(querySpec).getTotalRowCount());
     }
 
-    return new DefaultResourceList<>(dtos, null, null);
+    return new DefaultResourceList<>(dtos, metaInformation, NO_LINK_INFORMATION);
   }
 
   @Override
