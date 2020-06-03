@@ -40,11 +40,17 @@ public class DinaMapper<D, E> {
   }
 
   /**
+   * <p>
    * Scans the dto class and adds the custom field resolvers to the appropriate
    * resolver maps.
+   * <p>
+   * <p>
+   * Field resolvers must have at least one parameter of type entity or Dto. Field
+   * resolver return types must also match the mapping target field type.
+   * <p>
    * 
    * @throws IllegalStateException
-   *                                 - if the custom field resolver has incorrect
+   *                                 if the custom field resolver has incorrect
    *                                 parameters or return types.
    */
   private void initResolvers() {
