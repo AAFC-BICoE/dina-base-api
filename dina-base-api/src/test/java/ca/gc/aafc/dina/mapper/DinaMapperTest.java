@@ -243,6 +243,13 @@ public class DinaMapperTest {
       ()-> new DinaMapper<>(IncorrectFieldResolversParaCount.class, Student.class));
   }
 
+  @Test
+  public void mapperInit_IncorrectResolverParaMeterType_ThrowsIllegalState() {
+    assertThrows(
+      IllegalStateException.class,
+      ()-> new DinaMapper<>(IncorrectResolversParaType.class, Student.class));
+  }
+
   private static StudentDto createDTO() {
     StudentDto friend = StudentDto
       .builder()
@@ -362,6 +369,23 @@ public class DinaMapperTest {
 
     @CustomFieldResolver(field = "customField")
     public String customFieldToDto(Student entity, StudentDto dto) {
+      return null;
+    }
+  }
+
+  /**
+   * Class used to test invalid custom resolvers.
+   */
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static final class IncorrectResolversParaType {
+
+    private String customField;
+
+    @CustomFieldResolver(field = "customField")
+    public String customFieldToDto(String entity) {
       return null;
     }
   }
