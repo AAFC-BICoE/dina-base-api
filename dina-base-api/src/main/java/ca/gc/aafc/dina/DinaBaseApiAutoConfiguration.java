@@ -77,14 +77,10 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
     lci.setParamName("lang");
     return lci;
   }
-
-  @Autowired
-  public InterceptorRegistry registry;
   
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
     registry.addInterceptor(localeChangeInterceptor());
-    this.registry = registry;
   }
 
 }
