@@ -47,20 +47,21 @@ public class LocaleResolverTest {
   }
 
   @Test
-  public void default_ReturnEnglishGreeting() throws Exception {
+  public void defaultLocale_ReturnEnglishGreeting() throws Exception {
     this.mockMvc.perform(get("/locale-testing")).andExpect(status().isOk()).andExpect(content().string("Hello"));
   }
 
   @Test
-  public void french_ReturnFrenchGreeting() throws Exception {
+  public void localeSetToFrench_ReturnFrenchGreeting() throws Exception {
     this.mockMvc.perform(get("/locale-testing").param("lang", "fr")).andExpect(status().isOk())
         .andExpect(content().string("Bonjour"));
   }
 
   @Test
-  public void testThree() throws Exception {
-    this.mockMvc.perform(get("/locale-testing?lang=fr")).andExpect(status().isOk())
-        .andExpect(content().string("Bonjour"));
+  public void localeSetToEnglish_ReturnEnglishGreeting() throws Exception {
+    this.mockMvc.perform(get("/locale-testing?lang=en"))
+      .andExpect(status().isOk())
+      .andExpect(content().string("Hello"));
   }
 
 }

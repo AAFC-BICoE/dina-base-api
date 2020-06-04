@@ -1,7 +1,5 @@
 package ca.gc.aafc.dina.locale;
 
-import java.util.Locale;
-
 import javax.inject.Inject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +22,6 @@ public class LocaleController {
 
   @GetMapping(value = "/locale-testing")
   public String getGreeting() {
-    Locale locale = LocaleContextHolder.getLocale();
-    System.out.println("locale: " + locale);
     return messageSource.getMessage("greeting.hello", null, LocaleContextHolder.getLocale());
     }
 }

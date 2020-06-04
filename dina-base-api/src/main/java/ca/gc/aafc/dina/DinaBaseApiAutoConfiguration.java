@@ -5,7 +5,6 @@ import java.util.Locale;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -67,7 +66,7 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
   @Bean
   public LocaleResolver localeResolver() {
     SessionLocaleResolver slr  = new SessionLocaleResolver();
-    slr.setDefaultLocale(Locale.FRENCH);
+    slr.setDefaultLocale(Locale.ENGLISH);
     return slr;
   }
 
