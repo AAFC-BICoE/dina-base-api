@@ -1,5 +1,8 @@
 package ca.gc.aafc.dina.security;
 
+import java.util.List;
+import java.util.Map;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -13,5 +16,8 @@ public class DinaAuthenticatedUser {
 
   private String agentIdentifer;
   private String username;
+
+  // Roles will be changed for an enum at some point
+  private Map<String, List<String>> groupAndRole;
 
 } 
