@@ -11,3 +11,5 @@ include::design.adoc[]
 include::test_support.adoc[]
 
 include::testing.adoc[]
+
+include::authentication.adoc[]

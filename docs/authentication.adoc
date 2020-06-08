@@ -1,0 +1,27 @@
+= Authentication
+
+== Getting the current user
+
+To get the current user, you can inject a DinaAuthenticatedUser into the constructor:
+
+```java
+@Named
+@Log4j2
+public class MyClass {
+
+  private DinaAuthenticatedUser currentUser;
+
+  public MyClass(DinaAuthenticatedUser currentUser) {
+    this.currentUser = currentUser;
+  }
+
+  public void logCurrentUserName() {
+    log.info(currentUser.getUsername());
+  }
+
+}
+```
+
+Event though 'MyClass' is an application-scoped bean, Spring injects a DinaAuthenticaedUser proxy
+object that resolves to the actual request-scope DinaAuthenticatedUser bean when DinaAuthenticatedUser's
+methods are called. So calling logCurrentUserName() will print the currentUser for the current API request.
