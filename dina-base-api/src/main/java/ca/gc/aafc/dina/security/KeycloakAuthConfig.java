@@ -1,9 +1,9 @@
 package ca.gc.aafc.dina.security;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -97,17 +97,16 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
 
     String agentId = (String) otherClaims.get(AGENT_IDENTIFIER_CLAIM_KEY);
 
-    Map<String, List<String>> groupAndRole = new HashMap<>();
-    if( otherClaims.get(GROUPS_CLAIM_KEY) instanceof List ) {
-      // we should get roles per group but we currently only get the group. Roles are not by group.
-      List<String> groups = (List<String>) otherClaims.get(GROUPS_CLAIM_KEY);
-      groups.forEach( grp -> groupAndRole.put(grp, new ArrayList<>()));
+    Set<String> groups = new LinkedHashSet<>();
+    if (otherClaims.get(GROUPS_CLAIM_KEY) instanceof Collection) {
+      Collection<String> groupClaim = (Collection<String>) otherClaims.get(GROUPS_CLAIM_KEY);
+      groups.addAll(groupClaim);
     }
 
     return DinaAuthenticatedUser.builder()
       .agentIdentifer(agentId)
       .username(username)
-      .groupAndRole(groupAndRole)
+      .groups(groups)
       .build();
   }
 
