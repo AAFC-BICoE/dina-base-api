@@ -1,6 +1,9 @@
 package ca.gc.aafc.dina.security;
 
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -30,6 +33,7 @@ import lombok.extern.log4j.Log4j2;
 public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
 
   private static final String AGENT_IDENTIFIER_CLAIM_KEY = "agent-identifier";
+  private static final String GROUPS_CLAIM_KEY = "groups";
 
   public KeycloakAuthConfig() {
     super();
@@ -93,9 +97,17 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
 
     String agentId = (String) otherClaims.get(AGENT_IDENTIFIER_CLAIM_KEY);
 
+    Set<String> groups = new LinkedHashSet<>();
+    if (otherClaims.get(GROUPS_CLAIM_KEY) instanceof Collection) {
+      @SuppressWarnings("unchecked")
+      Collection<String> groupClaim = (Collection<String>) otherClaims.get(GROUPS_CLAIM_KEY);
+      groups.addAll(groupClaim);
+    }
+
     return DinaAuthenticatedUser.builder()
       .agentIdentifer(agentId)
       .username(username)
+      .groups(groups)
       .build();
   }
 

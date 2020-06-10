@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.security;
 
+import java.util.Set;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -13,5 +15,6 @@ public class DinaAuthenticatedUser {
 
   private String agentIdentifer;
   private String username;
+  private Set<String> groups;
 
 } 
