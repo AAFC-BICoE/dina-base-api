@@ -325,7 +325,7 @@ public class DinaRepository<D, E extends DinaEntity>
    */
   private void linkRelations(@NonNull E entity, @NonNull List<ResourceField> relations) {
     for (ResourceField relationField : relations) {
-      ResourceInformation relationInfo =this.resourceRegistry
+      ResourceInformation relationInfo = this.resourceRegistry
         .findEntry(relationField.getElementType())
         .getResourceInformation();
 
