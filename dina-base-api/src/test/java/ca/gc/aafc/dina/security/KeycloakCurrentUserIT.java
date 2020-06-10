@@ -38,26 +38,35 @@ public class KeycloakCurrentUserIT {
 
     // Mock the needed fields on the keycloak token:
     Mockito.when(mockToken.getName()).thenReturn("test-user");
-    Mockito.when(
-      mockToken.getAccount()
-        .getKeycloakSecurityContext()
-        .getToken()
-        .getOtherClaims()
-        .get("agent-identifier"))
-      .thenReturn("a2cef694-10f1-42ec-b403-e0f8ae9d2ae6");
-    Mockito.when(
-        mockToken.getAccount()
-          .getKeycloakSecurityContext()
-          .getToken()
-          .getOtherClaims()
-          .get("groups"))
-      .thenReturn(expectedGroups);
+    mockClaim(mockToken, "agent-identifier", "a2cef694-10f1-42ec-b403-e0f8ae9d2ae6");
+    mockClaim(mockToken, "groups", expectedGroups);
 
     SecurityContextHolder.getContext().setAuthentication(mockToken);
 
     assertEquals("test-user", currentUser.getUsername());
     assertEquals("a2cef694-10f1-42ec-b403-e0f8ae9d2ae6", currentUser.getAgentIdentifer().toString());
     assertTrue(CollectionUtils.isEqualCollection(currentUser.getGroups(), expectedGroups));
+  }
+
+  /**
+   * Mock a given tokens claims by returning a given value for the given claim
+   * key.
+   *
+   * @param token
+   *                - token holding claims
+   * @param key
+   *                - key of claim to mock
+   * @param value
+   *                - return value of the claim
+   */
+  private static void mockClaim(KeycloakAuthenticationToken token, String key, Object value) {
+    Mockito.when(
+        token.getAccount()
+          .getKeycloakSecurityContext()
+          .getToken()
+          .getOtherClaims()
+          .get(key))
+      .thenReturn(value);
   }
 
 }
