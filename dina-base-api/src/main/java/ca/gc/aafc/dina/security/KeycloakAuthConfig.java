@@ -99,6 +99,7 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
 
     Set<String> groups = new LinkedHashSet<>();
     if (otherClaims.get(GROUPS_CLAIM_KEY) instanceof Collection) {
+      @SuppressWarnings("unchecked")
       Collection<String> groupClaim = (Collection<String>) otherClaims.get(GROUPS_CLAIM_KEY);
       groups.addAll(groupClaim);
     }
