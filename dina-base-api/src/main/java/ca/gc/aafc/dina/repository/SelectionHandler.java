@@ -13,7 +13,7 @@ import io.crnk.core.engine.registry.ResourceRegistry;
  */
 public final class SelectionHandler {
 
-  private SelectionHandler(){}
+  private SelectionHandler() { }
   
   /**
    * Gets a JPA expression given a base path and an attributePath. Works as a short-hand method to

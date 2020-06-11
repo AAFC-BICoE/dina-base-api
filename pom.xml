@@ -6,7 +6,7 @@
 
   <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.29-SNAPSHOT</version>
+  <version>0.29</version>
 
   <packaging>pom</packaging>
 
