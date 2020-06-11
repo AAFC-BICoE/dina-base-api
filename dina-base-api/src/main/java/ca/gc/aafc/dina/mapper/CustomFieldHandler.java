@@ -13,6 +13,26 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
+/**
+ * <p>
+ * Handles Custom field resolvers for mapping values between DTOs and Entities.
+ * Custom field resolvers are assumed to be declared inside the DTO class.
+ * <p>
+ * <p>
+ * Field resolvers must have at least one parameter of type entity or Dto. A
+ * Field Resolver which accepts a parameter of Entity type would map to the
+ * associated field in the DTO and vise versa.
+ * <p>
+ * 
+ * <p>
+ * Field resolver return types must also match the mapping target field type.
+ * <p>
+ *
+ * @param <D>
+ *              - Dto type
+ * @param <E>
+ *              - Entity Type
+ */
 public class CustomFieldHandler<D, E> {
 
   private final Class<D> dtoClass;
@@ -31,10 +51,6 @@ public class CustomFieldHandler<D, E> {
    * <p>
    * Scans the dto class and adds the custom field resolvers to the appropriate
    * resolver maps.
-   * <p>
-   * <p>
-   * Field resolvers must have at least one parameter of type entity or Dto. Field
-   * resolver return types must also match the mapping target field type.
    * <p>
    * 
    * @throws IllegalStateException
