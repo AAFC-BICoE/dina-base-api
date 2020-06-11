@@ -18,7 +18,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
 public final class TestResourceHelper {
   
-  private TestResourceHelper(){
+  private TestResourceHelper() {
     
   }
   

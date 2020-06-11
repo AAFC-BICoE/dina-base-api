@@ -28,7 +28,7 @@ public class DateDeserializer extends JsonDeserializer<Date> {
     String text = parser.getText();
     try {
       return Date.valueOf(text);
-    } catch(IllegalArgumentException e) {
+    } catch (IllegalArgumentException e) {
       ErrorData errorData = ErrorData.builder()
           .setStatus(STATUS_ON_ERROR.toString())
           .setTitle("Date format error")

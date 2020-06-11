@@ -18,7 +18,7 @@ import com.google.common.collect.ImmutableMap;
 public final class JsonAPITestHelper {
 
   private static final ObjectMapper IT_OBJECT_MAPPER = new ObjectMapper();
-  private static final TypeReference<Map<String, Object>> IT_OM_TYPE_REF = new TypeReference<Map<String, Object>>() {};
+  private static final TypeReference<Map<String, Object>> IT_OM_TYPE_REF = new TypeReference<Map<String, Object>>() { };
   
   static {
     IT_OBJECT_MAPPER.registerModule(new JavaTimeModule());
@@ -60,14 +60,14 @@ public final class JsonAPITestHelper {
     }
 
     bldr.put("attributes", attributeMap);
-    if(relationshipMap != null) {
+    if (relationshipMap != null) {
       bldr.put("relationships", relationshipMap);
     }
     return ImmutableMap.of("data", bldr.build());
   }
   
   public static Map<String, Object> toRelationshipMap(List<JsonAPIRelationship> relationship) {
-    if( relationship == null) {
+    if (relationship == null) {
       return null;
     }
     

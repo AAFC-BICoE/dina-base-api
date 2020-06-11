@@ -55,7 +55,7 @@ public class JpaDtoMapper {
     new SpelParserConfiguration(true, true)
   );
   
-  public JpaDtoMapper(
+  public JpaDtoMapper (
     @NonNull Map<Class<?>, Class<?>> jpaEntities,
     Map<Class<?>, List<CustomFieldResolverSpec<?>>> customFieldResolvers
   ) {
@@ -312,7 +312,7 @@ public class JpaDtoMapper {
    * @return - true if the given class has custom field resolvers for a given
    *         field.
    */
-  private boolean hasCustomFieldResolver(Class<?> clazz, String field){
+  private boolean hasCustomFieldResolver(Class<?> clazz, String field) {
     return !customFieldResolvers.getOrDefault(clazz, new ArrayList<>())
         .stream()
         .filter(cfr->StringUtils.equalsIgnoreCase(field, cfr.getField()))

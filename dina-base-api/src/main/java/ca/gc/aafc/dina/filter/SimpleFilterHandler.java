@@ -40,7 +40,7 @@ public class SimpleFilterHandler implements FilterHandler {
       Expression<?> attributePath;
       try {
         attributePath = SelectionHandler.getExpression(root, filterSpec.getAttributePath());
-      } catch(IllegalArgumentException e) {
+      } catch (IllegalArgumentException e) {
         // This FilterHandler will ignore filter parameters that do not map to fields on the DTO,
         // like "rsql" or others that are only handled by other FilterHandlers.
         continue;

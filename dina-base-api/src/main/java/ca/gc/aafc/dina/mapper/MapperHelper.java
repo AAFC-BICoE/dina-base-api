@@ -13,7 +13,8 @@ import lombok.NonNull;
  */
 public final class MapperHelper {
 
-  private MapperHelper() {}
+  private MapperHelper() {
+  }
 
   /**
    * Returns a Map of DTOs to their related Entities given a base class package to
