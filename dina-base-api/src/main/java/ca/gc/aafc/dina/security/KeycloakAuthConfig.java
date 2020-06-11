@@ -1,12 +1,16 @@
 package ca.gc.aafc.dina.security;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.keycloak.adapters.KeycloakConfigResolver;
 import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
@@ -101,7 +105,7 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
     if (otherClaims.get(GROUPS_CLAIM_KEY) instanceof Collection) {
       @SuppressWarnings("unchecked")
       Collection<String> groupClaim = (Collection<String>) otherClaims.get(GROUPS_CLAIM_KEY);
-      groups.addAll(groupClaim);
+      groups.addAll(removePrefix("/", groupClaim));
     }
 
     return DinaAuthenticatedUser.builder()
@@ -109,6 +113,25 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
       .username(username)
       .groups(groups)
       .build();
+  }
+
+  /**
+   * Returns a set of strings matching a given collection with a given prefix
+   * removed from the colletion elements.
+   * 
+   * @param prefix
+   *                     - prefix to remove
+   * @param collection
+   *                     - collection to iterate
+   * @return
+   */
+  private static Set<String> removePrefix(String prefix, Collection<String> collection) {
+    if (CollectionUtils.isEmpty(collection)) {
+      return new HashSet<>();
+    } else {
+      return collection.stream().map(grp -> StringUtils.removeStart(grp, prefix))
+          .collect(Collectors.toSet());
+    }
   }
 
 }
