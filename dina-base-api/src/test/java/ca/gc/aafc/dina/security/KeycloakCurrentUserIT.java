@@ -48,6 +48,7 @@ public class KeycloakCurrentUserIT {
   @Test
   public void getCurrentUser_WhenKeycloakPrefixesGroup_ForwardSlashesRemoved() {
     List<String> expectedGroups = Arrays.asList("group 1", "group 2");
+    // Keycloak includes a forward slash to all group
     List<String> returnedGroups = Arrays.asList("/group 1", "/group 2");
 
     KeycloakAuthenticationToken mockToken = Mockito.mock(
