@@ -87,7 +87,7 @@ public abstract class DinaService<E extends DinaEntity> {
         }
         return cb.equal(r.get(entry.getKey()), entry.getValue());
       }).toArray(Predicate[]::new);
-    }, null, 0, 0);
+    }, null, 0, 100);
   }
 
   /**
