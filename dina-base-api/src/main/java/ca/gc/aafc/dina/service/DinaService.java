@@ -87,7 +87,7 @@ public abstract class DinaService<E extends DinaEntity> {
         }
         return cb.equal(r.get(entry.getKey()), entry.getValue());
       }).toArray(Predicate[]::new);
-    }, null);
+    }, null, 0, 0);
   }
 
   /**
@@ -100,12 +100,18 @@ public abstract class DinaService<E extends DinaEntity> {
    *                      - function to return the predicates cannot be null
    * @param orderBy
    *                      - function to return the sorting criteria can be null
+   * @param startIndex
+   *                      - position of first result to retrieve
+   * @param maxResult
+   *                      - maximun number of results to return
    * @return list of entities
    */
   public List<E> findAllByPredicates(
     @NonNull Class<E> entityClass,
     @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> func,
-    BiFunction<CriteriaBuilder, Root<E>, List<Order>> orderBy
+    BiFunction<CriteriaBuilder, Root<E>, List<Order>> orderBy,
+    int startIndex,
+    int maxResult
   ) {
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
     CriteriaQuery<E> criteria = criteriaBuilder.createQuery(entityClass);
@@ -115,7 +121,7 @@ public abstract class DinaService<E extends DinaEntity> {
     if (orderBy != null) {
       criteria.orderBy(orderBy.apply(criteriaBuilder, root));
     }
-    return baseDAO.resultListFromCriteria(criteria);
+    return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult);
   }
 
   /**

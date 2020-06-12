@@ -252,12 +252,21 @@ public class BaseDAO {
   /**
    * Returns a List of entities based off a given criteria.
    *
-   * @param <E>      - Type of result list
-   * @param criteria - criteria to generate the typed query
+   * @param <E>
+   *                    - Type of result list
+   * @param criteria
+   *                    - criteria to generate the typed query
+   * @param start
+   *                    - position of first result to retrieve
+   * @param maxResult
+   *                    - maximun number of results to return
    * @return List of entities
    */
-  public <E> List<E> resultListFromCriteria(CriteriaQuery<E> criteria) {
-    return entityManager.createQuery(criteria).getResultList();
+  public <E> List<E> resultListFromCriteria(CriteriaQuery<E> criteria, int start, int maxResult) {
+    return entityManager.createQuery(criteria)
+      .setFirstResult(start)
+      .setMaxResults(maxResult)
+      .getResultList();
   }
 
 }

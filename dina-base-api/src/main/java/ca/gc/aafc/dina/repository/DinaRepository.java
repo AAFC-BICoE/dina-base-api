@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -131,22 +132,23 @@ public class DinaRepository<D, E extends DinaEntity>
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
 
-    List<E> returnedEntities = dinaService.findAllByPredicates(entityClass, (cb, root) -> {
-      List<javax.persistence.criteria.Predicate> restrictions = new ArrayList<>();
-      restrictions.add(simpleFilterHandler.getRestriction(querySpec, root, cb));
-      restrictions.add(rsqlFilterHandler.getRestriction(querySpec, root, cb));
+    List<E> returnedEntities = dinaService.findAllByPredicates(
+        entityClass, (cb, root) -> {
+          List<javax.persistence.criteria.Predicate> restrictions = new ArrayList<>();
+          restrictions.add(simpleFilterHandler.getRestriction(querySpec, root, cb));
+          restrictions.add(rsqlFilterHandler.getRestriction(querySpec, root, cb));
 
-      if (CollectionUtils.isNotEmpty(ids)) {
-        String idFieldName = this.resourceRegistry
-          .findEntry(resourceClass)
-          .getResourceInformation()
-          .getIdField()
-          .getUnderlyingName();
-        restrictions.add(root.get(idFieldName).in(ids));
-      }
+          if (CollectionUtils.isNotEmpty(ids)) {
+            String idFieldName = this.resourceRegistry.findEntry(resourceClass)
+                .getResourceInformation().getIdField().getUnderlyingName();
+            restrictions.add(root.get(idFieldName).in(ids));
+          }
 
-      return restrictions.stream().toArray(javax.persistence.criteria.Predicate[]::new);
-    }, (cb, root) -> SortUtils.getOrders(querySpec, cb, root));
+          return restrictions.stream().toArray(javax.persistence.criteria.Predicate[]::new);
+        }, 
+        (cb, root) -> SortUtils.getOrders(querySpec, cb, root),
+        Optional.ofNullable(querySpec.getOffset()).orElse(Long.valueOf(0)).intValue(),
+        Optional.ofNullable(querySpec.getLimit()).orElse(Long.valueOf(100)).intValue());
 
     Set<String> includedRelations = querySpec.getIncludedRelations()
       .stream()
