@@ -13,9 +13,9 @@ import io.crnk.core.queryspec.QuerySpec;
 /**
  * Utility class for crnk sorting.
  */
-public class SortUtils {
+public class FilterUtils {
 
-  private SortUtils() {}
+  private FilterUtils() {}
 
   /**
    * Parses a crnk {@link QuerySpec} to return a list of {@link Order} from a

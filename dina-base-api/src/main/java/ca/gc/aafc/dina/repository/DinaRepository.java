@@ -16,6 +16,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -25,7 +27,7 @@ import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.RsqlFilterHandler;
 import ca.gc.aafc.dina.filter.SimpleFilterHandler;
-import ca.gc.aafc.dina.filter.SortUtils;
+import ca.gc.aafc.dina.filter.FilterUtils;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.service.DinaService;
@@ -133,22 +135,11 @@ public class DinaRepository<D, E extends DinaEntity>
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
 
     List<E> returnedEntities = dinaService.findAllByPredicates(
-        entityClass, (cb, root) -> {
-          List<javax.persistence.criteria.Predicate> restrictions = new ArrayList<>();
-          restrictions.add(simpleFilterHandler.getRestriction(querySpec, root, cb));
-          restrictions.add(rsqlFilterHandler.getRestriction(querySpec, root, cb));
-
-          if (CollectionUtils.isNotEmpty(ids)) {
-            String idFieldName = this.resourceRegistry.findEntry(resourceClass)
-                .getResourceInformation().getIdField().getUnderlyingName();
-            restrictions.add(root.get(idFieldName).in(ids));
-          }
-
-          return restrictions.stream().toArray(javax.persistence.criteria.Predicate[]::new);
-        }, 
-        (cb, root) -> SortUtils.getOrders(querySpec, cb, root),
-        Optional.ofNullable(querySpec.getOffset()).orElse(Long.valueOf(0)).intValue(),
-        Optional.ofNullable(querySpec.getLimit()).orElse(Long.valueOf(100)).intValue());
+      entityClass,
+      (cb, root) -> buildPredicates(ids, querySpec, cb,root),
+      (cb, root) -> FilterUtils.getOrders(querySpec, cb, root),
+      Optional.ofNullable(querySpec.getOffset()).orElse(Long.valueOf(0)).intValue(),
+      Optional.ofNullable(querySpec.getLimit()).orElse(Long.valueOf(100)).intValue());
 
     Set<String> includedRelations = querySpec.getIncludedRelations()
       .stream()
@@ -161,6 +152,21 @@ public class DinaRepository<D, E extends DinaEntity>
 
     metaInformation.setTotalResourceCount(1l);
     return new DefaultResourceList<>(dtos, metaInformation, NO_LINK_INFORMATION);
+  }
+
+  private javax.persistence.criteria.Predicate[] buildPredicates(Collection<Serializable> ids,
+      QuerySpec querySpec, CriteriaBuilder cb, Root<E> root) {
+    List<javax.persistence.criteria.Predicate> restrictions = new ArrayList<>();
+    restrictions.add(simpleFilterHandler.getRestriction(querySpec, root, cb));
+    restrictions.add(rsqlFilterHandler.getRestriction(querySpec, root, cb));
+
+    if (CollectionUtils.isNotEmpty(ids)) {
+      String idFieldName = this.resourceRegistry.findEntry(resourceClass)
+          .getResourceInformation().getIdField().getUnderlyingName();
+      restrictions.add(root.get(idFieldName).in(ids));
+    }
+
+    return restrictions.stream().toArray(javax.persistence.criteria.Predicate[]::new);
   }
 
   @Override
