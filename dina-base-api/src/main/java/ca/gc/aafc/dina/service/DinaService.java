@@ -2,7 +2,7 @@ package ca.gc.aafc.dina.service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.function.BiFunction;
 
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -78,23 +78,36 @@ public abstract class DinaService<E extends DinaEntity> {
    * @param where       - map of fieldName::Values to match on
    * @return list of Entities
    */
-  public List<E> findAllWhere(Class<E> entityClass, Map<String, Object> where) {
-    Objects.requireNonNull(entityClass);
-    Objects.requireNonNull(where);
+  public List<E> findAllWhere(@NonNull Class<E> entityClass, @NonNull Map<String, Object> where) {
+    return findAllByPredicates(entityClass, (cb, r) -> {
+      return where.entrySet().stream().map(entry -> {
+        if (entry.getValue() == null) {
+          return cb.isNull(r.get(entry.getKey()));
+        }
+        return cb.equal(r.get(entry.getKey()), entry.getValue());
+      }).toArray(Predicate[]::new);
+    });
+  }
 
+  /**
+   * Returns a list of Entities of a given class restricted by the predicates
+   * returned by a given function.
+   *
+   * @param entityClass
+   *                      - entity class to query
+   * @param func
+   *                      - function to return the predicates
+   * @return list of entities
+   */
+  public List<E> findAllByPredicates(
+    @NonNull Class<E> entityClass,
+    @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> func
+  ) {
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
     CriteriaQuery<E> criteria = criteriaBuilder.createQuery(entityClass);
     Root<E> root = criteria.from(entityClass);
 
-    Predicate[] predicates = where.entrySet().stream().map(entry -> {
-      if (entry.getValue() == null) {
-        return criteriaBuilder.isNull(root.get(entry.getKey()));
-      }
-      return criteriaBuilder.equal(root.get(entry.getKey()), entry.getValue());
-    }).toArray(Predicate[]::new);
-
-    criteria.where(predicates).select(root);
-
+    criteria.where(func.apply(criteriaBuilder, root)).select(root);
     return baseDAO.resultListFromCriteria(criteria);
   }
 
