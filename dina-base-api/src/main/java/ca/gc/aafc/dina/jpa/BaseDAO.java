@@ -269,4 +269,14 @@ public class BaseDAO {
       .getResultList();
   }
 
+  public <T> Long getResouseCountFromCriteria(CriteriaQuery<T> criteria, Root<T> root) {
+    CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+    Root<T> countRoot = countQuery.from(criteria.getResultType());
+    countRoot.alias(root.getAlias());
+    root.getJoins().forEach(j -> j.alias(countRoot.getAlias()));
+    countQuery.select(cb.count(root)).where(criteria.getRestriction());
+    return entityManager.createQuery(countQuery).getSingleResult();
+  }
+
 }

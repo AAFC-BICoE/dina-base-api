@@ -132,7 +132,6 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
-    DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
 
     List<E> returnedEntities = dinaService.findAllByPredicates(
       entityClass,
@@ -150,7 +149,12 @@ public class DinaRepository<D, E extends DinaEntity>
       .map(e -> dinaMapper.toDto(e, entityFieldsPerClass, includedRelations))
       .collect(Collectors.toList());
 
-    metaInformation.setTotalResourceCount(1l);
+    Long resourceCount = dinaService.getResourceCount(
+      entityClass,
+      (cb, root) -> buildPredicates(ids, querySpec, cb, root));
+
+    DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
+    metaInformation.setTotalResourceCount(resourceCount);
     return new DefaultResourceList<>(dtos, metaInformation, NO_LINK_INFORMATION);
   }
 

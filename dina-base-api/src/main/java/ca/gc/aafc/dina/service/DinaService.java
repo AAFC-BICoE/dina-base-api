@@ -124,6 +124,18 @@ public abstract class DinaService<E extends DinaEntity> {
     return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult);
   }
 
+  public Long getResourceCount(
+    @NonNull Class<E> entityClass,
+    @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> predicateSupplier
+  ) {
+    CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
+    CriteriaQuery<E> criteria = criteriaBuilder.createQuery(entityClass);
+    Root<E> root = criteria.from(entityClass);
+    root.alias("entity");
+    criteria.where(predicateSupplier.apply(criteriaBuilder, root));
+    return baseDAO.getResouseCountFromCriteria(criteria, root);
+  }
+
   /**
    * Find an entity by it's NaturalId. The method assumes that the naturalId is
    * unique.
