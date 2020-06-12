@@ -7,6 +7,7 @@ import java.util.function.BiFunction;
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
@@ -86,7 +87,7 @@ public abstract class DinaService<E extends DinaEntity> {
         }
         return cb.equal(r.get(entry.getKey()), entry.getValue());
       }).toArray(Predicate[]::new);
-    });
+    }, null);
   }
 
   /**
@@ -94,20 +95,26 @@ public abstract class DinaService<E extends DinaEntity> {
    * returned by a given function.
    *
    * @param entityClass
-   *                      - entity class to query
+   *                      - entity class to query cannot be null
    * @param func
-   *                      - function to return the predicates
+   *                      - function to return the predicates cannot be null
+   * @param orderBy
+   *                      - function to return the sorting criteria can be null
    * @return list of entities
    */
   public List<E> findAllByPredicates(
     @NonNull Class<E> entityClass,
-    @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> func
+    @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> func,
+    BiFunction<CriteriaBuilder, Root<E>, List<Order>> orderBy
   ) {
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
     CriteriaQuery<E> criteria = criteriaBuilder.createQuery(entityClass);
     Root<E> root = criteria.from(entityClass);
 
     criteria.where(func.apply(criteriaBuilder, root)).select(root);
+    if (orderBy != null) {
+      criteria.orderBy(orderBy.apply(criteriaBuilder, root));
+    }
     return baseDAO.resultListFromCriteria(criteria);
   }
 

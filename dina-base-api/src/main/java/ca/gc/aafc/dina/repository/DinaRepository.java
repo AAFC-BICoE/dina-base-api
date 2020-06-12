@@ -24,6 +24,7 @@ import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.RsqlFilterHandler;
 import ca.gc.aafc.dina.filter.SimpleFilterHandler;
+import ca.gc.aafc.dina.filter.SortUtils;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.service.DinaService;
@@ -145,7 +146,7 @@ public class DinaRepository<D, E extends DinaEntity>
       }
 
       return restrictions.stream().toArray(javax.persistence.criteria.Predicate[]::new);
-    });
+    }, (cb, root) -> SortUtils.getOrders(querySpec, cb, root));
 
     Set<String> includedRelations = querySpec.getIncludedRelations()
       .stream()

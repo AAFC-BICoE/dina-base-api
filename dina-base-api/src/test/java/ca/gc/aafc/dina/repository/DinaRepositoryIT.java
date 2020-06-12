@@ -224,6 +224,31 @@ public class DinaRepositoryIT {
   }
 
   @Test
+  public void findAll_SortingByNestedProperty_ReturnsSorted() {
+    List<String> names = Arrays.asList("a", "b", "c", "d");
+    List<String> shuffledNames = Arrays.asList("b", "a", "d", "c");
+
+    for (String name : shuffledNames) {
+      Department depart = createDepartment(name, "location");
+      baseDAO.create(depart);
+      PersonDTO toPersist = createPersonDto();
+      toPersist.setDepartment(DepartmentDto.builder().uuid(depart.getUuid()).build());
+      dinaRepository.create(toPersist);
+    }
+
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.setIncludedRelations(createIncludeRelationSpecs("department"));
+    querySpec.setSort(
+      Arrays.asList(new SortSpec(Arrays.asList("department", "name"),
+      Direction.ASC)));
+
+    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    for (int i = 0; i < names.size(); i++) {
+      assertEquals(names.get(i), resultList.get(i).getDepartment().getName());
+    }
+  }
+
+  @Test
   public void findAll_whenPageLimitIsSet_pageSizeIsLimited() {
     long pageLimit = 10;
 
