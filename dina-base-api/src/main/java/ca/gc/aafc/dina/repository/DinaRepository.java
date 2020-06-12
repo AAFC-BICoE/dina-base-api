@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +22,8 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.filter.RsqlFilterHandler;
+import ca.gc.aafc.dina.filter.SimpleFilterHandler;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.service.DinaService;
@@ -36,8 +39,6 @@ import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.list.DefaultResourceList;
 import io.crnk.core.resource.list.ResourceList;
 import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
-import io.crnk.data.jpa.query.criteria.JpaCriteriaQuery;
-import io.crnk.data.jpa.query.criteria.JpaCriteriaQueryFactory;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -77,7 +78,11 @@ public class DinaRepository<D, E extends DinaEntity>
   @Setter(onMethod_ = @Override)
   private ResourceRegistry resourceRegistry;
 
-  private final JpaCriteriaQueryFactory queryFactory;
+  @Inject
+  private SimpleFilterHandler simpleFilterHandler;
+
+  @Inject
+  private RsqlFilterHandler rsqlFilterHandler;
 
   @Inject
   public DinaRepository(
@@ -97,7 +102,6 @@ public class DinaRepository<D, E extends DinaEntity>
       field -> isGenerated(field.getDeclaringClass(), field.getName()));
 
     this.entityFieldsPerClass = getFieldsPerEntity();
-    this.queryFactory = dinaService.createJpaCritFactory();
   }
 
   @Override
@@ -126,34 +130,33 @@ public class DinaRepository<D, E extends DinaEntity>
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
 
+    List<E> returnedEntities = dinaService.findAllByPredicates(entityClass, (cb, root) -> {
+      List<javax.persistence.criteria.Predicate> restrictions = new ArrayList<>();
+      restrictions.add(simpleFilterHandler.getRestriction(querySpec, root, cb));
+      restrictions.add(rsqlFilterHandler.getRestriction(querySpec, root, cb));
+
+      if (CollectionUtils.isNotEmpty(ids)) {
+        String idFieldName = this.resourceRegistry
+          .findEntry(resourceClass)
+          .getResourceInformation()
+          .getIdField()
+          .getUnderlyingName();
+        restrictions.add(root.get(idFieldName).in(ids));
+      }
+
+      return restrictions.stream().toArray(javax.persistence.criteria.Predicate[]::new);
+    });
+
     Set<String> includedRelations = querySpec.getIncludedRelations()
       .stream()
       .map(ir-> ir.getAttributePath().get(0))
       .collect(Collectors.toSet());
 
-    JpaCriteriaQuery<E> query = queryFactory.query(entityClass);
-
-    List<D> dtos = query.buildExecutor(querySpec)
-      .getResultList()
-      .stream()
+    List<D> dtos = returnedEntities.stream()
       .map(e -> dinaMapper.toDto(e, entityFieldsPerClass, includedRelations))
       .collect(Collectors.toList());
 
-    if (CollectionUtils.isNotEmpty(ids)) {
-      String idFieldName = this.resourceRegistry
-        .findEntry(resourceClass)
-        .getResourceInformation()
-        .getIdField()
-        .getUnderlyingName();
-      dtos = dtos.stream()
-        .filter(dto -> ids.contains(PropertyUtils.getProperty(dto, idFieldName)))
-        .collect(Collectors.toList());
-      metaInformation.setTotalResourceCount(Long.valueOf(dtos.size()));
-    } else {
-      // Uses an actual count from the database
-      metaInformation.setTotalResourceCount(query.buildExecutor(querySpec).getTotalRowCount());
-    }
-
+    metaInformation.setTotalResourceCount(1l);
     return new DefaultResourceList<>(dtos, metaInformation, NO_LINK_INFORMATION);
   }
 
