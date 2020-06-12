@@ -6,7 +6,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.Predicate;
@@ -27,12 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class SimpleFilterHandler implements FilterHandler {
 
   @Override
-  public Predicate getRestriction(
-      QuerySpec querySpec,
-      From<?, ?> root,
-      CriteriaQuery<?> query,
-      CriteriaBuilder cb
-  ) {
+  public Predicate getRestriction(QuerySpec querySpec, From<?, ?> root, CriteriaBuilder cb) {
     List<FilterSpec> filterSpecs = querySpec.getFilters();
     List<Predicate> predicates = new ArrayList<>();
 

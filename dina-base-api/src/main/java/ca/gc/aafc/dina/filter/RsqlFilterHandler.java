@@ -4,13 +4,12 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.Predicate;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.github.tennaito.rsql.jpa.JpaPredicateVisitor;
+
+import org.apache.commons.lang3.StringUtils;
 
 import cz.jirutka.rsql.parser.RSQLParser;
 import io.crnk.core.queryspec.FilterSpec;
@@ -35,8 +34,7 @@ public class RsqlFilterHandler implements FilterHandler {
   private final RSQLParser rsqlParser = new RSQLParser();
   
   @Override
-  public Predicate getRestriction(QuerySpec querySpec, From<?, ?> root, CriteriaQuery<?> query,
-      CriteriaBuilder cb) {
+  public Predicate getRestriction(QuerySpec querySpec, From<?, ?> root, CriteriaBuilder cb) {
     FilterSpec rsqlFilterSpec = querySpec.findFilter(PathSpec.of("rsql")).orElse(null);
     if (rsqlFilterSpec == null || StringUtils.isBlank(rsqlFilterSpec.getValue().toString())) {
       // Return a blank predicate if there is no requested RSQL filter.
