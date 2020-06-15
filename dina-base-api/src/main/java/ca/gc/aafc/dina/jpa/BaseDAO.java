@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -29,6 +30,7 @@ import org.hibernate.annotations.NaturalId;
 import org.springframework.stereotype.Component;
 
 import io.crnk.core.engine.information.bean.BeanInformation;
+import lombok.NonNull;
 
 /**
  * Base Data Access Object layer. This class should be the only one holding a reference to the
@@ -270,24 +272,33 @@ public class BaseDAO {
   }
 
   /**
-   * Returns the resource count from a given criteria with a given root. Given
-   * root needs to have a supplied alias.
+   * Returns the resource count from a given predicate supplier.
    * 
-   * @param <T>
-   *                   - Type of the Root entity
-   * @param criteria
-   *                   - a criteria to query resources
-   * @param root
-   *                   - root of the original entity
+   * @param <E>
+   * @param entityClass
+   *                            - entity class to query cannot be null
+   * @param predicateSupplier
+   *                            - function to return the predicates cannot be null
    * @return resource count
    */
-  public <T> Long getResouseCountFromCriteria(CriteriaQuery<T> criteria, Root<T> root) {
-    CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-    CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-    Root<T> countRoot = countQuery.from(criteria.getResultType());
+  public <E> Long getResouseCountFromCriteria(
+    @NonNull Class<E> entityClass,
+    @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> predicateSupplier
+  ) {
+    CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<E> criteria = criteriaBuilder.createQuery(entityClass);
+    Root<E> root = criteria.from(entityClass);
+
+    root.alias("entity");
+    criteria.where(predicateSupplier.apply(criteriaBuilder, root));
+
+    CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+    Root<E> countRoot = countQuery.from(entityClass);
+
     countRoot.alias(root.getAlias());
     root.getJoins().forEach(j -> j.alias(countRoot.getAlias()));
-    countQuery.select(cb.count(root)).where(criteria.getRestriction());
+    countQuery.select(criteriaBuilder.count(root)).where(criteria.getRestriction());
+
     return entityManager.createQuery(countQuery).getSingleResult();
   }
 
