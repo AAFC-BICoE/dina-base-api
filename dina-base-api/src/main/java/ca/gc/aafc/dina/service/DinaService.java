@@ -137,7 +137,7 @@ public abstract class DinaService<E extends DinaEntity> {
     @NonNull Class<E> entityClass,
     @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> predicateSupplier
   ) {
-    return baseDAO.getResouseCountFromCriteria(entityClass, predicateSupplier);
+    return baseDAO.getResourceCount(entityClass, predicateSupplier);
   }
 
   /**

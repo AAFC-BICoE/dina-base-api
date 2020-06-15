@@ -281,23 +281,16 @@ public class BaseDAO {
    *                            - function to return the predicates cannot be null
    * @return resource count
    */
-  public <E> Long getResouseCountFromCriteria(
+  public <E> Long getResourceCount(
     @NonNull Class<E> entityClass,
     @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> predicateSupplier
   ) {
-    CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<E> criteria = criteriaBuilder.createQuery(entityClass);
-    Root<E> root = criteria.from(entityClass);
+    CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+    Root<E> root = countQuery.from(entityClass);
 
-    root.alias("entity");
-    criteria.where(predicateSupplier.apply(criteriaBuilder, root));
-
-    CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
-    Root<E> countRoot = countQuery.from(entityClass);
-
-    countRoot.alias(root.getAlias());
-    root.getJoins().forEach(j -> j.alias(countRoot.getAlias()));
-    countQuery.select(criteriaBuilder.count(root)).where(criteria.getRestriction());
+    countQuery.select(cb.count(root));
+    countQuery.where(predicateSupplier.apply(cb, root));
 
     return entityManager.createQuery(countQuery).getSingleResult();
   }
