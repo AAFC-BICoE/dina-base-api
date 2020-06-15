@@ -124,6 +124,15 @@ public abstract class DinaService<E extends DinaEntity> {
     return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult);
   }
 
+  /**
+   * Returns the resource count from a given predicate supplier.
+   * 
+   * @param entityClass
+   *                            - entity class to query cannot be null
+   * @param predicateSupplier
+   *                            - function to return the predicates cannot be null
+   * @return resource count
+   */
   public Long getResourceCount(
     @NonNull Class<E> entityClass,
     @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> predicateSupplier

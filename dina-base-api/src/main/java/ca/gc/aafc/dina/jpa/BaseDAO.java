@@ -269,6 +269,18 @@ public class BaseDAO {
       .getResultList();
   }
 
+  /**
+   * Returns the resource count from a given criteria with a given root. Given
+   * root needs to have a supplied alias.
+   * 
+   * @param <T>
+   *                   - Type of the Root entity
+   * @param criteria
+   *                   - a criteria to query resources
+   * @param root
+   *                   - root of the original entity
+   * @return resource count
+   */
   public <T> Long getResouseCountFromCriteria(CriteriaQuery<T> criteria, Root<T> root) {
     CriteriaBuilder cb = entityManager.getCriteriaBuilder();
     CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
