@@ -1,7 +1,6 @@
 package ca.gc.aafc.dina.service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiFunction;
 
 import javax.inject.Inject;
@@ -62,32 +61,6 @@ public abstract class DinaService<E extends DinaEntity> {
   public void delete(E entity) {
     preDelete(entity);
     baseDAO.delete(entity);
-  }
-
-  /**
-   * <p>
-   * Returns a list of Entities of a given class where the fields match a given
-   * map.
-   * <p>
-   *
-   * <p>
-   * Given where map maps field names to values. Where map can be empty to find
-   * all. Where map can search on null values.
-   * <p>
-   * 
-   * @param entityClass - entity class to search on
-   * @param where       - map of fieldName::Values to match on
-   * @return list of Entities
-   */
-  public List<E> findAllWhere(@NonNull Class<E> entityClass, @NonNull Map<String, Object> where) {
-    return findAllByPredicates(entityClass, (cb, r) -> {
-      return where.entrySet().stream().map(entry -> {
-        if (entry.getValue() == null) {
-          return cb.isNull(r.get(entry.getKey()));
-        }
-        return cb.equal(r.get(entry.getKey()), entry.getValue());
-      }).toArray(Predicate[]::new);
-    }, null, 0, 100);
   }
 
   /**
