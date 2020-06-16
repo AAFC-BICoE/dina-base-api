@@ -138,14 +138,6 @@ public abstract class DinaService<E extends DinaEntity> {
   }
 
   /**
-   * Returns a new instance of a {@link JpaCriteriaQueryFactory} for crnk JPA data
-   * access.
-   */
-  public JpaCriteriaQueryFactory createJpaCritFactory() {
-    return baseDAO.createWithEntityManager(JpaCriteriaQueryFactory::newInstance);
-  }
-
-  /**
    * Run before the {@link DinaService#create()} method.
    *
    * @param entity entity being created by {@link DinaService#create()}
