@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -20,6 +21,9 @@ import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
 
+/**
+ * Component used to map crnk filters into valid JPA objects.
+ */
 @Component
 public class DinaFilterResolver {
 
@@ -29,6 +33,25 @@ public class DinaFilterResolver {
   @Inject
   private RsqlFilterHandler rsqlFilterHandler;
 
+  /**
+   * Returns an array of predicates by mapping crnk filters into JPA restrictions
+   * with a given querySpec, criteria builder, root, ids, and id field name.
+   * 
+   * @param <E>
+   *                      - root entity type
+   * @param querySpec
+   *                      - crnk query spec with filters, cannot be null
+   * @param cb
+   *                      - the criteria builder, cannot be null
+   * @param root
+   *                      - the root type, cannot be null
+   * @param ids
+   *                      - collection of ids, can be null
+   * @param idFieldName
+   *                      - collection of ids, can be null if collections is null,
+   *                      else throws null pointer.
+   * @return - array of predicates
+   */
   public <E> Predicate[] buildPredicates(
     @NonNull QuerySpec querySpec,
     @NonNull CriteriaBuilder cb,
@@ -41,6 +64,7 @@ public class DinaFilterResolver {
     restrictions.add(rsqlFilterHandler.getRestriction(querySpec, root, cb));
 
     if (CollectionUtils.isNotEmpty(ids)) {
+      Objects.requireNonNull(idFieldName);
       restrictions.add(root.get(idFieldName).in(ids));
     }
 
