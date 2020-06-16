@@ -69,7 +69,7 @@ public abstract class DinaService<E extends DinaEntity> {
    *
    * @param entityClass
    *                      - entity class to query cannot be null
-   * @param func
+   * @param where
    *                      - function to return the predicates cannot be null
    * @param orderBy
    *                      - function to return the sorting criteria can be null
@@ -79,9 +79,9 @@ public abstract class DinaService<E extends DinaEntity> {
    *                      - maximun number of results to return
    * @return list of entities
    */
-  public List<E> findAllByPredicates(
+  public List<E> findAll(
     @NonNull Class<E> entityClass,
-    @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> func,
+    @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> where,
     BiFunction<CriteriaBuilder, Root<E>, List<Order>> orderBy,
     int startIndex,
     int maxResult
@@ -90,7 +90,7 @@ public abstract class DinaService<E extends DinaEntity> {
     CriteriaQuery<E> criteria = criteriaBuilder.createQuery(entityClass);
     Root<E> root = criteria.from(entityClass);
 
-    criteria.where(func.apply(criteriaBuilder, root)).select(root);
+    criteria.where(where.apply(criteriaBuilder, root)).select(root);
     if (orderBy != null) {
       criteria.orderBy(orderBy.apply(criteriaBuilder, root));
     }

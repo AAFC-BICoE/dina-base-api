@@ -133,7 +133,7 @@ public class DinaRepository<D, E extends DinaEntity>
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
 
-    List<E> returnedEntities = dinaService.findAllByPredicates(
+    List<E> returnedEntities = dinaService.findAll(
       entityClass,
       (cb, root) -> buildPredicates(ids, querySpec, cb,root),
       (cb, root) -> FilterUtils.getOrders(querySpec, cb, root),
@@ -158,15 +158,18 @@ public class DinaRepository<D, E extends DinaEntity>
     return new DefaultResourceList<>(dtos, metaInformation, NO_LINK_INFORMATION);
   }
 
-  private javax.persistence.criteria.Predicate[] buildPredicates(Collection<Serializable> ids,
-      QuerySpec querySpec, CriteriaBuilder cb, Root<E> root) {
+  private javax.persistence.criteria.Predicate[] buildPredicates(
+    Collection<Serializable> ids,
+    QuerySpec querySpec,
+    CriteriaBuilder cb,
+    Root<E> root
+  ) {
     List<javax.persistence.criteria.Predicate> restrictions = new ArrayList<>();
     restrictions.add(simpleFilterHandler.getRestriction(querySpec, root, cb));
     restrictions.add(rsqlFilterHandler.getRestriction(querySpec, root, cb));
 
     if (CollectionUtils.isNotEmpty(ids)) {
-      String idFieldName = this.resourceRegistry.findEntry(resourceClass)
-          .getResourceInformation().getIdField().getUnderlyingName();
+      String idFieldName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
       restrictions.add(root.get(idFieldName).in(ids));
     }
 
