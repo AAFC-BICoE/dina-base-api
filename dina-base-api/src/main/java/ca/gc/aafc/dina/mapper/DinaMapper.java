@@ -8,10 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -28,19 +26,12 @@ public class DinaMapper<D, E> {
   private final Class<D> dtoClass;
   private final Class<E> entityClass;
 
-  private final List<CustomFieldResolverSpec<E>> dtoResolvers;
-  private final List<CustomFieldResolverSpec<D>> entityResolvers;
+  private final CustomFieldHandler<D, E> resolverHandler;
 
-  public DinaMapper(
-    @NonNull Class<D> dtoClass,
-    @NonNull Class<E> entityClass,
-    @NonNull List<CustomFieldResolverSpec<E>> dtoResolvers,
-    @NonNull List<CustomFieldResolverSpec<D>> entityResolvers
-  ) {
+  public DinaMapper(@NonNull Class<D> dtoClass, @NonNull Class<E> entityClass) {
     this.dtoClass = dtoClass;
     this.entityClass = entityClass;
-    this.dtoResolvers = dtoResolvers;
-    this.entityResolvers = entityResolvers;
+    this.resolverHandler = new CustomFieldHandler<>(dtoClass, entityClass);
   }
 
   /**
@@ -78,7 +69,7 @@ public class DinaMapper<D, E> {
     // Map non relations and non custom resolved fields
     Set<String> selectedBaseFields = selectedFields
       .stream()
-      .filter(sf -> !hasCustomFieldResolver(sf))
+      .filter(sf -> !resolverHandler.hasCustomFieldResolver(sf))
       .collect(Collectors.toSet());
     mapFieldsToTarget(entity, dto, selectedBaseFields);
 
@@ -86,12 +77,7 @@ public class DinaMapper<D, E> {
     mapRelationsToTarget(entity, dto, selectedFieldPerClass, relations);
 
     // Map selected Custom Fields
-    List<CustomFieldResolverSpec<E>> selectedResolvers = dtoResolvers
-      .stream()
-      .filter(cfr-> selectedFields.contains(cfr.getField()))
-      .collect(Collectors.toList());
-    mapCustomFieldsToTarget(entity, dto, selectedResolvers);
-
+    resolverHandler.resolveDtoFields(selectedFields, entity, dto);
     return dto;
   }
 
@@ -129,7 +115,7 @@ public class DinaMapper<D, E> {
     // Map non relations and non custom resolved fields
     Set<String> selectedBaseFields = selectedFields
       .stream()
-      .filter(sf -> !hasCustomFieldResolver(sf))
+      .filter(sf -> !resolverHandler.hasCustomFieldResolver(sf))
       .collect(Collectors.toSet());
     mapFieldsToTarget(dto, entity, selectedBaseFields);
 
@@ -137,11 +123,7 @@ public class DinaMapper<D, E> {
     mapRelationsToTarget(dto, entity, selectedFieldPerClass, relations);
 
     // Map selected Custom Fields
-    List<CustomFieldResolverSpec<D>> selectedResolvers = entityResolvers
-      .stream()
-      .filter(cfr-> selectedFields.contains(cfr.getField()))
-      .collect(Collectors.toList());
-    mapCustomFieldsToTarget(dto, entity, selectedResolvers);
+    resolverHandler.resolveEntityFields(selectedFields, dto, entity);
   }
 
   /**
@@ -268,36 +250,6 @@ public class DinaMapper<D, E> {
     for (String attribute : selectedFields) {
       PropertyUtils.setProperty(target, attribute, PropertyUtils.getProperty(source, attribute));
     }
-  }
-
-  /**
-   * Maps the custom field resolvers of a given source to a given target.
-   *
-   * @param <T>       - Type of target
-   * @param <S>       - Type of source
-   * @param source    - source of the mapping
-   * @param target    - target of the mapping
-   * @param resolvers - custom resolvers to apply
-   */
-  @SneakyThrows
-  private static <T, S> void mapCustomFieldsToTarget(S source, T target, List<CustomFieldResolverSpec<S>> resolvers) {
-    for (CustomFieldResolverSpec<S> cfr : resolvers) {
-      String fieldName = cfr.getField();
-      PropertyUtils.setProperty(target, fieldName, cfr.getResolver().apply(source));
-    }
-  }
-
-  /**
-   * Returns true if the given field name has a custom resolver
-   *
-   * @param fieldName - field name of field to check
-   * @return - true if the given field has custom resolvers.
-   */
-  private boolean hasCustomFieldResolver(String fieldName) {
-    return !Stream.concat(dtoResolvers.stream(), entityResolvers.stream())
-        .filter(cfr -> StringUtils.equalsIgnoreCase(fieldName, cfr.getField()))
-        .collect(Collectors.toList())
-        .isEmpty();
   }
 
   /**
