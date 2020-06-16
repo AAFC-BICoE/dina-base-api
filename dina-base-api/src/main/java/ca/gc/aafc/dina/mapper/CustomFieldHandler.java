@@ -41,7 +41,7 @@ public class CustomFieldHandler<D, E> {
   private final Map<String, Method> dtoResolvers = new HashMap<>();
   private final Map<String, Method> entityResolvers = new HashMap<>();
 
-  public CustomFieldHandler(@NonNull Class<D> dtoClass, @NonNull Class<E> entityClass) {
+  public CustomFieldHandler(Class<D> dtoClass, Class<E> entityClass) {
     this(
       dtoClass,
       entityClass,
