@@ -59,7 +59,7 @@ public class DinaFilterResolver {
     Collection<Serializable> ids,
     String idFieldName
   ) {
-    List<javax.persistence.criteria.Predicate> restrictions = new ArrayList<>();
+    List<Predicate> restrictions = new ArrayList<>();
     restrictions.add(simpleFilterHandler.getRestriction(querySpec, root, cb));
     restrictions.add(rsqlFilterHandler.getRestriction(querySpec, root, cb));
 
@@ -68,7 +68,7 @@ public class DinaFilterResolver {
       restrictions.add(root.get(idFieldName).in(ids));
     }
 
-    return restrictions.stream().toArray(javax.persistence.criteria.Predicate[]::new);
+    return restrictions.stream().toArray(Predicate[]::new);
   }
 
   /**
