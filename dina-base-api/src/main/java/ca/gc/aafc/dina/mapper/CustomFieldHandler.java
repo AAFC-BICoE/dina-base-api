@@ -70,33 +70,58 @@ public class CustomFieldHandler<D, E> {
    */
   private void initResolvers(List<Method> methods) {
     for (Method method : methods) {
-      CustomFieldResolver resolver = method.getAnnotation(CustomFieldResolver.class);
       validateResolverParameter(method);
-      mapResolverToMap(method, resolver, method.getParameterTypes()[0]);
+      mapResolverToMap(method);
     }
     validateResolverReturnType(dtoClass, dtoResolvers);
     validateResolverReturnType(entityClass, entityResolvers);
   }
 
-  private void mapResolverToMap(Method method, CustomFieldResolver resolver, Class<?> methodParamType) {
+  /**
+   * Adds the custom field resolvers to the appropriate resolver maps.
+   * 
+   * @param resolver
+   */
+  private void mapResolverToMap(Method resolver) {
+    Class<?> methodParamType = resolver.getParameterTypes()[0];
+    CustomFieldResolver customFieldResolver = resolver.getAnnotation(CustomFieldResolver.class);
+
     if (methodParamType.equals(entityClass)) {
-      dtoResolvers.put(resolver.field(), method);
+      dtoResolvers.put(customFieldResolver.field(), resolver);
     } else if (methodParamType.equals(dtoClass)) {
-      entityResolvers.put(resolver.field(), method);
+      entityResolvers.put(customFieldResolver.field(), resolver);
     } else {
-      throw new IllegalStateException("Custom field resolver " + method.getName()
-          + " should accept one parameter of type entity or dto");
+      sendInvalidParameterResponse(resolver.getName());
     }
   }
 
-  private void validateResolverParameter(Method method) {
-    boolean isInvalid = method.getParameterCount() != 1 
-        || (!method.getParameterTypes()[0].equals(entityClass) 
-        && !method.getParameterTypes()[0].equals(dtoClass));
+  /**
+   * Throws IllegalStateException if Field resolvers does not have one parameter
+   * of type entity or Dto
+   * 
+   * @param resolver
+   *                   - resolver to validate
+   */
+  private void validateResolverParameter(Method resolver) {
+    boolean isInvalid = resolver.getParameterCount() != 1 
+      || (!resolver.getParameterTypes()[0].equals(entityClass)
+      && !resolver.getParameterTypes()[0].equals(dtoClass));
+
     if (isInvalid) {
-      throw new IllegalStateException("Custom field resolver " + method.getName()
-          + " should accept one parameter of type entity or dto");
+      sendInvalidParameterResponse(resolver.getName());
     }
+  }
+
+  /**
+   * Throws a new IllegalStateException with error message for an inccorect
+   * resolver parameter type.
+   * 
+   * @param methodName
+   *                     - method name for message.
+   */
+  private void sendInvalidParameterResponse(String methodName) {
+    throw new IllegalStateException("Custom field resolver " + methodName
+        + " should accept one parameter of type entity or dto");
   }
 
   /**
