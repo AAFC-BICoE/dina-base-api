@@ -5,7 +5,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -16,17 +15,13 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.filter.RsqlFilterHandler;
-import ca.gc.aafc.dina.filter.SimpleFilterHandler;
+import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.filter.FilterUtils;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
@@ -83,10 +78,7 @@ public class DinaRepository<D, E extends DinaEntity>
   private ResourceRegistry resourceRegistry;
 
   @Inject
-  private SimpleFilterHandler simpleFilterHandler;
-
-  @Inject
-  private RsqlFilterHandler rsqlFilterHandler;
+  private DinaFilterResolver filterResolver;
 
   @Inject
   public DinaRepository(
@@ -133,9 +125,11 @@ public class DinaRepository<D, E extends DinaEntity>
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
 
+    String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
+
     List<E> returnedEntities = dinaService.findAll(
       entityClass,
-      (cb, root) -> buildPredicates(ids, querySpec, cb,root),
+      (cb, root) -> filterResolver.buildPredicates(querySpec, cb, root, ids, idName),
       (cb, root) -> FilterUtils.getOrders(querySpec, cb, root),
       Optional.ofNullable(querySpec.getOffset()).orElse(Long.valueOf(0)).intValue(),
       Optional.ofNullable(querySpec.getLimit()).orElse(Long.valueOf(100)).intValue());
@@ -151,29 +145,11 @@ public class DinaRepository<D, E extends DinaEntity>
 
     Long resourceCount = dinaService.getResourceCount(
       entityClass,
-      (cb, root) -> buildPredicates(ids, querySpec, cb, root));
+      (cb, root) -> filterResolver.buildPredicates(querySpec, cb, root, ids, idName));
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
     return new DefaultResourceList<>(dtos, metaInformation, NO_LINK_INFORMATION);
-  }
-
-  private javax.persistence.criteria.Predicate[] buildPredicates(
-    Collection<Serializable> ids,
-    QuerySpec querySpec,
-    CriteriaBuilder cb,
-    Root<E> root
-  ) {
-    List<javax.persistence.criteria.Predicate> restrictions = new ArrayList<>();
-    restrictions.add(simpleFilterHandler.getRestriction(querySpec, root, cb));
-    restrictions.add(rsqlFilterHandler.getRestriction(querySpec, root, cb));
-
-    if (CollectionUtils.isNotEmpty(ids)) {
-      String idFieldName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
-      restrictions.add(root.get(idFieldName).in(ids));
-    }
-
-    return restrictions.stream().toArray(javax.persistence.criteria.Predicate[]::new);
   }
 
   @Override
