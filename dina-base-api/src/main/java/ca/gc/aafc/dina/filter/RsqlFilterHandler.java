@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.filter;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.Predicate;
@@ -11,6 +10,7 @@ import com.github.tennaito.rsql.jpa.JpaPredicateVisitor;
 
 import org.apache.commons.lang3.StringUtils;
 
+import ca.gc.aafc.dina.jpa.BaseDAO;
 import cz.jirutka.rsql.parser.RSQLParser;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.PathSpec;
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class RsqlFilterHandler implements FilterHandler {
 
-  private final EntityManager entityManager;
+  private final BaseDAO baseDAO;
   
   private final RSQLParser rsqlParser = new RSQLParser();
   
@@ -43,8 +43,8 @@ public class RsqlFilterHandler implements FilterHandler {
     
     String rsqlString = rsqlFilterSpec.getValue();
     
-    return rsqlParser.parse(rsqlString)
-        .accept(new JpaPredicateVisitor<>().defineRoot(root), entityManager);
+    return baseDAO.createWithEntityManager(
+      em -> rsqlParser.parse(rsqlString).accept(new JpaPredicateVisitor<>().defineRoot(root), em));
   }
 
 }
