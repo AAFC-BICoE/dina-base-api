@@ -22,7 +22,6 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
-import ca.gc.aafc.dina.filter.FilterUtils;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.service.DinaService;
@@ -130,7 +129,7 @@ public class DinaRepository<D, E extends DinaEntity>
     List<E> returnedEntities = dinaService.findAll(
       entityClass,
       (cb, root) -> filterResolver.buildPredicates(querySpec, cb, root, ids, idName),
-      (cb, root) -> FilterUtils.getOrders(querySpec, cb, root),
+      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
       Optional.ofNullable(querySpec.getOffset()).orElse(Long.valueOf(0)).intValue(),
       Optional.ofNullable(querySpec.getLimit()).orElse(Long.valueOf(100)).intValue());
 
