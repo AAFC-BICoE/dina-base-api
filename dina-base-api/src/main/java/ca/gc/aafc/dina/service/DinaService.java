@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
-import io.crnk.data.jpa.query.criteria.JpaCriteriaQueryFactory;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
