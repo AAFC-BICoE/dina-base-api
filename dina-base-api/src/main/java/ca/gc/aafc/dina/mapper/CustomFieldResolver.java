@@ -12,6 +12,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CustomFieldResolver {
 
-  String field();
+  /**
+   * Field Name of the field the custom field resolver will map. Case sensitive.
+   * 
+   * @return Field Name of the field
+   */
+  String fieldName();
 
 }

@@ -87,9 +87,9 @@ public class CustomFieldHandler<D, E> {
     CustomFieldResolver customFieldResolver = resolver.getAnnotation(CustomFieldResolver.class);
 
     if (methodParamType.equals(entityClass)) {
-      dtoResolvers.put(customFieldResolver.field(), resolver);
+      dtoResolvers.put(customFieldResolver.fieldName(), resolver);
     } else if (methodParamType.equals(dtoClass)) {
-      entityResolvers.put(customFieldResolver.field(), resolver);
+      entityResolvers.put(customFieldResolver.fieldName(), resolver);
     } else {
       sendInvalidParameterResponse(resolver.getName());
     }
