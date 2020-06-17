@@ -20,18 +20,17 @@ import org.springframework.stereotype.Component;
 import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Component used to map crnk filters into valid JPA objects.
  */
 @Component
+@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class DinaFilterResolver {
 
-  @Inject
-  private SimpleFilterHandler simpleFilterHandler;
-
-  @Inject
-  private RsqlFilterHandler rsqlFilterHandler;
+  private final SimpleFilterHandler simpleFilterHandler;
+  private final RsqlFilterHandler rsqlFilterHandler;
 
   /**
    * Returns an array of predicates by mapping crnk filters into JPA restrictions
