@@ -193,6 +193,23 @@ public class DinaMapperTest {
     assertEquals(dtoToMap.getCustomField(), result.getCustomField().getName());
   }
 
+
+  @Test
+  public void applyDtoToEntity_NestedResolver_ResolverIgnored() {
+    Student result = new Student();
+    StudentDto dtoToMap = createDTO();
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
+      StudentDto.class, ImmutableSet.of("customField"));
+
+    Set<String> relations = ImmutableSet.of("friend");
+
+    mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, relations);
+
+    // DTOs complex object (String) -> Entity (ComplexObject.name)
+    assertEquals(dtoToMap.getCustomField(), result.getCustomField().getName());
+  }
+
   @Test
   public void applyDtoToEntity_NothingSelected_NothingMapped() {
     Student result = new Student();
@@ -253,6 +270,7 @@ public class DinaMapperTest {
   private static StudentDto createDTO() {
     StudentDto friend = StudentDto
       .builder()
+      .customField("hello")
       .name(RandomStringUtils.random(5, true, false))
       .iq(RandomUtils.nextInt(5, 1000))
       .build();
