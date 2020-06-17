@@ -65,7 +65,6 @@ public class DinaMapper<D, E> {
     @NonNull Set<String> relations
   ) {
     D dto = dtoClass.getConstructor().newInstance();
-    Set<String> selectedFields = selectedFieldPerClass.getOrDefault(entityClass, new HashSet<>());
 
     mapSourceToTarget(
       entity,
@@ -75,6 +74,7 @@ public class DinaMapper<D, E> {
       resolverHandler::hasCustomFieldResolver);
 
     // Map selected Custom Fields
+    Set<String> selectedFields = selectedFieldPerClass.getOrDefault(entityClass, new HashSet<>());
     resolverHandler.resolveDtoFields(selectedFields, entity, dto);
     return dto;
   }
@@ -108,8 +108,6 @@ public class DinaMapper<D, E> {
     @NonNull Map<Class<?>, Set<String>> selectedFieldPerClass,
     @NonNull Set<String> relations
   ) {
-    Set<String> selectedFields = selectedFieldPerClass.getOrDefault(dtoClass, new HashSet<>());
-
     mapSourceToTarget(
       dto,
       entity,
@@ -118,6 +116,7 @@ public class DinaMapper<D, E> {
       resolverHandler::hasCustomFieldResolver);
 
     // Map selected Custom Fields
+    Set<String> selectedFields = selectedFieldPerClass.getOrDefault(dtoClass, new HashSet<>());
     resolverHandler.resolveEntityFields(selectedFields, dto, entity);
   }
 
