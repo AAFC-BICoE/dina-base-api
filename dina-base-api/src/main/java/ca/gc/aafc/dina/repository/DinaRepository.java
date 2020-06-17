@@ -65,6 +65,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private final DinaService<E> dinaService;
   private final DinaMapper<D, E> dinaMapper;
+  private final DinaFilterResolver filterResolver;
 
   private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
   private final Map<Class<?>, Set<String>> entityFieldsPerClass;
@@ -77,20 +78,18 @@ public class DinaRepository<D, E extends DinaEntity>
   private ResourceRegistry resourceRegistry;
 
   @Inject
-  private DinaFilterResolver filterResolver;
-
-  @Inject
   public DinaRepository(
     @NonNull DinaService<E> dinaService,
     @NonNull DinaMapper<D, E> dinaMapper,
     @NonNull Class<D> resourceClass,
-    @NonNull Class<E> entityClass
+    @NonNull Class<E> entityClass,
+    @NonNull DinaFilterResolver filterResolver
   ) {
     this.dinaService = dinaService;
     this.dinaMapper = dinaMapper;
     this.resourceClass = resourceClass;
     this.entityClass = entityClass;
-
+    this.filterResolver = filterResolver;
     this.resourceFieldsPerClass = parseFieldsPerClass(
       resourceClass,
       new HashMap<>(),
