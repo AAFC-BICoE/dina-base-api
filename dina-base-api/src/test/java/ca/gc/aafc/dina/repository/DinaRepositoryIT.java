@@ -161,6 +161,27 @@ public class DinaRepositoryIT {
   }
 
   @Test
+  public void findAll_FilterWithRSQL_FiltersOnRSQL() {
+    String expectedName = RandomStringUtils.random(4);
+    int expectedNumberOfResults = 10;
+
+    for (int i = 0; i < expectedNumberOfResults; i++) {
+      PersonDTO dto = createPersonDto();
+      dto.setName(expectedName);
+      dinaRepository.create(dto);
+      // Persist extra person with different name
+      persistPerson();
+    }
+
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.addFilter(PathSpec.of("rsql").filter(FilterOperator.EQ, "name==" + expectedName));
+
+    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    assertEquals(expectedNumberOfResults, resultList.size());
+    resultList.forEach(result -> assertEquals(expectedName, result.getName()));
+  }
+
+  @Test
   public void findAll_FilterOnFieldEquals_FiltersOnField() {
     String expectedName = RandomStringUtils.random(4);
     int expectedNumberOfResults = 10;
