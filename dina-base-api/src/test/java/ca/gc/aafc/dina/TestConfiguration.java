@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +19,7 @@ import ca.gc.aafc.dina.entity.ComplexObject;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.filter.RsqlFilterHandler;
 import ca.gc.aafc.dina.filter.SimpleFilterHandler;
 import ca.gc.aafc.dina.jpa.BaseDAO;
@@ -49,6 +49,9 @@ public class TestConfiguration {
 
   @Inject
   private RsqlFilterHandler rsqlFilterHandler;
+
+  @Inject
+  private DinaFilterResolver filterResolver;
 
   @Bean
   public JpaDtoMapper jpaDtoMapper() {
@@ -149,7 +152,7 @@ public class TestConfiguration {
   @Bean
   public DinaRepository<PersonDTO, Person> dinaRepository(DinaPersonService service) {
     DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(PersonDTO.class, Person.class);
-    return new DinaRepository<>(service, dinaMapper, PersonDTO.class, Person.class);
+    return new DinaRepository<>(service, dinaMapper, PersonDTO.class, Person.class, filterResolver);
   }
 
 }

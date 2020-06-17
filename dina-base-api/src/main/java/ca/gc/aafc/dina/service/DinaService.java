@@ -1,12 +1,12 @@
 package ca.gc.aafc.dina.service;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.function.BiFunction;
 
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
-import io.crnk.data.jpa.query.criteria.JpaCriteriaQueryFactory;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -64,38 +63,53 @@ public abstract class DinaService<E extends DinaEntity> {
   }
 
   /**
-   * <p>
-   * Returns a list of Entities of a given class where the fields match a given
-   * map.
-   * <p>
+   * Returns a list of Entities of a given class restricted by the predicates
+   * returned by a given function.
    *
-   * <p>
-   * Given where map maps field names to values. Where map can be empty to find
-   * all. Where map can search on null values.
-   * <p>
-   * 
-   * @param entityClass - entity class to search on
-   * @param where       - map of fieldName::Values to match on
-   * @return list of Entities
+   * @param entityClass
+   *                      - entity class to query cannot be null
+   * @param where
+   *                      - function to return the predicates cannot be null
+   * @param orderBy
+   *                      - function to return the sorting criteria can be null
+   * @param startIndex
+   *                      - position of first result to retrieve
+   * @param maxResult
+   *                      - maximun number of results to return
+   * @return list of entities
    */
-  public List<E> findAllWhere(Class<E> entityClass, Map<String, Object> where) {
-    Objects.requireNonNull(entityClass);
-    Objects.requireNonNull(where);
-
+  public List<E> findAll(
+    @NonNull Class<E> entityClass,
+    @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> where,
+    BiFunction<CriteriaBuilder, Root<E>, List<Order>> orderBy,
+    int startIndex,
+    int maxResult
+  ) {
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
     CriteriaQuery<E> criteria = criteriaBuilder.createQuery(entityClass);
     Root<E> root = criteria.from(entityClass);
 
-    Predicate[] predicates = where.entrySet().stream().map(entry -> {
-      if (entry.getValue() == null) {
-        return criteriaBuilder.isNull(root.get(entry.getKey()));
-      }
-      return criteriaBuilder.equal(root.get(entry.getKey()), entry.getValue());
-    }).toArray(Predicate[]::new);
+    criteria.where(where.apply(criteriaBuilder, root)).select(root);
+    if (orderBy != null) {
+      criteria.orderBy(orderBy.apply(criteriaBuilder, root));
+    }
+    return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult);
+  }
 
-    criteria.where(predicates).select(root);
-
-    return baseDAO.resultListFromCriteria(criteria);
+  /**
+   * Returns the resource count from a given predicate supplier.
+   * 
+   * @param entityClass
+   *                            - entity class to query cannot be null
+   * @param predicateSupplier
+   *                            - function to return the predicates cannot be null
+   * @return resource count
+   */
+  public Long getResourceCount(
+    @NonNull Class<E> entityClass,
+    @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> predicateSupplier
+  ) {
+    return baseDAO.getResourceCount(entityClass, predicateSupplier);
   }
 
   /**
@@ -120,14 +134,6 @@ public abstract class DinaService<E extends DinaEntity> {
    */
   public <T> T findOneReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
     return baseDAO.getReferenceByNaturalId(entityClass, naturalId);
-  }
-
-  /**
-   * Returns a new instance of a {@link JpaCriteriaQueryFactory} for crnk JPA data
-   * access.
-   */
-  public JpaCriteriaQueryFactory createJpaCritFactory() {
-    return baseDAO.createWithEntityManager(JpaCriteriaQueryFactory::newInstance);
   }
 
   /**

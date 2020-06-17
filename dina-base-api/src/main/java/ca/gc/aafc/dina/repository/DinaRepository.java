@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -16,11 +17,11 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.service.DinaService;
@@ -36,8 +37,6 @@ import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.list.DefaultResourceList;
 import io.crnk.core.resource.list.ResourceList;
 import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
-import io.crnk.data.jpa.query.criteria.JpaCriteriaQuery;
-import io.crnk.data.jpa.query.criteria.JpaCriteriaQueryFactory;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -60,44 +59,43 @@ public class DinaRepository<D, E extends DinaEntity>
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
 
-  private final DinaService<E> dinaService;
-
-  private final DinaMapper<D, E> dinaMapper;
-
   @Getter
   private final Class<D> resourceClass;
-
   private final Class<E> entityClass;
 
-  private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
+  private final DinaService<E> dinaService;
+  private final DinaMapper<D, E> dinaMapper;
+  private final DinaFilterResolver filterResolver;
 
+  private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
   private final Map<Class<?>, Set<String>> entityFieldsPerClass;
+
+  private static final int DEFAULT_OFFSET = 0;
+  private static final int DEFAULT_LIMIT = 100;
 
   @Getter
   @Setter(onMethod_ = @Override)
   private ResourceRegistry resourceRegistry;
-
-  private final JpaCriteriaQueryFactory queryFactory;
 
   @Inject
   public DinaRepository(
     @NonNull DinaService<E> dinaService,
     @NonNull DinaMapper<D, E> dinaMapper,
     @NonNull Class<D> resourceClass,
-    @NonNull Class<E> entityClass
+    @NonNull Class<E> entityClass,
+    @NonNull DinaFilterResolver filterResolver
   ) {
     this.dinaService = dinaService;
     this.dinaMapper = dinaMapper;
     this.resourceClass = resourceClass;
     this.entityClass = entityClass;
-
+    this.filterResolver = filterResolver;
     this.resourceFieldsPerClass = parseFieldsPerClass(
       resourceClass,
       new HashMap<>(),
       field -> isGenerated(field.getDeclaringClass(), field.getName()));
 
     this.entityFieldsPerClass = getFieldsPerEntity();
-    this.queryFactory = dinaService.createJpaCritFactory();
   }
 
   @Override
@@ -124,36 +122,31 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
-    DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
+
+    String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
+
+    List<E> returnedEntities = dinaService.findAll(
+      entityClass,
+      (cb, root) -> filterResolver.buildPredicates(querySpec, cb, root, ids, idName),
+      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
+      Optional.ofNullable(querySpec.getOffset()).orElse(Long.valueOf(DEFAULT_OFFSET)).intValue(),
+      Optional.ofNullable(querySpec.getLimit()).orElse(Long.valueOf(DEFAULT_LIMIT)).intValue());
 
     Set<String> includedRelations = querySpec.getIncludedRelations()
       .stream()
       .map(ir-> ir.getAttributePath().get(0))
       .collect(Collectors.toSet());
 
-    JpaCriteriaQuery<E> query = queryFactory.query(entityClass);
-
-    List<D> dtos = query.buildExecutor(querySpec)
-      .getResultList()
-      .stream()
+    List<D> dtos = returnedEntities.stream()
       .map(e -> dinaMapper.toDto(e, entityFieldsPerClass, includedRelations))
       .collect(Collectors.toList());
 
-    if (CollectionUtils.isNotEmpty(ids)) {
-      String idFieldName = this.resourceRegistry
-        .findEntry(resourceClass)
-        .getResourceInformation()
-        .getIdField()
-        .getUnderlyingName();
-      dtos = dtos.stream()
-        .filter(dto -> ids.contains(PropertyUtils.getProperty(dto, idFieldName)))
-        .collect(Collectors.toList());
-      metaInformation.setTotalResourceCount(Long.valueOf(dtos.size()));
-    } else {
-      // Uses an actual count from the database
-      metaInformation.setTotalResourceCount(query.buildExecutor(querySpec).getTotalRowCount());
-    }
+    Long resourceCount = dinaService.getResourceCount(
+      entityClass,
+      (cb, root) -> filterResolver.buildPredicates(querySpec, cb, root, ids, idName));
 
+    DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
+    metaInformation.setTotalResourceCount(resourceCount);
     return new DefaultResourceList<>(dtos, metaInformation, NO_LINK_INFORMATION);
   }
 
