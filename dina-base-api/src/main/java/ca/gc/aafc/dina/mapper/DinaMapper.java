@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.beanutils.PropertyUtils;
@@ -66,15 +67,12 @@ public class DinaMapper<D, E> {
     D dto = dtoClass.getConstructor().newInstance();
     Set<String> selectedFields = selectedFieldPerClass.getOrDefault(entityClass, new HashSet<>());
 
-    // Map non relations and non custom resolved fields
-    Set<String> selectedBaseFields = selectedFields
-      .stream()
-      .filter(sf -> !resolverHandler.hasCustomFieldResolver(sf))
-      .collect(Collectors.toSet());
-    mapFieldsToTarget(entity, dto, selectedBaseFields);
-
-    // Map Relations
-    mapRelationsToTarget(entity, dto, selectedFieldPerClass, relations);
+    mapSourceToTarget(
+      entity,
+      dto,
+      selectedFieldPerClass,
+      relations,
+      resolverHandler::hasCustomFieldResolver);
 
     // Map selected Custom Fields
     resolverHandler.resolveDtoFields(selectedFields, entity, dto);
@@ -112,18 +110,36 @@ public class DinaMapper<D, E> {
   ) {
     Set<String> selectedFields = selectedFieldPerClass.getOrDefault(dtoClass, new HashSet<>());
 
-    // Map non relations and non custom resolved fields
-    Set<String> selectedBaseFields = selectedFields
-      .stream()
-      .filter(sf -> !resolverHandler.hasCustomFieldResolver(sf))
-      .collect(Collectors.toSet());
-    mapFieldsToTarget(dto, entity, selectedBaseFields);
-
-    // Map Relations
-    mapRelationsToTarget(dto, entity, selectedFieldPerClass, relations);
+    mapSourceToTarget(
+      dto,
+      entity,
+      selectedFieldPerClass,
+      relations,
+      resolverHandler::hasCustomFieldResolver);
 
     // Map selected Custom Fields
     resolverHandler.resolveEntityFields(selectedFields, dto, entity);
+  }
+
+  private static <T, S> void mapSourceToTarget(
+    S source,
+    T target,
+    Map<Class<?>, Set<String>> selectedFieldPerClass,
+    Set<String> relations,
+    Predicate<String> ignoreIf
+  ) {
+    Set<String> selectedFields = selectedFieldPerClass.getOrDefault(
+      source.getClass(),
+      new HashSet<>());
+
+    // Map non relations and non custom resolved fields
+    Set<String> selectedBaseFields = selectedFields.stream()
+      .filter(sf -> ignoreIf.negate().test(sf))
+      .collect(Collectors.toSet());
+    mapFieldsToTarget(source, target, selectedBaseFields);
+
+    // Map Relations
+    mapRelationsToTarget(source, target, selectedFieldPerClass, relations, ignoreIf);
   }
 
   /**
@@ -143,15 +159,16 @@ public class DinaMapper<D, E> {
     S source,
     T target,
     Map<Class<?>, Set<String>> selectedFieldPerClass,
-    Set<String> relations
+    Set<String> relations,
+    Predicate<String> ignoreIf
   ) {
     for (String relationFieldName : relations) {
       Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, relationFieldName);
 
       if (Collection.class.isAssignableFrom(sourceRelationType)) {
-        mapCollectionRelation(source, target, selectedFieldPerClass, relationFieldName);
+        mapCollectionRelation(source, target, selectedFieldPerClass, relationFieldName, ignoreIf);
       } else {
-        mapSingleRelation(source, target, selectedFieldPerClass, relationFieldName);
+        mapSingleRelation(source, target, selectedFieldPerClass, relationFieldName, ignoreIf);
       }
     }
   }
@@ -174,7 +191,8 @@ public class DinaMapper<D, E> {
     S source,
     T target,
     Map<Class<?>, Set<String>> selectedFieldPerClass,
-    String fieldName
+    String fieldName,
+    Predicate<String> ignoreIf
   ) {
     Collection<?> sourceCollection = (Collection<?>) PropertyUtils.getProperty(source, fieldName);
     Collection<Object> targetCollection = null;
@@ -189,11 +207,12 @@ public class DinaMapper<D, E> {
 
       for (Object sourceElement : sourceCollection) {
         Object targetElement = targetElementType.newInstance();
-        mapFieldsToTarget(
+        mapSourceToTarget(
           sourceElement,
           targetElement,
-          selectedFieldPerClass.getOrDefault(sourceElement.getClass(), new HashSet<>())
-        );
+          selectedFieldPerClass,
+          new HashSet<>(),
+          ignoreIf);
         targetCollection.add(targetElement);
       }
     }
@@ -218,20 +237,23 @@ public class DinaMapper<D, E> {
     S source,
     T target,
     Map<Class<?>, Set<String>> selectedFieldPerClass,
-    String fieldName
+    String fieldName,
+    Predicate<String> ignoreIf
   ) {
     Object sourceRelationObject = PropertyUtils.getProperty(source, fieldName);
     Object targetRelationObject = null;
 
     if (sourceRelationObject != null) {
-      Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, fieldName);
-      Class<?> targetRelationType = PropertyUtils.getPropertyType(target, fieldName);
+      targetRelationObject = PropertyUtils.getPropertyType(target, fieldName)
+        .getConstructor()
+        .newInstance();
 
-      targetRelationObject = targetRelationType.getConstructor().newInstance();
-
-      Set<String> selectedRelationFields = selectedFieldPerClass.getOrDefault(sourceRelationType, new HashSet<>());
-
-      mapFieldsToTarget(sourceRelationObject, targetRelationObject, selectedRelationFields);
+      mapSourceToTarget(
+        sourceRelationObject,
+        targetRelationObject,
+        selectedFieldPerClass,
+        new HashSet<>(),
+        ignoreIf);
     }
     PropertyUtils.setProperty(target, fieldName, targetRelationObject);
   }
