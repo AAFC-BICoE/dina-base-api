@@ -170,7 +170,7 @@ public class JpaRelationshipRepository<S, T>
 
               // Add the filter handler's restriction.
               for (FilterHandler filterHandler : this.filterHandlers) {
-                restrictions.add(filterHandler.getRestriction(querySpec, targetPath, query, cb));
+                restrictions.add(filterHandler.getRestriction(querySpec, targetPath, cb));
               }
 
               // Restrict the source entity to the given sourceId.

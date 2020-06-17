@@ -1,22 +1,28 @@
 package ca.gc.aafc.dina.service;
 
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 
-import com.google.common.collect.ImmutableMap;
-
 import org.apache.commons.lang3.RandomStringUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -52,50 +58,6 @@ public class DinaServiceTest {
   }
 
   @Test
-  public void findAllWhere_WhereNameIs_FindsAllWithName() {
-    String expectedName = RandomStringUtils.random(15);
-    int expectedNumberOfEntities = 10;
-
-    persistDepartmentsWithName(expectedName, expectedNumberOfEntities);
-    // Persist extra departments to validate correct number returned
-    persistDepartmentsWithName(RandomStringUtils.random(15), expectedNumberOfEntities);
-
-    Map<String, Object> where = ImmutableMap.of("name", expectedName);
-
-    List<Department> resultList = serviceUnderTest.findAllWhere(Department.class, where);
-    assertEquals(expectedNumberOfEntities, resultList.size());
-    resultList.forEach(result -> assertEquals(expectedName, result.getName()));
-  }
-
-  @Test
-  public void findAllWhere_WhereNull_FindsAllWhereNull() {
-    int expectedNumberOfEntities = 10;
-
-    persistDepartmentsWithName(null, expectedNumberOfEntities);
-    // Persist extra departments to validate correct number returned
-    persistDepartmentsWithName(RandomStringUtils.random(15), expectedNumberOfEntities);
-
-    Map<String, Object> where = new HashMap<>();
-    where.put("name", null);
-
-    List<Department> resultList = serviceUnderTest.findAllWhere(Department.class, where);
-    assertEquals(expectedNumberOfEntities, resultList.size());
-    resultList.forEach(result -> assertNull(result.getName()));
-  }
-
-  @Test
-  public void findAllWhere_NoWhereMap_FindsAll() {
-    int expectedNumberOfEntities = 10;
-
-    persistDepartmentsWithName("name", expectedNumberOfEntities);
-
-    List<Department> resultList = serviceUnderTest.findAllWhere(
-      Department.class,
-      Collections.<String,Object>emptyMap());
-    assertEquals(expectedNumberOfEntities, resultList.size());
-  }
-
-  @Test
   public void update_ValidInput_EntityUpdated() {
     String expectedName = RandomStringUtils.random(5);
     String expectedLocation = RandomStringUtils.random(5);
@@ -119,6 +81,106 @@ public class DinaServiceTest {
 
     serviceUnderTest.delete(result);
     assertNull(serviceUnderTest.findOne(result.getUuid(), Department.class));
+  }
+
+  @Test
+  public void findAllWhere_EmptyWhereClause_FindsAll() {
+    int expectedNumberOfEntities = 10;
+    Set<UUID> expecteUuids = new HashSet<>();
+
+    for (int i = 0; i < expectedNumberOfEntities; i++) {
+      expecteUuids.add(persistDepartment().getUuid());
+    }
+
+    Set<UUID> resultIds = serviceUnderTest
+      .findAll(Department.class, (cb, root) -> new Predicate[] {}, null, 0, 100)
+      .stream()
+      .map(Department::getUuid)
+      .collect(Collectors.toSet());
+
+    assertThat(expecteUuids, CoreMatchers.is(resultIds));
+  }
+
+  @Test
+  public void findAllWhere_WhereClause_FindsAllWhere() {
+    int expectedNumberOfEntities = 10;
+    String expectedName = RandomStringUtils.random(10);
+    Set<UUID> expecteUuids = new HashSet<>();
+
+    for (int i = 0; i < expectedNumberOfEntities; i++) {
+      Department dept = createDepartment();
+      dept.setName(expectedName);
+      serviceUnderTest.create(dept);
+      expecteUuids.add(dept.getUuid());
+      //Persist extras
+      persistDepartment();
+    }
+
+    BiFunction<CriteriaBuilder, Root<Department>, Predicate[]> where =
+        (cb, root) -> new Predicate[] { cb.equal(root.get("name"), expectedName) };
+
+    Set<UUID> resultIds = serviceUnderTest
+      .findAll(Department.class, where, null, 0, 100)
+      .stream()
+      .map(Department::getUuid)
+      .collect(Collectors.toSet());
+
+    assertThat(expecteUuids, CoreMatchers.is(resultIds));
+  }
+
+  @Test
+  public void findAllWhere_OrderBySupplied_OrdersBy() {
+    List<String> names = Arrays.asList("a", "b", "c", "d");
+    List<String> shuffledNames = Arrays.asList("b", "a", "d", "c");
+
+    for (String name : shuffledNames) {
+      Department dept = createDepartment();
+      dept.setName(name);
+      serviceUnderTest.create(dept);
+    }
+
+    List<Department> resultList = serviceUnderTest
+      .findAll(
+        Department.class,
+        (cb, root) -> new Predicate[] {}, 
+        (cb, root) -> Arrays.asList(cb.asc(root.get("name"))), 0, 100);
+
+    for (int i = 0; i < names.size(); i++) {
+      assertEquals(names.get(i), resultList.get(i).getName());
+    }
+  }
+
+   @Test
+  public void findAllWhere_UsingStartIndex_FindsAllAtIndex() {
+    int skip = 5;
+    List<UUID> expecteUuids = new ArrayList<>();
+
+    for (int i = 0; i < 10; i++) {
+      expecteUuids.add(persistDepartment().getUuid());
+    }
+    expecteUuids = expecteUuids.subList(skip, expecteUuids.size());
+
+    List<UUID> resultIds = serviceUnderTest
+      .findAll(Department.class, (cb, root) -> new Predicate[] {}, null, skip, 100)
+      .stream()
+      .map(Department::getUuid)
+      .collect(Collectors.toList());
+
+    assertThat(expecteUuids, CoreMatchers.is(resultIds));
+  }
+
+  @Test
+  public void findAllWhere_MaxResults_LimitsResults() {
+    int maxResults = 5;
+
+    for (int i = 0; i < 10; i++) {
+     persistDepartment();
+    }
+
+    List<Department> resultsList = serviceUnderTest
+      .findAll(Department.class, (cb, root) -> new Predicate[] {}, null, 0, maxResults);
+
+    assertEquals(maxResults, resultsList.size());
   }
 
   @Test
@@ -159,14 +221,6 @@ public class DinaServiceTest {
       .name(RandomStringUtils.random(5))
       .location(RandomStringUtils.random(5))
       .build();
-  }
-
-  private void persistDepartmentsWithName(String name, int numToPersist) {
-    for (int i = 0; i < numToPersist; i++) {
-      Department toPersist = createDepartment();
-      toPersist.setName(name);
-      serviceUnderTest.create(toPersist);
-    }
   }
 
   public static class DinaServiceTestImplementation extends DinaService<Department> {
