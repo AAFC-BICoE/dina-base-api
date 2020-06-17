@@ -59,18 +59,18 @@ public class DinaRepository<D, E extends DinaEntity>
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
 
-  private final DinaService<E> dinaService;
-
-  private final DinaMapper<D, E> dinaMapper;
-
   @Getter
   private final Class<D> resourceClass;
-
   private final Class<E> entityClass;
 
-  private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
+  private final DinaService<E> dinaService;
+  private final DinaMapper<D, E> dinaMapper;
 
+  private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
   private final Map<Class<?>, Set<String>> entityFieldsPerClass;
+
+  private static final int DEFAULT_OFFSET = 0;
+  private static final int DEFAULT_LIMIT = 100;
 
   @Getter
   @Setter(onMethod_ = @Override)
@@ -130,8 +130,8 @@ public class DinaRepository<D, E extends DinaEntity>
       entityClass,
       (cb, root) -> filterResolver.buildPredicates(querySpec, cb, root, ids, idName),
       (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
-      Optional.ofNullable(querySpec.getOffset()).orElse(Long.valueOf(0)).intValue(),
-      Optional.ofNullable(querySpec.getLimit()).orElse(Long.valueOf(100)).intValue());
+      Optional.ofNullable(querySpec.getOffset()).orElse(Long.valueOf(DEFAULT_OFFSET)).intValue(),
+      Optional.ofNullable(querySpec.getLimit()).orElse(Long.valueOf(DEFAULT_LIMIT)).intValue());
 
     Set<String> includedRelations = querySpec.getIncludedRelations()
       .stream()
