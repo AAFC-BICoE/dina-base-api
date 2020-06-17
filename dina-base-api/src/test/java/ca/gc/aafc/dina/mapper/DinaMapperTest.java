@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -198,16 +199,17 @@ public class DinaMapperTest {
   public void applyDtoToEntity_NestedResolver_ResolverIgnored() {
     Student result = new Student();
     StudentDto dtoToMap = createDTO();
+    dtoToMap.getClassMates().addAll(Arrays.asList(createDTO(), createDTO(), createDTO()));
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
       StudentDto.class, ImmutableSet.of("customField"));
-
-    Set<String> relations = ImmutableSet.of("friend");
+    Set<String> relations = ImmutableSet.of("friend", "classMates");
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, relations);
 
-    // DTOs complex object (String) -> Entity (ComplexObject.name)
-    assertEquals(dtoToMap.getCustomField(), result.getCustomField().getName());
+    assertNull(result.getFriend().getCustomField());
+    assertNotNull(result.getClassMates());
+    result.getClassMates().forEach(cm -> assertNull(cm.getCustomField()));
   }
 
   @Test
