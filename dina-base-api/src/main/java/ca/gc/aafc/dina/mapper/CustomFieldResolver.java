@@ -6,7 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a method is used to resolve a custom field mapping.
+ * Marks a method is used to resolve a custom field mapping. On a class to be
+ * used by dina mapper where fieldName refers to a field on the class where the
+ * annotation is used.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
