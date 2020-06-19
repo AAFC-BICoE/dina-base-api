@@ -26,13 +26,20 @@ public class DinaMapper<D, E> {
 
   private final Class<D> dtoClass;
   private final Class<E> entityClass;
-
   private final CustomFieldHandler<D, E> resolverHandler;
 
-  public DinaMapper(@NonNull Class<D> dtoClass, @NonNull Class<E> entityClass) {
+  public DinaMapper(Class<D> dtoClass, Class<E> entityClass) {
+    this(dtoClass, entityClass, new CustomFieldHandler<>(dtoClass, entityClass));
+  }
+
+  public DinaMapper(
+    @NonNull Class<D> dtoClass,
+    @NonNull Class<E> entityClass,
+    @NonNull CustomFieldHandler<D, E> resolverHandler
+  ) {
     this.dtoClass = dtoClass;
     this.entityClass = entityClass;
-    this.resolverHandler = new CustomFieldHandler<>(dtoClass, entityClass);
+    this.resolverHandler = resolverHandler;
   }
 
   /**
