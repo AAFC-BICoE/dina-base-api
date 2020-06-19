@@ -302,12 +302,12 @@ public class DinaMapperTest {
     // Many to - Relation to test
     private List<StudentDto> classMates;
 
-    @CustomFieldResolver(field = "customField")
+    @CustomFieldResolver(fieldName = "customField")
     public String customFieldToDto(Student entity) {
       return entity.getCustomField() == null ? "" : entity.getCustomField().getName();
     }
 
-    @CustomFieldResolver(field = "customField")
+    @CustomFieldResolver(fieldName = "customField")
     public ComplexObject customFieldToEntity(StudentDto entity) {
       return entity.getCustomField() == null ? null
           : ComplexObject.builder().name(entity.getCustomField()).build();
@@ -349,7 +349,7 @@ public class DinaMapperTest {
 
     private String customField;
 
-    @CustomFieldResolver(field = "customField")
+    @CustomFieldResolver(fieldName = "customField")
     public ComplexObject customFieldToDto(Student entity) {
       return null;
     }
@@ -367,7 +367,7 @@ public class DinaMapperTest {
 
     private String customField;
 
-    @CustomFieldResolver(field = "customField")
+    @CustomFieldResolver(fieldName = "customField")
     public String customFieldToDto(Student entity, StudentDto dto) {
       return null;
     }
@@ -384,7 +384,7 @@ public class DinaMapperTest {
 
     private String customField;
 
-    @CustomFieldResolver(field = "customField")
+    @CustomFieldResolver(fieldName = "customField")
     public String customFieldToDto(String entity) {
       return null;
     }
