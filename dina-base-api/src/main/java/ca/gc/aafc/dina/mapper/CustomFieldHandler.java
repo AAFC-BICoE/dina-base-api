@@ -91,7 +91,7 @@ public class CustomFieldHandler<D, E> {
     } else if (methodParamType.equals(dtoClass)) {
       entityResolvers.put(customFieldResolver.fieldName(), resolver);
     } else {
-      sendInvalidParameterResponse(resolver.getName());
+      throwInvalidParameterResponse(resolver.getName());
     }
   }
 
@@ -108,7 +108,7 @@ public class CustomFieldHandler<D, E> {
       && !resolver.getParameterTypes()[0].equals(dtoClass));
 
     if (isInvalid) {
-      sendInvalidParameterResponse(resolver.getName());
+      throwInvalidParameterResponse(resolver.getName());
     }
   }
 
@@ -119,7 +119,7 @@ public class CustomFieldHandler<D, E> {
    * @param methodName
    *                     - method name for message.
    */
-  private void sendInvalidParameterResponse(String methodName) {
+  private void throwInvalidParameterResponse(String methodName) {
     throw new IllegalStateException("Custom field resolver " + methodName
         + " should accept one parameter of type entity or dto");
   }
