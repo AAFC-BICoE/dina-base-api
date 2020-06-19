@@ -101,7 +101,7 @@ public class JpaResourceRepository<D>
               
               // Add the filter handler's restriction.
               for (FilterHandler filterHandler : this.filterHandlers) {
-                restrictions.add(filterHandler.getRestriction(querySpec, root, query, cb));
+                restrictions.add(filterHandler.getRestriction(querySpec, root, cb));
               }
               
               // If the list of IDs is given, filter by ID.

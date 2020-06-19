@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -29,6 +30,7 @@ import org.hibernate.annotations.NaturalId;
 import org.springframework.stereotype.Component;
 
 import io.crnk.core.engine.information.bean.BeanInformation;
+import lombok.NonNull;
 
 /**
  * Base Data Access Object layer. This class should be the only one holding a reference to the
@@ -252,12 +254,45 @@ public class BaseDAO {
   /**
    * Returns a List of entities based off a given criteria.
    *
-   * @param <E>      - Type of result list
-   * @param criteria - criteria to generate the typed query
+   * @param <E>
+   *                    - Type of result list
+   * @param criteria
+   *                    - criteria to generate the typed query
+   * @param start
+   *                    - position of first result to retrieve
+   * @param maxResult
+   *                    - maximun number of results to return
    * @return List of entities
    */
-  public <E> List<E> resultListFromCriteria(CriteriaQuery<E> criteria) {
-    return entityManager.createQuery(criteria).getResultList();
+  public <E> List<E> resultListFromCriteria(CriteriaQuery<E> criteria, int start, int maxResult) {
+    return entityManager.createQuery(criteria)
+      .setFirstResult(start)
+      .setMaxResults(maxResult)
+      .getResultList();
+  }
+
+  /**
+   * Returns the resource count from a given predicate supplier.
+   * 
+   * @param <E>
+   * @param entityClass
+   *                            - entity class to query cannot be null
+   * @param predicateSupplier
+   *                            - function to return the predicates cannot be null
+   * @return resource count
+   */
+  public <E> Long getResourceCount(
+    @NonNull Class<E> entityClass,
+    @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> predicateSupplier
+  ) {
+    CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+    Root<E> root = countQuery.from(entityClass);
+
+    countQuery.select(cb.count(root));
+    countQuery.where(predicateSupplier.apply(cb, root));
+
+    return entityManager.createQuery(countQuery).getSingleResult();
   }
 
 }
