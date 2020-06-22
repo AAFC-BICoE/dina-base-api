@@ -94,6 +94,24 @@ public class DinaMapperTest {
   }
 
   @Test
+  public void toDto_NestedResolver_ResolverIgnored() {
+    Student entityToMap = createEntity();
+    entityToMap.setFriend(createEntity());
+    entityToMap.getClassMates().addAll(
+      Arrays.asList(createEntity(), createEntity(), createEntity()));
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass =
+        ImmutableMap.of(StudentDto.class, ImmutableSet.of("customField"));
+    Set<String> relations = ImmutableSet.of("friend", "classMates");
+    
+    StudentDto result = mapper.toDto(entityToMap, selectedFieldPerClass, relations);
+
+    assertNull(result.getFriend().getCustomField());
+    assertNotNull(result.getClassMates());
+    result.getClassMates().forEach(cm -> assertNull(cm.getCustomField()));
+  }
+
+  @Test
   public void toDto_NothingSelected_NothingMapped() {
     Student entity = createEntity();
     StudentDto dto = mapper.toDto(entity, new HashMap<>(), new HashSet<>());
