@@ -100,9 +100,10 @@ public class DinaMapperTest {
     entityToMap.getClassMates().addAll(
       Arrays.asList(createEntity(), createEntity(), createEntity()));
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass =
-        ImmutableMap.of(StudentDto.class, ImmutableSet.of("customField"));
-    Set<String> relations = ImmutableSet.of("friend", "classMates");
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
+      Student.class, ImmutableSet.of("name", "customField"),
+      NestedResolverRelation.class, ImmutableSet.of("name", "customField"));
+    Set<String> relations = ImmutableSet.of("relationWithResolver", "friend", "classMates");
     
     StudentDto result = mapper.toDto(entityToMap, selectedFieldPerClass, relations);
 
@@ -220,8 +221,9 @@ public class DinaMapperTest {
     dtoToMap.getClassMates().addAll(Arrays.asList(createDTO(), createDTO(), createDTO()));
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
-      StudentDto.class, ImmutableSet.of("customField"));
-    Set<String> relations = ImmutableSet.of("friend", "classMates");
+      StudentDto.class, ImmutableSet.of("name", "customField"),
+      NestedResolverRelationDTO.class, ImmutableSet.of("name", "customField"));
+    Set<String> relations = ImmutableSet.of("relationWithResolver", "friend", "classMates");
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, relations);
 
@@ -288,6 +290,10 @@ public class DinaMapperTest {
   }
 
   private static StudentDto createDTO() {
+    NestedResolverRelationDTO relationWithResolver = NestedResolverRelationDTO.builder()
+      .name(RandomStringUtils.random(5, true, false))
+      .customField(RandomUtils.nextInt(5, 1000))
+      .build();
     StudentDto friend = StudentDto
       .builder()
       .customField("hello")
@@ -300,6 +306,7 @@ public class DinaMapperTest {
       .name(RandomStringUtils.random(5, true, false))
       .iq(RandomUtils.nextInt(5, 1000))
       .customField(RandomStringUtils.random(5, true, false))
+      .relationWithResolver(relationWithResolver)
       .friend(friend)
       .classMates(new ArrayList<>())
       .build();
@@ -310,11 +317,16 @@ public class DinaMapperTest {
       .builder()
       .name(RandomStringUtils.random(5, true, false))
       .build();
+    NestedResolverRelation relationWithResolver = NestedResolverRelation.builder()
+      .name(customField)
+      .customField(RandomUtils.nextInt(5, 1000))
+      .build();
     return Student.builder()
       .name(RandomStringUtils.random(5, true, false))
       .nickNames(Arrays.asList("a","b","c").toArray(new String[0]))
       .iq(RandomUtils.nextInt(5, 1000))
       .customField(customField)
+      .relationWithResolver(relationWithResolver)
       .classMates(new ArrayList<>())
       .build();
   }
@@ -336,6 +348,9 @@ public class DinaMapperTest {
 
     // Custom Resolved Field to test
     private String customField;
+
+    // Relation with Custom Resolved Field to test
+    private NestedResolverRelationDTO relationWithResolver;
 
     // Many to - Relation to test
     private List<StudentDto> classMates;
@@ -371,9 +386,53 @@ public class DinaMapperTest {
     // Custom Resolved Field to test
     private ComplexObject customField;
 
+    // Relation with Custom Resolved Field to test
+    private NestedResolverRelation relationWithResolver;
+
     // Many to - Relation to test
     private List<Student> classMates;
 
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static final class NestedResolverRelation {
+    // Custom Resolved Field to test
+    private ComplexObject name;
+
+    /**
+     * Regular field but with the a name matching a custom resolved field on the
+     * parent
+     */
+    private int customField;
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static final class NestedResolverRelationDTO {
+    // Custom Resolved Field to test
+    private String name;
+
+    /**
+     * Regular field but with the a name matching a custom resolved field on the
+     * parent
+     */
+    private int customField;
+
+    @CustomFieldResolver(fieldName = "name")
+    public String nameToDto(NestedResolverRelation entity) {
+      return entity.getName() == null ? "" : entity.getName().getName();
+    }
+
+    @CustomFieldResolver(fieldName = "name")
+    public ComplexObject nameToEntity(NestedResolverRelationDTO entity) {
+      return entity.getName() == null ? null
+          : ComplexObject.builder().name(entity.getName()).build();
+    }
   }
 
   /**
