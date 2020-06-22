@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import lombok.NonNull;
@@ -70,7 +71,7 @@ public class CustomFieldHandler<D, E> {
    */
   private void initResolvers(List<Method> methods) {
     for (Method method : methods) {
-      validateResolverParameter(method);
+      validateResolverParameter(method, entityClass, dtoClass);
       mapResolverToMap(method);
     }
     validateResolverReturnType(dtoClass, dtoResolvers);
@@ -96,16 +97,17 @@ public class CustomFieldHandler<D, E> {
   }
 
   /**
-   * Throws IllegalStateException if Field resolvers does not have one parameter
-   * of type entity or Dto
+   * Throws IllegalStateException if the Field resolvers does not have one parameter
+   * of the given expected types.
    * 
    * @param resolver
-   *                   - resolver to validate
+   *                        - resolver to validate
+   * @param expectedTypes
+   *                        - expected types of the resolvers parameter
    */
-  private void validateResolverParameter(Method resolver) {
+  private static  void validateResolverParameter(Method resolver, Class<?>... expectedTypes) {
     boolean isInvalid = resolver.getParameterCount() != 1 
-      || (!resolver.getParameterTypes()[0].equals(entityClass)
-      && !resolver.getParameterTypes()[0].equals(dtoClass));
+      || !ArrayUtils.contains(expectedTypes, resolver.getParameterTypes()[0]);
 
     if (isInvalid) {
       throwInvalidParameterResponse(resolver.getName());
@@ -119,7 +121,7 @@ public class CustomFieldHandler<D, E> {
    * @param methodName
    *                     - method name for message.
    */
-  private void throwInvalidParameterResponse(String methodName) {
+  private static void throwInvalidParameterResponse(String methodName) {
     throw new IllegalStateException("Custom field resolver " + methodName
         + " should accept one parameter of type entity or dto");
   }
