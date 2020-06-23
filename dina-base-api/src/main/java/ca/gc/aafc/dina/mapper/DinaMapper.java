@@ -133,7 +133,8 @@ public class DinaMapper<D, E> {
   ) {
     Class<?> sourceType = source.getClass();
     Set<String> selectedFields = selectedFieldPerClass.getOrDefault(sourceType, new HashSet<>());
-    Predicate<String> ignoreIf = field -> hasCustomFieldResolver(sourceType, field);
+    Predicate<String> ignoreIf = field -> handlers.containsKey(sourceType)
+        && handlers.get(sourceType).hasCustomFieldResolver(field);
 
     mapFieldsToTarget(source, target, selectedFields, ignoreIf);
     mapRelationsToTarget(source, target, selectedFieldPerClass, relations);
@@ -240,10 +241,6 @@ public class DinaMapper<D, E> {
   private static Class<?> getResolvedType(Object source, String fieldName) {
     Class<?> propertyType = PropertyUtils.getPropertyType(source, fieldName);
     return isCollection(propertyType) ? getGenericType(source.getClass(), fieldName) : propertyType;
-  }
-
-  private boolean hasCustomFieldResolver(Class<?> clazz, String field) {
-    return handlers.containsKey(clazz) && handlers.get(clazz).hasCustomFieldResolver(field);
   }
 
   private static boolean isCollection(Class<?> clazz) {
