@@ -449,6 +449,7 @@ public class DinaMapperTest {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
+  @RelatedEntity(NestedResolverRelation.class)
   public static final class IncorrectFieldResolversReturnType{
 
     private String customField;
@@ -467,6 +468,7 @@ public class DinaMapperTest {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
+  @RelatedEntity(NestedResolverRelation.class)
   public static final class IncorrectFieldResolversParaCount {
 
     private String customField;
@@ -484,6 +486,7 @@ public class DinaMapperTest {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
+  @RelatedEntity(NestedResolverRelation.class)
   public static final class IncorrectResolversParaType {
 
     private String customField;

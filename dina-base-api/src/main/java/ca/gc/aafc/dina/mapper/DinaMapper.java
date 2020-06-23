@@ -35,29 +35,29 @@ public class DinaMapper<D, E> {
   public DinaMapper(@NonNull Class<D> dtoClass, @NonNull Class<E> entityClass) {
     this.dtoClass = dtoClass;
     this.entityClass = entityClass;
-    CustomFieldHandler<D, E> handler = new CustomFieldHandler<>(dtoClass, entityClass);
-    handlers.put(dtoClass, handler);
-    handlers.put(entityClass, handler);
-    getHandlersPerRelation(dtoClass, handlers);
+    getHandlers(dtoClass, handlers);
   }
 
-  private static <T> void getHandlersPerRelation(
-    Class<T> clazz,
-    Map<Class<?>, CustomFieldHandler<?, ?>> map
-  ) {
+  private static <T> void getHandlers(Class<T> clazz, Map<Class<?>, CustomFieldHandler<?, ?>> map) {
+    Class<?> relatedEntity = clazz.getAnnotation(RelatedEntity.class).value();
+
+    if (map.containsKey(clazz) || map.containsKey(relatedEntity)) {
+      return;
+    }
+
+    CustomFieldHandler<?, ?> handler = new CustomFieldHandler<>(clazz, relatedEntity);
+    map.put(clazz, handler);
+    map.put(relatedEntity, handler);
+
     List<Field> relationFields = FieldUtils.getFieldsListWithAnnotation(
       clazz,
       JsonApiRelation.class);
+
     for (Field rel : relationFields) {
-      Class<?> dtoType = isCollection(rel.getType()) ? getGenericType(clazz, rel.getName()) 
+      Class<?> dtoType = isCollection(rel.getType()) 
+        ? getGenericType(clazz, rel.getName()) 
         : rel.getType();
-      Class<?> entityType = dtoType.getAnnotation(RelatedEntity.class).value();
-      if (!map.containsKey(dtoType) && !map.containsKey(entityType)) {
-        CustomFieldHandler<?, ?> handler = new CustomFieldHandler<>(dtoType, entityType);
-        map.put(dtoType, handler);
-        map.put(entityType, handler);
-        getHandlersPerRelation(dtoType, map);
-      }
+      getHandlers(dtoType, map);
     }
   }
 
