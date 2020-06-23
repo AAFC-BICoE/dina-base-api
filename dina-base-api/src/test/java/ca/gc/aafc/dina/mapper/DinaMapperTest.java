@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import io.crnk.core.resource.annotations.JsonApiRelation;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -20,6 +21,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.Test;
 
+import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.ComplexObject;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -335,6 +337,7 @@ public class DinaMapperTest {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
+  @RelatedEntity(Student.class)
   public static final class StudentDto {
 
     private String name;
@@ -344,15 +347,18 @@ public class DinaMapperTest {
     private String[] nickNames;
 
     // Relation to test
+    @JsonApiRelation
     private StudentDto friend;
 
     // Custom Resolved Field to test
     private String customField;
 
     // Relation with Custom Resolved Field to test
+    @JsonApiRelation
     private NestedResolverRelationDTO relationWithResolver;
 
     // Many to - Relation to test
+    @JsonApiRelation
     private List<StudentDto> classMates;
 
     @CustomFieldResolver(fieldName = "customField")
@@ -361,9 +367,9 @@ public class DinaMapperTest {
     }
 
     @CustomFieldResolver(fieldName = "customField")
-    public ComplexObject customFieldToEntity(StudentDto entity) {
-      return entity.getCustomField() == null ? null
-          : ComplexObject.builder().name(entity.getCustomField()).build();
+    public ComplexObject customFieldToEntity(StudentDto dto) {
+      return dto.getCustomField() == null ? null
+          : ComplexObject.builder().name(dto.getCustomField()).build();
     }
 
   }
@@ -413,6 +419,7 @@ public class DinaMapperTest {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
+  @RelatedEntity(NestedResolverRelation.class)
   public static final class NestedResolverRelationDTO {
     // Custom Resolved Field to test
     private String name;
@@ -429,9 +436,9 @@ public class DinaMapperTest {
     }
 
     @CustomFieldResolver(fieldName = "name")
-    public ComplexObject nameToEntity(NestedResolverRelationDTO entity) {
-      return entity.getName() == null ? null
-          : ComplexObject.builder().name(entity.getName()).build();
+    public ComplexObject nameToEntity(NestedResolverRelationDTO dto) {
+      return dto.getName() == null ? null
+          : ComplexObject.builder().name(dto.getName()).build();
     }
   }
 
