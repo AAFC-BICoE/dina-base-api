@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.mapper;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -50,16 +52,12 @@ public class DinaMapper<D, E> {
     map.put(clazz, handler);
     map.put(relatedEntity, handler);
 
-    List<Field> relationFields = FieldUtils.getFieldsListWithAnnotation(
-      clazz,
-      JsonApiRelation.class);
-
-    for (Field rel : relationFields) {
+    getRelationsForClasses(clazz).forEach(rel -> {
       Class<?> dtoType = isCollection(rel.getType()) 
         ? getGenericType(clazz, rel.getName()) 
         : rel.getType();
       getHandlers(dtoType, map);
-    }
+    });
   }
 
   /**
@@ -204,13 +202,7 @@ public class DinaMapper<D, E> {
       Class<?> targetElementType = getGenericType(target.getClass(), relation);
 
       for (Object sourceElement : sourceCollection) {
-        Object targetElement = targetElementType.newInstance();
-        Class<? extends Object> sourceEleType = sourceElement.getClass();
-        Set<String> relations = FieldUtils
-          .getFieldsListWithAnnotation(sourceEleType, JsonApiRelation.class)
-          .stream().map(Field::getName)
-          .collect(Collectors.toSet());
-        mapSourceToTarget(sourceElement, targetElement, fieldsPerClass, relations);
+        Object targetElement = mapRelation(fieldsPerClass, sourceElement, targetElementType);
         targetCollection.add(targetElement);
       }
     }
@@ -238,17 +230,23 @@ public class DinaMapper<D, E> {
     String fieldName
   ) {
     Object sourceRelation = PropertyUtils.getProperty(source, fieldName);
-    Object targetRelation = null;
-
-    if (sourceRelation != null) {
-      targetRelation = PropertyUtils.getPropertyType(target, fieldName).newInstance();
-      Class<? extends Object> relClass = sourceRelation.getClass();
-      Set<String> relation = FieldUtils.getFieldsListWithAnnotation(relClass, JsonApiRelation.class)
-          .stream().map(Field::getName)
-          .collect(Collectors.toSet());
-      mapSourceToTarget(sourceRelation, targetRelation, fieldsPerClass, relation);
-    }
+    Class<?> targetType = PropertyUtils.getPropertyType(target, fieldName);
+    Object targetRelation = mapRelation(fieldsPerClass, sourceRelation, targetType);
     PropertyUtils.setProperty(target, fieldName, targetRelation);
+  }
+
+  @SneakyThrows
+  private Object mapRelation(Map<Class<?>, Set<String>> fields, Object source, Class<?> targetType) {
+    if (source == null) {
+      return null;
+    }
+
+    Object target = targetType.newInstance();
+    Set<String> relation = getRelationsForClasses(source.getClass(), targetType)
+      .map(Field::getName)
+      .collect(Collectors.toSet());
+    mapSourceToTarget(source, target, fields, relation);
+    return target;
   }
 
   /**
@@ -299,5 +297,10 @@ public class DinaMapper<D, E> {
 
   private static boolean isCollection(Class<?> clazz) {
     return Collection.class.isAssignableFrom(clazz);
+  }
+
+  private static Stream<Field> getRelationsForClasses(Class<?>... classes) {
+    return Arrays.stream(classes)
+      .flatMap(cls -> FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class).stream());
   }
 }
