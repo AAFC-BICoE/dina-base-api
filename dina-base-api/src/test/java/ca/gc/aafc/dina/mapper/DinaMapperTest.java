@@ -30,10 +30,7 @@ import lombok.NoArgsConstructor;
 
 public class DinaMapperTest {
 
-  private static DinaMapper<StudentDto, Student> mapper = new DinaMapper<>(
-    StudentDto.class,
-    Student.class
-  );
+  private static DinaMapper<StudentDto, Student> mapper = new DinaMapper<>(StudentDto.class);
 
   @Test
   public void toDto_BaseAttributesTest_SelectedFieldsMapped() {
@@ -298,21 +295,21 @@ public class DinaMapperTest {
   public void mapperInit_IncorrectResolverReturnTypes_ThrowsIllegalState() {
     assertThrows(
       IllegalStateException.class,
-      ()-> new DinaMapper<>(IncorrectFieldResolversReturnType.class, Student.class));
+      ()-> new DinaMapper<>(IncorrectFieldResolversReturnType.class));
   }
 
   @Test
   public void mapperInit_IncorrectResolverParaMeterCount_ThrowsIllegalState() {
     assertThrows(
       IllegalStateException.class,
-      ()-> new DinaMapper<>(IncorrectFieldResolversParaCount.class, Student.class));
+      ()-> new DinaMapper<>(IncorrectFieldResolversParaCount.class));
   }
 
   @Test
   public void mapperInit_IncorrectResolverParaMeterType_ThrowsIllegalState() {
     assertThrows(
       IllegalStateException.class,
-      ()-> new DinaMapper<>(IncorrectResolversParaType.class, Student.class));
+      ()-> new DinaMapper<>(IncorrectResolversParaType.class));
   }
 
   private static StudentDto createDTO() {

@@ -31,12 +31,10 @@ import lombok.SneakyThrows;
 public class DinaMapper<D, E> {
 
   private final Class<D> dtoClass;
-  private final Class<E> entityClass;
   private final Map<Class<?>, CustomFieldHandler<?, ?>> handlers = new HashMap<>();
 
-  public DinaMapper(@NonNull Class<D> dtoClass, @NonNull Class<E> entityClass) {
+  public DinaMapper(@NonNull Class<D> dtoClass) {
     this.dtoClass = dtoClass;
-    this.entityClass = entityClass;
     getHandlers(dtoClass, handlers);
   }
 
