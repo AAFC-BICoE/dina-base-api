@@ -96,7 +96,7 @@ public class DinaMapperTest {
   }
 
   @Test
-  public void toDto_NestedResolver_ResolverIgnored() {
+  public void toDto_NestedResolver_ResolversMapped() {
     Student entityToMap = createEntity();
     entityToMap.setFriend(createEntity());
     entityToMap.getClassMates().addAll(
@@ -109,9 +109,21 @@ public class DinaMapperTest {
     
     StudentDto result = mapper.toDto(entityToMap, selectedFieldPerClass, relations);
 
-    assertNull(result.getFriend().getCustomField());
+    String expectedRelationCustomField = entityToMap.getFriend().getCustomField().getName();
+    String resultRelationCustomField = result.getFriend().getCustomField();
+    assertEquals(expectedRelationCustomField, resultRelationCustomField);
+
     assertNotNull(result.getClassMates());
-    result.getClassMates().forEach(cm -> assertNull(cm.getCustomField()));
+    for (int i = 0; i < entityToMap.getClassMates().size(); i++) {
+      String expectedCustomField = entityToMap.getClassMates().get(i).getCustomField().getName();
+      String resultCustomField = result.getClassMates().get(i).getCustomField();
+      assertEquals(expectedCustomField, resultCustomField);
+    }
+
+    NestedResolverRelation expectedRelation = entityToMap.getRelationWithResolver();
+    NestedResolverRelationDTO resultRelation = result.getRelationWithResolver();
+    assertEquals(expectedRelation.getName().getName(), resultRelation.getName());
+    assertEquals(expectedRelation.getCustomField(), resultRelation.getCustomField());
   }
 
   @Test
@@ -217,7 +229,7 @@ public class DinaMapperTest {
 
 
   @Test
-  public void applyDtoToEntity_NestedResolver_ResolverIgnored() {
+  public void applyDtoToEntity_NestedResolver_ResolversMapped() {
     Student result = new Student();
     StudentDto dtoToMap = createDTO();
     dtoToMap.getClassMates().addAll(Arrays.asList(createDTO(), createDTO(), createDTO()));
@@ -229,9 +241,21 @@ public class DinaMapperTest {
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, relations);
 
-    assertNull(result.getFriend().getCustomField());
+    String expectedRelationCustomField = dtoToMap.getFriend().getCustomField();
+    String resultRelationCustomField = result.getFriend().getCustomField().getName();
+    assertEquals(expectedRelationCustomField, resultRelationCustomField);
+
     assertNotNull(result.getClassMates());
-    result.getClassMates().forEach(cm -> assertNull(cm.getCustomField()));
+    for (int i = 0; i < dtoToMap.getClassMates().size(); i++) {
+      String expectedCustomField = dtoToMap.getClassMates().get(i).getCustomField();
+      String resultCustomField = result.getClassMates().get(i).getCustomField().getName();
+      assertEquals(expectedCustomField, resultCustomField);
+    }
+
+    NestedResolverRelationDTO expectedRelation = dtoToMap.getRelationWithResolver();
+    NestedResolverRelation resultRelation = result.getRelationWithResolver();
+    assertEquals(expectedRelation.getName(), resultRelation.getName().getName());
+    assertEquals(expectedRelation.getCustomField(), resultRelation.getCustomField());
   }
 
   @Test
