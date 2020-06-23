@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -162,77 +161,23 @@ public class DinaMapper<D, E> {
   ) {
     for (String relationFieldName : relations) {
       Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, relationFieldName);
-      if (isCollection(sourceRelationType)) {
-        mapCollectionRelation(source, target, fieldsPerClass, relationFieldName);
-      } else {
-        mapSingleRelation(source, target, fieldsPerClass, relationFieldName);
+      Class<?> targetType = getResolvedType(target, relationFieldName);
+
+      Object sourceRelation = PropertyUtils.getProperty(source, relationFieldName);
+      Object targetRelation = null;
+
+      if (sourceRelation != null) {
+        if (isCollection(sourceRelationType)) {
+          targetRelation = ((Collection<?>) sourceRelation).stream()
+            .map(ele -> mapRelation(fieldsPerClass, ele, targetType))
+            .collect(Collectors.toCollection(ArrayList::new));
+        } else {
+          targetRelation = mapRelation(fieldsPerClass, sourceRelation, targetType);
+        }
       }
+
+      PropertyUtils.setProperty(target, relationFieldName, targetRelation);
     }
-  }
-
-  /**
-   * Maps the relation of a given source to a given target. The relation is
-   * designated from the given field name and only the given fields per relation
-   * source class are mapped. Relations are assumed to be {@link Collection}
-   * objects.
-   *
-   * @param <T>                   - Type of target
-   * @param <S>                   - Type of source
-   * @param source                - source of the mapping
-   * @param target                - target of the mapping
-   * @param selectedFieldPerClass - selected fields of the relations source class
-   * @param relation             - field name of the relation
-   */
-  @SneakyThrows
-  private <T, S> void mapCollectionRelation(
-    S source,
-    T target,
-    Map<Class<?>, Set<String>> fieldsPerClass,
-    String relation
-  ) {
-    Collection<?> sourceCollection = (Collection<?>) PropertyUtils.getProperty(source, relation);
-    Collection<Object> targetCollection = null;
-
-    if (sourceCollection != null) {
-
-      if (sourceCollection instanceof List<?>) {
-        targetCollection = new ArrayList<>();
-      }
-
-      Class<?> targetElementType = getGenericType(target.getClass(), relation);
-
-      for (Object sourceElement : sourceCollection) {
-        Object targetElement = mapRelation(fieldsPerClass, sourceElement, targetElementType);
-        targetCollection.add(targetElement);
-      }
-    }
-    PropertyUtils.setProperty(target, relation, targetCollection);
-  }
-
-  /**
-   * Maps the relation of a given source to a given target. The relation is
-   * designated from the given field name and only the given fields per relation
-   * source class are mapped. Single relations are objects which are not
-   * collections or arrays.
-   *
-   * @param <T>                   - Type of target
-   * @param <S>                   - Type of source
-   * @param source                - source of the mapping
-   * @param target                - target of the mapping
-   * @param selectedFieldPerClass - selected fields of the relations source class
-   * @param fieldName             - field name of the relation
-   */
-  @SneakyThrows
-  private <T, S> void mapSingleRelation(
-    S source,
-    T target,
-    Map<Class<?>, Set<String>> fieldsPerClass,
-    String fieldName
-  ) {
-    Object sourceRelation = PropertyUtils.getProperty(source, fieldName);
-    Class<?> targetType = PropertyUtils.getPropertyType(target, fieldName);
-    Object targetRelation = mapRelation(fieldsPerClass, sourceRelation, targetType);
-    PropertyUtils.setProperty(target, fieldName, targetRelation);
   }
 
   @SneakyThrows
@@ -284,11 +229,17 @@ public class DinaMapper<D, E> {
    * @return class of the paramterized type at the first position
    */
   @SneakyThrows
-  private static <T> Class<?> getGenericType(Class<?> source, String fieldName) {
+  private static Class<?> getGenericType(Class<?> source, String fieldName) {
     ParameterizedType genericType = (ParameterizedType) source
         .getDeclaredField(fieldName)
         .getGenericType();
     return (Class<?>) genericType.getActualTypeArguments()[0];
+  }
+
+  @SneakyThrows
+  private static Class<?> getResolvedType(Object source, String fieldName) {
+    Class<?> propertyType = PropertyUtils.getPropertyType(source, fieldName);
+    return isCollection(propertyType) ? getGenericType(source.getClass(), fieldName) : propertyType;
   }
 
   private boolean hasCustomFieldResolver(Class<?> clazz, String field) {
