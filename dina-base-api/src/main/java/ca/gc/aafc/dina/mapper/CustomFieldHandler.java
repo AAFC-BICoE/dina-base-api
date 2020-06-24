@@ -62,7 +62,7 @@ public class CustomFieldHandler<D, E> {
   }
 
   @SneakyThrows
-  private Object getResolverHolderInstancce(Class<?> clazz){
+  private Object getResolverHolderInstancce(Class<?> clazz) {
     return clazz.newInstance();
   }
 
