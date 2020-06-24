@@ -10,8 +10,8 @@ public interface DinaEntity {
 
     Integer getId();
 
-    String createdBy();
+    String getCreatedBy();
 
-    OffsetDateTime createdOn();
+    OffsetDateTime getCreatedOn();
 
 }
