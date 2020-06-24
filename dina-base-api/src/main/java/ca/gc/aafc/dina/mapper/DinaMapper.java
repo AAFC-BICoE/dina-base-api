@@ -232,7 +232,7 @@ public class DinaMapper<D, E> {
     Predicate<String> ignoreIf
   ) {
     for (String attribute : selectedFields) {
-      if (ignoreIf.negate().test(attribute)) {
+      if (!ignoreIf.test(attribute)) {
         PropertyUtils.setProperty(target, attribute, PropertyUtils.getProperty(source, attribute));
       }
     }
