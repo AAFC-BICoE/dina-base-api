@@ -84,7 +84,7 @@ public class DinaMapper<D, E> {
     mapRelationsToTarget(entity, dto, selectedFieldPerClass, relations);
 
     // Map selected Custom Fields
-    resolverHandler.resolveDtoFields(selectedFields, entity, dto);
+    resolverHandler.resolveFields(selectedFields, entity, dto);
     return dto;
   }
 
@@ -130,7 +130,7 @@ public class DinaMapper<D, E> {
     mapRelationsToTarget(dto, entity, selectedFieldPerClass, relations);
 
     // Map selected Custom Fields
-    resolverHandler.resolveEntityFields(selectedFields, dto, entity);
+    resolverHandler.resolveFields(selectedFields, dto, entity);
   }
 
   /**
