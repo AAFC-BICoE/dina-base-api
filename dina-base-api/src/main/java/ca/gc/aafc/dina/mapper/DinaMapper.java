@@ -18,6 +18,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import io.crnk.core.resource.annotations.JsonApiRelation;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -28,13 +29,14 @@ import lombok.SneakyThrows;
  * @param <D> - Type of Dto
  * @param <E> - Type of Entity
  */
+@AllArgsConstructor
 public class DinaMapper<D, E> {
 
   private final Class<D> dtoClass;
-  private final Map<Class<?>, CustomFieldHandler<?, ?>> handlers = new HashMap<>();
+  private final Map<Class<?>, CustomFieldHandler<?, ?>> handlers;
 
   public DinaMapper(@NonNull Class<D> dtoClass) {
-    this.dtoClass = dtoClass;
+    this(dtoClass, new HashMap<>());
     getHandlers(dtoClass, handlers);
   }
 
