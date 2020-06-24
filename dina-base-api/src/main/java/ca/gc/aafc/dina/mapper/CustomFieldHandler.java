@@ -152,12 +152,36 @@ public class CustomFieldHandler<D, E> {
     }
   }
 
+  /**
+   * Resolve the given selected custom fields from source to target.
+   * 
+   * @param <T>
+   *                         - source Type
+   * @param <S>
+   *                         - target Type
+   * @param selectedFields
+   *                         - fields to resolve
+   * @param source
+   *                         - source bean
+   * @param target
+   *                         - target bean
+   */
   public <T, S> void resolveFields(Set<String> selectedFields, T source, S target) {
     Map<String, Method> selectedResolvers = getSelectedResolvers(source);
     selectedResolvers.entrySet().removeIf(e -> !selectedFields.contains(e.getKey()));
     mapCustomFieldsToTarget(source, target, selectedResolvers);
   }
 
+  /**
+   * Returns a copy of the appropriate custom field resolvers for the given
+   * source.
+   * 
+   * @param <T>
+   *                 - source object type
+   * @param source
+   *                 - source object for the mapping
+   * @return - a copy of the appropriate custom field resolvers
+   */
   private <T> Map<String, Method> getSelectedResolvers(T source) {
     if (dtoClass == source.getClass()) {
       return new HashMap<>(entityResolvers);
@@ -165,7 +189,7 @@ public class CustomFieldHandler<D, E> {
       return new HashMap<>(dtoResolvers);
     } else {
       throw new IllegalArgumentException("Expected source type of " + dtoClass.getSimpleName()
-          + entityClass.getSimpleName() + " but was " + source.getClass());
+          + " or " + entityClass.getSimpleName() + " but was " + source.getClass());
     }
   }
 
