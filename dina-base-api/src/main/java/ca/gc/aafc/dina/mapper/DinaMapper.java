@@ -3,10 +3,10 @@ package ca.gc.aafc.dina.mapper;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -49,12 +49,12 @@ public class DinaMapper<D, E> {
     map.put(clazz, handler);
     map.put(relatedEntity, handler);
 
-    getRelationsForClasses(clazz).forEach(rel -> {
-      Class<?> dtoType = isCollection(rel.getType()) 
-        ? getGenericType(clazz, rel.getName()) 
-        : rel.getType();
+    for (Field field : getRelations(clazz)) {
+      Class<?> dtoType = isCollection(field.getType()) 
+        ? getGenericType(clazz, field.getName()) 
+        : field.getType();
       getHandlers(dtoType, map);
-    });
+    }
   }
 
   /**
@@ -81,11 +81,7 @@ public class DinaMapper<D, E> {
    * @return - A new instance of a class with the mapped fields
    */
   @SneakyThrows
-  public D toDto(
-    @NonNull E entity,
-    @NonNull Map<Class<?>, Set<String>> selectedFieldPerClass,
-    @NonNull Set<String> relations
-  ) {
+  public D toDto(E entity, Map<Class<?>, Set<String>> selectedFieldPerClass, Set<String> relations) {
     D dto = dtoClass.getConstructor().newInstance();
     mapSourceToTarget(entity, dto, selectedFieldPerClass, relations);
     return dto;
@@ -115,19 +111,19 @@ public class DinaMapper<D, E> {
    */
   @SneakyThrows
   public void applyDtoToEntity(
-    @NonNull D dto,
-    @NonNull E entity,
-    @NonNull Map<Class<?>, Set<String>> selectedFieldPerClass,
-    @NonNull Set<String> relations
+    D dto,
+    E entity,
+    Map<Class<?>, Set<String>> selectedFieldPerClass,
+    Set<String> relations
   ) {
     mapSourceToTarget(dto, entity, selectedFieldPerClass, relations);
   }
 
   private <T,S> void mapSourceToTarget(
-    S source,
-    T target,
-    Map<Class<?>, Set<String>> selectedFieldPerClass,
-    Set<String> relations
+    @NonNull S source,
+    @NonNull T target,
+    @NonNull Map<Class<?>, Set<String>> selectedFieldPerClass,
+    @NonNull Set<String> relations
   ) {
     Class<?> sourceType = source.getClass();
     Set<String> selectedFields = selectedFieldPerClass.getOrDefault(sourceType, new HashSet<>());
@@ -186,9 +182,9 @@ public class DinaMapper<D, E> {
     }
 
     Object target = targetType.newInstance();
-    Set<String> relation = getRelationsForClasses(source.getClass(), targetType)
-      .map(Field::getName)
-      .collect(Collectors.toSet());
+    Set<String> relation = Stream
+      .concat(getRelations(source.getClass()).stream(), getRelations(targetType).stream())
+      .map(Field::getName).collect(Collectors.toSet());
     mapSourceToTarget(source, target, fields, relation);
     return target;
   }
@@ -245,8 +241,7 @@ public class DinaMapper<D, E> {
     return Collection.class.isAssignableFrom(clazz);
   }
 
-  private static Stream<Field> getRelationsForClasses(Class<?>... classes) {
-    return Arrays.stream(classes)
-      .flatMap(cls -> FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class).stream());
+  private static List<Field> getRelations(Class<?> cls) {
+    return FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class);
   }
 }
