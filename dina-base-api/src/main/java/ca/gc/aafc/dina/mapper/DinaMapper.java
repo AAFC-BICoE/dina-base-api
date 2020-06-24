@@ -35,6 +35,20 @@ public class DinaMapper<D, E> {
   private final Class<D> dtoClass;
   private final Map<Class<?>, CustomFieldHandler<?, ?>> handlers;
 
+  /**
+   * <p>
+   * Used to construct an instance of the dina mapper where the dto class will be
+   * scanned and all custom field handlers needed to resolve the entity graph will
+   * parsed from the given dto class.
+   * <p>
+   *
+   * <p>
+   * Use this constructor if you have no custom fields to resolve or you are
+   * unsure if you can supply the custom field handlers per class.
+   * <p>
+   * 
+   * @param dtoClass
+   */
   public DinaMapper(@NonNull Class<D> dtoClass) {
     this(dtoClass, new HashMap<>());
     parseHandlers(dtoClass, handlers);
