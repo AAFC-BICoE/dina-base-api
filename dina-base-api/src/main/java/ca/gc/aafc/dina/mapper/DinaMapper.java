@@ -276,7 +276,7 @@ public class DinaMapper<D, E> {
 
 
   /**
-   * Returns the resolved type of a fieldname for a given source. is the type is a
+   * Returns the resolved type of a fieldname for a given source. If the type is a
    * collection, the first generic type is returned.
    * 
    * @param source
