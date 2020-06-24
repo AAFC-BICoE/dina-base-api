@@ -4,8 +4,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -38,6 +38,8 @@ public class CustomFieldHandler<D, E> {
   private final Class<D> dtoClass;
   private final Class<E> entityClass;
 
+  private final Object resolverHolder;
+
   private final Map<String, Method> dtoResolvers = new HashMap<>();
   private final Map<String, Method> entityResolvers = new HashMap<>();
 
@@ -48,6 +50,7 @@ public class CustomFieldHandler<D, E> {
       MethodUtils.getMethodsListWithAnnotation(dtoClass, CustomFieldResolver.class));
   }
 
+  @SneakyThrows
   public CustomFieldHandler(
     @NonNull Class<D> dtoClass,
     @NonNull Class<E> entityClass,
@@ -55,6 +58,7 @@ public class CustomFieldHandler<D, E> {
   ) {
     this.dtoClass = dtoClass;
     this.entityClass = entityClass;
+    this.resolverHolder = dtoClass.newInstance();
     initResolvers(resolvers);
   }
 
@@ -153,37 +157,44 @@ public class CustomFieldHandler<D, E> {
   }
 
   /**
-   * Resolve the given set of selected fields from a given source to a given
-   * target.
-   *
+   * Resolve the given selected custom fields from source to target.
+   * 
+   * @param <T>
+   *                         - source Type
+   * @param <S>
+   *                         - target Type
    * @param selectedFields
    *                         - fields to resolve
    * @param source
-   *                         - source of the mapping
+   *                         - source bean
    * @param target
-   *                         - target of the mapping
+   *                         - target bean
    */
-  public void resolveDtoFields(Set<String> selectedFields, E source, D target) {
-    Map<String, Method> selectedResolvers = new HashMap<>(dtoResolvers);
+  public <T, S> void resolveFields(Set<String> selectedFields, T source, S target) {
+    Map<String, Method> selectedResolvers = getSelectedResolvers(source);
     selectedResolvers.entrySet().removeIf(e -> !selectedFields.contains(e.getKey()));
-    mapCustomFieldsToTarget(source, target, target, selectedResolvers);
+    mapCustomFieldsToTarget(source, target, selectedResolvers);
   }
 
   /**
-   * Resolve the given set of selected fields from a given source to a given
-   * target.
-   *
-   * @param selectedFields
-   *                         - fields to resolve
+   * Returns a copy of the appropriate custom field resolvers for the given
+   * source.
+   * 
+   * @param <T>
+   *                 - source object type
    * @param source
-   *                         - source of the mapping
-   * @param target
-   *                         - target of the mapping
+   *                 - source object for the mapping
+   * @return - a copy of the appropriate custom field resolvers
    */
-  public void resolveEntityFields(Set<String> selectedFields, D source, E target) {
-    Map<String, Method> selectedResolvers = new HashMap<>(entityResolvers);
-    selectedResolvers.entrySet().removeIf(e -> !selectedFields.contains(e.getKey()));
-    mapCustomFieldsToTarget(source, target, source, selectedResolvers);
+  private <T> Map<String, Method> getSelectedResolvers(T source) {
+    if (dtoClass == source.getClass()) {
+      return new HashMap<>(entityResolvers);
+    } else if (entityClass == source.getClass()) {
+      return new HashMap<>(dtoResolvers);
+    } else {
+      throw new IllegalArgumentException("Expected source type of " + dtoClass.getSimpleName()
+          + " or " + entityClass.getSimpleName() + " but was " + source.getClass());
+    }
   }
 
   /**
@@ -197,23 +208,14 @@ public class CustomFieldHandler<D, E> {
    *                       - source of the mapping
    * @param target
    *                       - target of the mapping
-   * @param methodHolder
-   *                       - object containing the field resolvers.
    * @param resolvers
    *                       - custom resolvers to apply
    */
   @SneakyThrows
-  private static <T, S> void mapCustomFieldsToTarget(
-    S source,
-    T target,
-    Object methodHolder,
-    Map<String, Method> resolvers
-  ) {
+  private <T, S> void mapCustomFieldsToTarget(S source, T target, Map<String, Method> resolvers) {
     for (Entry<String, Method> entry : resolvers.entrySet()) {
-      PropertyUtils.setProperty(
-        target,
-        entry.getKey(),
-        entry.getValue().invoke(methodHolder, source));
+      Object mappedValue = entry.getValue().invoke(resolverHolder, source);
+      PropertyUtils.setProperty(target, entry.getKey(), mappedValue);
     }
   }
 
