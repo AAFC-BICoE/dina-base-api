@@ -13,8 +13,15 @@ jdk:
   - openjdk11
 
 deploy:
-  provider: script
-  script: mvn deploy
-  on:
-    branch: master
-    jdk: openjdk8
+  - provider: script
+    script: mvn deploy
+    on:
+      branch: master
+      jdk: openjdk8
+  - provider: pages
+    github_token: $GITHUB_TOKEN
+    local_dir: target/generated-docs
+    keep_history: true
+    on:
+      branch: master
+      jdk: openjdk8

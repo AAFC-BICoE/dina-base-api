@@ -38,6 +38,8 @@ public class CustomFieldHandler<D, E> {
   private final Class<D> dtoClass;
   private final Class<E> entityClass;
 
+  private final Object resolverHolder;
+
   private final Map<String, Method> dtoResolvers = new HashMap<>();
   private final Map<String, Method> entityResolvers = new HashMap<>();
 
@@ -48,6 +50,7 @@ public class CustomFieldHandler<D, E> {
       MethodUtils.getMethodsListWithAnnotation(dtoClass, CustomFieldResolver.class));
   }
 
+  @SneakyThrows
   public CustomFieldHandler(
     @NonNull Class<D> dtoClass,
     @NonNull Class<E> entityClass,
@@ -55,6 +58,7 @@ public class CustomFieldHandler<D, E> {
   ) {
     this.dtoClass = dtoClass;
     this.entityClass = entityClass;
+    this.resolverHolder = dtoClass.newInstance();
     initResolvers(resolvers);
   }
 
@@ -208,13 +212,10 @@ public class CustomFieldHandler<D, E> {
    *                       - custom resolvers to apply
    */
   @SneakyThrows
-  private static <T, S> void mapCustomFieldsToTarget(S source, T target, Map<String, Method> resolvers) {
+  private <T, S> void mapCustomFieldsToTarget(S source, T target, Map<String, Method> resolvers) {
     for (Entry<String, Method> entry : resolvers.entrySet()) {
-      Object methodHolder = entry.getValue().getDeclaringClass().newInstance();
-      PropertyUtils.setProperty(
-        target,
-        entry.getKey(),
-        entry.getValue().invoke(methodHolder, source));
+      Object mappedValue = entry.getValue().invoke(resolverHolder, source);
+      PropertyUtils.setProperty(target, entry.getKey(), mappedValue);
     }
   }
 

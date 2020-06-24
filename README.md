@@ -4,6 +4,8 @@ Base [DINA](https://www.dina-project.net) API package for Java built on [SpringB
 
 ## Documentation
 
+https://aafc-bicoe.github.io/dina-base-api/
+
 Documentation can be generated using:
 
 `mvn clean compile`
