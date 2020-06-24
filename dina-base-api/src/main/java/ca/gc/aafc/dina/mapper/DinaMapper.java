@@ -37,7 +37,7 @@ public class DinaMapper<D, E> {
 
   public DinaMapper(@NonNull Class<D> dtoClass) {
     this(dtoClass, new HashMap<>());
-    getHandlers(dtoClass, handlers);
+    parseHandlers(dtoClass, handlers);
   }
 
   /**
@@ -255,7 +255,7 @@ public class DinaMapper<D, E> {
    * @param map
    *                - map to fill
    */
-  private static <T> void getHandlers(Class<T> clazz, Map<Class<?>, CustomFieldHandler<?, ?>> map) {
+  private static void parseHandlers(Class<?> clazz, Map<Class<?>, CustomFieldHandler<?, ?>> map) {
     Class<?> relatedEntity = clazz.getAnnotation(RelatedEntity.class).value();
 
     if (map.containsKey(clazz) || map.containsKey(relatedEntity)) {
@@ -270,7 +270,7 @@ public class DinaMapper<D, E> {
       Class<?> dtoType = isCollection(field.getType()) 
         ? getGenericType(clazz, field.getName()) 
         : field.getType();
-      getHandlers(dtoType, map);
+      parseHandlers(dtoType, map);
     }
   }
 
