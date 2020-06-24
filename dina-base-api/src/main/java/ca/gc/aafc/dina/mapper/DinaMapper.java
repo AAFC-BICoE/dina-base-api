@@ -102,6 +102,23 @@ public class DinaMapper<D, E> {
     mapSourceToTarget(dto, entity, selectedFieldPerClass, relations);
   }
 
+  /**
+   * Map the given selected fields of a source to a target with the given
+   * relations.
+   *
+   * @param <T>
+   *                                - target type
+   * @param <S>
+   *                                - source type
+   * @param source
+   *                                - source of the mapping
+   * @param target
+   *                                - target of the mapping
+   * @param selectedFieldPerClass
+   *                                - selected fields to map
+   * @param relations
+   *                                - relations to map
+   */
   private <T,S> void mapSourceToTarget(
     @NonNull S source,
     @NonNull T target,
@@ -158,6 +175,18 @@ public class DinaMapper<D, E> {
     }
   }
 
+  /**
+   * Maps the given fields of a source object to new instance of a target type.
+   * mapped target is returned.
+   *
+   * @param fields
+   *                     - fields to map
+   * @param source
+   *                     - source of the mapping
+   * @param targetType
+   *                     - target type of new target
+   * @return the mapped target
+   */
   @SneakyThrows
   private Object mapRelation(Map<Class<?>, Set<String>> fields, Object source, Class<?> targetType) {
     if (source == null) {
@@ -214,6 +243,18 @@ public class DinaMapper<D, E> {
     return (Class<?>) genericType.getActualTypeArguments()[0];
   }
 
+  /**
+   * Fills a given map with all Custom Field Handlers needed to map a given class
+   * parsed from the given class, This includes Custom Field Handlers for each
+   * relationship of a given class.
+   * 
+   * @param <T>
+   *                - class type
+   * @param clazz
+   *                - class to parse
+   * @param map
+   *                - map to fill
+   */
   private static <T> void getHandlers(Class<T> clazz, Map<Class<?>, CustomFieldHandler<?, ?>> map) {
     Class<?> relatedEntity = clazz.getAnnotation(RelatedEntity.class).value();
 
@@ -233,16 +274,41 @@ public class DinaMapper<D, E> {
     }
   }
 
+
+  /**
+   * Returns the resolved type of a fieldname for a given source. is the type is a
+   * collection, the first generic type is returned.
+   * 
+   * @param source
+   *                    - source object of the field
+   * @param fieldName
+   *                    - field name
+   * @return Field type or the first genric type if the field is a collection
+   */
   @SneakyThrows
   private static Class<?> getResolvedType(Object source, String fieldName) {
     Class<?> propertyType = PropertyUtils.getPropertyType(source, fieldName);
     return isCollection(propertyType) ? getGenericType(source.getClass(), fieldName) : propertyType;
   }
 
+  /**
+   * Returns true if the given class is a collection
+   * 
+   * @param clazz
+   *                - class to check
+   * @return true if the given class is a collection
+   */
   private static boolean isCollection(Class<?> clazz) {
     return Collection.class.isAssignableFrom(clazz);
   }
 
+  /**
+   * Returns the JsonApiRelations for a given class.
+   * 
+   * @param cls
+   *              - class to parse
+   * @return JsonApiRelations for a given class
+   */
   private static List<Field> getRelations(Class<?> cls) {
     return FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class);
   }
