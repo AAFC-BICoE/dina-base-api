@@ -4,11 +4,10 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import lombok.NonNull;
@@ -71,7 +70,7 @@ public class CustomFieldHandler<D, E> {
    */
   private void initResolvers(List<Method> methods) {
     for (Method method : methods) {
-      validateResolverParameter(method, entityClass, dtoClass);
+      validateResolverParameter(method);
       mapResolverToMap(method);
     }
     validateResolverReturnType(dtoClass, dtoResolvers);
@@ -97,17 +96,16 @@ public class CustomFieldHandler<D, E> {
   }
 
   /**
-   * Throws IllegalStateException if the Field resolvers does not have one parameter
-   * of the given expected types.
+   * Throws IllegalStateException if Field resolvers does not have one parameter
+   * of type entity or Dto
    * 
    * @param resolver
-   *                        - resolver to validate
-   * @param expectedTypes
-   *                        - expected types of the resolvers parameter
+   *                   - resolver to validate
    */
-  private static  void validateResolverParameter(Method resolver, Class<?>... expectedTypes) {
+  private void validateResolverParameter(Method resolver) {
     boolean isInvalid = resolver.getParameterCount() != 1 
-      || !ArrayUtils.contains(expectedTypes, resolver.getParameterTypes()[0]);
+      || (!resolver.getParameterTypes()[0].equals(entityClass)
+      && !resolver.getParameterTypes()[0].equals(dtoClass));
 
     if (isInvalid) {
       throwInvalidParameterResponse(resolver.getName());
@@ -121,7 +119,7 @@ public class CustomFieldHandler<D, E> {
    * @param methodName
    *                     - method name for message.
    */
-  private static void throwInvalidParameterResponse(String methodName) {
+  private void throwInvalidParameterResponse(String methodName) {
     throw new IllegalStateException("Custom field resolver " + methodName
         + " should accept one parameter of type entity or dto");
   }
