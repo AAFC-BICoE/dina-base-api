@@ -50,6 +50,7 @@ public class CustomFieldHandler<D, E> {
       MethodUtils.getMethodsListWithAnnotation(dtoClass, CustomFieldResolver.class));
   }
 
+  @SneakyThrows
   public CustomFieldHandler(
     @NonNull Class<D> dtoClass,
     @NonNull Class<E> entityClass,
@@ -57,13 +58,8 @@ public class CustomFieldHandler<D, E> {
   ) {
     this.dtoClass = dtoClass;
     this.entityClass = entityClass;
-    this.resolverHolder = getResolverHolderInstancce(dtoClass);
+    this.resolverHolder = dtoClass.newInstance();
     initResolvers(resolvers);
-  }
-
-  @SneakyThrows
-  private Object getResolverHolderInstancce(Class<?> clazz) {
-    return clazz.newInstance();
   }
 
   /**
