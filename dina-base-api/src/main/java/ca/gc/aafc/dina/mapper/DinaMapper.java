@@ -40,25 +40,6 @@ public class DinaMapper<D, E> {
     getHandlers(dtoClass, handlers);
   }
 
-  private static <T> void getHandlers(Class<T> clazz, Map<Class<?>, CustomFieldHandler<?, ?>> map) {
-    Class<?> relatedEntity = clazz.getAnnotation(RelatedEntity.class).value();
-
-    if (map.containsKey(clazz) || map.containsKey(relatedEntity)) {
-      return;
-    }
-
-    CustomFieldHandler<?, ?> handler = new CustomFieldHandler<>(clazz, relatedEntity);
-    map.put(clazz, handler);
-    map.put(relatedEntity, handler);
-
-    for (Field field : getRelations(clazz)) {
-      Class<?> dtoType = isCollection(field.getType()) 
-        ? getGenericType(clazz, field.getName()) 
-        : field.getType();
-      getHandlers(dtoType, map);
-    }
-  }
-
   /**
    * <p>
    * Returns a new dto mapped with the fields of a given entity. The given
@@ -231,6 +212,25 @@ public class DinaMapper<D, E> {
         .getDeclaredField(fieldName)
         .getGenericType();
     return (Class<?>) genericType.getActualTypeArguments()[0];
+  }
+
+  private static <T> void getHandlers(Class<T> clazz, Map<Class<?>, CustomFieldHandler<?, ?>> map) {
+    Class<?> relatedEntity = clazz.getAnnotation(RelatedEntity.class).value();
+
+    if (map.containsKey(clazz) || map.containsKey(relatedEntity)) {
+      return;
+    }
+
+    CustomFieldHandler<?, ?> handler = new CustomFieldHandler<>(clazz, relatedEntity);
+    map.put(clazz, handler);
+    map.put(relatedEntity, handler);
+
+    for (Field field : getRelations(clazz)) {
+      Class<?> dtoType = isCollection(field.getType()) 
+        ? getGenericType(clazz, field.getName()) 
+        : field.getType();
+      getHandlers(dtoType, map);
+    }
   }
 
   @SneakyThrows
