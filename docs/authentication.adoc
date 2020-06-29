@@ -32,4 +32,4 @@ To have a 'dev' user set automatically without needing to authenticate via Keycl
 manual method, add these properties to your launch config:
 
 * dev-user.enabled: true
-* keycloak.enabled: true
+* keycloak.enabled: false
