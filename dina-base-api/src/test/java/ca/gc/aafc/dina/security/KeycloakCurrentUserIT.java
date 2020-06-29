@@ -46,33 +46,38 @@ public class KeycloakCurrentUserIT {
   }
 
   @Test
-  public void getCurrentUser_WhenKeycloakPrefixesGroup_ForwardSlashesRemoved() {
-    List<String> expectedGroups = Arrays.asList("group 1", "group 2");
+  public void getCurrentUser_WhenKeycloakGroupRolesClaims_GroupRolesParsed() {
+
     // Keycloak includes a forward slash to all group
-    List<String> returnedGroups = Arrays.asList("/group 1", "/group 2");
+    List<String> keycloakGroupClaim = Arrays.asList("/group 1/staff", "/group 2/collection-manager");
+    List<String> expectedGroups = Arrays.asList("group 1", "group 2");
 
     KeycloakAuthenticationToken mockToken = Mockito.mock(
       KeycloakAuthenticationToken.class,
       Answers.RETURNS_DEEP_STUBS);
-    mockToken(returnedGroups, mockToken);
+    mockToken(keycloakGroupClaim, mockToken);
 
     SecurityContextHolder.getContext().setAuthentication(mockToken);
+
     assertTrue(CollectionUtils.isEqualCollection(currentUser.getGroups(), expectedGroups));
+
+    assertEquals(DinaRole.COLLECTION_MANAGER, currentUser.getRolesPerGroup()
+      .get("group 2").iterator().next());
   }
 
   /**
    * Mocks a given token to return a agent identifier and list of given groups.
    *
-   * @param returnedGroups
+   * @param keycloakGroupClaim
    *                         - groups to return in claim
    * @param mockToken
    *                         - token to mock
    */
-  private static void mockToken(List<String> returnedGroups, KeycloakAuthenticationToken mockToken) {
+  private static void mockToken(List<String> keycloakGroupClaim, KeycloakAuthenticationToken mockToken) {
     // Mock the needed fields on the keycloak token:
     Mockito.when(mockToken.getName()).thenReturn("test-user");
     mockClaim(mockToken, "agent-identifier", "a2cef694-10f1-42ec-b403-e0f8ae9d2ae6");
-    mockClaim(mockToken, "groups", returnedGroups);
+    mockClaim(mockToken, "groups", keycloakGroupClaim);
   }
 
   /**
