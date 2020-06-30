@@ -14,7 +14,7 @@ public class ResponseStatusExceptionMapper implements ExceptionMapper<ResponseSt
   @Override
   public ErrorResponse toErrorResponse(ResponseStatusException exception) {
     ErrorData error = ErrorData.builder().setDetail(exception.getMessage()).build();
-    return ErrorResponse.builder().setStatus(exception.getStatus().ordinal()).setSingleErrorData(error).build();
+    return ErrorResponse.builder().setStatus(exception.getStatus().value()).setSingleErrorData(error).build();
   }
 
   @Override

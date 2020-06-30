@@ -8,10 +8,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-public class ResponseStatusExceptionMapperIT {  
+public class ResponseStatusExceptionMapperTest {  
  
   @Inject
   private ResponseStatusExceptionMapper responseStatusExceptionMapper;
@@ -23,11 +24,12 @@ public class ResponseStatusExceptionMapperIT {
   private static final String fileUnderTest = "9ada0de3-b190-44d8-992d-f4d532bc11fb";
 
   @Test
-  public void downLoadFile_whenFileDoesNotExist_mapperCreatesReadableErrorMessages() throws Exception {
+  public void testMapperCreatesReadableErrorMessages() throws Exception {
+    assertThrows(ResponseStatusException.class, ()-> ftc.downloadFile(bucketUnderTest, fileUnderTest));
     try {
-      ftc.downloadFile(bucketUnderTest, fileUnderTest);
+      ftc.downloadFile(bucketUnderTest, fileUnderTest);    
     } catch (ResponseStatusException e) {
-      assertEquals(e.getStatus().ordinal(), responseStatusExceptionMapper.toErrorResponse(e).getHttpStatus());
+      assertEquals(e.getStatus().value(), responseStatusExceptionMapper.toErrorResponse(e).getHttpStatus());
       assertEquals(e.getMessage(), 
           responseStatusExceptionMapper.toErrorResponse(e).getErrors().stream().findFirst().get().getDetail());
     }    
