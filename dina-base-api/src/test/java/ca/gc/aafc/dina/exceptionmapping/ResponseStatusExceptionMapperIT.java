@@ -27,6 +27,7 @@ public class ResponseStatusExceptionMapperIT {
     try {
       ftc.downloadFile(bucketUnderTest, fileUnderTest);
     } catch (ResponseStatusException e) {
+      assertEquals(e.getStatus().ordinal(), responseStatusExceptionMapper.toErrorResponse(e).getHttpStatus());
       assertEquals(e.getMessage(), 
           responseStatusExceptionMapper.toErrorResponse(e).getErrors().stream().findFirst().get().getDetail());
     }    
