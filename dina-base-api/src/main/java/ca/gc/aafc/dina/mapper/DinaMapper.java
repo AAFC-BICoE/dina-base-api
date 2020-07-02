@@ -146,7 +146,9 @@ public class DinaMapper<D, E> {
 
     mapFieldsToTarget(source, target, selectedFields, ignoreIf);
     mapRelationsToTarget(source, target, selectedFieldPerClass, relations);
-    handlers.get(sourceType).resolveFields(selectedFields, source, target);
+    if (handlers.containsKey(sourceType)) {
+      handlers.get(sourceType).resolveFields(selectedFields, source, target);
+    }
   }
 
   /**

@@ -25,3 +25,11 @@ public class MyClass {
 Event though 'MyClass' is an application-scoped bean, Spring injects a DinaAuthenticaedUser proxy
 object that resolves to the actual request-scope DinaAuthenticatedUser bean when DinaAuthenticatedUser's
 methods are called. So calling logCurrentUserName() will print the currentUser for the current API request.
+
+== Using a dev-mode user without needing to authenticate manually
+
+To have a 'dev' user set automatically without needing to authenticate via Keycloak token or other
+manual method, add these properties to your launch config:
+
+* dev-user.enabled: true
+* keycloak.enabled: false
