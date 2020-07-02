@@ -60,4 +60,36 @@ public class SimpleFilterHandlerIT  {
     
   }
 
+  @Test
+  public void filters_on_job_equals_null() {
+    Employee hasJob = Employee.builder().name("hasJob").job("has a job").build();
+    Employee noJob = Employee.builder().name("noJob").build();
+    entityManager.persist(hasJob);
+    entityManager.persist(noJob);
+
+    QuerySpec querySpec = new QuerySpec(EmployeeDto.class);
+    querySpec.addFilter(new FilterSpec(Arrays.asList("job"), FilterOperator.EQ, null));
+    List<EmployeeDto> empDtos = this.employeeRepository.findAll(querySpec);
+
+    assertEquals(
+      Arrays.asList(noJob.getName()),
+      empDtos.stream().map(EmployeeDto::getName).collect(Collectors.toList()));
+  }
+
+  @Test
+  public void filters_on_job_not_null() {
+    Employee hasJob = Employee.builder().name("hasJob").job("has a job").build();
+    Employee noJob = Employee.builder().name("noJob").build();
+    entityManager.persist(hasJob);
+    entityManager.persist(noJob);
+
+    QuerySpec querySpec = new QuerySpec(EmployeeDto.class);
+    querySpec.addFilter(new FilterSpec(Arrays.asList("job"), FilterOperator.NEQ, null));
+    List<EmployeeDto> empDtos = this.employeeRepository.findAll(querySpec);
+
+    assertEquals(
+      Arrays.asList(hasJob.getName()),
+      empDtos.stream().map(EmployeeDto::getName).collect(Collectors.toList()));
+  }
+
 }
