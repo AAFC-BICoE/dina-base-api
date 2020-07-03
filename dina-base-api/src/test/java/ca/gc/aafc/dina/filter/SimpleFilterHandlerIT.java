@@ -61,7 +61,7 @@ public class SimpleFilterHandlerIT  {
   }
 
   @Test
-  public void filters_on_job_equals_null() {
+  public void getRestriction_EqualsNull_FiltersOnEqualsNull() {
     Employee hasJob = Employee.builder().name("hasJob").job("has a job").build();
     Employee noJob = Employee.builder().name("noJob").build();
     entityManager.persist(hasJob);
@@ -77,7 +77,7 @@ public class SimpleFilterHandlerIT  {
   }
 
   @Test
-  public void filters_on_job_not_null() {
+  public void getRestriction_EqualsNotNull_FiltersOnEqualsNotNull() {
     Employee hasJob = Employee.builder().name("hasJob").job("has a job").build();
     Employee noJob = Employee.builder().name("noJob").build();
     entityManager.persist(hasJob);
