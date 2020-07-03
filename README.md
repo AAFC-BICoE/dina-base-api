@@ -2,6 +2,11 @@
 
 Base [DINA](https://www.dina-project.net) API package for Java built on [SpringBoot](https://spring.io/projects/spring-boot) and [Crnk](https://github.com/crnk-project/crnk-framework).
 
+## Required
+
+* Java 11
+* Maven 3.6 (tested)
+
 ## Documentation
 
 https://aafc-bicoe.github.io/dina-base-api/
@@ -14,7 +19,6 @@ An `index.html` page will be generated in `target/generated-docs`
 
 ## Artifact
 dina-base-api artifact is published on [BinTray](https://bintray.com/aafc-bice/BICoE/dina-base-api).
-
 
 ```
 <dependency>
