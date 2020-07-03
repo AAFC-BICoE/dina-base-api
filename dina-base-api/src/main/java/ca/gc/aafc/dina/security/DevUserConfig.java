@@ -1,8 +1,6 @@
 package ca.gc.aafc.dina.security;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
