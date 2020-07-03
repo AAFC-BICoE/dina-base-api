@@ -27,15 +27,14 @@
   <properties>
     <!-- Compile properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <java.version>11</java.version>
     <!-- Build plugin properties -->
     <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
     <checkstyle.version>8.32</checkstyle.version>
     <spotbugs.version>4.0.2</spotbugs.version>
     <maven-spotbugs.version>4.0.0</maven-spotbugs.version>
-    <asciidoctor-maven-plugin.version>1.6.0</asciidoctor-maven-plugin.version>
-    <asciidoctorj.diagram.version>2.0.1</asciidoctorj.diagram.version>
+    <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
+    <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
     <guava.version>24.1.1-jre</guava.version>
