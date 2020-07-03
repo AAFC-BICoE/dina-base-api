@@ -11,8 +11,10 @@ import javax.persistence.criteria.From;
 import javax.persistence.criteria.Predicate;
 
 import ca.gc.aafc.dina.repository.SelectionHandler;
+import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.QuerySpec;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -39,10 +41,37 @@ public class SimpleFilterHandler implements FilterHandler {
         // like "rsql" or others that are only handled by other FilterHandlers.
         continue;
       }
-      predicates.add(cb.equal(attributePath, (Object) filterSpec.getValue()));
+      predicates.add(generatePredicate(filterSpec, attributePath, cb));
     }
 
     return cb.and(predicates.stream().toArray(Predicate[]::new));
+  }
+
+  /**
+   * Generates a predicate for a given crnk filter spec for a given attribute
+   * path. Predicate is built with the given criteria builder.
+   *
+   * @param filter
+   *                        - filter to parse
+   * @param attributePath
+   *                        - path to the attribute
+   * @param cb
+   *                        - criteria builder to build the predicate
+   * @return a predicate for a given crnk filter spec
+   */
+  private static Predicate generatePredicate(
+    @NonNull FilterSpec filter,
+    @NonNull Expression<?> attributePath,
+    @NonNull CriteriaBuilder cb
+  ) {
+    Object value = (Object) filter.getValue();
+    if (value == null) {
+      return filter.getOperator() == FilterOperator.NEQ 
+        ? cb.isNotNull(attributePath)
+        : cb.isNull(attributePath);
+    } else {
+      return cb.equal(attributePath, value);
+    }
   }
 
 }
