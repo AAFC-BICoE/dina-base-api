@@ -59,7 +59,7 @@ public class SimpleFilterHandler implements FilterHandler {
    *                        - criteria builder to build the predicate
    * @return a predicate for a given crnk filter spec
    */
-  private Predicate generatePredicate(
+  private static Predicate generatePredicate(
     @NonNull FilterSpec filter,
     @NonNull Expression<?> attributePath,
     @NonNull CriteriaBuilder cb
