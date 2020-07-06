@@ -1,16 +1,11 @@
 package ca.gc.aafc.dina.security;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.keycloak.adapters.KeycloakConfigResolver;
 import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
@@ -43,38 +38,38 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
     super();
     log.info("KeycloakAuthConfig created");
   }
-  
+
   @Inject
   public void configureGlobal(AuthenticationManagerBuilder auth) {
     KeycloakAuthenticationProvider keycloakAuthProvider = keycloakAuthenticationProvider();
     keycloakAuthProvider.setGrantedAuthoritiesMapper(new SimpleAuthorityMapper());
     auth.authenticationProvider(keycloakAuthProvider);
   }
-  
+
   @Bean
   public KeycloakConfigResolver keycloakConfigResolver() {
     log.debug("Creating KeycloakSpringBootConfigResolver bean");
     return new KeycloakSpringBootConfigResolver();
   }
-  
+
   @Bean
   @Override
   protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
     log.debug("Creating RegisterSessionAuthenticationStrategy bean");
     return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
   }
-  
+
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     super.configure(http);
-    
+
     // Need to disable CSRF for Postman and testing
     http.csrf().disable();
-    
+
     http.authorizeRequests().anyRequest().authenticated();
     log.debug("Configured HttpSecurity");
   }
-  
+
   @Override
   public void configure(WebSecurity web) throws Exception {
     // should be configurable
@@ -101,37 +96,20 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
 
     String agentId = (String) otherClaims.get(AGENT_IDENTIFIER_CLAIM_KEY);
 
-    Set<String> groups = new LinkedHashSet<>();
+    Map<String, Set<DinaRole>> rolesPerGroup = null;
     if (otherClaims.get(GROUPS_CLAIM_KEY) instanceof Collection) {
       @SuppressWarnings("unchecked")
       Collection<String> groupClaim = (Collection<String>) otherClaims.get(GROUPS_CLAIM_KEY);
-      groups.addAll(removePrefix("/", groupClaim));
+      rolesPerGroup = KeycloakClaimParser.parseGroupClaims(groupClaim);
     }
 
     return DinaAuthenticatedUser.builder()
       .agentIdentifer(agentId)
       .username(username)
-      .groups(groups)
+      .rolesPerGroup(rolesPerGroup)
       .build();
   }
 
-  /**
-   * Returns a set of strings matching a given collection with a given prefix
-   * removed from the colletion elements.
-   * 
-   * @param prefix
-   *                     - prefix to remove
-   * @param collection
-   *                     - collection to iterate
-   * @return
-   */
-  private static Set<String> removePrefix(String prefix, Collection<String> collection) {
-    if (CollectionUtils.isEmpty(collection)) {
-      return new HashSet<>();
-    } else {
-      return collection.stream().map(grp -> StringUtils.removeStart(grp, prefix))
-          .collect(Collectors.toSet());
-    }
-  }
+
 
 }
