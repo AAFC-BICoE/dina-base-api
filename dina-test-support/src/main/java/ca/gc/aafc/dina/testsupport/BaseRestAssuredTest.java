@@ -22,7 +22,7 @@ import io.restassured.specification.RequestSpecification;
  * class but also keep the webEnvironment.
  * 
  * <pre>
- * @SpringBootTest(classes = TestConfiguration.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+ * {@literal @}SpringBootTest(classes = TestConfiguration.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
  * </pre>
  * 
  * All operations will validate the return code and the expected return code can be
