@@ -17,7 +17,7 @@ deploy:
     script: mvn deploy
     on:
       branch: master
-      jdk: openjdk8
+      jdk: openjdk11
   - provider: pages
     skip_cleanup: true
     github_token: $GITHUB_TOKEN
@@ -25,4 +25,4 @@ deploy:
     keep_history: true
     on:
       branch: master
-      jdk: openjdk8
+      jdk: openjdk11
