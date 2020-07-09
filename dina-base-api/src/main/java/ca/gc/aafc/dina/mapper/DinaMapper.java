@@ -80,7 +80,7 @@ public class DinaMapper<D, E> {
   @SneakyThrows
   public D toDto(E entity, Map<Class<?>, Set<String>> selectedFieldPerClass, Set<String> relations) {
     D dto = dtoClass.getConstructor().newInstance();
-    mapSourceToTarget(entity, dto, selectedFieldPerClass, relations);
+    mapSourceToTarget(entity, dto, selectedFieldPerClass, relations, new HashSet<>());
     return dto;
   }
 
@@ -113,7 +113,7 @@ public class DinaMapper<D, E> {
     Map<Class<?>, Set<String>> selectedFieldPerClass,
     Set<String> relations
   ) {
-    mapSourceToTarget(dto, entity, selectedFieldPerClass, relations);
+    mapSourceToTarget(dto, entity, selectedFieldPerClass, relations , new HashSet<>());
   }
 
   /**
@@ -132,20 +132,24 @@ public class DinaMapper<D, E> {
    *                                - selected fields to map
    * @param relations
    *                                - relations to map
+   * @param visited
+   *                                - set of visted objects in the entity graph.
    */
   private <T,S> void mapSourceToTarget(
     @NonNull S source,
     @NonNull T target,
     @NonNull Map<Class<?>, Set<String>> selectedFieldPerClass,
-    @NonNull Set<String> relations
+    @NonNull Set<String> relations,
+    @NonNull Set<Object> visited
   ) {
+    visited.add(source);
     Class<?> sourceType = source.getClass();
     Set<String> selectedFields = selectedFieldPerClass.getOrDefault(sourceType, new HashSet<>());
     Predicate<String> ignoreIf = field -> handlers.containsKey(sourceType)
         && handlers.get(sourceType).hasCustomFieldResolver(field);
 
     mapFieldsToTarget(source, target, selectedFields, ignoreIf);
-    mapRelationsToTarget(source, target, selectedFieldPerClass, relations);
+    mapRelationsToTarget(source, target, selectedFieldPerClass, relations, visited);
     if (handlers.containsKey(sourceType)) {
       handlers.get(sourceType).resolveFields(selectedFields, source, target);
     }
@@ -156,21 +160,33 @@ public class DinaMapper<D, E> {
    * designated from the given field name and only the given fields per relation
    * source class are mapped.
    *
-   * @param <T>                   - Type of target
-   * @param <S>                   - Type of source
-   * @param source                - source of the mapping
-   * @param target                - target of the mapping
-   * @param fieldsPerClass - selected fields of the relations source class
-   * @param fieldName             - field name of the relation
+   * @param <T>
+   *                         - Type of target
+   * @param <S>
+   *                         - Type of source
+   * @param source
+   *                         - source of the mapping
+   * @param target
+   *                         - target of the mapping
+   * @param fieldsPerClass
+   *                         - selected fields of the relations source class
+   * @param fieldName
+   *                         - field name of the relation
+   * @param visited
+   *                         - set of visted objects in the entity graph.
    */
   @SneakyThrows
   private <T, S> void mapRelationsToTarget(
     S source,
     T target,
     Map<Class<?>, Set<String>> fieldsPerClass,
-    Set<String> relations
+    Set<String> relations,
+    Set<Object> visited
   ) {
     for (String relationFieldName : relations) {
+      // Each relation requires a sepearte tracking set
+      HashSet<Object> currentVisited = new HashSet<>(visited);
+
       Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, relationFieldName);
       Class<?> targetType = getResolvedType(target, relationFieldName);
 
@@ -180,10 +196,10 @@ public class DinaMapper<D, E> {
       if (sourceRelation != null) {
         if (isCollection(sourceRelationType)) {
           targetRelation = ((Collection<?>) sourceRelation).stream()
-            .map(ele -> mapRelation(fieldsPerClass, ele, targetType))
+            .map(ele -> mapRelation(fieldsPerClass, ele, targetType, currentVisited))
             .collect(Collectors.toCollection(ArrayList::new));
         } else {
-          targetRelation = mapRelation(fieldsPerClass, sourceRelation, targetType);
+          targetRelation = mapRelation(fieldsPerClass, sourceRelation, targetType, currentVisited);
         }
       }
 
@@ -201,19 +217,26 @@ public class DinaMapper<D, E> {
    *                     - source of the mapping
    * @param targetType
    *                     - target type of new target
+   * @param visited
+   *                     - set of visted objects in the entity graph.
    * @return the mapped target
    */
   @SneakyThrows
-  private Object mapRelation(Map<Class<?>, Set<String>> fields, Object source, Class<?> targetType) {
-    if (source == null) {
+  private Object mapRelation(
+    Map<Class<?>, Set<String>> fields,
+    Object source,
+    Class<?> targetType,
+    Set<Object> visited
+  ) {
+    if (source == null || visited.contains(source)) {
       return null;
     }
 
-    Object target = targetType.newInstance();
+    Object target = targetType.getDeclaredConstructor().newInstance();
     Set<String> relation = Stream
       .concat(getRelations(source.getClass()).stream(), getRelations(targetType).stream())
       .map(Field::getName).collect(Collectors.toSet());
-    mapSourceToTarget(source, target, fields, relation);
+    mapSourceToTarget(source, target, fields, relation, visited);
     return target;
   }
 

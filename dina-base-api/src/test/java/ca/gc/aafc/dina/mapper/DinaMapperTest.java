@@ -26,6 +26,7 @@ import ca.gc.aafc.dina.entity.ComplexObject;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 public class DinaMapperTest {
@@ -139,6 +140,28 @@ public class DinaMapperTest {
     assertNull(dto.getFriend());
     assertNull(dto.getNickNames());
     assertNull(dto.getClassMates());
+  }
+
+  @Test
+  public void toDto_CircularRelation_CircularRelationIgnored() {
+    Student entity = createEntity();
+    Student friend = createEntity();
+
+    entity.setFriend(friend);
+    entity.getClassMates().add(friend);
+    friend.setFriend(entity);
+    friend.getClassMates().add(entity);
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
+      Student.class, ImmutableSet.of("name", "iq"));
+    Set<String> relations = ImmutableSet.of("friend", "classMates");
+
+    StudentDto result = mapper.toDto(entity, selectedFieldPerClass, relations);
+    assertEquals(friend.getName(), result.getFriend().getName());
+    assertEquals(friend.getIq(), result.getFriend().getIq());
+    StudentDto resultClassmate = result.getClassMates().get(0);
+    assertEquals(friend.getName(), resultClassmate.getName());
+    assertEquals(friend.getIq(), resultClassmate.getIq());
   }
 
   @Test
@@ -398,6 +421,7 @@ public class DinaMapperTest {
     private String[] nickNames;
 
     // Relation to test
+    @EqualsAndHashCode.Exclude
     private Student friend;
 
     // Custom Resolved Field to test
@@ -407,6 +431,7 @@ public class DinaMapperTest {
     private NestedResolverRelation relationWithResolver;
 
     // Many to - Relation to test
+    @EqualsAndHashCode.Exclude
     private List<Student> classMates;
 
   }
