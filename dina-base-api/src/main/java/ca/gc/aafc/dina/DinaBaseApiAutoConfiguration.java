@@ -45,6 +45,7 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
   public void initTransactionOperationFilter(OperationsModule module) {
     module.addFilter(new TransactionOperationFilter());
     module.setIncludeChangedRelationships(false);
+    module.setResumeOnError(true);
   }
   
   /**
