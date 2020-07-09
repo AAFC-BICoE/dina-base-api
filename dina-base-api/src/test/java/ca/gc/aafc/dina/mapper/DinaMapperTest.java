@@ -286,6 +286,30 @@ public class DinaMapperTest {
     assertNull(result.getClassMates());
   }
 
+  @Test
+  public void applyDtoToEntity_CircularRelation_CircularRelationIgnored() {
+    Student result = new Student();
+
+    StudentDto dtoToMap = createDTO();
+    StudentDto relationToMap = createDTO();
+
+    dtoToMap.setFriend(relationToMap);
+    dtoToMap.getClassMates().add(relationToMap);
+    relationToMap.setFriend(dtoToMap);
+    relationToMap.getClassMates().add(dtoToMap);
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass =
+        ImmutableMap.of(StudentDto.class, ImmutableSet.of("name", "iq"));
+    Set<String> relations = ImmutableSet.of("friend", "classMates");
+
+    mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, relations);
+    assertEquals(relationToMap.getName(), result.getFriend().getName());
+    assertEquals(relationToMap.getIq(), result.getFriend().getIq());
+    Student resultClassmate = result.getClassMates().get(0);
+    assertEquals(relationToMap.getName(), resultClassmate.getName());
+    assertEquals(relationToMap.getIq(), resultClassmate.getIq());
+  }
+
     @Test
   public void mapperInit_IncorrectResolverReturnTypes_ThrowsIllegalState() {
     assertThrows(
@@ -382,6 +406,7 @@ public class DinaMapperTest {
 
     // Relation to test
     @JsonApiRelation
+    @EqualsAndHashCode.Exclude
     private StudentDto friend;
 
     // Custom Resolved Field to test
@@ -393,6 +418,7 @@ public class DinaMapperTest {
 
     // Many to - Relation to test
     @JsonApiRelation
+    @EqualsAndHashCode.Exclude
     private List<StudentDto> classMates;
 
     @CustomFieldResolver(fieldName = "customField")
