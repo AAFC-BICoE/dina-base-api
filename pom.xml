@@ -24,10 +24,21 @@
     <module>dina-test-support</module>
   </modules>
 
+  <repositories>
+    <!-- Required for Crnk 3.0 -->
+    <repository>
+      <id>spring-libs-release</id>
+      <url>https://repo.spring.io/libs-release</url>
+    </repository>
+  </repositories>
+
   <properties>
     <!-- Compile properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>11</java.version>
+
+    <crnk.version>3.2.20200419165537</crnk.version>
+
     <!-- Build plugin properties -->
     <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
     <checkstyle.version>8.32</checkstyle.version>
@@ -46,6 +57,10 @@
     <!-- Spring -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
     <dependency>
@@ -61,6 +76,12 @@
     <dependency>
       <groupId>javax.persistence</groupId>
       <artifactId>javax.persistence-api</artifactId>
+    </dependency>
+    <!-- crnk -->
+    <dependency>
+      <groupId>io.crnk</groupId>
+      <artifactId>crnk-setup-spring-boot2</artifactId>
+      <version>${crnk.version}</version>
     </dependency>
     <!--Util -->
     <dependency>
