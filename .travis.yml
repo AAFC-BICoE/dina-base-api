@@ -19,6 +19,7 @@ deploy:
       branch: master
       jdk: openjdk8
   - provider: pages
+    skip_cleanup: true
     github_token: $GITHUB_TOKEN
     local_dir: target/generated-docs
     keep_history: true
