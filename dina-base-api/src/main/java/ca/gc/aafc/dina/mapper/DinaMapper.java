@@ -80,7 +80,7 @@ public class DinaMapper<D, E> {
   @SneakyThrows
   public D toDto(E entity, Map<Class<?>, Set<String>> selectedFieldPerClass, Set<String> relations) {
     D dto = dtoClass.getConstructor().newInstance();
-    mapSourceToTarget(entity, dto, selectedFieldPerClass, relations, new HashSet<>());
+    mapSourceToTarget(entity, dto, selectedFieldPerClass, relations, new HashMap<>());
     return dto;
   }
 
@@ -113,7 +113,7 @@ public class DinaMapper<D, E> {
     Map<Class<?>, Set<String>> selectedFieldPerClass,
     Set<String> relations
   ) {
-    mapSourceToTarget(dto, entity, selectedFieldPerClass, relations , new HashSet<>());
+    mapSourceToTarget(dto, entity, selectedFieldPerClass, relations , new HashMap<>());
   }
 
   /**
@@ -133,16 +133,16 @@ public class DinaMapper<D, E> {
    * @param relations
    *                                - relations to map
    * @param visited
-   *                                - set of visted objects in the entity graph.
+   *                                - map of visted objects and there corresponding target.
    */
   private <T,S> void mapSourceToTarget(
     @NonNull S source,
     @NonNull T target,
     @NonNull Map<Class<?>, Set<String>> selectedFieldPerClass,
     @NonNull Set<String> relations,
-    @NonNull Set<Object> visited
+    @NonNull Map<Object, Object> visited
   ) {
-    visited.add(source);
+    visited.putIfAbsent(source, target);
     Class<?> sourceType = source.getClass();
     Set<String> selectedFields = selectedFieldPerClass.getOrDefault(sourceType, new HashSet<>());
     Predicate<String> ignoreIf = field -> handlers.containsKey(sourceType)
@@ -173,7 +173,7 @@ public class DinaMapper<D, E> {
    * @param fieldName
    *                         - field name of the relation
    * @param visited
-   *                         - set of visted objects in the entity graph.
+   *                         - map of visted objects and there corresponding target.
    */
   @SneakyThrows
   private <T, S> void mapRelationsToTarget(
@@ -181,11 +181,11 @@ public class DinaMapper<D, E> {
     T target,
     Map<Class<?>, Set<String>> fieldsPerClass,
     Set<String> relations,
-    Set<Object> visited
+    Map<Object, Object> visited
   ) {
     for (String relationFieldName : relations) {
       // Each relation requires a sepearte tracking set
-      HashSet<Object> currentVisited = new HashSet<>(visited);
+      Map<Object, Object> currentVisited = new HashMap<>(visited);
 
       Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, relationFieldName);
       Class<?> targetType = getResolvedType(target, relationFieldName);
@@ -218,7 +218,7 @@ public class DinaMapper<D, E> {
    * @param targetType
    *                     - target type of new target
    * @param visited
-   *                     - set of visted objects in the entity graph.
+   *                     - map of visted objects and there corresponding target.
    * @return the mapped target
    */
   @SneakyThrows
@@ -226,10 +226,14 @@ public class DinaMapper<D, E> {
     Map<Class<?>, Set<String>> fields,
     Object source,
     Class<?> targetType,
-    Set<Object> visited
+    Map<Object, Object> visited
   ) {
-    if (source == null || visited.contains(source)) {
+    if (source == null) {
       return null;
+    }
+
+    if (visited.keySet().contains(source)) {
+      return visited.get(source);
     }
 
     Object target = targetType.getDeclaredConstructor().newInstance();
