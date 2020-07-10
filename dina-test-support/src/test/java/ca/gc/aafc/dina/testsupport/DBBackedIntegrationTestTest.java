@@ -21,7 +21,7 @@ import ca.gc.aafc.dina.testsupport.entity.ComplexObject;
 public class DBBackedIntegrationTestTest {
 
   @Inject
-  private DBBackedIntegrationTest service;
+  private DatabaseSupportService service;
 
   @Test
   public void deleteById_GivenExistingId_DeletesEntity() {

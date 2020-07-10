@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
  * constant behaviors with transactions and caching. *
  */
 @Service
-public class DBBackedIntegrationTest {
+public class DatabaseSupportService {
 
   @Inject
   private EntityManager entityManager;
@@ -31,10 +31,10 @@ public class DBBackedIntegrationTest {
   @Inject
   private EntityManagerFactory entityManagerFactory;
 
-  protected DBBackedIntegrationTest() {
+  protected DatabaseSupportService() {
   }
 
-  public DBBackedIntegrationTest(EntityManagerFactory entityManagerFactory, EntityManager entityManager) {
+  public DatabaseSupportService(EntityManagerFactory entityManagerFactory, EntityManager entityManager) {
     this.entityManagerFactory = entityManagerFactory;
     this.entityManager = entityManager;
   }
