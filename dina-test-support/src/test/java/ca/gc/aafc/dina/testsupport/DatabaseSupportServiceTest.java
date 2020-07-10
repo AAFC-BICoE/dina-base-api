@@ -18,7 +18,7 @@ import ca.gc.aafc.dina.testsupport.entity.ComplexObject;
 @SpringBootTest(classes = TestConfiguration.class)
 @Transactional
 @ActiveProfiles("test")
-public class DBBackedIntegrationTestTest {
+public class DatabaseSupportServiceTest {
 
   @Inject
   private DatabaseSupportService service;
