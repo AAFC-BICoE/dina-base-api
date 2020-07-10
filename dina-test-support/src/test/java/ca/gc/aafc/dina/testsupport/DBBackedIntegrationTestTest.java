@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.Test;
@@ -17,32 +18,35 @@ import ca.gc.aafc.dina.testsupport.entity.ComplexObject;
 @SpringBootTest(classes = TestConfiguration.class)
 @Transactional
 @ActiveProfiles("test")
-public class DBBackedIntegrationTestTest extends DBBackedIntegrationTest {
+public class DBBackedIntegrationTestTest {
+
+  @Inject
+  private DBBackedIntegrationTest service;
 
   @Test
   public void deleteById_GivenExistingId_DeletesEntity() {
     ComplexObject comp = ComplexObject.builder().name("name").build();
     
-    save(comp);
+    service.save(comp);
 
-    deleteById(ComplexObject.class, comp.getId());
-    assertNull(find(ComplexObject.class, comp.getId()));
+    service.deleteById(ComplexObject.class, comp.getId());
+    assertNull(service.find(ComplexObject.class, comp.getId()));
   }
   
   @Test
   public void deleteByProperty_NotInNewTransaction_EntityDeletes() {
     ComplexObject comp = persistEntity();
 
-    deleteByProperty(ComplexObject.class, "id", comp.getId());
-    assertNull(find(ComplexObject.class, comp.getId()));
+    service.deleteByProperty(ComplexObject.class, "id", comp.getId());
+    assertNull(service.find(ComplexObject.class, comp.getId()));
   }
 
   @Test
   public void deleteByProperty_InNewTransaction_EntityDeletes() {
     ComplexObject comp = persistEntity();
 
-    deleteByProperty(ComplexObject.class, "id", comp.getId(), true);
-    assertNull(find(ComplexObject.class, comp.getId()));
+    service.deleteByProperty(ComplexObject.class, "id", comp.getId(), true);
+    assertNull(service.find(ComplexObject.class, comp.getId()));
   }
 
   @Test
@@ -54,13 +58,13 @@ public class DBBackedIntegrationTestTest extends DBBackedIntegrationTest {
     }
 
     // Delete all entities with same name
-    deleteByProperty(ComplexObject.class, "name", persistedEntities.get(0).getName());
-    persistedEntities.forEach(pe -> assertNull(find(ComplexObject.class, pe.getId())));
+    service.deleteByProperty(ComplexObject.class, "name", persistedEntities.get(0).getName());
+    persistedEntities.forEach(pe -> assertNull(service.find(ComplexObject.class, pe.getId())));
   }
 
   private ComplexObject persistEntity() {
     ComplexObject comp = ComplexObject.builder().name("name").build();
-    runInNewTransaction(em -> em.persist(comp));
+    service.runInNewTransaction(em -> em.persist(comp));
     assertNotNull(comp.getId());
     return comp;
   }
