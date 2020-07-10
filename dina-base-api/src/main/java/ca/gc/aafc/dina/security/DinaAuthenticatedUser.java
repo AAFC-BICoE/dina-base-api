@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.security;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,8 +25,8 @@ public class DinaAuthenticatedUser {
   public DinaAuthenticatedUser(String username, String agentIdentifer, Map<String, Set<DinaRole>> rolesPerGroup) {
     this.username = username;
     this.agentIdentifer = agentIdentifer;
-    this.rolesPerGroup = rolesPerGroup;
+    this.rolesPerGroup = rolesPerGroup == null ? Collections.emptyMap() : rolesPerGroup;
 
-    this.groups = rolesPerGroup.keySet();
+    this.groups = this.rolesPerGroup.keySet();
   }
 }
