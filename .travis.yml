@@ -17,11 +17,12 @@ deploy:
     script: mvn deploy
     on:
       branch: master
-      jdk: openjdk8
+      jdk: openjdk11
   - provider: pages
+    skip_cleanup: true
     github_token: $GITHUB_TOKEN
     local_dir: target/generated-docs
     keep_history: true
     on:
       branch: master
-      jdk: openjdk8
+      jdk: openjdk11
