@@ -143,7 +143,7 @@ public class DinaMapperTest {
   }
 
   @Test
-  public void toDto_CircularRelation_CircularRelationIgnored() {
+  public void toDto_CircularRelation_CircularRelationMapped() {
     Student entity = createEntity();
     Student friend = createEntity();
 
@@ -158,10 +158,11 @@ public class DinaMapperTest {
 
     StudentDto result = mapper.toDto(entity, selectedFieldPerClass, relations);
     assertEquals(friend.getName(), result.getFriend().getName());
-    assertEquals(friend.getIq(), result.getFriend().getIq());
+    assertEquals(entity.getName(), result.getFriend().getFriend().getName());
+
     StudentDto resultClassmate = result.getClassMates().get(0);
     assertEquals(friend.getName(), resultClassmate.getName());
-    assertEquals(friend.getIq(), resultClassmate.getIq());
+    assertEquals(entity.getName(), resultClassmate.getFriend().getName());
   }
 
   @Test
@@ -287,7 +288,7 @@ public class DinaMapperTest {
   }
 
   @Test
-  public void applyDtoToEntity_CircularRelation_CircularRelationIgnored() {
+  public void applyDtoToEntity_CircularRelation_CircularRelationMapped() {
     Student result = new Student();
 
     StudentDto dtoToMap = createDTO();
@@ -304,10 +305,11 @@ public class DinaMapperTest {
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, relations);
     assertEquals(relationToMap.getName(), result.getFriend().getName());
-    assertEquals(relationToMap.getIq(), result.getFriend().getIq());
+    assertEquals(dtoToMap.getName(), result.getFriend().getFriend().getName());
+
     Student resultClassmate = result.getClassMates().get(0);
     assertEquals(relationToMap.getName(), resultClassmate.getName());
-    assertEquals(relationToMap.getIq(), resultClassmate.getIq());
+    assertEquals(dtoToMap.getName(), resultClassmate.getFriend().getName());
   }
 
     @Test
