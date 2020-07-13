@@ -1,15 +1,14 @@
 package ca.gc.aafc.dina.mapper;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -173,19 +172,24 @@ public class DinaMapper<D, E> {
     Set<String> relations
   ) {
     for (String relationFieldName : relations) {
+      if (!hasfield(source.getClass(), relationFieldName)
+          || !hasfield(target.getClass(), relationFieldName)) {
+        continue;
+      }
+
       Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, relationFieldName);
       Class<?> targetType = getResolvedType(target, relationFieldName);
 
-      Optional<Object> sourceRelation = getFieldIfExsists(source, relationFieldName);
+      Object sourceRelation = PropertyUtils.getProperty(source, relationFieldName);
       Object targetRelation = null;
 
-      if (sourceRelation.isPresent()) {
+      if (sourceRelation != null) {
         if (isCollection(sourceRelationType)) {
-          targetRelation = ((Collection<?>) sourceRelation.get()).stream()
+          targetRelation = ((Collection<?>) sourceRelation).stream()
             .map(ele -> mapRelation(fieldsPerClass, ele, targetType))
             .collect(Collectors.toCollection(ArrayList::new));
         } else {
-          targetRelation = mapRelation(fieldsPerClass, sourceRelation.get(), targetType);
+          targetRelation = mapRelation(fieldsPerClass, sourceRelation, targetType);
         }
       }
 
@@ -337,24 +341,16 @@ public class DinaMapper<D, E> {
   }
 
   /**
-   * Returns an optional containing the value for a given sources given field.
-   * Optional is empty if the sources field is null or the source does not have a
-   * field with that name.
+   * Returns true if the given class has the given field.
    * 
-   * @param source
-   *                 - source to parse
-   * @param field
-   *                 - field name of the field to parse
-   * @return optional containing the value for a given sources given field, or empty
-   * @throws IllegalAccessException
-   * @throws InvocationTargetException
+   * @param cls
+   *                     - class to check
+   * @param fieldName-
+   *                     field to check
+   * @return true if the given class has the given field.
    */
-  private Optional<Object> getFieldIfExsists(Object source, String field)
-      throws IllegalAccessException, InvocationTargetException {
-    try {
-      return Optional.ofNullable(PropertyUtils.getProperty(source, field));
-    } catch (NoSuchMethodException e) {
-      return Optional.empty();
-    }
+  private static boolean hasfield(Class<?> cls, String fieldName) {
+    return Arrays.stream(cls.getDeclaredFields())
+        .anyMatch(f -> f.getName().equalsIgnoreCase(fieldName));
   }
 }
