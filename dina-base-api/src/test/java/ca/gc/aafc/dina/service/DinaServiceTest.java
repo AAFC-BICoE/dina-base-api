@@ -30,7 +30,6 @@ import ca.gc.aafc.dina.TestConfiguration;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.DepartmentType;
 import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.service.DinaService;
 import lombok.NonNull;
 
 @Transactional
@@ -233,17 +232,15 @@ public class DinaServiceTest {
     }
 
     @Override
-    protected Department preCreate(Department entity) {
+    protected void preCreate(Department entity) {
       entity.setUuid(UUID.randomUUID());
-      return entity;
     }
 
     @Override
-    protected Department preUpdate(Department entity) {
+    protected void preUpdate(Department entity) {
       DepartmentType type = DepartmentType.builder().name("name").build();
       baseDAO.create(type);
       entity.setDepartmentType(type);
-      return entity;
     }
 
     @Override
