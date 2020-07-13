@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.mapper;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -174,16 +176,16 @@ public class DinaMapper<D, E> {
       Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, relationFieldName);
       Class<?> targetType = getResolvedType(target, relationFieldName);
 
-      Object sourceRelation = PropertyUtils.getProperty(source, relationFieldName);
+      Optional<Object> sourceRelation = getFieldIfExsists(source, relationFieldName);
       Object targetRelation = null;
 
-      if (sourceRelation != null) {
+      if (sourceRelation.isPresent()) {
         if (isCollection(sourceRelationType)) {
-          targetRelation = ((Collection<?>) sourceRelation).stream()
+          targetRelation = ((Collection<?>) sourceRelation.get()).stream()
             .map(ele -> mapRelation(fieldsPerClass, ele, targetType))
             .collect(Collectors.toCollection(ArrayList::new));
         } else {
-          targetRelation = mapRelation(fieldsPerClass, sourceRelation, targetType);
+          targetRelation = mapRelation(fieldsPerClass, sourceRelation.get(), targetType);
         }
       }
 
@@ -332,5 +334,27 @@ public class DinaMapper<D, E> {
    */
   private static List<Field> getRelations(Class<?> cls) {
     return FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class);
+  }
+
+  /**
+   * Returns an optional containing the value for a given sources given field.
+   * Optional is empty if the sources field is null or the source does not have a
+   * field with that name.
+   * 
+   * @param source
+   *                 - source to parse
+   * @param field
+   *                 - field name of the field to parse
+   * @return optional containing the value for a given sources given field, or empty
+   * @throws IllegalAccessException
+   * @throws InvocationTargetException
+   */
+  private Optional<Object> getFieldIfExsists(Object source, String field)
+      throws IllegalAccessException, InvocationTargetException {
+    try {
+      return Optional.ofNullable(PropertyUtils.getProperty(source, field));
+    } catch (NoSuchMethodException e) {
+      return Optional.empty();
+    }
   }
 }
