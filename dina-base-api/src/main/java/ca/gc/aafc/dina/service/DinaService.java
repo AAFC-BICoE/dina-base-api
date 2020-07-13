@@ -140,7 +140,6 @@ public abstract class DinaService<E extends DinaEntity> {
    * Run before the {@link DinaService#create()} method.
    *
    * @param entity entity being created by {@link DinaService#create()}
-   * @return returns the created entity.
    */
   protected void preCreate(E entity) {
     // Defaults to do nothing
@@ -150,7 +149,6 @@ public abstract class DinaService<E extends DinaEntity> {
    * Run before the {@link DinaService#update()} method.
    *
    * @param entity entity being updated by {@link DinaService#update()}
-   * @return returns the updated entity.
    */
   protected void preUpdate(E entity) {
     // Defaults to do nothing
