@@ -272,7 +272,12 @@ public class DinaMapper<D, E> {
    *                - map to fill
    */
   private static void parseHandlers(Class<?> clazz, Map<Class<?>, CustomFieldHandler<?, ?>> map) {
-    Class<?> relatedEntity = clazz.getAnnotation(RelatedEntity.class).value();
+    RelatedEntity annotation = clazz.getAnnotation(RelatedEntity.class);
+    if (annotation == null) {
+      return;
+    }
+
+    Class<?> relatedEntity = annotation.value();
 
     if (map.containsKey(clazz) || map.containsKey(relatedEntity)) {
       return;
