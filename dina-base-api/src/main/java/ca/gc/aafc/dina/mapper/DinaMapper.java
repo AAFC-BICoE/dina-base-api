@@ -344,9 +344,9 @@ public class DinaMapper<D, E> {
    * Returns true if the given class has the given field.
    * 
    * @param cls
-   *                     - class to check
-   * @param fieldName-
-   *                     field to check
+   *                    - class to check
+   * @param fieldName
+   *                    - field to check
    * @return true if the given class has the given field.
    */
   private static boolean hasfield(Class<?> cls, String fieldName) {
