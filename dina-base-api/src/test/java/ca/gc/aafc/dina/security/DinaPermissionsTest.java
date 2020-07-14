@@ -40,7 +40,7 @@ public class DinaPermissionsTest {
     KeycloakAuthenticationToken mockToken = Mockito.mock(
       KeycloakAuthenticationToken.class,
       Answers.RETURNS_DEEP_STUBS);
-    mockToken(Arrays.asList("/group 1/staff", "/group 2/collection-manager"), mockToken);
+    mockToken(Arrays.asList("/" + GROUP_1 + "/staff"), mockToken);
 
     SecurityContextHolder.getContext().setAuthentication(mockToken);
   }
