@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.security;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Arrays;
@@ -15,6 +16,7 @@ import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import ca.gc.aafc.dina.TestConfiguration;
@@ -46,10 +48,19 @@ public class DinaPermissionsTest {
   }
 
   @Test
-  public void create() {
+  public void create_AuthorizedGroup_CreatesObject() {
     PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
-    PersonDTO result =  dinaRepository.create(dto);
+    PersonDTO result = dinaRepository.create(dto);
     assertNotNull(result.getUuid());
+  }
+
+  @Test
+  public void create_UnAuthorized_ThrowsAccessDeniedException() {
+    PersonDTO dto = PersonDTO.builder()
+      .uuid(UUID.randomUUID())
+      .group("Invalid_Group")
+      .name("name").build();
+    assertThrows(AccessDeniedException.class, () -> dinaRepository.create(dto));
   }
 
   /**
