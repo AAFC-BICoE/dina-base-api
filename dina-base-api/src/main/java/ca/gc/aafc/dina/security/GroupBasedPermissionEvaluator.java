@@ -6,6 +6,7 @@ import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
 
+import ca.gc.aafc.dina.dto.DinaDto;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,8 +23,13 @@ public class GroupBasedPermissionEvaluator extends SecurityExpressionRoot
   }
 
   public boolean hasDinaPermission(DinaAuthenticatedUser user, Object targetDomainObject) {
+    if (user == null || !(targetDomainObject instanceof DinaDto)) {
+      return false;
+    }
+
     Set<String> userGroups = user.getGroups();
-    return false;
+    DinaDto dto = (DinaDto) targetDomainObject;
+    return userGroups.stream().anyMatch(dto.getGroup()::equalsIgnoreCase);
   }
 
   @Override

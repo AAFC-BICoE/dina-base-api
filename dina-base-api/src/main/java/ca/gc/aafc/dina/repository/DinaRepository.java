@@ -18,7 +18,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
@@ -184,7 +184,7 @@ public class DinaRepository<D, E extends DinaEntity>
   @Override
   @SneakyThrows
   @SuppressWarnings("unchecked")
-  @PostAuthorize("hasDinaPermission(@currentUser, returnObject)")
+  @PreAuthorize("hasDinaPermission(@currentUser, #resource)")
   public <S extends D> S create(S resource) {
     E entity = entityClass.newInstance();
 
