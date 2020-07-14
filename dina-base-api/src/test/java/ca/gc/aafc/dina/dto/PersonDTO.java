@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @RelatedEntity(Person.class)
-public class PersonDTO implements DinaDto {
+public class PersonDTO {
 
   @JsonApiId
   private UUID uuid;
