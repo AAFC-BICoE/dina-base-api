@@ -164,6 +164,11 @@ public abstract class DinaService<E extends DinaEntity> {
     // Defaults to do nothing
   };
 
+  /**
+   * Proxy Method to invoke security authroization
+   *
+   * @param entity
+   */
   @PreAuthorize("hasDinaPermission(@currentUser, #entity)")
   public void authorize(E entity) {
   }
