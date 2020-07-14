@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.mapper;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -171,6 +172,11 @@ public class DinaMapper<D, E> {
     Set<String> relations
   ) {
     for (String relationFieldName : relations) {
+      if (!hasfield(source.getClass(), relationFieldName)
+          || !hasfield(target.getClass(), relationFieldName)) {
+        continue;
+      }
+
       Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, relationFieldName);
       Class<?> targetType = getResolvedType(target, relationFieldName);
 
@@ -272,7 +278,12 @@ public class DinaMapper<D, E> {
    *                - map to fill
    */
   private static void parseHandlers(Class<?> clazz, Map<Class<?>, CustomFieldHandler<?, ?>> map) {
-    Class<?> relatedEntity = clazz.getAnnotation(RelatedEntity.class).value();
+    RelatedEntity annotation = clazz.getAnnotation(RelatedEntity.class);
+    if (annotation == null) {
+      return;
+    }
+
+    Class<?> relatedEntity = annotation.value();
 
     if (map.containsKey(clazz) || map.containsKey(relatedEntity)) {
       return;
@@ -327,5 +338,19 @@ public class DinaMapper<D, E> {
    */
   private static List<Field> getRelations(Class<?> cls) {
     return FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class);
+  }
+
+  /**
+   * Returns true if the given class has the given field.
+   * 
+   * @param cls
+   *                    - class to check
+   * @param fieldName
+   *                    - field to check
+   * @return true if the given class has the given field.
+   */
+  private static boolean hasfield(Class<?> cls, String fieldName) {
+    return Arrays.stream(cls.getDeclaredFields())
+        .anyMatch(f -> f.getName().equalsIgnoreCase(fieldName));
   }
 }
