@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.security;
 
 import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Arrays;
@@ -10,6 +11,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -61,6 +63,29 @@ public class DinaPermissionsTest {
       .group("Invalid_Group")
       .name("name").build();
     assertThrows(AccessDeniedException.class, () -> dinaRepository.create(dto));
+  }
+
+  @Test
+  public void save_AuthorizedGroup_UpdatesObject() {
+    String expectedName = RandomStringUtils.random(6);
+    Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
+    baseDAO.create(persisted);
+
+    PersonDTO updateDto = PersonDTO.builder().uuid(persisted.getUuid()).name(expectedName).build();
+    dinaRepository.save(updateDto);
+
+    String resultName = baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class).getName();
+    assertEquals(expectedName, resultName);
+  }
+
+  @Test
+  public void save_UnAuthorizedGroup_ThrowsAccessDeniedException() {
+    String expectedName = RandomStringUtils.random(6);
+    Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
+    baseDAO.create(persisted);
+
+    PersonDTO updateDto = PersonDTO.builder().uuid(persisted.getUuid()).name(expectedName).build();
+    assertThrows(AccessDeniedException.class, () -> dinaRepository.create(updateDto));
   }
 
   /**
