@@ -122,7 +122,7 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   @Override
-  @PostFilter("hasPermission(filterObject, 'read')")
+  @PostFilter("hasDinaPermission(@currentUser, filterObject)")
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
 
     String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);

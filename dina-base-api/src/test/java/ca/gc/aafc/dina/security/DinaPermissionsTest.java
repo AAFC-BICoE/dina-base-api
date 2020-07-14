@@ -49,10 +49,8 @@ public class DinaPermissionsTest {
   @Test
   public void findAll() {
 
-    for (int i = 0; i < 10; i++) {
-      Person dto = Person.builder().uuid(UUID.randomUUID()).name("name").build();
-      baseDAO.create(dto);
-    }
+    Person dto = Person.builder().uuid(UUID.randomUUID()).name("name").build();
+    baseDAO.create(dto);
 
     List<PersonDTO> result = dinaRepository.findAll(null, new QuerySpec(PersonDTO.class));
     assertNotNull(result);

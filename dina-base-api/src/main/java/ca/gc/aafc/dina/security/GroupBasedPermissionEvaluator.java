@@ -1,34 +1,34 @@
 package ca.gc.aafc.dina.security;
 
-import java.io.Serializable;
+import java.util.Set;
 
-import org.springframework.security.access.PermissionEvaluator;
+import org.springframework.security.access.expression.SecurityExpressionRoot;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
 
-import ca.gc.aafc.dina.entity.DinaEntity;
+import lombok.Getter;
+import lombok.Setter;
 
-public class GroupBasedPermissionEvaluator implements PermissionEvaluator {
+@Getter
+@Setter
+public class GroupBasedPermissionEvaluator extends SecurityExpressionRoot
+    implements MethodSecurityExpressionOperations {
 
-  @Override
-  public boolean hasPermission(Authentication auth, Object targetDomainObject, Object permission) {
-    if ((auth == null) || (targetDomainObject == null) || !(permission instanceof String)
-        || !(targetDomainObject instanceof DinaEntity)) {
-      return false;
-    }
+  private Object filterObject;
+  private Object returnObject;
 
-    DinaEntity entity = (DinaEntity) targetDomainObject;
+  public GroupBasedPermissionEvaluator(Authentication authentication) {
+    super(authentication);
+  }
 
+  public boolean hasDinaPermission(DinaAuthenticatedUser user, Object targetDomainObject) {
+    Set<String> userGroups = user.getGroups();
     return false;
   }
 
   @Override
-  public boolean hasPermission(Authentication auth, Serializable targetId, String targetType,
-      Object permission) {
-    if ((auth == null) || (targetType == null) || !(permission instanceof String)) {
-      return false;
-    }
-    // TODO Auto-generated method stub
-    return false;
+  public Object getThis() {
+    return this;
   }
 
 }

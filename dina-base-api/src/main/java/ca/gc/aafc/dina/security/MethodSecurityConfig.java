@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
@@ -19,8 +18,7 @@ public class MethodSecurityConfig extends GlobalMethodSecurityConfiguration {
 
   @Override
   protected MethodSecurityExpressionHandler createExpressionHandler() {
-    DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
-    handler.setPermissionEvaluator(new GroupBasedPermissionEvaluator());
+    CustomMethodSecurityExpressionHandler handler = new CustomMethodSecurityExpressionHandler();
     handler.setApplicationContext(context);
     return handler;
   }
