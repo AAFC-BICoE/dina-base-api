@@ -18,6 +18,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.springframework.security.access.prepost.PostFilter;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
@@ -121,6 +122,7 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   @Override
+  @PostFilter("hasPermission(filterObject, 'read')")
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
 
     String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
