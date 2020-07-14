@@ -33,6 +33,8 @@ public class Person implements DinaEntity {
 
   private String name;
 
+  private String group;
+
   private String[] nickNames;
 
   @OneToOne()

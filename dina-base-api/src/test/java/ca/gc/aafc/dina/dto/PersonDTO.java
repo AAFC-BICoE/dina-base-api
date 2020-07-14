@@ -18,12 +18,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @RelatedEntity(Person.class)
-public class PersonDTO {
+public class PersonDTO implements DinaDto {
 
   @JsonApiId
   private UUID uuid;
 
   private String name;
+
+  private String group;
 
   private String[] nickNames;
 
