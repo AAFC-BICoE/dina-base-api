@@ -18,7 +18,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.springframework.security.access.prepost.PostFilter;
+import org.springframework.security.access.prepost.PostAuthorize;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
@@ -122,7 +122,6 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   @Override
-  @PostFilter("hasDinaPermission(@currentUser, filterObject)")
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
 
     String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
@@ -185,6 +184,7 @@ public class DinaRepository<D, E extends DinaEntity>
   @Override
   @SneakyThrows
   @SuppressWarnings("unchecked")
+  @PostAuthorize("hasDinaPermission(@currentUser, returnObject)")
   public <S extends D> S create(S resource) {
     E entity = entityClass.newInstance();
 
