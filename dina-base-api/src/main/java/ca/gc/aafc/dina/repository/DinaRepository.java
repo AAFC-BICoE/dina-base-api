@@ -18,7 +18,6 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.springframework.security.access.prepost.PreAuthorize;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
