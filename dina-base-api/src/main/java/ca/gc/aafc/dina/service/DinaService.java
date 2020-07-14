@@ -10,6 +10,7 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
@@ -162,5 +163,9 @@ public abstract class DinaService<E extends DinaEntity> {
   protected void preDelete(E entity) {
     // Defaults to do nothing
   };
+
+  @PreAuthorize("hasDinaPermission(@currentUser, #entity)")
+  public void authorize(E entity) {
+  }
 
 }

@@ -81,11 +81,14 @@ public class DinaPermissionsTest {
   @Test
   public void save_UnAuthorizedGroup_ThrowsAccessDeniedException() {
     String expectedName = RandomStringUtils.random(6);
-    Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
+    Person persisted = Person.builder()
+      .uuid(UUID.randomUUID())
+      .group("Invalid_Group")
+      .name("name").build();
     baseDAO.create(persisted);
 
     PersonDTO updateDto = PersonDTO.builder().uuid(persisted.getUuid()).name(expectedName).build();
-    assertThrows(AccessDeniedException.class, () -> dinaRepository.create(updateDto));
+    assertThrows(AccessDeniedException.class, () -> dinaRepository.save(updateDto));
   }
 
   /**

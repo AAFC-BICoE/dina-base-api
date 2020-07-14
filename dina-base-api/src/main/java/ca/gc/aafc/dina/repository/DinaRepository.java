@@ -161,6 +161,7 @@ public class DinaRepository<D, E extends DinaEntity>
     Object id = PropertyUtils.getProperty(resource, idFieldName);
 
     E entity = dinaService.findOne(id, entityClass);
+    dinaService.authorize(entity);
 
     if (entity == null) {
       throw new ResourceNotFoundException(
@@ -184,7 +185,6 @@ public class DinaRepository<D, E extends DinaEntity>
   @Override
   @SneakyThrows
   @SuppressWarnings("unchecked")
-  @PreAuthorize("hasDinaPermission(@currentUser, #resource)")
   public <S extends D> S create(S resource) {
     E entity = entityClass.newInstance();
 
@@ -200,7 +200,7 @@ public class DinaRepository<D, E extends DinaEntity>
     dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
 
     linkRelations(entity, resourceInformation.getRelationshipFields());
-
+    dinaService.authorize(entity);
     dinaService.create(entity);
 
     return (S) dinaMapper.toDto(entity, entityFieldsPerClass, relations);
