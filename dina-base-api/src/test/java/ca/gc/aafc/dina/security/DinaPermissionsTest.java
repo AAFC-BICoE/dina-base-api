@@ -33,6 +33,8 @@ public class DinaPermissionsTest {
   @Inject
   private BaseDAO baseDAO;
 
+  private static final String GROUP_1 = "group 1";
+
   @BeforeEach
   public void beforeEach() {
     KeycloakAuthenticationToken mockToken = Mockito.mock(
@@ -45,7 +47,7 @@ public class DinaPermissionsTest {
 
   @Test
   public void create() {
-    PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).name("name").build();
+    PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
     PersonDTO result =  dinaRepository.create(dto);
     assertNotNull(result.getUuid());
   }
