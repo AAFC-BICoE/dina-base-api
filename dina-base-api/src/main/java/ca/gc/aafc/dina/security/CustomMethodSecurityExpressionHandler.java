@@ -7,6 +7,9 @@ import org.springframework.security.authentication.AuthenticationTrustResolver;
 import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.core.Authentication;
 
+/**
+ * Custom security expression handler using a custom {@link SecurityExpressionRoot}
+ */
 public class CustomMethodSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
   private AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
 

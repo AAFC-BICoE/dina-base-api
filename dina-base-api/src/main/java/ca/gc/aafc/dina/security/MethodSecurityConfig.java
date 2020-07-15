@@ -8,6 +8,11 @@ import org.springframework.security.access.expression.method.MethodSecurityExpre
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 
+/**
+ * Enables spring method security using a custom spring expression handler.
+ * Configuration depends on property keycloak.enabled = true. Spring method
+ * security will not be active without keycloak.
+ */
 @Configuration
 @ConditionalOnProperty(value = "keycloak.enabled", havingValue = "true")
 @EnableGlobalMethodSecurity(prePostEnabled = true)

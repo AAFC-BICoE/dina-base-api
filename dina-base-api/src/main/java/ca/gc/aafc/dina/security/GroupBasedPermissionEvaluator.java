@@ -11,6 +11,10 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Custom spring security expression root. Can override or add custom spring
+ * security expressions for use with spring method security.
+ */
 @Getter
 @Setter
 public class GroupBasedPermissionEvaluator extends SecurityExpressionRoot
@@ -23,6 +27,15 @@ public class GroupBasedPermissionEvaluator extends SecurityExpressionRoot
     super(authentication);
   }
 
+  /**
+   * Returns true if the given authenticated user is a member of the group the
+   * given target object belongs to.
+   * 
+   * @param user               - Dina user being authenticated
+   * @param targetDomainObject - Target resouce of the request
+   * @return - true if the given authenticated user is a member of the group the
+   *         given target object belongs to.
+   */
   public boolean hasDinaPermission(DinaAuthenticatedUser user, Object targetDomainObject) {
     if (user == null || !(targetDomainObject instanceof DinaEntity)) {
       return false;

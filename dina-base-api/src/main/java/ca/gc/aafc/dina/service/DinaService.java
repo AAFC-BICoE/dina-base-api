@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.security.MethodSecurityConfig;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -165,7 +166,9 @@ public abstract class DinaService<E extends DinaEntity> {
   };
 
   /**
-   * Proxy Method to invoke security authroization
+   * Proxy Method to invoke security authorization. This method itself does
+   * nothing, spring proxies must be called from a seperate bean. @PreAuthorize is
+   * only enabled with keycloak, see {@link MethodSecurityConfig}.
    *
    * @param entity
    */
