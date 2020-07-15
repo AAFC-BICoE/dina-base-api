@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.entity;
 import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -33,6 +34,7 @@ public class Person implements DinaEntity {
 
   private String name;
 
+  @Column(name = "group_name")
   private String group;
 
   private String[] nickNames;
