@@ -160,7 +160,7 @@ public class DinaRepository<D, E extends DinaEntity>
     Object id = PropertyUtils.getProperty(resource, idFieldName);
 
     E entity = dinaService.findOne(id, entityClass);
-    dinaService.authorize(entity);
+    dinaService.authorizeByGroup(entity);
 
     if (entity == null) {
       throw new ResourceNotFoundException(
@@ -199,7 +199,7 @@ public class DinaRepository<D, E extends DinaEntity>
     dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
 
     linkRelations(entity, resourceInformation.getRelationshipFields());
-    dinaService.authorize(entity);
+    dinaService.authorizeByGroup(entity);
     dinaService.create(entity);
 
     return (S) dinaMapper.toDto(entity, entityFieldsPerClass, relations);
@@ -212,7 +212,7 @@ public class DinaRepository<D, E extends DinaEntity>
       throw new ResourceNotFoundException(
           resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
-    dinaService.authorize(entity);
+    dinaService.authorizeByGroup(entity);
     dinaService.delete(entity);
   }
 
