@@ -142,6 +142,29 @@ public class DinaMapperTest {
   }
 
   @Test
+  public void toDto_CircularRelation_CircularRelationMapped() {
+    Student entity = createEntity();
+    Student friend = createEntity();
+
+    entity.setFriend(friend);
+    entity.getClassMates().add(friend);
+    friend.setFriend(entity);
+    friend.getClassMates().add(entity);
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
+      Student.class, ImmutableSet.of("name", "iq"));
+    Set<String> relations = ImmutableSet.of("friend", "classMates");
+
+    StudentDto result = mapper.toDto(entity, selectedFieldPerClass, relations);
+    assertEquals(friend.getName(), result.getFriend().getName());
+    assertEquals(entity.getName(), result.getFriend().getFriend().getName());
+
+    StudentDto resultClassmate = result.getClassMates().get(0);
+    assertEquals(friend.getName(), resultClassmate.getName());
+    assertEquals(entity.getName(), resultClassmate.getFriend().getName());
+  }
+
+  @Test
   public void applyDtoToEntity_BaseAttributesTest_SelectedFieldsMapped() {
     Student result = new Student();
     StudentDto dtoToMap = createDTO();
@@ -261,6 +284,31 @@ public class DinaMapperTest {
     assertNull(result.getFriend());
     assertNull(result.getNickNames());
     assertNull(result.getClassMates());
+  }
+
+  @Test
+  public void applyDtoToEntity_CircularRelation_CircularRelationMapped() {
+    Student result = new Student();
+
+    StudentDto dtoToMap = createDTO();
+    StudentDto relationToMap = createDTO();
+
+    dtoToMap.setFriend(relationToMap);
+    dtoToMap.getClassMates().add(relationToMap);
+    relationToMap.setFriend(dtoToMap);
+    relationToMap.getClassMates().add(dtoToMap);
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass =
+        ImmutableMap.of(StudentDto.class, ImmutableSet.of("name", "iq"));
+    Set<String> relations = ImmutableSet.of("friend", "classMates");
+
+    mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, relations);
+    assertEquals(relationToMap.getName(), result.getFriend().getName());
+    assertEquals(dtoToMap.getName(), result.getFriend().getFriend().getName());
+
+    Student resultClassmate = result.getClassMates().get(0);
+    assertEquals(relationToMap.getName(), resultClassmate.getName());
+    assertEquals(dtoToMap.getName(), resultClassmate.getFriend().getName());
   }
 
   @Test
