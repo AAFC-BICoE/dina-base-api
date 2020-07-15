@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,7 +82,7 @@ public class DinaMapper<D, E> {
   @SneakyThrows
   public D toDto(E entity, Map<Class<?>, Set<String>> selectedFieldPerClass, Set<String> relations) {
     D dto = dtoClass.getConstructor().newInstance();
-    mapSourceToTarget(entity, dto, selectedFieldPerClass, relations, new HashMap<>());
+    mapSourceToTarget(entity, dto, selectedFieldPerClass, relations, new IdentityHashMap<>());
     return dto;
   }
 
@@ -114,7 +115,7 @@ public class DinaMapper<D, E> {
     Map<Class<?>, Set<String>> selectedFieldPerClass,
     Set<String> relations
   ) {
-    mapSourceToTarget(dto, entity, selectedFieldPerClass, relations , new HashMap<>());
+    mapSourceToTarget(dto, entity, selectedFieldPerClass, relations , new IdentityHashMap<>());
   }
 
   /**
@@ -191,7 +192,7 @@ public class DinaMapper<D, E> {
       }
 
       // Each relation requires a sepearte tracking set
-      Map<Object, Object> currentVisited = new HashMap<>(visited);
+      Map<Object, Object> currentVisited = new IdentityHashMap<>(visited);
 
       Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, relationFieldName);
       Class<?> targetType = getResolvedType(target, relationFieldName);

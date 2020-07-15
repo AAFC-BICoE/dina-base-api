@@ -26,7 +26,6 @@ import ca.gc.aafc.dina.entity.ComplexObject;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 public class DinaMapperTest {
@@ -408,7 +407,6 @@ public class DinaMapperTest {
 
     // Relation to test
     @JsonApiRelation
-    @EqualsAndHashCode.Exclude
     private StudentDto friend;
 
     // Custom Resolved Field to test
@@ -420,7 +418,6 @@ public class DinaMapperTest {
 
     // Many to - Relation to test
     @JsonApiRelation
-    @EqualsAndHashCode.Exclude
     private List<StudentDto> classMates;
 
     // Relation with no related entity
@@ -453,7 +450,6 @@ public class DinaMapperTest {
     private String[] nickNames;
 
     // Relation to test
-    @EqualsAndHashCode.Exclude
     private Student friend;
 
     // Custom Resolved Field to test
@@ -463,7 +459,6 @@ public class DinaMapperTest {
     private NestedResolverRelation relationWithResolver;
 
     // Many to - Relation to test
-    @EqualsAndHashCode.Exclude
     private List<Student> classMates;
 
   }
