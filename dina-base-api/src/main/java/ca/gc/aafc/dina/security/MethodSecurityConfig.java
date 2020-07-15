@@ -23,7 +23,7 @@ public class MethodSecurityConfig extends GlobalMethodSecurityConfiguration {
 
   @Override
   protected MethodSecurityExpressionHandler createExpressionHandler() {
-    CustomMethodSecurityExpressionHandler handler = new CustomMethodSecurityExpressionHandler();
+    DinaSecurityExpressionHandler handler = new DinaSecurityExpressionHandler();
     handler.setApplicationContext(context);
     return handler;
   }

@@ -10,7 +10,7 @@ import org.springframework.security.core.Authentication;
 /**
  * Custom security expression handler using a custom {@link SecurityExpressionRoot}
  */
-public class CustomMethodSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
+public class DinaSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
   private AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
 
   @Override
