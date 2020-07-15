@@ -312,7 +312,7 @@ public class DinaMapperTest {
     assertEquals(dtoToMap.getName(), resultClassmate.getFriend().getName());
   }
 
-    @Test
+  @Test
   public void mapperInit_IncorrectResolverReturnTypes_ThrowsIllegalState() {
     assertThrows(
       IllegalStateException.class,
@@ -422,6 +422,10 @@ public class DinaMapperTest {
     @JsonApiRelation
     @EqualsAndHashCode.Exclude
     private List<StudentDto> classMates;
+
+    // Relation with no related entity
+    @JsonApiRelation
+    private NoRelatedEntityDTO noRelatedEntityDTO;
 
     @CustomFieldResolver(fieldName = "customField")
     public String customFieldToDto(Student entity) {
@@ -559,5 +563,18 @@ public class DinaMapperTest {
     public String customFieldToDto(String entity) {
       return null;
     }
+  }
+
+  /**
+   * Relation without a related entity
+   */
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static final class NoRelatedEntityDTO {
+
+    private String customField;
+
   }
 }
