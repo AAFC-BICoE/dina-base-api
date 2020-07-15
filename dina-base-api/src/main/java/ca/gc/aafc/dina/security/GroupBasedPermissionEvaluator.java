@@ -20,7 +20,20 @@ import lombok.Setter;
 public class GroupBasedPermissionEvaluator extends SecurityExpressionRoot
     implements MethodSecurityExpressionOperations {
 
+  /**
+   * <p>
+   * filterObject and returnObject are used to fullfill the requirements of
+   * implementing the {@link MethodSecurityExpressionOperations}. Must be
+   * implemented if you want to use filtering in method security expressions.
+   * <p>
+   * <p>
+   * You can then use expressions such as
+   * {@code @PostFilter("hasPermission(filterObject, 'READ')) }
+   * <p>
+   */
   private Object filterObject;
+
+  /** see {@link GroupBasedPermissionEvaluator#filterObject} */
   private Object returnObject;
 
   public GroupBasedPermissionEvaluator(Authentication authentication) {
