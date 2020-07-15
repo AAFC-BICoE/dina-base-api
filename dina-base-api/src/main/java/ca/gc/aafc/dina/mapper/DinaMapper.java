@@ -3,7 +3,6 @@ package ca.gc.aafc.dina.mapper;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +35,7 @@ public class DinaMapper<D, E> {
 
   private final Class<D> dtoClass;
   private final Map<Class<?>, CustomFieldHandler<?, ?>> handlers;
+  private final Map<Class<?>, Set<String>> fieldsPerClass;
 
   /**
    * <p>
@@ -52,8 +52,9 @@ public class DinaMapper<D, E> {
    * @param dtoClass
    */
   public DinaMapper(@NonNull Class<D> dtoClass) {
-    this(dtoClass, new HashMap<>());
+    this(dtoClass, new HashMap<>(), new HashMap<>());
     parseHandlers(dtoClass, handlers);
+    parseFieldsPerClass(dtoClass, fieldsPerClass);
   }
 
   /**
@@ -329,6 +330,38 @@ public class DinaMapper<D, E> {
     }
   }
 
+  /**
+   * Returns a map of fields names per class of a given Dtos entity graph.
+   * 
+   * @param dto - DTO to parse
+   * @param map - map to fill
+   */
+  private static void parseFieldsPerClass(Class<?> dto, Map<Class<?>, Set<String>> map) {
+    RelatedEntity annotation = dto.getAnnotation(RelatedEntity.class);
+    if (annotation == null || map.containsKey(dto) || map.containsKey(annotation.value())) {
+      return;
+    }
+
+    Class<?> relatedEntity = annotation.value();
+
+    map.put(dto, parseFieldNames(dto));
+    map.put(relatedEntity, parseFieldNames(relatedEntity));
+
+    for (Field f : getRelations(dto)) {
+      Class<?> dtoType = isCollection(f.getType()) ? getGenericType(dto, f.getName()) : f.getType();
+      parseFieldsPerClass(dtoType, map);
+    }
+  }
+
+  /**
+   * Returns a set of field names for a given class.
+   * 
+   * @param cls - class to parse
+   * @return set of field names for a given class.
+   */
+  private static Set<String> parseFieldNames(Class<?> cls) {
+    return Stream.of(cls.getDeclaredFields()).map(Field::getName).collect(Collectors.toSet());
+  }
 
   /**
    * Returns the resolved type of a fieldname for a given source. If the type is a
@@ -377,8 +410,7 @@ public class DinaMapper<D, E> {
    *                    - field to check
    * @return true if the given class has the given field.
    */
-  private static boolean hasfield(Class<?> cls, String fieldName) {
-    return Arrays.stream(cls.getDeclaredFields())
-        .anyMatch(f -> f.getName().equalsIgnoreCase(fieldName));
+  private boolean hasfield(Class<?> cls, String fieldName) {
+    return fieldsPerClass.containsKey(cls) && fieldsPerClass.get(cls).contains(fieldName);
   }
 }
