@@ -212,6 +212,7 @@ public class DinaRepository<D, E extends DinaEntity>
       throw new ResourceNotFoundException(
           resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
+    dinaService.authorize(entity);
     dinaService.delete(entity);
   }
 

@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.security;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -89,6 +90,28 @@ public class DinaPermissionsTest {
 
     PersonDTO updateDto = PersonDTO.builder().uuid(persisted.getUuid()).name(expectedName).build();
     assertThrows(AccessDeniedException.class, () -> dinaRepository.save(updateDto));
+  }
+
+  @Test
+  public void delete_AuthorizedGroup_UpdatesObject() {
+    Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
+    baseDAO.create(persisted);
+
+    assertNotNull(baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class));
+    dinaRepository.delete(persisted.getUuid());
+    assertNull(baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class));
+  }
+
+  @Test
+  public void delete_UnAuthorizedGroup_ThrowsAccessDeniedException() {
+    Person persisted = Person.builder()
+      .uuid(UUID.randomUUID())
+      .group("Invalid_Group")
+      .name("name").build();
+    baseDAO.create(persisted);
+
+    assertNotNull(baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class));
+    assertThrows(AccessDeniedException.class, () -> dinaRepository.delete(persisted.getUuid()));
   }
 
   /**
