@@ -157,13 +157,11 @@ public class TestConfiguration {
     return new DinaRepository<>(service, dinaMapper, PersonDTO.class, Person.class, filterResolver);
   }
 
-/**
+  /**
    * Mocks a given token to return a agent identifier and list of given groups.
    *
-   * @param keycloakGroupClaim
-   *                         - groups to return in claim
-   * @param mockToken
-   *                         - token to mock
+   * @param keycloakGroupClaim - groups to return in claim
+   * @param mockToken          - token to mock
    */
   public static void mockToken(List<String> keycloakGroupClaim, KeycloakAuthenticationToken mockToken) {
     // Mock the needed fields on the keycloak token:
@@ -172,16 +170,13 @@ public class TestConfiguration {
     mockClaim(mockToken, "groups", keycloakGroupClaim);
   }
 
-/**
+  /**
    * Mock a given tokens claims by returning a given value for the given claim
    * key.
    *
-   * @param token
-   *                - token holding claims
-   * @param key
-   *                - key of claim to mock
-   * @param value
-   *                - return value of the claim
+   * @param token - token holding claims
+   * @param key   - key of claim to mock
+   * @param value - return value of the claim
    */
   public static void mockClaim(KeycloakAuthenticationToken token, String key, Object value) {
     Mockito.when(

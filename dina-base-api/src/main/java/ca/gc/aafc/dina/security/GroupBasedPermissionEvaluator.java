@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.security;
 
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
@@ -27,9 +28,14 @@ public class GroupBasedPermissionEvaluator extends SecurityExpressionRoot
       return false;
     }
 
+    DinaEntity entity = (DinaEntity) targetDomainObject;
     Set<String> userGroups = user.getGroups();
-    DinaEntity dto = (DinaEntity) targetDomainObject;
-    return userGroups.stream().anyMatch(dto.getGroup()::equalsIgnoreCase);
+
+    if (CollectionUtils.isEmpty(userGroups) || entity.getGroup() == null) {
+      return false;
+    }
+
+    return userGroups.stream().anyMatch(entity.getGroup()::equalsIgnoreCase);
   }
 
   @Override
