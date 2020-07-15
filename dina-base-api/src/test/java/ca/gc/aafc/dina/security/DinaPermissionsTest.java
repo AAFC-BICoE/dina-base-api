@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -45,7 +44,7 @@ public class DinaPermissionsTest {
     KeycloakAuthenticationToken mockToken = Mockito.mock(
       KeycloakAuthenticationToken.class,
       Answers.RETURNS_DEEP_STUBS);
-    mockToken(Arrays.asList("/" + GROUP_1 + "/staff"), mockToken);
+    TestConfiguration.mockToken(Arrays.asList("/" + GROUP_1 + "/staff"), mockToken);
 
     SecurityContextHolder.getContext().setAuthentication(mockToken);
   }
@@ -112,42 +111,6 @@ public class DinaPermissionsTest {
 
     assertNotNull(baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class));
     assertThrows(AccessDeniedException.class, () -> dinaRepository.delete(persisted.getUuid()));
-  }
-
-  /**
-   * Mocks a given token to return a agent identifier and list of given groups.
-   *
-   * @param groupClaims
-   *                             - groups to return in claim
-   * @param mockToken
-   *                             - token to mock
-   */
-  private static void mockToken(List<String> groupClaims, KeycloakAuthenticationToken mockToken) {
-    // Mock the needed fields on the keycloak token:
-    Mockito.when(mockToken.getName()).thenReturn("test-user");
-    mockClaim(mockToken, "agent-identifier", "a2cef694-10f1-42ec-b403-e0f8ae9d2ae6");
-    mockClaim(mockToken, "groups", groupClaims);
-  }
-
-  /**
-   * Mock a given tokens claims by returning a given value for the given claim
-   * key.
-   *
-   * @param token
-   *                - token holding claims
-   * @param key
-   *                - key of claim to mock
-   * @param value
-   *                - return value of the claim
-   */
-  private static void mockClaim(KeycloakAuthenticationToken token, String key, Object value) {
-    Mockito.when(
-        token.getAccount()
-          .getKeycloakSecurityContext()
-          .getToken()
-          .getOtherClaims()
-          .get(key))
-      .thenReturn(value);
   }
 
 }
