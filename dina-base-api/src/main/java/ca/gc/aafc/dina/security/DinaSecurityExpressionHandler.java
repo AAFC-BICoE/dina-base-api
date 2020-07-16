@@ -16,7 +16,7 @@ public class DinaSecurityExpressionHandler extends DefaultMethodSecurityExpressi
   @Override
   protected MethodSecurityExpressionOperations createSecurityExpressionRoot(
       Authentication authentication, MethodInvocation invocation) {
-    GroupBasedPermissionEvaluator root = new GroupBasedPermissionEvaluator(authentication);
+    DinaPermissionEvaluator root = new DinaPermissionEvaluator(authentication);
     root.setPermissionEvaluator(getPermissionEvaluator());
     root.setTrustResolver(this.trustResolver);
     root.setRoleHierarchy(getRoleHierarchy());

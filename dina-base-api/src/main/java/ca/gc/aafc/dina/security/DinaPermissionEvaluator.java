@@ -17,7 +17,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class GroupBasedPermissionEvaluator extends SecurityExpressionRoot
+public class DinaPermissionEvaluator extends SecurityExpressionRoot
     implements MethodSecurityExpressionOperations {
 
   /**
@@ -33,10 +33,10 @@ public class GroupBasedPermissionEvaluator extends SecurityExpressionRoot
    */
   private Object filterObject;
 
-  /** see {@link GroupBasedPermissionEvaluator#filterObject} */
+  /** see {@link DinaPermissionEvaluator#filterObject} */
   private Object returnObject;
 
-  public GroupBasedPermissionEvaluator(Authentication authentication) {
+  public DinaPermissionEvaluator(Authentication authentication) {
     super(authentication);
   }
 
@@ -49,7 +49,7 @@ public class GroupBasedPermissionEvaluator extends SecurityExpressionRoot
    * @return - true if the given authenticated user is a member of the group the
    *         given target object belongs to.
    */
-  public boolean hasDinaPermission(DinaAuthenticatedUser user, Object targetDomainObject) {
+  public boolean hasGroupPermission(DinaAuthenticatedUser user, Object targetDomainObject) {
     if (user == null || !(targetDomainObject instanceof DinaEntity)) {
       return false;
     }

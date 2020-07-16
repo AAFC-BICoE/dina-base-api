@@ -5,7 +5,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
-import ca.gc.aafc.dina.security.GroupBasedPermissionEvaluator;
+import ca.gc.aafc.dina.security.DinaPermissionEvaluator;
 import ca.gc.aafc.dina.security.MethodSecurityConfig;
 
 /**
@@ -18,7 +18,7 @@ public class GroupAuthorizationService implements DinaAuthorizationService {
 
   /**
    * Proxy Method to invoke security authorization, Delegates to
-   * {@link GroupBasedPermissionEvaluator#hasDinaPermission(DinaAuthenticatedUser, Object)}.
+   * {@link DinaPermissionEvaluator#hasGroupPermission(DinaAuthenticatedUser, Object)}.
    * This method itself does nothing, spring proxies must be called from a
    * seperate bean. @PreAuthorize is only enabled with keycloak, see
    * {@link MethodSecurityConfig}. This method will not validate if keycloak is
@@ -27,13 +27,13 @@ public class GroupAuthorizationService implements DinaAuthorizationService {
    * @param entity
    */
   @Override
-  @PreAuthorize("hasDinaPermission(@currentUser, #entity)")
+  @PreAuthorize("hasGroupPermission(@currentUser, #entity)")
   public void authorizeCreate(Object entity) {
   }
 
   /**
    * Proxy Method to invoke security authorization, Delegates to
-   * {@link GroupBasedPermissionEvaluator#hasDinaPermission(DinaAuthenticatedUser, Object)}.
+   * {@link DinaPermissionEvaluator#hasGroupPermission(DinaAuthenticatedUser, Object)}.
    * This method itself does nothing, spring proxies must be called from a
    * seperate bean. @PreAuthorize is only enabled with keycloak, see
    * {@link MethodSecurityConfig}. This method will not validate if keycloak is
@@ -42,13 +42,13 @@ public class GroupAuthorizationService implements DinaAuthorizationService {
    * @param entity
    */
   @Override
-  @PreAuthorize("hasDinaPermission(@currentUser, #entity)")
+  @PreAuthorize("hasGroupPermission(@currentUser, #entity)")
   public void authorizeUpdate(Object entity) {
   }
 
   /**
    * Proxy Method to invoke security authorization, Delegates to
-   * {@link GroupBasedPermissionEvaluator#hasDinaPermission(DinaAuthenticatedUser, Object)}.
+   * {@link DinaPermissionEvaluator#hasGroupPermission(DinaAuthenticatedUser, Object)}.
    * This method itself does nothing, spring proxies must be called from a
    * seperate bean. @PreAuthorize is only enabled with keycloak, see
    * {@link MethodSecurityConfig}. This method will not validate if keycloak is
@@ -57,7 +57,7 @@ public class GroupAuthorizationService implements DinaAuthorizationService {
    * @param entity
    */
   @Override
-  @PreAuthorize("hasDinaPermission(@currentUser, #entity)")
+  @PreAuthorize("hasGroupPermission(@currentUser, #entity)")
   public void authorizeDelete(Object entity) {
   }
 
