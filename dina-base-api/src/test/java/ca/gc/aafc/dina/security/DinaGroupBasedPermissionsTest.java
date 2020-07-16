@@ -29,7 +29,7 @@ import ca.gc.aafc.dina.repository.DinaRepository;
 
 @Transactional
 @SpringBootTest(classes = TestConfiguration.class, properties = "keycloak.enabled: true")
-public class DinaPermissionsTest {
+public class DinaGroupBasedPermissionsTest {
 
   @Inject
   private DinaRepository<PersonDTO, Person> dinaRepository;
