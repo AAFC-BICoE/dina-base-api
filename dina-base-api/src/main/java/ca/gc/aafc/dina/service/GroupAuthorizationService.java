@@ -14,7 +14,7 @@ import ca.gc.aafc.dina.security.MethodSecurityConfig;
  */
 @Service
 @ConditionalOnProperty(value = "keycloak.enabled", havingValue = "true")
-public class AuthorizationService {
+public class GroupAuthorizationService implements DinaAuthorizationService {
 
   /**
    * Proxy Method to invoke security authorization, Delegates to
@@ -27,7 +27,7 @@ public class AuthorizationService {
    * @param entity
    */
   @PreAuthorize("hasDinaPermission(@currentUser, #entity)")
-  public void authorizeByGroup(Object entity) {
+  public void authenticate(Object entity) {
   }
 
 }
