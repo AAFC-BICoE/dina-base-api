@@ -4,10 +4,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
+import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +35,7 @@ import ca.gc.aafc.dina.repository.JpaDtoRepository;
 import ca.gc.aafc.dina.repository.JpaRelationshipRepository;
 import ca.gc.aafc.dina.repository.JpaResourceRepository;
 import ca.gc.aafc.dina.repository.meta.JpaTotalMetaInformationProvider;
+import ca.gc.aafc.dina.service.GroupAuthorizationService;
 import ca.gc.aafc.dina.service.DinaServiceTest.DinaServiceTestImplementation;
 
 /**
@@ -52,6 +56,9 @@ public class TestConfiguration {
 
   @Inject
   private DinaFilterResolver filterResolver;
+
+  @Inject
+  private Optional<GroupAuthorizationService> groupAuthService;
 
   @Bean
   public JpaDtoMapper jpaDtoMapper() {
@@ -152,7 +159,44 @@ public class TestConfiguration {
   @Bean
   public DinaRepository<PersonDTO, Person> dinaRepository(DinaPersonService service) {
     DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(PersonDTO.class);
-    return new DinaRepository<>(service, dinaMapper, PersonDTO.class, Person.class, filterResolver);
+    return new DinaRepository<PersonDTO,Person>(
+      service,
+      Optional.ofNullable(groupAuthService.orElse(null)),
+      dinaMapper,
+      PersonDTO.class,
+      Person.class,
+      filterResolver);
+  }
+
+  /**
+   * Mocks a given token to return a agent identifier and list of given groups.
+   *
+   * @param keycloakGroupClaim - groups to return in claim
+   * @param mockToken          - token to mock
+   */
+  public static void mockToken(List<String> keycloakGroupClaim, KeycloakAuthenticationToken mockToken) {
+    // Mock the needed fields on the keycloak token:
+    Mockito.when(mockToken.getName()).thenReturn("test-user");
+    mockClaim(mockToken, "agent-identifier", "a2cef694-10f1-42ec-b403-e0f8ae9d2ae6");
+    mockClaim(mockToken, "groups", keycloakGroupClaim);
+  }
+
+  /**
+   * Mock a given tokens claims by returning a given value for the given claim
+   * key.
+   *
+   * @param token - token holding claims
+   * @param key   - key of claim to mock
+   * @param value - return value of the claim
+   */
+  public static void mockClaim(KeycloakAuthenticationToken token, String key, Object value) {
+    Mockito.when(
+        token.getAccount()
+          .getKeycloakSecurityContext()
+          .getToken()
+          .getOtherClaims()
+          .get(key))
+      .thenReturn(value);
   }
 
 }

@@ -25,6 +25,8 @@ public class PersonDTO {
 
   private String name;
 
+  private String group;
+
   private String[] nickNames;
 
   @JsonApiRelation

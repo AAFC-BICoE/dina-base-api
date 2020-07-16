@@ -24,6 +24,7 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.engine.information.resource.ResourceField;
 import io.crnk.core.engine.information.resource.ResourceInformation;
@@ -64,6 +65,8 @@ public class DinaRepository<D, E extends DinaEntity>
   private final Class<E> entityClass;
 
   private final DinaService<E> dinaService;
+  private final Optional<DinaAuthorizationService> authorizationService;
+
   private final DinaMapper<D, E> dinaMapper;
   private final DinaFilterResolver filterResolver;
 
@@ -80,12 +83,14 @@ public class DinaRepository<D, E extends DinaEntity>
   @Inject
   public DinaRepository(
     @NonNull DinaService<E> dinaService,
+    @NonNull Optional<DinaAuthorizationService> authorizationService,
     @NonNull DinaMapper<D, E> dinaMapper,
     @NonNull Class<D> resourceClass,
     @NonNull Class<E> entityClass,
     @NonNull DinaFilterResolver filterResolver
   ) {
     this.dinaService = dinaService;
+    this.authorizationService = authorizationService;
     this.dinaMapper = dinaMapper;
     this.resourceClass = resourceClass;
     this.entityClass = entityClass;
@@ -160,6 +165,7 @@ public class DinaRepository<D, E extends DinaEntity>
     Object id = PropertyUtils.getProperty(resource, idFieldName);
 
     E entity = dinaService.findOne(id, entityClass);
+    authorizationService.ifPresent(auth -> auth.authorizeUpdate(entity));
 
     if (entity == null) {
       throw new ResourceNotFoundException(
@@ -198,7 +204,7 @@ public class DinaRepository<D, E extends DinaEntity>
     dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
 
     linkRelations(entity, resourceInformation.getRelationshipFields());
-
+    authorizationService.ifPresent(auth -> auth.authorizeCreate(entity));
     dinaService.create(entity);
 
     return (S) dinaMapper.toDto(entity, entityFieldsPerClass, relations);
@@ -211,6 +217,7 @@ public class DinaRepository<D, E extends DinaEntity>
       throw new ResourceNotFoundException(
           resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
+    authorizationService.ifPresent(auth -> auth.authorizeDelete(entity));
     dinaService.delete(entity);
   }
 
