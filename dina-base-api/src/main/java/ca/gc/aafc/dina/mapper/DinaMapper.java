@@ -3,7 +3,6 @@ package ca.gc.aafc.dina.mapper;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +13,8 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.google.common.collect.Sets;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -36,6 +37,8 @@ public class DinaMapper<D, E> {
 
   private final Class<D> dtoClass;
   private final Map<Class<?>, CustomFieldHandler<?, ?>> handlers;
+  private final Map<Class<?>, Set<String>> fieldsPerClass;
+  private final Map<Class<?>, Set<String>> relationPerClass;
 
   /**
    * <p>
@@ -52,8 +55,46 @@ public class DinaMapper<D, E> {
    * @param dtoClass
    */
   public DinaMapper(@NonNull Class<D> dtoClass) {
-    this(dtoClass, new HashMap<>());
-    parseHandlers(dtoClass, handlers);
+    this(dtoClass, new HashMap<>(), new HashMap<>(), new HashMap<>());
+    initMaps(dtoClass);
+  }
+
+  private void initMaps(Class<D> dtoClass) {
+    Set<Class<?>> dtoClasses = parseGraph(dtoClass);
+
+    for (Class<?> dto : dtoClasses) {
+      RelatedEntity annotation = dto.getAnnotation(RelatedEntity.class);
+
+      if (annotation != null) {
+        Class<?> relatedEntity = annotation.value();
+        CustomFieldHandler<?, ?> handler = new CustomFieldHandler<>(dto, relatedEntity);
+        handlers.put(dto, handler);
+        handlers.put(relatedEntity, handler);
+
+        fieldsPerClass.put(dto, parseFieldNames(dto));
+        fieldsPerClass.put(relatedEntity, parseFieldNames(relatedEntity));
+
+        relationPerClass.put(dto, parseRelationFieldNames(dto));
+        relationPerClass.put(relatedEntity, parseRelationFieldNames(relatedEntity));
+      }
+    }
+  }
+
+  private Set<Class<?>> parseGraph(Class<D> dto) {
+    return parseGraph(dto, new HashSet<>());
+  }
+
+  private Set<Class<?>> parseGraph(Class<?> dto, Set<Class<?>> visited) {
+    if (visited.contains(dto)) {
+      return visited;
+    }
+    visited.add(dto);
+
+    for (Field f : getRelations(dto)) {
+      Class<?> dtoType = isCollection(f.getType()) ? getGenericType(dto, f.getName()) : f.getType();
+      parseGraph(dtoType, visited);
+    }
+    return visited;
   }
 
   /**
@@ -244,9 +285,9 @@ public class DinaMapper<D, E> {
     }
 
     Object target = targetType.getDeclaredConstructor().newInstance();
-    Set<String> relation = Stream
-      .concat(getRelations(source.getClass()).stream(), getRelations(targetType).stream())
-      .map(Field::getName).collect(Collectors.toSet());
+    Set<String> relation = Sets.union(
+      relationPerClass.get(source.getClass()),
+      relationPerClass.get(targetType));
     mapSourceToTarget(source, target, fields, relation, visited);
     return target;
   }
@@ -294,43 +335,6 @@ public class DinaMapper<D, E> {
   }
 
   /**
-   * Fills a given map with all Custom Field Handlers needed to map a given class
-   * parsed from the given class, This includes Custom Field Handlers for each
-   * relationship of a given class.
-   * 
-   * @param <T>
-   *                - class type
-   * @param clazz
-   *                - class to parse
-   * @param map
-   *                - map to fill
-   */
-  private static void parseHandlers(Class<?> clazz, Map<Class<?>, CustomFieldHandler<?, ?>> map) {
-    RelatedEntity annotation = clazz.getAnnotation(RelatedEntity.class);
-    if (annotation == null) {
-      return;
-    }
-
-    Class<?> relatedEntity = annotation.value();
-
-    if (map.containsKey(clazz) || map.containsKey(relatedEntity)) {
-      return;
-    }
-
-    CustomFieldHandler<?, ?> handler = new CustomFieldHandler<>(clazz, relatedEntity);
-    map.put(clazz, handler);
-    map.put(relatedEntity, handler);
-
-    for (Field field : getRelations(clazz)) {
-      Class<?> dtoType = isCollection(field.getType()) 
-        ? getGenericType(clazz, field.getName()) 
-        : field.getType();
-      parseHandlers(dtoType, map);
-    }
-  }
-
-
-  /**
    * Returns the resolved type of a fieldname for a given source. If the type is a
    * collection, the first generic type is returned.
    * 
@@ -369,16 +373,33 @@ public class DinaMapper<D, E> {
   }
 
   /**
+   * Returns the JsonApiRelation field names for a given class.
+   * 
+   * @param cls - class to parse
+   * @return JsonApiRelations field names for a given class
+   */
+  private static Set<String> parseRelationFieldNames(Class<?> cls) {
+    return getRelations(cls).stream().map(Field::getName).collect(Collectors.toSet());
+  }
+
+  /**
+   * Returns a set of field names for a given class.
+   * 
+   * @param cls - class to parse
+   * @return set of field names for a given class.
+   */
+  private static Set<String> parseFieldNames(Class<?> cls) {
+    return Stream.of(cls.getDeclaredFields()).map(Field::getName).collect(Collectors.toSet());
+  }
+
+  /**
    * Returns true if the given class has the given field.
    * 
-   * @param cls
-   *                    - class to check
-   * @param fieldName
-   *                    - field to check
+   * @param cls       - class to check
+   * @param fieldName - field to check
    * @return true if the given class has the given field.
    */
-  private static boolean hasfield(Class<?> cls, String fieldName) {
-    return Arrays.stream(cls.getDeclaredFields())
-        .anyMatch(f -> f.getName().equalsIgnoreCase(fieldName));
+  private boolean hasfield(Class<?> cls, String fieldName) {
+    return fieldsPerClass.containsKey(cls) && fieldsPerClass.get(cls).contains(fieldName);
   }
 }
