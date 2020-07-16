@@ -10,13 +10,10 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.security.GroupBasedPermissionEvaluator;
-import ca.gc.aafc.dina.security.MethodSecurityConfig;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -165,19 +162,5 @@ public abstract class DinaService<E extends DinaEntity> {
   protected void preDelete(E entity) {
     // Defaults to do nothing
   };
-
-  /**
-   * Proxy Method to invoke security authorization, Delegates to
-   * {@link GroupBasedPermissionEvaluator#hasDinaPermission(DinaAuthenticatedUser, Object)}.
-   * This method itself does nothing, spring proxies must be called from a
-   * seperate bean. @PreAuthorize is only enabled with keycloak, see
-   * {@link MethodSecurityConfig}. This method will not validate if keycloak is
-   * disabled.
-   *
-   * @param entity
-   */
-  @PreAuthorize("hasDinaPermission(@currentUser, #entity)")
-  public void authorizeByGroup(E entity) {
-  }
 
 }

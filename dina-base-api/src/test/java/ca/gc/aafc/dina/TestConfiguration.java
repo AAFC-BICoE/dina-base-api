@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -34,6 +35,7 @@ import ca.gc.aafc.dina.repository.JpaDtoRepository;
 import ca.gc.aafc.dina.repository.JpaRelationshipRepository;
 import ca.gc.aafc.dina.repository.JpaResourceRepository;
 import ca.gc.aafc.dina.repository.meta.JpaTotalMetaInformationProvider;
+import ca.gc.aafc.dina.service.AuthorizationService;
 import ca.gc.aafc.dina.service.DinaServiceTest.DinaServiceTestImplementation;
 
 /**
@@ -54,6 +56,9 @@ public class TestConfiguration {
 
   @Inject
   private DinaFilterResolver filterResolver;
+
+  @Inject
+  private Optional<AuthorizationService> authService;
 
   @Bean
   public JpaDtoMapper jpaDtoMapper() {
@@ -154,7 +159,13 @@ public class TestConfiguration {
   @Bean
   public DinaRepository<PersonDTO, Person> dinaRepository(DinaPersonService service) {
     DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(PersonDTO.class);
-    return new DinaRepository<>(service, dinaMapper, PersonDTO.class, Person.class, filterResolver);
+    return new DinaRepository<>(
+      service,
+      authService,
+      dinaMapper,
+      PersonDTO.class,
+      Person.class,
+      filterResolver);
   }
 
   /**

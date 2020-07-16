@@ -24,6 +24,7 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.service.AuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.engine.information.resource.ResourceField;
 import io.crnk.core.engine.information.resource.ResourceInformation;
@@ -64,6 +65,8 @@ public class DinaRepository<D, E extends DinaEntity>
   private final Class<E> entityClass;
 
   private final DinaService<E> dinaService;
+  private final Optional<AuthorizationService> authorizationService;
+
   private final DinaMapper<D, E> dinaMapper;
   private final DinaFilterResolver filterResolver;
 
@@ -80,12 +83,14 @@ public class DinaRepository<D, E extends DinaEntity>
   @Inject
   public DinaRepository(
     @NonNull DinaService<E> dinaService,
+    @NonNull Optional<AuthorizationService> authorizationService,
     @NonNull DinaMapper<D, E> dinaMapper,
     @NonNull Class<D> resourceClass,
     @NonNull Class<E> entityClass,
     @NonNull DinaFilterResolver filterResolver
   ) {
     this.dinaService = dinaService;
+    this.authorizationService = authorizationService;
     this.dinaMapper = dinaMapper;
     this.resourceClass = resourceClass;
     this.entityClass = entityClass;
@@ -160,7 +165,7 @@ public class DinaRepository<D, E extends DinaEntity>
     Object id = PropertyUtils.getProperty(resource, idFieldName);
 
     E entity = dinaService.findOne(id, entityClass);
-    dinaService.authorizeByGroup(entity);
+    authorizationService.ifPresent(auth -> auth.authorizeByGroup(entity));
 
     if (entity == null) {
       throw new ResourceNotFoundException(
@@ -199,7 +204,7 @@ public class DinaRepository<D, E extends DinaEntity>
     dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
 
     linkRelations(entity, resourceInformation.getRelationshipFields());
-    dinaService.authorizeByGroup(entity);
+    authorizationService.ifPresent(auth -> auth.authorizeByGroup(entity));
     dinaService.create(entity);
 
     return (S) dinaMapper.toDto(entity, entityFieldsPerClass, relations);
@@ -212,7 +217,7 @@ public class DinaRepository<D, E extends DinaEntity>
       throw new ResourceNotFoundException(
           resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
-    dinaService.authorizeByGroup(entity);
+    authorizationService.ifPresent(auth -> auth.authorizeByGroup(entity));
     dinaService.delete(entity);
   }
 
