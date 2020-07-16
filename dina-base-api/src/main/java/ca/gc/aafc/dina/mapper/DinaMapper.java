@@ -36,6 +36,7 @@ public class DinaMapper<D, E> {
   private final Class<D> dtoClass;
   private final Map<Class<?>, CustomFieldHandler<?, ?>> handlers;
   private final Map<Class<?>, Set<String>> fieldsPerClass;
+  private final Map<Class<?>, Set<String>> relationPerClass;
 
   /**
    * <p>
@@ -52,9 +53,49 @@ public class DinaMapper<D, E> {
    * @param dtoClass
    */
   public DinaMapper(@NonNull Class<D> dtoClass) {
-    this(dtoClass, new HashMap<>(), new HashMap<>());
-    parseHandlers(dtoClass, handlers);
-    parseFieldsPerClass(dtoClass, fieldsPerClass);
+    this(dtoClass, new HashMap<>(), new HashMap<>(), new HashMap<>());
+    initMaps(dtoClass);
+  }
+
+  private void initMaps(Class<D> dtoClass) {
+    Set<Class<?>> dtoClasses = parseGrpah(dtoClass);
+
+    for (Class<?> dto : dtoClasses) {
+      RelatedEntity annotation = dto.getAnnotation(RelatedEntity.class);
+
+      if (annotation != null) {
+        Class<?> relatedEntity = annotation.value();
+        CustomFieldHandler<?, ?> handler = new CustomFieldHandler<>(dto, relatedEntity);
+        handlers.put(dto, handler);
+        handlers.put(relatedEntity, handler);
+
+        fieldsPerClass.put(dto, parseFieldNames(dto));
+        fieldsPerClass.put(relatedEntity, parseFieldNames(relatedEntity));
+
+        relationPerClass.put(dto, getRelationFieldNames(dto));
+        relationPerClass.put(relatedEntity, getRelationFieldNames(dto));
+      }
+
+    }
+  }
+
+  private Set<Class<?>> parseGrpah(Class<D> dto) {
+    return parseGrpah(dto, new HashSet<>());
+  }
+
+  private Set<Class<?>> parseGrpah(Class<?> dto, Set<Class<?>> visited) {
+    if (visited.contains(dto)) {
+      return visited;
+    }
+
+    visited.add(dto);
+
+    for (Field f : getRelations(dto)) {
+      Class<?> dtoType = isCollection(f.getType()) ? getGenericType(dto, f.getName()) : f.getType();
+      parseGrpah(dtoType, visited);
+    }
+
+    return visited;
   }
 
   /**
@@ -295,65 +336,6 @@ public class DinaMapper<D, E> {
   }
 
   /**
-   * Fills a given map with all Custom Field Handlers needed to map a given class
-   * parsed from the given class, This includes Custom Field Handlers for each
-   * relationship of a given class.
-   * 
-   * @param <T>
-   *                - class type
-   * @param clazz
-   *                - class to parse
-   * @param map
-   *                - map to fill
-   */
-  private static void parseHandlers(Class<?> clazz, Map<Class<?>, CustomFieldHandler<?, ?>> map) {
-    RelatedEntity annotation = clazz.getAnnotation(RelatedEntity.class);
-    if (annotation == null) {
-      return;
-    }
-
-    Class<?> relatedEntity = annotation.value();
-
-    if (map.containsKey(clazz) || map.containsKey(relatedEntity)) {
-      return;
-    }
-
-    CustomFieldHandler<?, ?> handler = new CustomFieldHandler<>(clazz, relatedEntity);
-    map.put(clazz, handler);
-    map.put(relatedEntity, handler);
-
-    for (Field field : getRelations(clazz)) {
-      Class<?> dtoType = isCollection(field.getType()) 
-        ? getGenericType(clazz, field.getName()) 
-        : field.getType();
-      parseHandlers(dtoType, map);
-    }
-  }
-
-  /**
-   * Returns a map of fields names per class of a given Dtos entity graph.
-   * 
-   * @param dto - DTO to parse
-   * @param map - map to fill
-   */
-  private static void parseFieldsPerClass(Class<?> dto, Map<Class<?>, Set<String>> map) {
-    RelatedEntity annotation = dto.getAnnotation(RelatedEntity.class);
-    if (annotation == null || map.containsKey(dto) || map.containsKey(annotation.value())) {
-      return;
-    }
-
-    Class<?> relatedEntity = annotation.value();
-
-    map.put(dto, parseFieldNames(dto));
-    map.put(relatedEntity, parseFieldNames(relatedEntity));
-
-    for (Field f : getRelations(dto)) {
-      Class<?> dtoType = isCollection(f.getType()) ? getGenericType(dto, f.getName()) : f.getType();
-      parseFieldsPerClass(dtoType, map);
-    }
-  }
-
-  /**
    * Returns a set of field names for a given class.
    * 
    * @param cls - class to parse
@@ -399,6 +381,16 @@ public class DinaMapper<D, E> {
    */
   private static List<Field> getRelations(Class<?> cls) {
     return FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class);
+  }
+
+  /**
+   * Returns the JsonApiRelation field names for a given class.
+   * 
+   * @param cls - class to parse
+   * @return JsonApiRelations field names for a given class
+   */
+  private static Set<String> getRelationFieldNames(Class<?> cls) {
+    return getRelations(cls).stream().map(Field::getName).collect(Collectors.toSet());
   }
 
   /**
