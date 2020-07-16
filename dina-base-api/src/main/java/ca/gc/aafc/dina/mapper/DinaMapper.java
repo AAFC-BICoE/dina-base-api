@@ -72,10 +72,9 @@ public class DinaMapper<D, E> {
         fieldsPerClass.put(dto, parseFieldNames(dto));
         fieldsPerClass.put(relatedEntity, parseFieldNames(relatedEntity));
 
-        relationPerClass.put(dto, getRelationFieldNames(dto));
-        relationPerClass.put(relatedEntity, getRelationFieldNames(dto));
+        relationPerClass.put(dto, parseRelationFieldNames(dto));
+        relationPerClass.put(relatedEntity, parseRelationFieldNames(relatedEntity));
       }
-
     }
   }
 
@@ -87,14 +86,12 @@ public class DinaMapper<D, E> {
     if (visited.contains(dto)) {
       return visited;
     }
-
     visited.add(dto);
 
     for (Field f : getRelations(dto)) {
       Class<?> dtoType = isCollection(f.getType()) ? getGenericType(dto, f.getName()) : f.getType();
       parseGrpah(dtoType, visited);
     }
-
     return visited;
   }
 
@@ -338,16 +335,6 @@ public class DinaMapper<D, E> {
   }
 
   /**
-   * Returns a set of field names for a given class.
-   * 
-   * @param cls - class to parse
-   * @return set of field names for a given class.
-   */
-  private static Set<String> parseFieldNames(Class<?> cls) {
-    return Stream.of(cls.getDeclaredFields()).map(Field::getName).collect(Collectors.toSet());
-  }
-
-  /**
    * Returns the resolved type of a fieldname for a given source. If the type is a
    * collection, the first generic type is returned.
    * 
@@ -391,17 +378,25 @@ public class DinaMapper<D, E> {
    * @param cls - class to parse
    * @return JsonApiRelations field names for a given class
    */
-  private static Set<String> getRelationFieldNames(Class<?> cls) {
+  private static Set<String> parseRelationFieldNames(Class<?> cls) {
     return getRelations(cls).stream().map(Field::getName).collect(Collectors.toSet());
+  }
+
+  /**
+   * Returns a set of field names for a given class.
+   * 
+   * @param cls - class to parse
+   * @return set of field names for a given class.
+   */
+  private static Set<String> parseFieldNames(Class<?> cls) {
+    return Stream.of(cls.getDeclaredFields()).map(Field::getName).collect(Collectors.toSet());
   }
 
   /**
    * Returns true if the given class has the given field.
    * 
-   * @param cls
-   *                    - class to check
-   * @param fieldName
-   *                    - field to check
+   * @param cls       - class to check
+   * @param fieldName - field to check
    * @return true if the given class has the given field.
    */
   private boolean hasfield(Class<?> cls, String fieldName) {
