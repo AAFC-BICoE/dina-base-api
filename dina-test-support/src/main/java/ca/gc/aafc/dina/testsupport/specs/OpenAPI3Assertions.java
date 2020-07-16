@@ -46,9 +46,9 @@ public final class OpenAPI3Assertions {
    * @param schemaName
    * @param apiResponse
    */
-  public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse) {
+  public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse, String resourceaName) {
     if (!Boolean.valueOf(System.getProperty(SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY))) {
-      assertSchema(specsUrl, schemaName, apiResponse);
+      assertSchema(specsUrl, schemaName, apiResponse, resourceaName);
     } else {
       log.warn("Skipping schema validation." + "System property testing.skip-remote-schema-validation set to true.");
     }
@@ -62,7 +62,7 @@ public final class OpenAPI3Assertions {
    * @param schemaName
    * @param apiResponse
    */
-  public static void assertSchema(URL specsUrl, String schemaName, String apiResponse) {
+  public static void assertSchema(URL specsUrl, String schemaName, String apiResponse, String resourceName) {
     Objects.requireNonNull(specsUrl, "specsUrl shall be provided");
     Objects.requireNonNull(schemaName, "schemaName shall be provided");
     Objects.requireNonNull(apiResponse, "apiResponse shall be provided");
@@ -74,6 +74,12 @@ public final class OpenAPI3Assertions {
       fail("Failed to parse and validate the provided schema", ex);
       return;
     }
+
+    if (!assertPaths(openApi, resourceName)) {
+      fail("Failed to parse paths for resource: "+ resourceName);      
+          return;
+    }
+          
     assertSchema(openApi, schemaName, apiResponse);
   }
 
@@ -140,5 +146,23 @@ public final class OpenAPI3Assertions {
 
     return api;
   }
+  
+  /**
+   * Checking that each path contains resourceName
+   * 
+   * @param api3
+   * @param resourceName
+   * @return true if all paths contain resourceName; false if any path does not contain resourceName 
+   */
+  private static boolean assertPaths(OpenApi3 api3, String resourceName) {
+    boolean resourceInPath = true;
+    for (String key : api3.getPaths().keySet()) {
+      if (!key.contains(resourceName)) {
+        resourceInPath = false;
+        break;
+      }
+    }
+    return resourceInPath;
+  }  
 
 }

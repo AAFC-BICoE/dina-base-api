@@ -33,7 +33,7 @@ public class OpenAPI3AssertionsTest {
 
     System.setProperty(OpenAPI3Assertions.SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY, "true");
     String responseJson = TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json");
-    OpenAPI3Assertions.assertRemoteSchema(specsUrl, "ManagedAttribute", responseJson);
+    OpenAPI3Assertions.assertRemoteSchema(specsUrl, "ManagedAttribute", responseJson,"managed-attribute");
     System.clearProperty(OpenAPI3Assertions.SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY);
   }
 
@@ -41,6 +41,7 @@ public class OpenAPI3AssertionsTest {
   public void assertSchemaTest() throws IOException {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     String responseJson = TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json");
-    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson);
+    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson, "managed-attribute");
   }
+
 }
