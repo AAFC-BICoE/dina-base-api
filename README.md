@@ -24,7 +24,7 @@ dina-base-api artifact is published on [BinTray](https://bintray.com/aafc-bice/B
 <dependency>
   <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-base-api</artifactId>
-  <version>0.31</version>
+  <version>0.32</version>
 </dependency>
 ```
 
