@@ -60,7 +60,7 @@ public class DinaMapper<D, E> {
   }
 
   private void initMaps(Class<D> dtoClass) {
-    Set<Class<?>> dtoClasses = parseGrpah(dtoClass);
+    Set<Class<?>> dtoClasses = parseGraph(dtoClass);
 
     for (Class<?> dto : dtoClasses) {
       RelatedEntity annotation = dto.getAnnotation(RelatedEntity.class);
@@ -80,11 +80,11 @@ public class DinaMapper<D, E> {
     }
   }
 
-  private Set<Class<?>> parseGrpah(Class<D> dto) {
-    return parseGrpah(dto, new HashSet<>());
+  private Set<Class<?>> parseGraph(Class<D> dto) {
+    return parseGraph(dto, new HashSet<>());
   }
 
-  private Set<Class<?>> parseGrpah(Class<?> dto, Set<Class<?>> visited) {
+  private Set<Class<?>> parseGraph(Class<?> dto, Set<Class<?>> visited) {
     if (visited.contains(dto)) {
       return visited;
     }
@@ -92,7 +92,7 @@ public class DinaMapper<D, E> {
 
     for (Field f : getRelations(dto)) {
       Class<?> dtoType = isCollection(f.getType()) ? getGenericType(dto, f.getName()) : f.getType();
-      parseGrpah(dtoType, visited);
+      parseGraph(dtoType, visited);
     }
     return visited;
   }
