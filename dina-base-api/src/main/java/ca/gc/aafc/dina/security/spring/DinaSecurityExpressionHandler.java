@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.security;
+package ca.gc.aafc.dina.security.spring;
 
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;

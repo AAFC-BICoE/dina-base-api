@@ -5,8 +5,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
-import ca.gc.aafc.dina.security.DinaPermissionEvaluator;
-import ca.gc.aafc.dina.security.MethodSecurityConfig;
+import ca.gc.aafc.dina.security.spring.DinaPermissionEvaluator;
+import ca.gc.aafc.dina.security.spring.MethodSecurityConfig;
 
 /**
  * Authorization service using spring security. Service is only available on

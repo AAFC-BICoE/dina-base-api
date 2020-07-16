@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.security;
+package ca.gc.aafc.dina.security.spring;
 
 import java.util.Set;
 
@@ -8,6 +8,7 @@ import org.springframework.security.access.expression.method.MethodSecurityExpre
 import org.springframework.security.core.Authentication;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import lombok.Getter;
 import lombok.Setter;
 
