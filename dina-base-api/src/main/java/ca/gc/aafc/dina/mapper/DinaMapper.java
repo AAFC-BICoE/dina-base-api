@@ -287,8 +287,10 @@ public class DinaMapper<D, E> {
 
     Object target = targetType.getDeclaredConstructor().newInstance();
     Set<String> relation = Stream
-      .concat(getRelations(source.getClass()).stream(), getRelations(targetType).stream())
-      .map(Field::getName).collect(Collectors.toSet());
+      .concat(
+        relationPerClass.get(source.getClass()).stream(),
+        relationPerClass.get(targetType).stream())
+      .collect(Collectors.toSet());
     mapSourceToTarget(source, target, fields, relation, visited);
     return target;
   }
