@@ -26,8 +26,39 @@ public class GroupAuthorizationService implements DinaAuthorizationService {
    *
    * @param entity
    */
+  @Override
   @PreAuthorize("hasDinaPermission(@currentUser, #entity)")
-  public void authenticate(Object entity) {
+  public void authorizeCreate(Object entity) {
+  }
+
+  /**
+   * Proxy Method to invoke security authorization, Delegates to
+   * {@link GroupBasedPermissionEvaluator#hasDinaPermission(DinaAuthenticatedUser, Object)}.
+   * This method itself does nothing, spring proxies must be called from a
+   * seperate bean. @PreAuthorize is only enabled with keycloak, see
+   * {@link MethodSecurityConfig}. This method will not validate if keycloak is
+   * disabled.
+   *
+   * @param entity
+   */
+  @Override
+  @PreAuthorize("hasDinaPermission(@currentUser, #entity)")
+  public void authorizeUpdate(Object entity) {
+  }
+
+  /**
+   * Proxy Method to invoke security authorization, Delegates to
+   * {@link GroupBasedPermissionEvaluator#hasDinaPermission(DinaAuthenticatedUser, Object)}.
+   * This method itself does nothing, spring proxies must be called from a
+   * seperate bean. @PreAuthorize is only enabled with keycloak, see
+   * {@link MethodSecurityConfig}. This method will not validate if keycloak is
+   * disabled.
+   *
+   * @param entity
+   */
+  @Override
+  @PreAuthorize("hasDinaPermission(@currentUser, #entity)")
+  public void authorizeDelete(Object entity) {
   }
 
 }

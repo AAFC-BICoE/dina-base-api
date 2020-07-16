@@ -165,7 +165,7 @@ public class DinaRepository<D, E extends DinaEntity>
     Object id = PropertyUtils.getProperty(resource, idFieldName);
 
     E entity = dinaService.findOne(id, entityClass);
-    authorizationService.ifPresent(auth -> auth.authenticate(entity));
+    authorizationService.ifPresent(auth -> auth.authorizeUpdate(entity));
 
     if (entity == null) {
       throw new ResourceNotFoundException(
@@ -204,7 +204,7 @@ public class DinaRepository<D, E extends DinaEntity>
     dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
 
     linkRelations(entity, resourceInformation.getRelationshipFields());
-    authorizationService.ifPresent(auth -> auth.authenticate(entity));
+    authorizationService.ifPresent(auth -> auth.authorizeCreate(entity));
     dinaService.create(entity);
 
     return (S) dinaMapper.toDto(entity, entityFieldsPerClass, relations);
@@ -217,7 +217,7 @@ public class DinaRepository<D, E extends DinaEntity>
       throw new ResourceNotFoundException(
           resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
-    authorizationService.ifPresent(auth -> auth.authenticate(entity));
+    authorizationService.ifPresent(auth -> auth.authorizeDelete(entity));
     dinaService.delete(entity);
   }
 
