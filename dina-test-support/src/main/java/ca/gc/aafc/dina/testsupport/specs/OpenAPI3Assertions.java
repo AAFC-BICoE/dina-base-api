@@ -76,7 +76,7 @@ public final class OpenAPI3Assertions {
     }
 
     if (!assertPaths(openApi, resourceName)) {
-      fail("Failed to parse paths for resource: "+ resourceName);      
+      fail("Failed to parse paths for resource: " + resourceName);      
           return;
     }
           
