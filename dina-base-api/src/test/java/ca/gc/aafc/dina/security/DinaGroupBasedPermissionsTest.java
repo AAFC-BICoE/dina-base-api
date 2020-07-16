@@ -87,7 +87,10 @@ public class DinaGroupBasedPermissionsTest {
       .name("name").build();
     baseDAO.create(persisted);
 
-    PersonDTO updateDto = PersonDTO.builder().uuid(persisted.getUuid()).name(expectedName).build();
+    PersonDTO updateDto = PersonDTO.builder()
+      .uuid(persisted.getUuid())
+      .group(GROUP_1)
+      .name(expectedName).build();
     assertThrows(AccessDeniedException.class, () -> dinaRepository.save(updateDto));
   }
 
