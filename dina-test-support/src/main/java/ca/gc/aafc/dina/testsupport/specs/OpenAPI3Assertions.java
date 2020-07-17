@@ -17,10 +17,11 @@ import org.openapi4j.parser.validation.v3.OpenApi3Validator;
 import org.openapi4j.schema.validator.ValidationData;
 import org.openapi4j.schema.validator.v3.SchemaValidator;
 
-import lombok.extern.log4j.Log4j2;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.crnk.core.engine.http.HttpMethod;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Collections of utility test methods related to OpenAPI 3 specifications and
@@ -34,6 +35,7 @@ public final class OpenAPI3Assertions {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
+  private OpenApi3 api3 = null;
   private OpenAPI3Assertions() {
   }
 
@@ -46,9 +48,9 @@ public final class OpenAPI3Assertions {
    * @param schemaName
    * @param apiResponse
    */
-  public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse, String resourceaName) {
+  public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse, String path, HttpMethod httpMethod) {
     if (!Boolean.valueOf(System.getProperty(SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY))) {
-      assertSchema(specsUrl, schemaName, apiResponse, resourceaName);
+      assertSchema(specsUrl, schemaName, apiResponse, path ,httpMethod);
     } else {
       log.warn("Skipping schema validation." + "System property testing.skip-remote-schema-validation set to true.");
     }
@@ -62,7 +64,7 @@ public final class OpenAPI3Assertions {
    * @param schemaName
    * @param apiResponse
    */
-  public static void assertSchema(URL specsUrl, String schemaName, String apiResponse, String resourceName) {
+  public static void assertSchema(URL specsUrl, String schemaName, String apiResponse, String path, HttpMethod httpMethod) {
     Objects.requireNonNull(specsUrl, "specsUrl shall be provided");
     Objects.requireNonNull(schemaName, "schemaName shall be provided");
     Objects.requireNonNull(apiResponse, "apiResponse shall be provided");
@@ -75,8 +77,8 @@ public final class OpenAPI3Assertions {
       return;
     }
 
-    if (!assertPaths(openApi, resourceName)) {
-      fail("Failed to parse paths for resource: " + resourceName);      
+    if (!assertPaths(openApi, path, httpMethod)) {
+      fail(String.format("Failed to parse path: %s at method: %s ", path, httpMethod));      
           return;
     }
           
@@ -148,21 +150,23 @@ public final class OpenAPI3Assertions {
   }
   
   /**
-   * Checking that each path contains resourceName
+   * Checking the given path is existing in Open API 3 spec
+   * and the path contains the provided http method
    * 
    * @param api3
    * @param resourceName
-   * @return true if all paths contain resourceName; false if any path does not contain resourceName 
+   * @return true if spec contains the path and the path has the http method; false otherwise. 
    */
-  private static boolean assertPaths(OpenApi3 api3, String resourceName) {
-    boolean resourceInPath = true;
+  private static boolean assertPaths(OpenApi3 api3, String path, HttpMethod method) {  
+    boolean methodOnPathExists = false;
     for (String key : api3.getPaths().keySet()) {
-      if (!key.contains(resourceName)) {
-        resourceInPath = false;
+      if (key.equals(path)
+          && api3.getPaths().get(key).getOperation(method.name().toLowerCase()) != null) {
+        methodOnPathExists = true;
         break;
       }
-    }
-    return resourceInPath;
+    }    
+   return methodOnPathExists;
   }  
 
 }
