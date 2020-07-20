@@ -373,8 +373,8 @@ public class DinaRepository<D, E extends DinaEntity>
    * @return
    */
   private static boolean isNotMappable(Field field) {
-    int mods = field.getModifiers();
-    return isGenerated(field.getDeclaringClass(), field.getName()) || Modifier.isFinal(mods);
+    return isGenerated(field.getDeclaringClass(), field.getName()) 
+      || Modifier.isFinal(field.getModifiers());
   }
 
   /**
