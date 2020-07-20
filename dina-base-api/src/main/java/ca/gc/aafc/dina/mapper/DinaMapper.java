@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -18,6 +19,7 @@ import com.google.common.collect.Sets;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.hibernate.Hibernate;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import io.crnk.core.resource.annotations.JsonApiRelation;
@@ -285,9 +287,14 @@ public class DinaMapper<D, E> {
     }
 
     Object target = targetType.getDeclaredConstructor().newInstance();
-    Set<String> relation = Sets.union(
-      relationPerClass.get(source.getClass()),
-      relationPerClass.get(targetType));
+
+    Class<?> sourceType = Hibernate.getClass(source);
+    Class<?> targetClass = Hibernate.getClass(target);
+
+    Set<String> set1 = relationPerClass.getOrDefault(sourceType, Collections.emptySet());
+    Set<String> set2 = relationPerClass.getOrDefault(targetClass, Collections.emptySet());
+
+    Set<String> relation = Sets.union(set1, set2);
     mapSourceToTarget(source, target, fields, relation, visited);
     return target;
   }
