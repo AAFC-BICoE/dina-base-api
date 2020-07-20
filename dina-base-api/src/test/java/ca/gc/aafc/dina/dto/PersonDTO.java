@@ -20,6 +20,8 @@ import lombok.NoArgsConstructor;
 @RelatedEntity(Person.class)
 public class PersonDTO {
 
+  public static final String CONSTANT = "HAS CONSTANT";
+
   @JsonApiId
   private UUID uuid;
 
