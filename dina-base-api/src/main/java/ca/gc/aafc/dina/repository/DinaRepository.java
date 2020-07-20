@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.repository;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.AbstractMap.SimpleEntry;
@@ -98,8 +99,7 @@ public class DinaRepository<D, E extends DinaEntity>
     this.resourceFieldsPerClass = parseFieldsPerClass(
       resourceClass,
       new HashMap<>(),
-      field -> isGenerated(field.getDeclaringClass(), field.getName()));
-
+      DinaRepository::isNotMappable);
     this.entityFieldsPerClass = getFieldsPerEntity();
   }
 
@@ -363,6 +363,18 @@ public class DinaRepository<D, E extends DinaEntity>
   private Object returnPersistedObject(String idFieldName, Object object) {
     Object relationID = PropertyUtils.getProperty(object, idFieldName);
     return dinaService.findOneReferenceByNaturalId(object.getClass(), relationID);
+  }
+
+  /**
+   * Returns true if the dina repo should not map the given field. currently that
+   * means if the field is generated (Marked with {@link DerivedDtoField}) or final.
+   *
+   * @param field - field to evaluate
+   * @return
+   */
+  private static boolean isNotMappable(Field field) {
+    int mods = field.getModifiers();
+    return isGenerated(field.getDeclaringClass(), field.getName()) || Modifier.isFinal(mods);
   }
 
   /**
