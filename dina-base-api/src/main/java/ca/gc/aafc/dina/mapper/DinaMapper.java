@@ -19,7 +19,6 @@ import com.google.common.collect.Sets;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.hibernate.Hibernate;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import io.crnk.core.resource.annotations.JsonApiRelation;
@@ -288,11 +287,8 @@ public class DinaMapper<D, E> {
 
     Object target = targetType.getDeclaredConstructor().newInstance();
 
-    Class<?> sourceType = Hibernate.getClass(source);
-    Class<?> targetClass = Hibernate.getClass(target);
-
-    Set<String> set1 = relationPerClass.getOrDefault(sourceType, Collections.emptySet());
-    Set<String> set2 = relationPerClass.getOrDefault(targetClass, Collections.emptySet());
+    Set<String> set1 = relationPerClass.getOrDefault(source.getClass() , Collections.emptySet());
+    Set<String> set2 = relationPerClass.getOrDefault(targetType, Collections.emptySet());
 
     Set<String> relation = Sets.union(set1, set2);
     mapSourceToTarget(source, target, fields, relation, visited);
