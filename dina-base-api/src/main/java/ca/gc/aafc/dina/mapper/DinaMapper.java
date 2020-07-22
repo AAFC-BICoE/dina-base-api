@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import com.google.common.collect.Sets;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
@@ -287,11 +288,16 @@ public class DinaMapper<D, E> {
 
     Object target = targetType.getDeclaredConstructor().newInstance();
 
-    Set<String> set1 = relationPerClass.getOrDefault(source.getClass() , Collections.emptySet());
+    Set<String> set1 = relationPerClass.getOrDefault(source.getClass(), Collections.emptySet());
     Set<String> set2 = relationPerClass.getOrDefault(targetType, Collections.emptySet());
 
-    Set<String> relation = Sets.union(set1, set2);
-    mapSourceToTarget(source, target, fields, relation, visited);
+    if (CollectionUtils.isNotEmpty(set1)) {
+      mapSourceToTarget(source, target, fields, set1, visited);
+    } else if (CollectionUtils.isNotEmpty(set2)) {
+      mapSourceToTarget(source, target, fields, set2, visited);
+    } else {
+      mapSourceToTarget(source, target, fields, Collections.emptySet(), visited);
+    }
     return target;
   }
 
