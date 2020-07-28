@@ -289,6 +289,10 @@ public class DinaMapper<D, E> {
     Set<String> set1 = relationPerClass.getOrDefault(source.getClass(), Collections.emptySet());
     Set<String> set2 = relationPerClass.getOrDefault(targetType, Collections.emptySet());
 
+    /**
+     * Here we check which side had the relationships ( source or target ), only one
+     * side contains the relationships.
+     */
     if (CollectionUtils.isNotEmpty(set1)) {
       mapSourceToTarget(source, target, fields, set1, visited);
     } else if (CollectionUtils.isNotEmpty(set2)) {
