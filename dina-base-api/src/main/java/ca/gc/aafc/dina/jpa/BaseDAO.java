@@ -188,7 +188,10 @@ public class BaseDAO {
    * @return returns the managed instance the state was merged to.
    */
   public <E> E update(E entity) {
-    return entityManager.merge(entity);
+    E result = entityManager.merge(entity);
+    // Flush here to throw any validation errors:
+    entityManager.flush();
+    return result;
   }
 
   /**
