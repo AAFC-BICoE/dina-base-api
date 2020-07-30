@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -14,9 +15,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.collect.Sets;
-
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
@@ -285,10 +285,21 @@ public class DinaMapper<D, E> {
     }
 
     Object target = targetType.getDeclaredConstructor().newInstance();
-    Set<String> relation = Sets.union(
-      relationPerClass.get(source.getClass()),
-      relationPerClass.get(targetType));
-    mapSourceToTarget(source, target, fields, relation, visited);
+
+    Set<String> set1 = relationPerClass.getOrDefault(source.getClass(), Collections.emptySet());
+    Set<String> set2 = relationPerClass.getOrDefault(targetType, Collections.emptySet());
+
+    /**
+     * Here we check which side had the relationships ( source or target ), only one
+     * side contains the relationships.
+     */
+    if (CollectionUtils.isNotEmpty(set1)) {
+      mapSourceToTarget(source, target, fields, set1, visited);
+    } else if (CollectionUtils.isNotEmpty(set2)) {
+      mapSourceToTarget(source, target, fields, set2, visited);
+    } else {
+      mapSourceToTarget(source, target, fields, Collections.emptySet(), visited);
+    }
     return target;
   }
 
