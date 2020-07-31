@@ -39,7 +39,7 @@ include::layers.plantuml[]
 === Mapper Layer
 * Responsible for mapping entities to their DTO equivalents and vice versa.
 * These are simple field to field bean mapping operations that can be extended to apply custom field mappings for specific fields.
-* Mappers should have mechanisms in place to allow for the exclusion of fields and/or relationships during the mapping process.
+* Mappers have mechanisms in place to allow for the exclusion of fields and/or relationships during the mapping process.
 * Mappers should not communicate with the service layer to map relations directly.
 
 == Resource Id as UUID
