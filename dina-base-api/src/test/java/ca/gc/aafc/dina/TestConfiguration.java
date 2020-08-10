@@ -35,8 +35,9 @@ import ca.gc.aafc.dina.repository.JpaDtoRepository;
 import ca.gc.aafc.dina.repository.JpaRelationshipRepository;
 import ca.gc.aafc.dina.repository.JpaResourceRepository;
 import ca.gc.aafc.dina.repository.meta.JpaTotalMetaInformationProvider;
-import ca.gc.aafc.dina.service.GroupAuthorizationService;
+import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaServiceTest.DinaServiceTestImplementation;
+import ca.gc.aafc.dina.service.GroupAuthorizationService;
 
 /**
  * Small test application running on dina-base-api
@@ -157,11 +158,12 @@ public class TestConfiguration {
   }
 
   @Bean
-  public DinaRepository<PersonDTO, Person> dinaRepository(DinaPersonService service) {
+  public DinaRepository<PersonDTO, Person> dinaRepository(DinaPersonService service, Optional<AuditService> auditService) {
     DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(PersonDTO.class);
     return new DinaRepository<PersonDTO,Person>(
       service,
       Optional.ofNullable(groupAuthService.orElse(null)),
+      auditService,
       dinaMapper,
       PersonDTO.class,
       Person.class,
