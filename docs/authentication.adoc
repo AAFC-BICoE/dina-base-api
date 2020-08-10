@@ -55,9 +55,42 @@ Where each method is called by the dina repo for the appropriate operation on a 
 === Step by Step: Using a custom Dina Authorization Service
 
 * Create your Dina Authorization Service implementation
+
+```java
+@Service
+@RequiredArgsConstructor
+public class CustomAuthorizationService implements DinaAuthorizationService {
+
+  @Inject
+  private final Optional<DinaAuthenticatedUser> user;
+
+  @Override
+  public void authorizeCreate(Object entity) {
+    if (!(user.isPresent()) || !(entity instanceof DinaEntity)) {
+      // skip
+    }
+
+    DinaEntity dinaEntity = (DinaEntity) entity;
+    Set<String> userGroups = user.get().getGroups();
+
+    if (CollectionUtils.isEmpty(userGroups) || dinaEntity.getGroup() == null) {
+      throw new ForbiddenException("You shall not pass");
+    }
+
+    if (userGroups.stream().noneMatch(dinaEntity.getGroup()::equalsIgnoreCase)) {
+      throw new ForbiddenException("You shall not pass");
+    }
+  }
+
+  .....
+```
+
 * Pass your Dina Authorization Service to your Dina Repository
 
 ```java
+  @Inject
+  private Optional<CustomAuthorizationService> authorizationService;
+
   @Bean
   public DinaRepository<PersonDTO, Person> dinaRepository() {
     return new DinaRepository<PersonDTO,Person>(
