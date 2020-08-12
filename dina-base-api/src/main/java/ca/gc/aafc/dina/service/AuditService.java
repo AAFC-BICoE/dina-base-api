@@ -58,8 +58,7 @@ public class AuditService {
 
   /**
    * Commit a snapshot for a given object, A dina authenticated user will be set
-   * as the commit author. a dina user bean must be present for a snap shot to be
-   * generated.
+   * as the commit author. If a user is not present the author will be anonymous.
    * 
    * @param obj - domain object state to persist
    */
@@ -73,8 +72,8 @@ public class AuditService {
 
   /**
    * Commit a shallow delete snapshot for a given object, A dina authenticated
-   * user will be set as the commit author. a dina user bean must be present for a
-   * snap shot to be generated.
+   * user will be set as the commit author. If a user is not present the author
+   * will be anonymous.
    * 
    * @param obj - domain object state to persist
    */
