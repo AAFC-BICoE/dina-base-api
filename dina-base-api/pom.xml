@@ -23,6 +23,7 @@
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
+    <javers.version>5.10.4</javers.version>
   </properties>
 
   <dependencies>
@@ -75,6 +76,12 @@
       <groupId>com.github.tennaito</groupId>
       <artifactId>rsql-jpa</artifactId>
       <version>${rsql-jpa.version}</version>
+    </dependency>
+    <!-- JaVers auditing -->
+    <dependency>
+      <groupId>org.javers</groupId>
+      <artifactId>javers-spring-boot-starter-sql</artifactId>
+      <version>${javers.version}</version>
     </dependency>
     <!--Util-->
     <dependency>
