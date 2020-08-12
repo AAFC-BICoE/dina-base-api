@@ -18,17 +18,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 
 @Service
 @RequiredArgsConstructor
-@Log4j2
 @ConditionalOnProperty(value = "dina.auditing.enabled", havingValue = "true")
 public class AuditService {
 
   private final Javers javers;
   private final NamedParameterJdbcTemplate jdbcTemplate;
   private final Optional<DinaAuthenticatedUser> user;
+
+  public static final String ANONYMOUS = "anonymous";
 
   /**
    * Returns a list of Audit snapshots filtered by a given instance and author.
@@ -64,7 +64,11 @@ public class AuditService {
    * @param obj - domain object state to persist
    */
   public void audit(@NonNull Object obj) {
-    user.ifPresentOrElse(u -> this.javers.commit(u.getUsername(), obj), () -> logNoUser());
+    if (user.isPresent()) {
+      this.javers.commit(user.get().getUsername(), obj);
+    } else {
+      this.javers.commit(ANONYMOUS, obj);
+    }
   }
 
   /**
@@ -75,9 +79,11 @@ public class AuditService {
    * @param obj - domain object state to persist
    */
   public void auditDeleteEvent(@NonNull Object obj) {
-    user.ifPresentOrElse(
-      u -> this.javers.commitShallowDelete(u.getUsername(), obj),
-      () -> logNoUser());
+    if (user.isPresent()) {
+      this.javers.commitShallowDelete(user.get().getUsername(), obj);
+    } else {
+      this.javers.commitShallowDelete(ANONYMOUS, obj);
+    }
   }
 
   /**
@@ -156,10 +162,6 @@ public class AuditService {
         ? "and global_id_fk = (select global_id_pk from jv_global_id where local_id = :id and type_name = :type)"
         : "");
     return sql;
-  }
-
-  private static void logNoUser() {
-    log.warn("No Dina Authenticated user, Auditing has been skipped!");
   }
 
   @Builder
