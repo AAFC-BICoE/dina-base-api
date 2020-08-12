@@ -26,6 +26,11 @@ import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
 @ConditionalOnProperty(value = "dina.auditing.enabled", havingValue = "true")
 public class AuditSnapshotRepository extends ReadOnlyResourceRepositoryBase<AuditSnapshotDto, Long> {
 
+  private static final long DEFAULT_SKIP = 0L;
+  private static final long DEFAULT_LIMIT = 100L;
+  private static final String INSTANCE_FILTER_VALUE = "instanceId";
+  private static final String AUTHOR_FILTER_VALUE = "author";
+
   private final AuditService service;
 
   public AuditSnapshotRepository(AuditService service) {
@@ -35,12 +40,12 @@ public class AuditSnapshotRepository extends ReadOnlyResourceRepositoryBase<Audi
 
   @Override
   public ResourceList<AuditSnapshotDto> findAll(QuerySpec qs) {
-    int limit = Optional.ofNullable(qs.getLimit()).orElse(100L).intValue();
-    int skip = Optional.ofNullable(qs.getOffset()).orElse(0L).intValue();
+    int limit = Optional.ofNullable(qs.getLimit()).orElse(DEFAULT_LIMIT).intValue();
+    int skip = Optional.ofNullable(qs.getOffset()).orElse(DEFAULT_SKIP).intValue();
 
     Map<String, String> filters = getFilterMap(qs);
-    String authorFilter = filters.get("author");
-    String instanceFilter = filters.get("instanceId");
+    String authorFilter = filters.get(AUTHOR_FILTER_VALUE);
+    String instanceFilter = filters.get(INSTANCE_FILTER_VALUE);
 
     AuditInstance instance = AuditInstance.fromString(instanceFilter).orElse(null);
 
