@@ -67,7 +67,7 @@ public class CustomAuthorizationService implements DinaAuthorizationService {
   @Override
   public void authorizeCreate(Object entity) {
     if (!(user.isPresent()) || !(entity instanceof DinaEntity)) {
-      // skip
+      return;
     }
 
     DinaEntity dinaEntity = (DinaEntity) entity;
