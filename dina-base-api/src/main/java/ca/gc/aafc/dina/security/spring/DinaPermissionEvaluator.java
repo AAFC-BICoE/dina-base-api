@@ -9,7 +9,6 @@ import org.springframework.security.core.Authentication;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
-import ca.gc.aafc.dina.security.DinaRole;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -64,13 +63,6 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
     }
 
     return userGroups.stream().anyMatch(entity.getGroup()::equalsIgnoreCase);
-  }
-
-  public boolean hasDinaRole(DinaAuthenticatedUser user, DinaRole role) {
-    if (user == null || role == null) {
-      return false;
-    }
-    return user.getRolesPerGroup().values().stream().flatMap(Set::stream).anyMatch(role::equals);
   }
 
   @Override
