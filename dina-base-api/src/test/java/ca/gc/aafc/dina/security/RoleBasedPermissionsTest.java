@@ -10,6 +10,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import org.apache.commons.lang3.RandomStringUtils;
+import org.hibernate.annotations.NaturalId;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,6 +19,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
@@ -56,9 +59,23 @@ public class RoleBasedPermissionsTest {
   private DinaRepository<Dto, TestEntity> dinaRepository;
 
   @Test
-  public void name() {
-    assertNotNull(dinaRepository);
-    dinaRepository.create(new Dto());
+  public void create_AuthorizedUser_AllowsOperation() {
+    Dto dto = dinaRepository.create(new Dto());
+    assertNotNull(dto.getUuid());
+  }
+
+  @Test
+  public void update_AuthorizedUser_AllowsOperation() {
+    Dto dto = dinaRepository.create(new Dto());
+
+    dto.setName(RandomStringUtils.random(4));
+    dinaRepository.save(dto);
+  }
+
+  @Test
+  public void delete_AuthorizedUser_AllowsOperation() {
+    Dto dto = dinaRepository.create(new Dto());
+    dinaRepository.delete(dto.getUuid());
   }
 
   @Data
@@ -68,15 +85,18 @@ public class RoleBasedPermissionsTest {
     @Id
     @GeneratedValue
     private Integer id;
+    @NaturalId
     private UUID uuid;
+    private String name;
   }
 
   @Data
   @JsonApiResource(type = "Dto")
+  @RelatedEntity(TestEntity.class)
   public static class Dto {
     @JsonApiId
     private UUID uuid;
-
+    private String name;
   }
 
   static class Repo extends DinaRepository<Dto, TestEntity> {
@@ -101,6 +121,11 @@ public class RoleBasedPermissionsTest {
 
     public Service(@NonNull BaseDAO baseDAO) {
       super(baseDAO);
+    }
+
+    @Override
+    protected void preCreate(TestEntity entity) {
+      entity.setUuid(UUID.randomUUID());
     }
 
   }
