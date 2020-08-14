@@ -7,18 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.hibernate.annotations.NaturalId;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.mockito.Mockito;
@@ -33,22 +28,22 @@ import org.springframework.test.context.ActiveProfiles;
 
 import ca.gc.aafc.dina.DinaBaseApiAutoConfiguration;
 import ca.gc.aafc.dina.TestConfiguration;
-import ca.gc.aafc.dina.dto.RelatedEntity;
-import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.dto.DepartmentDto;
+import ca.gc.aafc.dina.dto.EmployeeDto;
+import ca.gc.aafc.dina.dto.PersonDTO;
+import ca.gc.aafc.dina.entity.Department;
+import ca.gc.aafc.dina.entity.Employee;
+import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.JpaDtoMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
-import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.service.RoleAuthorizationService;
 import io.crnk.core.exception.ForbiddenException;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiResource;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import io.crnk.core.repository.ResourceRepository;
 
 @SpringBootTest
 @ActiveProfiles({ "RoleBasedPermissionsTest" })
@@ -58,7 +53,7 @@ public class RoleBasedPermissionsTest {
   @ComponentScan(basePackageClasses = DinaBaseApiAutoConfiguration.class, excludeFilters = {
       @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = TestConfiguration.class) })
   @Profile({ "RoleBasedPermissionsTest" })
-  @EntityScan(basePackageClasses = RoleBasedPermissionsTest.class)
+  @EntityScan(basePackageClasses = { RoleBasedPermissionsTest.class, Department.class })
   static class RoleTestConfig {
 
     @Bean
@@ -72,7 +67,23 @@ public class RoleBasedPermissionsTest {
     };
 
     @Bean
-    public DinaRepository<Dto, TestEntity> repo(
+    @SuppressWarnings("unchecked")
+    public DinaRepository<DepartmentDto, Department> mockDepartmentRepo() {
+      DinaRepository<DepartmentDto, Department> mock = Mockito.mock(DinaRepository.class);
+      BDDMockito.given(mock.getResourceClass()).willReturn(DepartmentDto.class);
+      return mock;
+    };
+
+    @Bean
+    @SuppressWarnings("unchecked")
+    public ResourceRepository<EmployeeDto, Employee> mockEmployeeRepo() {
+      ResourceRepository<EmployeeDto, Employee> mock = Mockito.mock(ResourceRepository.class);
+      BDDMockito.given(mock.getResourceClass()).willReturn(EmployeeDto.class);
+      return mock;
+    };
+
+    @Bean
+    public DinaRepository<PersonDTO, Person> repo(
       BaseDAO baseDAO,
       DinaFilterResolver filterResolver,
       DinaAuthenticatedUser roleBasedUser
@@ -85,7 +96,7 @@ public class RoleBasedPermissionsTest {
   }
 
   @Inject
-  private DinaRepository<Dto, TestEntity> dinaRepository;
+  private DinaRepository<PersonDTO, Person> dinaRepository;
 
   @Inject
   public DinaAuthenticatedUser roleBasedUser;
@@ -98,20 +109,20 @@ public class RoleBasedPermissionsTest {
   @Test
   public void create_AuthorizedUser_AllowsOperation() {
     BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(ROLES_PER_GROUP);
-    Dto dto = dinaRepository.create(new Dto());
+    PersonDTO dto = dinaRepository.create(new PersonDTO());
     assertNotNull(dto.getUuid());
   }
 
   @Test
   public void create_UnAuthorizedUser_ThrowsForbiddenException() {
     BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(INVALID_ROLES);
-    assertThrows(ForbiddenException.class, () -> dinaRepository.create(new Dto()));
+    assertThrows(ForbiddenException.class, () -> dinaRepository.create(new PersonDTO()));
   }
 
   @Test
   public void update_AuthorizedUser_AllowsOperation() {
     BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(ROLES_PER_GROUP);
-    Dto dto = dinaRepository.create(new Dto());
+    PersonDTO dto = dinaRepository.create(new PersonDTO());
     dto.setName(RandomStringUtils.random(4));
     dinaRepository.save(dto);
   }
@@ -119,7 +130,7 @@ public class RoleBasedPermissionsTest {
   @Test
   public void update_UnAuthorizedUser_ThrowsForbiddenException() {
     BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(ROLES_PER_GROUP);
-    Dto dto = dinaRepository.create(new Dto());
+    PersonDTO dto = dinaRepository.create(new PersonDTO());
     BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(INVALID_ROLES);
     assertThrows(ForbiddenException.class, () -> dinaRepository.save(dto));
   }
@@ -127,40 +138,19 @@ public class RoleBasedPermissionsTest {
   @Test
   public void delete_AuthorizedUser_AllowsOperation() {
     BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(ROLES_PER_GROUP);
-    Dto dto = dinaRepository.create(new Dto());
+    PersonDTO dto = dinaRepository.create(new PersonDTO());
     dinaRepository.delete(dto.getUuid());
   }
 
   @Test
   public void delete_UnAuthorizedUser_ThrowsForbiddenException() {
     BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(ROLES_PER_GROUP);
-    Dto dto = dinaRepository.create(new Dto());
+    PersonDTO dto = dinaRepository.create(new PersonDTO());
     BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(INVALID_ROLES);
     assertThrows(ForbiddenException.class, () -> dinaRepository.delete(dto.getUuid()));
   }
 
-  @Data
-  @NoArgsConstructor
-  @Entity
-  public static class TestEntity implements DinaEntity {
-    @Id
-    @GeneratedValue
-    private Integer id;
-    @NaturalId
-    private UUID uuid;
-    private String name;
-  }
-
-  @Data
-  @JsonApiResource(type = "Dto")
-  @RelatedEntity(TestEntity.class)
-  public static class Dto {
-    @JsonApiId
-    private UUID uuid;
-    private String name;
-  }
-
-  static class Repo extends DinaRepository<Dto, TestEntity> {
+  static class Repo extends DinaRepository<PersonDTO, Person> {
 
     public Repo(
       BaseDAO baseDAO,
@@ -168,25 +158,12 @@ public class RoleBasedPermissionsTest {
       DinaFilterResolver filterResolver
     ) {
       super(
-        new Service(baseDAO),
+        new DinaPersonService(baseDAO),
         authorizationService,
-        new DinaMapper<>(Dto.class), 
-        Dto.class,
-        TestEntity.class,
+        new DinaMapper<>(PersonDTO.class), 
+        PersonDTO.class,
+        Person.class,
         filterResolver);
-    }
-
-  }
-
-  static class Service extends DinaService<TestEntity> {
-
-    public Service(@NonNull BaseDAO baseDAO) {
-      super(baseDAO);
-    }
-
-    @Override
-    protected void preCreate(TestEntity entity) {
-      entity.setUuid(UUID.randomUUID());
     }
 
   }
