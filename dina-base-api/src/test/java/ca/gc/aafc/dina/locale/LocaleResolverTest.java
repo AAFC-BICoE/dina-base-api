@@ -14,6 +14,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -25,9 +27,11 @@ import ca.gc.aafc.dina.mapper.JpaDtoMapper;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootApplication
 @SpringBootTest(classes = { LocaleResolverTest.LocaleResolverTestConfig.class, DinaBaseApiAutoConfiguration.class })
+@ActiveProfiles({ "LocaleResolverTest" })
 public class LocaleResolverTest {
 
-  @Configuration()
+  @Configuration
+  @Profile({ "LocaleResolverTest" })
   static class LocaleResolverTestConfig {
     // this bean will be injected into the OrderServiceTest class
     @Bean

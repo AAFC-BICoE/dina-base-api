@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.security;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -24,16 +25,21 @@ import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Profile;
+import org.springframework.test.context.ActiveProfiles;
 
+import ca.gc.aafc.dina.DinaBaseApiAutoConfiguration;
 import ca.gc.aafc.dina.TestConfiguration;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.mapper.JpaDtoMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
-import ca.gc.aafc.dina.security.RoleBasedPermissionsTest.RoleTestConfig;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.service.RoleAuthorizationService;
@@ -44,12 +50,21 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-@SpringBootTest(classes = { TestConfiguration.class, RoleTestConfig.class })
+@SpringBootTest
+@ActiveProfiles({ "RoleBasedPermissionsTest" })
 public class RoleBasedPermissionsTest {
 
   @Configuration
+  @ComponentScan(basePackageClasses = DinaBaseApiAutoConfiguration.class, excludeFilters = {
+      @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = TestConfiguration.class) })
+  @Profile({ "RoleBasedPermissionsTest" })
   @EntityScan(basePackageClasses = RoleBasedPermissionsTest.class)
   static class RoleTestConfig {
+
+    @Bean
+    public JpaDtoMapper jpaDtoMapper() {
+      return new JpaDtoMapper(new HashMap<>(), new HashMap<>());
+    }
 
     @Bean(name = "roleBasedUser")
     public DinaAuthenticatedUser user() {
