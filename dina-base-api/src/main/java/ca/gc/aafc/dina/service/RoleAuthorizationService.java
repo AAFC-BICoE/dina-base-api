@@ -30,7 +30,7 @@ public class RoleAuthorizationService implements DinaAuthorizationService {
 
   private void authorize() {
     if (!RoleAuthorizationService.hasDinaRole(this.user, this.role)) {
-      throw new ForbiddenException("");
+      throw new ForbiddenException("User does not have permissions for this operation.");
     }
   }
 
