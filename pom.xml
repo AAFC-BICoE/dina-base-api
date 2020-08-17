@@ -198,6 +198,9 @@
         <configuration>
           <format>xml</format>
           <failBuildOnCVSS>8</failBuildOnCVSS>
+          <suppressionFiles>
+            <suppressionFile>owasp-suppression.xml</suppressionFile> <!-- Required due to bug in plugin https://github.com/jeremylong/DependencyCheck/issues/1827 -->
+          </suppressionFiles>
         </configuration>
       </plugin>
     </plugins>
