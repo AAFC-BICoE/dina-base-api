@@ -1,0 +1,35 @@
+= Setting up your Dina Repo for auditing
+
+== Prepare your DTO
+
+Your DTO must be prepared with specific annotations specifically @TypeName, @Id, @PropertyName.
+
+With these annotations, javers can properly identify the type name and id for a specific DTO.
+
+The following code snip shows an example of a DTO with the needed annotations.
+
+[source,java]
+----
+@TypeName(PersonDTO.TYPE_NAME)
+public class PersonDTO {
+
+  public static final String TYPE_NAME = "person";
+
+  @Id
+  @PropertyName("id")
+  private UUID uuid;
+
+}
+----
+
+This would tell the underlying frame work snap shots persisted with this DTO will have type _person_, and the UUID will be used to identify the record for this type.
+
+== Pass the Auditing service bean to your Dina repo
+
+When the application runs with the property `dina.auditing.enabled = true`, an AuditService bean is available in the application context.
+
+Simply pass this bean to your dina repository and auditing will be enabled for CREATE/DELETE/UPDATE operations.
+
+== Accessing the Auditing Endpoint
+
+When the application runs with the property `dina.auditing.enabled = true`, the audit endpoint automatically starts.
