@@ -4,16 +4,7 @@
 
 A dina repository can optionally take a DinaAuthorizationService implementation, which if present will be used to call a set of specific methods for CREATE/UPDATE/DELETE operations.
 
-The DinaAuthorizationService is an interface defining the following methods:
-
-[source,java]
-----
-    void authorizeCreate(Object entity);
-
-    void authorizeUpdate(Object entity);
-
-    void authorizeDelete(Object entity);
-----
+The DinaAuthorizationService is an interface defining the following methods: _authorizeCreate, authorizeUpdate, authorizeDelete_.
 
 Where each method is called by the dina repo for the appropriate operation on a given entity for that repo's domain.
 
@@ -52,21 +43,6 @@ public class CustomAuthorizationService implements DinaAuthorizationService {
 ----
 
 * Pass your Dina Authorization Service to your Dina Repository
-
-[source,java]
-----
-  @Inject
-  private Optional<CustomAuthorizationService> authorizationService;
-
-  @Bean
-  public DinaRepository<PersonDTO, Person> dinaRepository() {
-    return new DinaRepository<PersonDTO,Person>(
-      dinaDatabaseService,
-      authorizationService,
-
-    ....
-  }
-----
 
 * Your dina repo will now use your Dina Authorization Service.
 
