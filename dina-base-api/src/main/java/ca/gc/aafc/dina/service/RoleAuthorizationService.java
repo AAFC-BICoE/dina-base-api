@@ -1,11 +1,11 @@
 package ca.gc.aafc.dina.service;
 
-import java.util.Set;
-
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import ca.gc.aafc.dina.security.DinaRole;
 import io.crnk.core.exception.ForbiddenException;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Set;
 
 @RequiredArgsConstructor
 public class RoleAuthorizationService implements DinaAuthorizationService {
@@ -29,7 +29,7 @@ public class RoleAuthorizationService implements DinaAuthorizationService {
   }
 
   private void authorize() {
-    if(!RoleAuthorizationService.hasDinaRole(this.user, this.role)){
+    if (!RoleAuthorizationService.hasDinaRole(this.user, this.role)) {
       throw new ForbiddenException("");
     }
   }

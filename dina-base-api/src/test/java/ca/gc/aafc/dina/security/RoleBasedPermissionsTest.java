@@ -1,31 +1,5 @@
 package ca.gc.aafc.dina.security;
 
-import static org.junit.Assert.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.inject.Inject;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.Test;
-import org.mockito.BDDMockito;
-import org.mockito.Mockito;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.context.annotation.Profile;
-import org.springframework.test.context.ActiveProfiles;
-
 import ca.gc.aafc.dina.DinaBaseApiAutoConfiguration;
 import ca.gc.aafc.dina.TestConfiguration;
 import ca.gc.aafc.dina.dto.DepartmentDto;
@@ -42,8 +16,27 @@ import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.RoleAuthorizationService;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import io.crnk.core.exception.ForbiddenException;
 import io.crnk.core.repository.ResourceRepository;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.Test;
+import org.mockito.BDDMockito;
+import org.mockito.Mockito;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.*;
+import org.springframework.test.context.ActiveProfiles;
+
+import javax.inject.Inject;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
 @ActiveProfiles({ "RoleBasedPermissionsTest" })
@@ -51,9 +44,9 @@ public class RoleBasedPermissionsTest {
 
   @Configuration
   @ComponentScan(basePackageClasses = DinaBaseApiAutoConfiguration.class, excludeFilters = {
-      @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = TestConfiguration.class) })
-  @Profile({ "RoleBasedPermissionsTest" })
-  @EntityScan(basePackageClasses = { RoleBasedPermissionsTest.class, Department.class })
+    @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = TestConfiguration.class)})
+  @Profile({"RoleBasedPermissionsTest"})
+  @EntityScan(basePackageClasses = {RoleBasedPermissionsTest.class, Department.class})
   static class RoleTestConfig {
 
     @Bean
@@ -64,7 +57,7 @@ public class RoleBasedPermissionsTest {
     @Bean(name = "roleBasedUser")
     public DinaAuthenticatedUser user() {
       return Mockito.mock(DinaAuthenticatedUser.class);
-    };
+    }
 
     @Bean
     @SuppressWarnings("unchecked")
@@ -72,7 +65,7 @@ public class RoleBasedPermissionsTest {
       DinaRepository<DepartmentDto, Department> mock = Mockito.mock(DinaRepository.class);
       BDDMockito.given(mock.getResourceClass()).willReturn(DepartmentDto.class);
       return mock;
-    };
+    }
 
     @Bean
     @SuppressWarnings("unchecked")
@@ -80,7 +73,7 @@ public class RoleBasedPermissionsTest {
       ResourceRepository<EmployeeDto, Employee> mock = Mockito.mock(ResourceRepository.class);
       BDDMockito.given(mock.getResourceClass()).willReturn(EmployeeDto.class);
       return mock;
-    };
+    }
 
     @Bean
     public DinaRepository<PersonDTO, Person> repo(
