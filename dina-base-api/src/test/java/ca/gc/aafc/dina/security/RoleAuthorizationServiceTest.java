@@ -36,7 +36,6 @@ public class RoleAuthorizationServiceTest {
       getUser(INVALID_ROLES));
 
     assertThrows(ForbiddenException.class, () -> service.authorizeCreate("obj"));
-
   }
 
   @Test
