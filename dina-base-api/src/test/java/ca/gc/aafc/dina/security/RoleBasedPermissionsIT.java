@@ -153,6 +153,7 @@ public class RoleBasedPermissionsIT {
       super(
         new DinaPersonService(baseDAO),
         authorizationService,
+        Optional.empty(),
         new DinaMapper<>(PersonDTO.class), 
         PersonDTO.class,
         Person.class,
