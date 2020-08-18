@@ -40,13 +40,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
 @ActiveProfiles({ "RoleBasedPermissionsTest" })
-public class RoleBasedPermissionsTest {
+public class RoleBasedPermissionsIT {
 
   @Configuration
   @ComponentScan(basePackageClasses = DinaBaseApiAutoConfiguration.class, excludeFilters = {
     @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = TestConfiguration.class)})
   @Profile({"RoleBasedPermissionsTest"})
-  @EntityScan(basePackageClasses = {RoleBasedPermissionsTest.class, Department.class})
+  @EntityScan(basePackageClasses = {RoleBasedPermissionsIT.class, Department.class})
   static class RoleTestConfig {
 
     @Bean
