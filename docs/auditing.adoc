@@ -22,7 +22,9 @@ public class PersonDTO {
 }
 ----
 
-This would tell the underlying frame work snap shots persisted with this DTO will have type _person_, and the UUID will be used to identify the record for this type.
+This would tell the underlying frame work, snap shots persisted with this DTO will have type `person`, and the `UUID` will be used to identify the record for this type.
+
+Check out the supported annotations https://javers.org/documentation/domain-configuration/#supported-annotations[HERE] for more details on how you can configure your domain.
 
 == Pass the Auditing service bean to your Dina repo
 
@@ -33,3 +35,10 @@ Simply pass this bean to your dina repository and auditing will be enabled for C
 == Accessing the Auditing Endpoint
 
 When the application runs with the property `dina.auditing.enabled = true`, the audit endpoint automatically starts.
+
+JSONAPI endpoint at /audit-snapshot , implemented by the AuditSnapshotRepository class.
+
+* Page results using query parameters page[limit] and page[offset].
+* Filter the results:
+** By author: `filter[author]=authorname`
+** By instance: `filter[instanceId]=metadata/0fc10c52-91b6-4a9b-be98-e3f75b9928f7`
