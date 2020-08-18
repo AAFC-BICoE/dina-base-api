@@ -16,10 +16,10 @@
   </parent>
 
   <properties>
-    <keycloak-starter.version>9.0.3</keycloak-starter.version>
+    <keycloak-starter.version>11.0.0</keycloak-starter.version>
     <jcip-annotations.version>1.0</jcip-annotations.version>
     <local-javax-jaxb.version>2.3.0.1</local-javax-jaxb.version>
-    <javax.activation.version>1.1.1</javax.activation.version>
+    <javax.activation.version>1.2.0</javax.activation.version>
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
@@ -57,7 +57,7 @@
     </dependency>
     <dependency>
       <groupId>javax.activation</groupId>
-      <artifactId>activation</artifactId>
+      <artifactId>javax.activation-api</artifactId>
       <version>${javax.activation.version}</version>
     </dependency>
     <!-- crnk -->
