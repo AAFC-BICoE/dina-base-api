@@ -7,6 +7,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.engine.information.resource.ResourceField;
@@ -67,6 +69,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private final DinaService<E> dinaService;
   private final Optional<DinaAuthorizationService> authorizationService;
+  private final Optional<AuditService> auditService;
 
   private final DinaMapper<D, E> dinaMapper;
   private final DinaFilterResolver filterResolver;
@@ -85,6 +88,7 @@ public class DinaRepository<D, E extends DinaEntity>
   public DinaRepository(
     @NonNull DinaService<E> dinaService,
     @NonNull Optional<DinaAuthorizationService> authorizationService,
+    @NonNull Optional<AuditService> auditService,
     @NonNull DinaMapper<D, E> dinaMapper,
     @NonNull Class<D> resourceClass,
     @NonNull Class<E> entityClass,
@@ -92,6 +96,7 @@ public class DinaRepository<D, E extends DinaEntity>
   ) {
     this.dinaService = dinaService;
     this.authorizationService = authorizationService;
+    this.auditService = auditService;
     this.dinaMapper = dinaMapper;
     this.resourceClass = resourceClass;
     this.entityClass = entityClass;
@@ -178,10 +183,10 @@ public class DinaRepository<D, E extends DinaEntity>
       .collect(Collectors.toSet());
 
     dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
-
     linkRelations(entity, resourceInformation.getRelationshipFields());
 
     dinaService.update(entity);
+    auditService.ifPresent(service -> service.audit(resource));
 
     return resource;
   }
@@ -204,10 +209,14 @@ public class DinaRepository<D, E extends DinaEntity>
     dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
 
     linkRelations(entity, resourceInformation.getRelationshipFields());
+
     authorizationService.ifPresent(auth -> auth.authorizeCreate(entity));
     dinaService.create(entity);
 
-    return (S) dinaMapper.toDto(entity, entityFieldsPerClass, relations);
+    D dto = dinaMapper.toDto(entity, entityFieldsPerClass, relations);
+    auditService.ifPresent(service -> service.audit(dto));
+
+    return (S) dto;
   }
 
   @Override
@@ -219,6 +228,9 @@ public class DinaRepository<D, E extends DinaEntity>
     }
     authorizationService.ifPresent(auth -> auth.authorizeDelete(entity));
     dinaService.delete(entity);
+
+    D dto = dinaMapper.toDto(entity, entityFieldsPerClass, Collections.emptySet());
+    auditService.ifPresent(service -> service.auditDeleteEvent(dto));
   }
 
   /**
