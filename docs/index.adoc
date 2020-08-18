@@ -15,3 +15,5 @@ include::testing.adoc[]
 include::authentication.adoc[]
 
 include::authorization.adoc[]
+
+include::auditing.adoc[]
