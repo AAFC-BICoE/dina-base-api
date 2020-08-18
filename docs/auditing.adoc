@@ -1,5 +1,7 @@
 = Setting up your Dina Repo for auditing
 
+ Note: Dina base does not manage the database schema and that responisiblity belongs to the specific module.
+
 == Prepare your DTO
 
 Your DTO must be prepared with specific annotations specifically @TypeName, @Id, @PropertyName.
