@@ -16,12 +16,14 @@ import org.springframework.web.context.annotation.RequestScope;
 @ConditionalOnProperty(value = "dev-user.enabled", havingValue = "true")
 public class DevUserConfig {
 
+  public static final String USERNAME = "dev";
+
   @Bean
   @RequestScope
   public DinaAuthenticatedUser currentUser() {
     return DinaAuthenticatedUser.builder()
       .agentIdentifer("c628fc6f-c9ad-4bb6-a187-81eb7884bdd7")
-      .username("dev")
+      .username(USERNAME)
       .rolesPerGroup(ImmutableMap.of("dev-group", Sets.newHashSet(DinaRole.STAFF)))
       .build();
   }

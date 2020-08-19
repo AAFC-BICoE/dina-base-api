@@ -1,13 +1,9 @@
 package ca.gc.aafc.dina.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import java.util.Collections;
-import java.util.List;
-
-import javax.inject.Inject;
-
+import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.dto.EmployeeDto;
+import ca.gc.aafc.dina.security.DevUserConfig;
+import ca.gc.aafc.dina.service.AuditService.AuditInstance;
 import org.apache.commons.lang3.RandomUtils;
 import org.javers.core.Javers;
 import org.javers.core.metamodel.object.CdoSnapshot;
@@ -17,12 +13,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import ca.gc.aafc.dina.DinaUserConfig;
-import ca.gc.aafc.dina.TestConfiguration;
-import ca.gc.aafc.dina.dto.EmployeeDto;
-import ca.gc.aafc.dina.service.AuditService.AuditInstance;
+import javax.inject.Inject;
+import java.util.Collections;
+import java.util.List;
 
-@SpringBootTest(classes = TestConfiguration.class, properties = "dina.auditing.enabled = true")
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+@SpringBootTest(classes = TestConfiguration.class,
+  properties = {"dina.auditing.enabled = true",
+    "dev-user.enabled = true",
+    "keycloak.enabled = false"})
 public class AuditServiceIT {
 
   @Inject
@@ -134,7 +135,7 @@ public class AuditServiceIT {
 
     CdoSnapshot result = javers.getLatestSnapshot(dto.getId(), EmployeeDto.class).orElse(null);
     assertNotNull(result);
-    assertEquals(DinaUserConfig.AUTH_USER_NAME, result.getCommitMetadata().getAuthor());
+    assertEquals(DevUserConfig.USERNAME, result.getCommitMetadata().getAuthor());
   }
 
   @Test
@@ -146,7 +147,7 @@ public class AuditServiceIT {
     CdoSnapshot result = javers.getLatestSnapshot(dto.getId(), EmployeeDto.class).orElse(null);
     assertNotNull(result);
     assertEquals(SnapshotType.TERMINAL, result.getType());
-    assertEquals(DinaUserConfig.AUTH_USER_NAME, result.getCommitMetadata().getAuthor());
+    assertEquals(DevUserConfig.USERNAME, result.getCommitMetadata().getAuthor());
   }
 
   private static EmployeeDto createDto() {
