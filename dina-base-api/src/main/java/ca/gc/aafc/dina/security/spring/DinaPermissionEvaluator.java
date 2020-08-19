@@ -1,16 +1,16 @@
 package ca.gc.aafc.dina.security.spring;
 
-import java.util.Set;
-
+import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
+import ca.gc.aafc.dina.security.DinaRole;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
 
-import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.Set;
 
 /**
  * Custom spring security expression root. Can override or add custom spring
@@ -63,6 +63,13 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
     }
 
     return userGroups.stream().anyMatch(entity.getGroup()::equalsIgnoreCase);
+  }
+
+  public boolean hasDinaRole(DinaAuthenticatedUser user, Set<DinaRole> roles) {
+    if (user == null || CollectionUtils.isEmpty(roles)) {
+      return false;
+    }
+    return user.getRolesPerGroup().values().stream().flatMap(Set::stream).anyMatch(roles::contains);
   }
 
   @Override
