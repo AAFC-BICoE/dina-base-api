@@ -14,33 +14,90 @@ import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.JpaDtoMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
-import ca.gc.aafc.dina.service.DinaAuthorizationService;
+import ca.gc.aafc.dina.security.spring.RoleAuthenticationProxy;
+import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.service.RoleAuthorizationService;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import io.crnk.core.exception.ForbiddenException;
 import io.crnk.core.repository.ResourceRepository;
+import lombok.NonNull;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
+import org.mockito.Answers;
 import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.*;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest
-@ActiveProfiles({ "RoleBasedPermissionsTest" })
+@SpringBootTest(properties = "keycloak.enabled = true")
+@ActiveProfiles({"RoleBasedPermissionsTest"})
+@Transactional
 public class RoleBasedPermissionsIT {
+
+  @Inject
+  private DinaRepository<PersonDTO, Person> collectionRepo;
+  @Inject
+  private DinaRepository<DepartmentDto, Department> staffRepo;
+  @Inject
+  private DepService depService;
+
+  @BeforeEach
+  void setUp() {
+    mockRole(DinaRole.COLLECTION_MANAGER);
+  }
+
+  @Test
+  public void create_AuthorizedUser_AllowsOperation() {
+    PersonDTO dto = collectionRepo.create(new PersonDTO());
+    assertNotNull(dto.getUuid());
+  }
+
+  @Test
+  public void create_UnAuthorizedUser_ThrowsForbiddenException() {
+    assertThrows(AccessDeniedException.class, () -> staffRepo.create(new DepartmentDto()));
+  }
+
+  @Test
+  public void update_AuthorizedUser_AllowsOperation() {
+    PersonDTO dto = collectionRepo.create(new PersonDTO());
+    dto.setName(RandomStringUtils.random(4));
+    collectionRepo.save(dto);
+  }
+
+  @Test
+  public void update_UnAuthorizedUser_ThrowsForbiddenException() {
+    UUID id = depService.create(new Department()).getUuid();
+    assertThrows(
+      AccessDeniedException.class,
+      () -> staffRepo.save(DepartmentDto.builder().uuid(id).build()));
+  }
+
+  @Test
+  public void delete_AuthorizedUser_AllowsOperation() {
+    PersonDTO dto = collectionRepo.create(new PersonDTO());
+    collectionRepo.delete(dto.getUuid());
+  }
+
+  @Test
+  public void delete_UnAuthorizedUser_ThrowsForbiddenException() {
+    UUID id = depService.create(new Department()).getUuid();
+    assertThrows(AccessDeniedException.class, () -> staffRepo.delete(id));
+  }
 
   @Configuration
   @ComponentScan(basePackageClasses = DinaBaseApiAutoConfiguration.class, excludeFilters = {
@@ -54,17 +111,27 @@ public class RoleBasedPermissionsIT {
       return new JpaDtoMapper(new HashMap<>(), new HashMap<>());
     }
 
-    @Bean(name = "roleBasedUser")
-    public DinaAuthenticatedUser user() {
-      return Mockito.mock(DinaAuthenticatedUser.class);
+    @Bean
+    public DepService deptService(BaseDAO baseDAO) {
+      return new DepService(baseDAO);
     }
 
     @Bean
-    @SuppressWarnings("unchecked")
-    public DinaRepository<DepartmentDto, Department> mockDepartmentRepo() {
-      DinaRepository<DepartmentDto, Department> mock = Mockito.mock(DinaRepository.class);
-      BDDMockito.given(mock.getResourceClass()).willReturn(DepartmentDto.class);
-      return mock;
+    public DinaRepository<DepartmentDto, Department> staffBasedRepo(
+      DinaFilterResolver filterResolver,
+      RoleAuthenticationProxy proxy,
+      DepService dinaService
+    ) {
+      return new StaffBasedRepo(filterResolver, proxy, dinaService);
+    }
+
+    @Bean
+    public DinaRepository<PersonDTO, Person> collectionBasedRepo(
+      BaseDAO baseDAO,
+      DinaFilterResolver filterResolver,
+      RoleAuthenticationProxy proxy
+    ) {
+      return new CollectionBasedRepo(baseDAO, filterResolver, proxy);
     }
 
     @Bean
@@ -74,92 +141,65 @@ public class RoleBasedPermissionsIT {
       BDDMockito.given(mock.getResourceClass()).willReturn(EmployeeDto.class);
       return mock;
     }
+  }
 
-    @Bean
-    public DinaRepository<PersonDTO, Person> repo(
+  static class CollectionBasedRepo extends DinaRepository<PersonDTO, Person> {
+
+    public CollectionBasedRepo(
       BaseDAO baseDAO,
       DinaFilterResolver filterResolver,
-      DinaAuthenticatedUser roleBasedUser
-    ) {
-      return new Repo(
-        baseDAO,
-        Optional.of(new RoleAuthorizationService(DinaRole.COLLECTION_MANAGER, roleBasedUser)),
-        filterResolver);
-    }
-  }
-
-  @Inject
-  private DinaRepository<PersonDTO, Person> dinaRepository;
-
-  @Inject
-  public DinaAuthenticatedUser roleBasedUser;
-
-  private static final Map<String, Set<DinaRole>> ROLES_PER_GROUP = ImmutableMap.of("group 1",
-      ImmutableSet.of(DinaRole.COLLECTION_MANAGER));
-  private static final Map<String, Set<DinaRole>> INVALID_ROLES = ImmutableMap.of("group 1",
-      ImmutableSet.of(DinaRole.STAFF));
-
-  @Test
-  public void create_AuthorizedUser_AllowsOperation() {
-    BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(ROLES_PER_GROUP);
-    PersonDTO dto = dinaRepository.create(new PersonDTO());
-    assertNotNull(dto.getUuid());
-  }
-
-  @Test
-  public void create_UnAuthorizedUser_ThrowsForbiddenException() {
-    BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(INVALID_ROLES);
-    assertThrows(ForbiddenException.class, () -> dinaRepository.create(new PersonDTO()));
-  }
-
-  @Test
-  public void update_AuthorizedUser_AllowsOperation() {
-    BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(ROLES_PER_GROUP);
-    PersonDTO dto = dinaRepository.create(new PersonDTO());
-    dto.setName(RandomStringUtils.random(4));
-    dinaRepository.save(dto);
-  }
-
-  @Test
-  public void update_UnAuthorizedUser_ThrowsForbiddenException() {
-    BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(ROLES_PER_GROUP);
-    PersonDTO dto = dinaRepository.create(new PersonDTO());
-    BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(INVALID_ROLES);
-    assertThrows(ForbiddenException.class, () -> dinaRepository.save(dto));
-  }
-
-  @Test
-  public void delete_AuthorizedUser_AllowsOperation() {
-    BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(ROLES_PER_GROUP);
-    PersonDTO dto = dinaRepository.create(new PersonDTO());
-    dinaRepository.delete(dto.getUuid());
-  }
-
-  @Test
-  public void delete_UnAuthorizedUser_ThrowsForbiddenException() {
-    BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(ROLES_PER_GROUP);
-    PersonDTO dto = dinaRepository.create(new PersonDTO());
-    BDDMockito.given(this.roleBasedUser.getRolesPerGroup()).willReturn(INVALID_ROLES);
-    assertThrows(ForbiddenException.class, () -> dinaRepository.delete(dto.getUuid()));
-  }
-
-  static class Repo extends DinaRepository<PersonDTO, Person> {
-
-    public Repo(
-      BaseDAO baseDAO,
-      Optional<DinaAuthorizationService> authorizationService,
-      DinaFilterResolver filterResolver
+      RoleAuthenticationProxy proxy
     ) {
       super(
         new DinaPersonService(baseDAO),
-        authorizationService,
+        Optional.of(new RoleAuthorizationService(
+          proxy,
+          ImmutableSet.of(DinaRole.COLLECTION_MANAGER))),
         Optional.empty(),
-        new DinaMapper<>(PersonDTO.class), 
+        new DinaMapper<>(PersonDTO.class),
         PersonDTO.class,
         Person.class,
         filterResolver);
     }
+  }
 
+  static class StaffBasedRepo extends DinaRepository<DepartmentDto, Department> {
+
+    public StaffBasedRepo(
+      DinaFilterResolver filterResolver,
+      RoleAuthenticationProxy proxy, DepService dinaService
+    ) {
+      super(
+        dinaService,
+        Optional.of(new RoleAuthorizationService(
+          proxy,
+          ImmutableSet.of(DinaRole.STAFF))),
+        Optional.empty(),
+        new DinaMapper<>(DepartmentDto.class),
+        DepartmentDto.class,
+        Department.class,
+        filterResolver);
+    }
+  }
+
+  static class DepService extends DinaService<Department> {
+
+    public DepService(@NonNull BaseDAO baseDAO) {
+      super(baseDAO);
+    }
+
+    @Override
+    protected void preCreate(Department entity) {
+      entity.setUuid(UUID.randomUUID());
+    }
+  }
+
+  private void mockRole(DinaRole role) {
+    KeycloakAuthenticationToken mockToken = Mockito.mock(
+      KeycloakAuthenticationToken.class,
+      Answers.RETURNS_DEEP_STUBS);
+    TestConfiguration.mockToken(Arrays.asList("/GROUP_1/" + role.name()), mockToken);
+    SecurityContextHolder.getContext().setAuthentication(mockToken);
   }
 
 }
