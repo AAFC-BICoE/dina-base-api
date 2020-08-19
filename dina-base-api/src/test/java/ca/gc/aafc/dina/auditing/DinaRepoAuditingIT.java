@@ -1,13 +1,10 @@
 package ca.gc.aafc.dina.auditing;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.UUID;
-
-import javax.inject.Inject;
-
+import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.dto.PersonDTO;
+import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.security.DevUserConfig;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.javers.core.Javers;
 import org.javers.core.metamodel.object.CdoSnapshot;
@@ -17,15 +14,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import ca.gc.aafc.dina.DinaUserConfig;
-import ca.gc.aafc.dina.TestConfiguration;
-import ca.gc.aafc.dina.dto.PersonDTO;
-import ca.gc.aafc.dina.entity.Person;
-import ca.gc.aafc.dina.repository.DinaRepository;
+import javax.inject.Inject;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(
-  classes = { TestConfiguration.class, DinaUserConfig.class },
-  properties = "dina.auditing.enabled = true")
+  classes = {TestConfiguration.class},
+  properties = {"dina.auditing.enabled = true",
+    "dev-user.enabled = true",
+    "keycloak.enabled = false"})
 public class DinaRepoAuditingIT {
 
   @Inject
@@ -47,7 +47,7 @@ public class DinaRepoAuditingIT {
     UUID id = dinaRepository.create(createPersonDto()).getUuid();
     CdoSnapshot result = javers.getLatestSnapshot(id.toString(), PersonDTO.class).get();
     assertEquals(SnapshotType.INITIAL, result.getType());
-    assertEquals(DinaUserConfig.AUTH_USER_NAME, result.getCommitMetadata().getAuthor());
+    assertEquals(DevUserConfig.USERNAME, result.getCommitMetadata().getAuthor());
   }
 
   @Test
@@ -57,7 +57,7 @@ public class DinaRepoAuditingIT {
     dinaRepository.save(PersonDTO.builder().uuid(id).name(RandomStringUtils.random(4)).build());
     CdoSnapshot result = javers.getLatestSnapshot(id.toString(), PersonDTO.class).get();
     assertEquals(SnapshotType.UPDATE, result.getType());
-    assertEquals(DinaUserConfig.AUTH_USER_NAME, result.getCommitMetadata().getAuthor());
+    assertEquals(DevUserConfig.USERNAME, result.getCommitMetadata().getAuthor());
   }
 
   @Test
@@ -67,7 +67,7 @@ public class DinaRepoAuditingIT {
     dinaRepository.delete(id);
     CdoSnapshot result = javers.getLatestSnapshot(id.toString(), PersonDTO.class).get();
     assertEquals(SnapshotType.TERMINAL, result.getType());
-    assertEquals(DinaUserConfig.AUTH_USER_NAME, result.getCommitMetadata().getAuthor());
+    assertEquals(DevUserConfig.USERNAME, result.getCommitMetadata().getAuthor());
   }
 
   private void cleanSnapShotRepo() {
