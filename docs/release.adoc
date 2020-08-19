@@ -1,0 +1,19 @@
+= Releasing dina-base-api
+
+The process of releasing dina-base-api is partially automated.
+
+To initiate the process:
+
+. From dev branch
+.. Change the version by running `mvn versions:set -DnewVersion=X.X` from the root where `X.X` is the current version minus the `-SNAPSHOT`
+.. Update the `README.md` Artifact section
+.. Add and Push to dev with message like "Prepare version x.x release"
+. From master
+.. Merge dev into master (do NOT use Pull Request)
+.. Push to master (it will trigger the deployment of the artifacts to https://bintray.com/aafc-bice/BICoE/dina-base-api[BinTray] )
+. Create a new https://github.com/AAFC-BICoE/dina-base-api/releases[GitHub release]
+.. Add a Summary of the changes (looks at the previous versions for an example)
+.. Publish the Release
+. From dev branch
+.. Change the version by running `mvn versions:set -DnewVersion=X.X-SNAPSHOT` from the root where X.X is the next increment in the version number
+.. Add and Push to dev with message like "Prepare next development version"

@@ -6,7 +6,7 @@
 
   <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.33-SNAPSHOT</version>
+  <version>0.34-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
@@ -16,7 +16,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.3.1.RELEASE</version>
+    <version>2.3.3.RELEASE</version>
   </parent>
 
   <modules>
@@ -46,6 +46,7 @@
     <maven-spotbugs.version>4.0.0</maven-spotbugs.version>
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
+    <dependency.check.version>5.3.2</dependency.check.version>
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
     <guava.version>24.1.1-jre</guava.version>
@@ -189,6 +190,18 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.owasp</groupId>
+        <artifactId>dependency-check-maven</artifactId>
+        <version>${dependency.check.version}</version>
+        <configuration>
+          <format>xml</format>
+          <failBuildOnCVSS>8</failBuildOnCVSS>
+          <suppressionFiles>
+            <suppressionFile>owasp-suppression.xml</suppressionFile> <!-- Required due to bug in plugin https://github.com/jeremylong/DependencyCheck/issues/1827 -->
+          </suppressionFiles>
+        </configuration>
       </plugin>
     </plugins>
   </build>
