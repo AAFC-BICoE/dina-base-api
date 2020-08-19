@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.entity;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,6 +39,10 @@ public class Person implements DinaEntity {
   private String group;
 
   private String[] nickNames;
+
+  private String createdBy;
+
+  private OffsetDateTime createdOn;
 
   @OneToOne()
   @JoinColumn(name = "department_id")

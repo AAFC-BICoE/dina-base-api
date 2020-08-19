@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.entity;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -47,6 +48,10 @@ public class Department implements DinaEntity {
   @Builder.Default
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "department", targetEntity = Employee.class)
   private List<Employee> employees = new ArrayList<>();
+
+  private String createdBy;
+
+  private OffsetDateTime createdOn;
 
   public String toString() {
     return super.toString();
