@@ -476,6 +476,20 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_using_a_dev_mode_user_without_needing_to_authenticate_manually">5.2. Using a dev-mode user without needing to authenticate manually</a></li>
 </ul>
 </li>
+<li><a href="#_setting_up_your_dina_repo_for_authorization">6. Setting up your Dina Repo for authorization</a>
+<ul class="sectlevel2">
+<li><a href="#_overview">6.1. Overview</a></li>
+<li><a href="#_step_by_step_using_a_custom_dina_authorization_service">6.2. Step by Step: Using a custom Dina Authorization Service</a></li>
+</ul>
+</li>
+<li><a href="#_setting_up_your_dina_repo_for_auditing">7. Setting up your Dina Repo for auditing</a>
+<ul class="sectlevel2">
+<li><a href="#_prepare_your_dto">7.1. Prepare your DTO</a></li>
+<li><a href="#_pass_the_auditing_service_bean_to_your_dina_repo">7.2. Pass the Auditing service bean to your Dina repo</a></li>
+<li><a href="#_accessing_the_auditing_endpoint">7.3. Accessing the Auditing Endpoint</a></li>
+</ul>
+</li>
+<li><a href="#_releasing_dina_base_api">8. Releasing dina-base-api</a></li>
 </ul>
 </div>
 </div>
@@ -494,6 +508,85 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="imageblock text-center">
 <div class="content">
 <img src="svg.png" alt="svg" width="168" height="325">
+</div>
+</div>
+<div class="sect3">
+<h4 id="_repository_layer">1.1.1. Repository Layer</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>Tightly coupled to the service and mapping layer.</p>
+</li>
+<li>
+<p>Communicates to the service layer for access to database resources but never contacts the database directly.</p>
+</li>
+<li>
+<p>Communicates to the mapping layer to process entities into DTO&#8217;s and vise versa.</p>
+</li>
+<li>
+<p>Processes incoming HTTP requests for the API endpoint to send the appropriate response.</p>
+</li>
+<li>
+<p>Processing of incoming HTTP request is mostly handled automatically by the underlying Crnk framework. Crnk will process the incoming request and send it to the appropriate method while mapping the request body and parameters to the required method parameters.</p>
+</li>
+<li>
+<p>The repository layer is where most of the Crnk related processing should happen for example processing the filters of the query spec.</p>
+</li>
+<li>
+<p>Communication to the service layer is usually done through the use of entity classes, and communication to the HTTP layer is usually done through the use of DTO&#8217;s which have been mapped from their database backed entity representations.</p>
+</li>
+<li>
+<p>Each repository requires a specific database service class implementation and a mapper.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_service_layer">1.1.2. Service Layer</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>Mainly used for database access and entity processing before CREATE/UPDATE/DELETE operations.</p>
+</li>
+<li>
+<p>Has methods that can be over ridden to inject business logic to process entities before CREATE/UPDATE/DELETE operations. Most notably the <code>preCreate preUpdate preDelete</code> methods.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">preCreate auto generate UUID on create</div>
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">    @Override
+    protected void preCreate(Person entity) {
+      entity.setUuid(UUID.randomUUID());
+    }</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Should be used for typical pre-persist, pre-update, and pre-delete operations when they can be applied.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_mapper_layer">1.1.3. Mapper Layer</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>Responsible for mapping entities to their DTO equivalents and vice versa.</p>
+</li>
+<li>
+<p>These are simple field to field bean mapping operations that can be extended to apply custom field mappings for specific fields.</p>
+</li>
+<li>
+<p>Mappers have mechanisms in place to allow for the exclusion of fields and/or relationships during the mapping process.</p>
+</li>
+<li>
+<p>Mappers should not communicate with the service layer to map relations directly.</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -735,10 +828,265 @@ manual method, add these properties to your launch config:</p>
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_setting_up_your_dina_repo_for_authorization">6. Setting up your Dina Repo for authorization</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_overview">6.1. Overview</h3>
+<div class="paragraph">
+<p>A dina repository can optionally take a DinaAuthorizationService implementation, which if present will be used to call a set of specific methods for CREATE/UPDATE/DELETE operations.</p>
+</div>
+<div class="paragraph">
+<p>The DinaAuthorizationService is an interface defining the following methods: <em>authorizeCreate, authorizeUpdate, authorizeDelete</em>.</p>
+</div>
+<div class="paragraph">
+<p>Where each method is called by the dina repo for the appropriate operation on a given entity for that repo&#8217;s domain.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_by_step_using_a_custom_dina_authorization_service">6.2. Step by Step: Using a custom Dina Authorization Service</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Create your Dina Authorization Service implementation</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">@Service
+@RequiredArgsConstructor
+public class CustomAuthorizationService implements DinaAuthorizationService {
+
+  @Inject
+  private final Optional&lt;DinaAuthenticatedUser&gt; user;
+
+  @Override
+  public void authorizeCreate(Object entity) {
+    if (!(user.isPresent()) || !(entity instanceof DinaEntity)) {
+      return;
+    }
+
+    DinaEntity dinaEntity = (DinaEntity) entity;
+    Set&lt;String&gt; userGroups = user.get().getGroups();
+
+    if (CollectionUtils.isEmpty(userGroups) || dinaEntity.getGroup() == null) {
+      throw new ForbiddenException("You shall not pass");
+    }
+
+    if (userGroups.stream().noneMatch(dinaEntity.getGroup()::equalsIgnoreCase)) {
+      throw new ForbiddenException("You shall not pass");
+    }
+  }
+
+  .....</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Pass your Dina Authorization Service to your Dina Repository</p>
+</li>
+<li>
+<p>Your dina repo will now use your Dina Authorization Service.</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_using_the_default_group_authorization_service">6.2.1. Using the default Group Authorization Service</h4>
+<div class="paragraph">
+<p>When keycloak is enabled a default Group Authorization Service bean is available in the application context that can be injected into your Dina Repositories</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Pass the Group Authorization Service to your Dina Repository</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">  @Inject
+  private Optional&lt;GroupAuthorizationService&gt; groupAuthService;
+
+  @Bean
+  public DinaRepository&lt;PersonDTO, Person&gt; dinaRepository() {
+    return new DinaRepository&lt;PersonDTO,Person&gt;(
+      dinaDatabaseService,
+      groupAuthService,
+
+    ....
+  }</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Run with <code>keycloak.enabled = true</code></p>
+</li>
+<li>
+<p>Your dina repo will now use the default Group Authorization Service. See GroupAuthorizationService.java.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_setting_up_your_dina_repo_for_auditing">7. Setting up your Dina Repo for auditing</h2>
+<div class="sectionbody">
+<div class="literalblock">
+<div class="content">
+<pre>Note: Dina base does not manage the database schema and that responisiblity belongs to the specific module.</pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_prepare_your_dto">7.1. Prepare your DTO</h3>
+<div class="paragraph">
+<p>Your DTO must be prepared with specific annotations specifically @TypeName, @Id, @PropertyName.</p>
+</div>
+<div class="paragraph">
+<p>With these annotations, javers can properly identify the type name and id for a specific DTO.</p>
+</div>
+<div class="paragraph">
+<p>The following code snip shows an example of a DTO with the needed annotations.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">@TypeName(PersonDTO.TYPE_NAME)
+public class PersonDTO {
+
+  public static final String TYPE_NAME = "person";
+
+  @Id
+  @PropertyName("id")
+  private UUID uuid;
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This would tell the underlying frame work, snap shots persisted with this DTO will have type <code>person</code>, and the <code>UUID</code> will be used to identify the record for this type.</p>
+</div>
+<div class="paragraph">
+<p>Check out the supported annotations <a href="https://javers.org/documentation/domain-configuration/#supported-annotations">HERE</a> for more details on how you can configure your domain.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pass_the_auditing_service_bean_to_your_dina_repo">7.2. Pass the Auditing service bean to your Dina repo</h3>
+<div class="paragraph">
+<p>When the application runs with the property <code>dina.auditing.enabled = true</code>, an AuditService bean is available in the application context.</p>
+</div>
+<div class="paragraph">
+<p>Simply pass this bean to your dina repository and auditing will be enabled for CREATE/DELETE/UPDATE operations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_accessing_the_auditing_endpoint">7.3. Accessing the Auditing Endpoint</h3>
+<div class="paragraph">
+<p>When the application runs with the property <code>dina.auditing.enabled = true</code>, the audit endpoint automatically starts.</p>
+</div>
+<div class="paragraph">
+<p>JSONAPI endpoint at /audit-snapshot , implemented by the AuditSnapshotRepository class.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Page results using query parameters page[limit] and page[offset].</p>
+</li>
+<li>
+<p>Filter the results:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>By author: <code>filter[author]=authorname</code></p>
+</li>
+<li>
+<p>By instance: <code>filter[instanceId]=metadata/0fc10c52-91b6-4a9b-be98-e3f75b9928f7</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_releasing_dina_base_api">8. Releasing dina-base-api</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The process of releasing dina-base-api is partially automated.</p>
+</div>
+<div class="paragraph">
+<p>To initiate the process:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>From dev branch</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Change the version by running <code>mvn versions:set -DnewVersion=X.X</code> from the root where <code>X.X</code> is the current version minus the <code>-SNAPSHOT</code></p>
+</li>
+<li>
+<p>Update the <code>README.md</code> Artifact section</p>
+</li>
+<li>
+<p>Add and Push to dev with message like "Prepare version x.x release"</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>From master</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Merge dev into master (do NOT use Pull Request)</p>
+</li>
+<li>
+<p>Push to master (it will trigger the deployment of the artifacts to <a href="https://bintray.com/aafc-bice/BICoE/dina-base-api">BinTray</a> )</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Create a new <a href="https://github.com/AAFC-BICoE/dina-base-api/releases">GitHub release</a></p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Add a Summary of the changes (looks at the previous versions for an example)</p>
+</li>
+<li>
+<p>Publish the Release</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>From dev branch</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Change the version by running <code>mvn versions:set -DnewVersion=X.X-SNAPSHOT</code> from the root where X.X is the next increment in the version number</p>
+</li>
+<li>
+<p>Add and Push to dev with message like "Prepare next development version"</p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-07-16 19:03:05 UTC
+Last updated 2020-08-19 13:21:03 UTC
 </div>
 </div>
 </body>
