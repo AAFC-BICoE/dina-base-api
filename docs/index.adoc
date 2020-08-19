@@ -17,3 +17,5 @@ include::authentication.adoc[]
 include::authorization.adoc[]
 
 include::auditing.adoc[]
+
+include::release.adoc[]
