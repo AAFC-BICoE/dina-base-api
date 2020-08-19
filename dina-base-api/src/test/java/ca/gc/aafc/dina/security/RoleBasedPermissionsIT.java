@@ -36,7 +36,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
@@ -58,7 +58,7 @@ public class RoleBasedPermissionsIT {
 
   @BeforeEach
   void setUp() {
-    mockRole(DinaRole.COLLECTION_MANAGER);
+    mockRole();
   }
 
   @Test
@@ -194,11 +194,13 @@ public class RoleBasedPermissionsIT {
     }
   }
 
-  private void mockRole(DinaRole role) {
+  private void mockRole() {
     KeycloakAuthenticationToken mockToken = Mockito.mock(
       KeycloakAuthenticationToken.class,
       Answers.RETURNS_DEEP_STUBS);
-    TestConfiguration.mockToken(Arrays.asList("/GROUP_1/" + role.name()), mockToken);
+    TestConfiguration.mockToken(
+      Collections.singletonList("/GROUP_1/" + DinaRole.COLLECTION_MANAGER.name()),
+      mockToken);
     SecurityContextHolder.getContext().setAuthentication(mockToken);
   }
 
