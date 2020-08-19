@@ -12,34 +12,22 @@
   <parent>
     <groupId>ca.gc.aafc</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.30-SNAPSHOT</version>
+    <version>0.33-SNAPSHOT</version>
   </parent>
 
   <properties>
-    <keycloak-starter.version>9.0.3</keycloak-starter.version>
+    <keycloak-starter.version>11.0.0</keycloak-starter.version>
     <jcip-annotations.version>1.0</jcip-annotations.version>
     <local-javax-jaxb.version>2.3.0.1</local-javax-jaxb.version>
-    <javax.activation.version>1.1.1</javax.activation.version>
-    <crnk.version>3.2.20200419165537</crnk.version>
+    <javax.activation.version>1.2.0</javax.activation.version>
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
+    <javers.version>5.10.4</javers.version>
   </properties>
-
-  <repositories>
-    <!-- Required for Crnk 3.0 -->
-    <repository>
-      <id>spring-libs-release</id>
-      <url>https://repo.spring.io/libs-release</url>
-    </repository>
-  </repositories>
 
   <dependencies>
     <!-- Spring -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-    </dependency>
     <dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
@@ -69,15 +57,10 @@
     </dependency>
     <dependency>
       <groupId>javax.activation</groupId>
-      <artifactId>activation</artifactId>
+      <artifactId>javax.activation-api</artifactId>
       <version>${javax.activation.version}</version>
     </dependency>
     <!-- crnk -->
-    <dependency>
-      <groupId>io.crnk</groupId>
-      <artifactId>crnk-setup-spring-boot2</artifactId>
-      <version>${crnk.version}</version>
-    </dependency>
     <dependency>
       <groupId>io.crnk</groupId>
       <artifactId>crnk-data-jpa</artifactId>
@@ -93,6 +76,12 @@
       <groupId>com.github.tennaito</groupId>
       <artifactId>rsql-jpa</artifactId>
       <version>${rsql-jpa.version}</version>
+    </dependency>
+    <!-- JaVers auditing -->
+    <dependency>
+      <groupId>org.javers</groupId>
+      <artifactId>javers-spring-boot-starter-sql</artifactId>
+      <version>${javers.version}</version>
     </dependency>
     <!--Util-->
     <dependency>

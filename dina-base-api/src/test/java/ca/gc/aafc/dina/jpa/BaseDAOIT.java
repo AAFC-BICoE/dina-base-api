@@ -4,11 +4,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.validation.ConstraintViolationException;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
@@ -107,6 +109,19 @@ public class BaseDAOIT {
     Department result = baseDAO.findOneByNaturalId(dep.getUuid(), Department.class);
     assertEquals(expectedName, result.getName());
     assertEquals(expectedLocation, result.getLocation());
+  }
+
+  @Test
+  public void update_onValidationError_throwConstraintViolationException() {
+    Department dep = Department.builder().name("dep1").location("dep location").build();
+    baseDAO.create(dep);
+
+    dep.setLocation(null);
+
+    assertThrows(
+      ConstraintViolationException.class,
+      () -> baseDAO.update(dep)
+    );
   }
 
 }

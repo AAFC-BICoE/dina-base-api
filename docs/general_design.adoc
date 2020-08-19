@@ -11,6 +11,37 @@ The targeted architecture is a based on a 3-layer architecture. Communication be
 include::layers.plantuml[]
 ----
 
+=== Repository Layer
+* Tightly coupled to the service and mapping layer.
+* Communicates to the service layer for access to database resources but never contacts the database directly.
+* Communicates to the mapping layer to process entities into DTO's and vise versa.
+* Processes incoming HTTP requests for the API endpoint to send the appropriate response.
+* Processing of incoming HTTP request is mostly handled automatically by the underlying Crnk framework. Crnk will process the incoming request and send it to the appropriate method while mapping the request body and parameters to the required method parameters.
+* The repository layer is where most of the Crnk related processing should happen for example processing the filters of the query spec. 
+* Communication to the service layer is usually done through the use of entity classes, and communication to the HTTP layer is usually done through the use of DTO's which have been mapped from their database backed entity representations.
+* Each repository requires a specific database service class implementation and a mapper.
+
+=== Service Layer
+* Mainly used for database access and entity processing before CREATE/UPDATE/DELETE operations.
+* Has methods that can be over ridden to inject business logic to process entities before CREATE/UPDATE/DELETE operations. Most notably the `preCreate preUpdate preDelete` methods.
+
+.preCreate auto generate UUID on create
+[source,java]
+----
+    @Override
+    protected void preCreate(Person entity) {
+      entity.setUuid(UUID.randomUUID());
+    }
+----
+
+* Should be used for typical pre-persist, pre-update, and pre-delete operations when they can be applied.
+
+=== Mapper Layer
+* Responsible for mapping entities to their DTO equivalents and vice versa.
+* These are simple field to field bean mapping operations that can be extended to apply custom field mappings for specific fields.
+* Mappers have mechanisms in place to allow for the exclusion of fields and/or relationships during the mapping process.
+* Mappers should not communicate with the service layer to map relations directly.
+
 == Resource Id as UUID
 All database identifiers should be numerical based since it`s efficient and easier to manage at the database level. Even if there is no issue about leaking business information we will still expose UUID instead of the database key in the API. This will give us more flexibility at the database level while reducing potential issues with API users iterating over ids or using a wrong set of ids. Based on the “Inter-module foreign key” module, UUID’s will help detect wrong linkages by making it almost impossible to reuse a key of the wrong resource. Numerical id’s can be reused in different resources (even if this can be solved by using a global sequence) while UUID are more likely to be unique across the system.
 

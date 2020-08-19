@@ -492,18 +492,8 @@ public class DinaRepositoryIT {
     }
 
     @Override
-    protected Person preCreate(Person entity) {
+    protected void preCreate(Person entity) {
       entity.setUuid(UUID.randomUUID());
-      return entity;
-    }
-
-    @Override
-    protected Person preUpdate(Person entity) {
-      return null;
-    }
-
-    @Override
-    protected void preDelete(Person entity) {
     }
 
   }
