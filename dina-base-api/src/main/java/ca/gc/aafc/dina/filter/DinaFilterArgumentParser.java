@@ -11,7 +11,7 @@ import lombok.SneakyThrows;
 
 /** Augments the RSQL DefaultArgumentParser with additional filterable types. */
 @Named
-public class DinaRsqlArgumentParser extends DefaultArgumentParser {
+public class DinaFilterArgumentParser extends DefaultArgumentParser {
   
   /** Override the default parse method to add more parseable types to filter by. */
   @SneakyThrows
