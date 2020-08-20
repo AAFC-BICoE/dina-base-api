@@ -7,6 +7,7 @@ import javax.persistence.criteria.From;
 import javax.persistence.criteria.Predicate;
 
 import com.github.tennaito.rsql.jpa.JpaPredicateVisitor;
+import com.github.tennaito.rsql.misc.ArgumentParser;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -30,9 +31,9 @@ import lombok.RequiredArgsConstructor;
 public class RsqlFilterHandler implements FilterHandler {
 
   private final BaseDAO baseDAO;
-  
+  private final ArgumentParser rsqlArgumentParser;
   private final RSQLParser rsqlParser = new RSQLParser();
-  
+
   @Override
   public Predicate getRestriction(QuerySpec querySpec, From<?, ?> root, CriteriaBuilder cb) {
     FilterSpec rsqlFilterSpec = querySpec.findFilter(PathSpec.of("rsql")).orElse(null);
@@ -42,9 +43,13 @@ public class RsqlFilterHandler implements FilterHandler {
     }
     
     String rsqlString = rsqlFilterSpec.getValue();
-    
+
+    // Add the Injected ArgumentParser into the RSQL visitor:
+    JpaPredicateVisitor<?> rsqlVisitor = new JpaPredicateVisitor<>().defineRoot(root);
+    rsqlVisitor.getBuilderTools().setArgumentParser(rsqlArgumentParser);
+
     return baseDAO.createWithEntityManager(
-      em -> rsqlParser.parse(rsqlString).accept(new JpaPredicateVisitor<>().defineRoot(root), em));
+      em -> rsqlParser.parse(rsqlString).accept(rsqlVisitor, em));
   }
 
 }
