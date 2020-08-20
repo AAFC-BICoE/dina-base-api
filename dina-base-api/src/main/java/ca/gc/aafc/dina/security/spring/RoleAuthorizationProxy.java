@@ -15,7 +15,7 @@ import java.util.Set;
  */
 @Service
 @ConditionalOnProperty(value = "keycloak.enabled", matchIfMissing = true)
-public class RoleAuthenticationProxy {
+public class RoleAuthorizationProxy {
 
   /**
    * Proxy Method to invoke security authorization, Delegates to {@link

@@ -14,7 +14,7 @@ import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.JpaDtoMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
-import ca.gc.aafc.dina.security.spring.RoleAuthenticationProxy;
+import ca.gc.aafc.dina.security.spring.RoleAuthorizationProxy;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.service.RoleAuthorizationService;
 import com.google.common.collect.ImmutableSet;
@@ -119,7 +119,7 @@ public class RoleBasedPermissionsIT {
     @Bean
     public DinaRepository<DepartmentDto, Department> staffBasedRepo(
       DinaFilterResolver filterResolver,
-      RoleAuthenticationProxy proxy,
+      RoleAuthorizationProxy proxy,
       DepService dinaService
     ) {
       return new StaffBasedRepo(filterResolver, proxy, dinaService);
@@ -129,7 +129,7 @@ public class RoleBasedPermissionsIT {
     public DinaRepository<PersonDTO, Person> collectionBasedRepo(
       BaseDAO baseDAO,
       DinaFilterResolver filterResolver,
-      RoleAuthenticationProxy proxy
+      RoleAuthorizationProxy proxy
     ) {
       return new CollectionBasedRepo(baseDAO, filterResolver, proxy);
     }
@@ -148,7 +148,7 @@ public class RoleBasedPermissionsIT {
     public CollectionBasedRepo(
       BaseDAO baseDAO,
       DinaFilterResolver filterResolver,
-      RoleAuthenticationProxy proxy
+      RoleAuthorizationProxy proxy
     ) {
       super(
         new DinaPersonService(baseDAO),
@@ -167,7 +167,7 @@ public class RoleBasedPermissionsIT {
 
     public StaffBasedRepo(
       DinaFilterResolver filterResolver,
-      RoleAuthenticationProxy proxy, DepService dinaService
+      RoleAuthorizationProxy proxy, DepService dinaService
     ) {
       super(
         dinaService,
