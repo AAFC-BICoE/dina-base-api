@@ -68,7 +68,7 @@ public class RoleBasedPermissionsIT {
   }
 
   @Test
-  public void create_UnAuthorizedUser_ThrowsForbiddenException() {
+  public void create_UnAuthorizedUser_ThrowsAccessDeniedException() {
     assertThrows(AccessDeniedException.class, () -> staffRepo.create(new DepartmentDto()));
   }
 
@@ -80,7 +80,7 @@ public class RoleBasedPermissionsIT {
   }
 
   @Test
-  public void update_UnAuthorizedUser_ThrowsForbiddenException() {
+  public void update_UnAuthorizedUser_ThrowsAccessDeniedException() {
     UUID id = depService.create(new Department()).getUuid();
     assertThrows(
       AccessDeniedException.class,
@@ -94,7 +94,7 @@ public class RoleBasedPermissionsIT {
   }
 
   @Test
-  public void delete_UnAuthorizedUser_ThrowsForbiddenException() {
+  public void delete_UnAuthorizedUser_ThrowsAccessDeniedException() {
     UUID id = depService.create(new Department()).getUuid();
     assertThrows(AccessDeniedException.class, () -> staffRepo.delete(id));
   }

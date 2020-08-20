@@ -27,24 +27,24 @@ public class DinaPermissionEvaluatorTest {
   }
 
   @Test
-  public void hadDinaRole_hasRole_ReturnsTrue() {
+  public void hasDinaRole_hasRole_ReturnsTrue() {
     DinaAuthenticatedUser user = createWithRoles(ROLE_TO_COMPARE);
     Assertions.assertTrue(evaluator.hasDinaRole(user, ROLE_TO_COMPARE));
   }
 
   @Test
-  public void hadDinaRole_DoesNotHaveRole_ReturnsFalse() {
+  public void hasDinaRole_DoesNotHaveRole_ReturnsFalse() {
     DinaAuthenticatedUser user = createWithRoles(ImmutableSet.of(DinaRole.STAFF));
     Assertions.assertFalse(evaluator.hasDinaRole(user, ROLE_TO_COMPARE));
   }
 
   @Test
-  public void hadDinaRole_WhenUserNull_ReturnsFalse() {
+  public void hasDinaRole_WhenUserNull_ReturnsFalse() {
     Assertions.assertFalse(evaluator.hasDinaRole(null, ROLE_TO_COMPARE));
   }
 
   @Test
-  public void hadDinaRole_WhenRolesNull_ReturnsFalse() {
+  public void hasDinaRole_WhenRolesNull_ReturnsFalse() {
     DinaAuthenticatedUser user = createWithRoles(ImmutableSet.of(DinaRole.COLLECTION_MANAGER));
     Assertions.assertFalse(evaluator.hasDinaRole(user, null));
   }
