@@ -65,6 +65,13 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
     return userGroups.stream().anyMatch(entity.getGroup()::equalsIgnoreCase);
   }
 
+  /**
+   * Returns true if a given user has a role in the given set of roles.
+   *
+   * @param user  - user to compare
+   * @param roles - roles to compare
+   * @return Returns true if a given user has a role in the given set of roles.
+   */
   public boolean hasDinaRole(DinaAuthenticatedUser user, Set<DinaRole> roles) {
     if (user == null || CollectionUtils.isEmpty(roles)) {
       return false;
