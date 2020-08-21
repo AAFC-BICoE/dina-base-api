@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.dto;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,6 +39,8 @@ public class PersonDTO {
   private String group;
 
   private String[] nickNames;
+
+  private OffsetDateTime createdOn;
 
   @JsonApiRelation
   private DepartmentDto department;
