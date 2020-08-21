@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -9,6 +10,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.Predicate;
+
+import com.github.tennaito.rsql.misc.ArgumentParser;
 
 import ca.gc.aafc.dina.repository.SelectionHandler;
 import io.crnk.core.queryspec.FilterOperator;
@@ -27,6 +30,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class SimpleFilterHandler implements FilterHandler {
 
+  private final ArgumentParser argumentParser;
+
   @Override
   public Predicate getRestriction(QuerySpec querySpec, From<?, ?> root, CriteriaBuilder cb) {
     List<FilterSpec> filterSpecs = querySpec.getFilters();
@@ -41,6 +46,7 @@ public class SimpleFilterHandler implements FilterHandler {
         // like "rsql" or others that are only handled by other FilterHandlers.
         continue;
       }
+      
       predicates.add(generatePredicate(filterSpec, attributePath, cb));
     }
 
@@ -59,12 +65,16 @@ public class SimpleFilterHandler implements FilterHandler {
    *                        - criteria builder to build the predicate
    * @return a predicate for a given crnk filter spec
    */
-  private static Predicate generatePredicate(
+  private Predicate generatePredicate(
     @NonNull FilterSpec filter,
     @NonNull Expression<?> attributePath,
     @NonNull CriteriaBuilder cb
   ) {
-    Object value = (Object) filter.getValue();
+    // Convert the value to the target type:
+    Object value = argumentParser.parse(
+      Optional.ofNullable(filter.getValue()).map(Object::toString).orElse(null),
+      attributePath.getJavaType()
+    );
     if (value == null) {
       return filter.getOperator() == FilterOperator.NEQ 
         ? cb.isNotNull(attributePath)
