@@ -27,12 +27,13 @@ import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.mockito.Answers;
 import org.mockito.BDDMockito;
 import org.mockito.Mockito;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.ActiveProfiles;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -44,8 +45,8 @@ import java.util.UUID;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest(properties = "keycloak.enabled = true")
-@ActiveProfiles({"RoleBasedPermissionsTest"})
+@SpringBootTest(properties = "keycloak.enabled = true", classes = { RoleBasedPermissionsIT.RoleTestConfig.class, DinaBaseApiAutoConfiguration.class })
+@SpringBootApplication
 @Transactional
 public class RoleBasedPermissionsIT {
 
@@ -55,6 +56,48 @@ public class RoleBasedPermissionsIT {
   private DinaRepository<DepartmentDto, Department> staffRepo;
   @Inject
   private DepService depService;
+
+  @org.springframework.boot.test.context.TestConfiguration
+  @ComponentScan(basePackageClasses = {BaseDAO.class, DinaFilterResolver.class})
+  @EntityScan(basePackageClasses = {RoleBasedPermissionsIT.class, Department.class})
+  static class RoleTestConfig {
+
+    @Bean
+    public JpaDtoMapper jpaDtoMapper() {
+      return new JpaDtoMapper(new HashMap<>(), new HashMap<>());
+    }
+
+    @Bean
+    public DepService deptService(BaseDAO baseDAO) {
+      return new DepService(baseDAO);
+    }
+
+    @Bean
+    public DinaRepository<DepartmentDto, Department> staffBasedRepo(
+        DinaFilterResolver filterResolver,
+        RoleAuthorizationProxy proxy,
+        DepService dinaService
+    ) {
+      return new StaffBasedRepo(filterResolver, proxy, dinaService);
+    }
+
+    @Bean
+    public DinaRepository<PersonDTO, Person> collectionBasedRepo(
+        BaseDAO baseDAO,
+        DinaFilterResolver filterResolver,
+        RoleAuthorizationProxy proxy
+    ) {
+      return new CollectionBasedRepo(baseDAO, filterResolver, proxy);
+    }
+
+    @Bean
+    @SuppressWarnings("unchecked")
+    public ResourceRepository<EmployeeDto, Employee> mockEmployeeRepo() {
+      ResourceRepository<EmployeeDto, Employee> mock = Mockito.mock(ResourceRepository.class);
+      BDDMockito.given(mock.getResourceClass()).willReturn(EmployeeDto.class);
+      return mock;
+    }
+  }
 
   @BeforeEach
   void setUp() {
@@ -99,49 +142,7 @@ public class RoleBasedPermissionsIT {
     assertThrows(AccessDeniedException.class, () -> staffRepo.delete(id));
   }
 
-  @Configuration
-  @ComponentScan(basePackageClasses = DinaBaseApiAutoConfiguration.class, excludeFilters = {
-    @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = TestConfiguration.class)})
-  @Profile({"RoleBasedPermissionsTest"})
-  @EntityScan(basePackageClasses = {RoleBasedPermissionsIT.class, Department.class})
-  static class RoleTestConfig {
 
-    @Bean
-    public JpaDtoMapper jpaDtoMapper() {
-      return new JpaDtoMapper(new HashMap<>(), new HashMap<>());
-    }
-
-    @Bean
-    public DepService deptService(BaseDAO baseDAO) {
-      return new DepService(baseDAO);
-    }
-
-    @Bean
-    public DinaRepository<DepartmentDto, Department> staffBasedRepo(
-      DinaFilterResolver filterResolver,
-      RoleAuthorizationProxy proxy,
-      DepService dinaService
-    ) {
-      return new StaffBasedRepo(filterResolver, proxy, dinaService);
-    }
-
-    @Bean
-    public DinaRepository<PersonDTO, Person> collectionBasedRepo(
-      BaseDAO baseDAO,
-      DinaFilterResolver filterResolver,
-      RoleAuthorizationProxy proxy
-    ) {
-      return new CollectionBasedRepo(baseDAO, filterResolver, proxy);
-    }
-
-    @Bean
-    @SuppressWarnings("unchecked")
-    public ResourceRepository<EmployeeDto, Employee> mockEmployeeRepo() {
-      ResourceRepository<EmployeeDto, Employee> mock = Mockito.mock(ResourceRepository.class);
-      BDDMockito.given(mock.getResourceClass()).willReturn(EmployeeDto.class);
-      return mock;
-    }
-  }
 
   static class CollectionBasedRepo extends DinaRepository<PersonDTO, Person> {
 
