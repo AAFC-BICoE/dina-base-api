@@ -9,9 +9,9 @@ import java.net.URL;
 import java.net.UnknownHostException;
 
 import org.junit.Test;
+import org.springframework.http.HttpMethod;
 
 import ca.gc.aafc.dina.testsupport.TestResourceHelper;
-import io.crnk.core.engine.http.HttpMethod;
 
 /**
  * Test making sure we can parse, validate and assert a know OpenAPI 3 specification with a
@@ -34,7 +34,7 @@ public class OpenAPI3AssertionsTest {
 
     System.setProperty(OpenAPI3Assertions.SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY, "true");
     String responseJson = TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json");
-    OpenAPI3Assertions.assertRemoteSchema(specsUrl, "ManagedAttribute", responseJson,"/v1/managed-attribute",HttpMethod.DELETE);
+    OpenAPI3Assertions.assertRemoteSchema(specsUrl, "ManagedAttribute", responseJson);
     System.clearProperty(OpenAPI3Assertions.SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY);
   }
 
@@ -42,7 +42,13 @@ public class OpenAPI3AssertionsTest {
   public void assertSchemaTest() throws IOException {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     String responseJson = TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json");
-    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson, "/v1/managed-attribute",HttpMethod.GET);
+    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson);
   }
+  
+  @Test
+  public void assertEndPointTest() throws IOException {
+    URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
+    OpenAPI3Assertions.assertEndpoint(specsUrl, "/v1/managed-attribute",HttpMethod.GET);
+  }  
 
 }

@@ -16,11 +16,11 @@ import org.openapi4j.parser.model.v3.Schema;
 import org.openapi4j.parser.validation.v3.OpenApi3Validator;
 import org.openapi4j.schema.validator.ValidationData;
 import org.openapi4j.schema.validator.v3.SchemaValidator;
+import org.springframework.http.HttpMethod;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.crnk.core.engine.http.HttpMethod;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -35,7 +35,6 @@ public final class OpenAPI3Assertions {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
-  private OpenApi3 api3 = null;
   private OpenAPI3Assertions() {
   }
 
@@ -48,9 +47,9 @@ public final class OpenAPI3Assertions {
    * @param schemaName
    * @param apiResponse
    */
-  public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse, String path, HttpMethod httpMethod) {
+  public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse) {
     if (!Boolean.valueOf(System.getProperty(SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY))) {
-      assertSchema(specsUrl, schemaName, apiResponse, path ,httpMethod);
+      assertSchema(specsUrl, schemaName, apiResponse);
     } else {
       log.warn("Skipping schema validation." + "System property testing.skip-remote-schema-validation set to true.");
     }
@@ -64,25 +63,13 @@ public final class OpenAPI3Assertions {
    * @param schemaName
    * @param apiResponse
    */
-  public static void assertSchema(URL specsUrl, String schemaName, String apiResponse, String path, HttpMethod httpMethod) {
+  public static void assertSchema(URL specsUrl, String schemaName, String apiResponse) {
     Objects.requireNonNull(specsUrl, "specsUrl shall be provided");
     Objects.requireNonNull(schemaName, "schemaName shall be provided");
     Objects.requireNonNull(apiResponse, "apiResponse shall be provided");
-
-    OpenApi3 openApi = null;
-    try {
-      openApi = parseAndValidateOpenAPI3Specs(specsUrl);
-    } catch (ResolutionException | ValidationException ex) {
-      fail("Failed to parse and validate the provided schema", ex);
-      return;
-    }
-
-    if (!assertPaths(openApi, path, httpMethod)) {
-      fail(String.format("Failed to parse path: %s at method: %s ", path, httpMethod));      
-          return;
-    }
-          
-    assertSchema(openApi, schemaName, apiResponse);
+    
+    OpenApi3 openApi3 = parseSpecUrl(specsUrl) ;
+    assertSchema(openApi3, schemaName, apiResponse);  
   }
 
   /**
@@ -153,20 +140,32 @@ public final class OpenAPI3Assertions {
    * Checking the given path is existing in Open API 3 spec
    * and the path contains the provided http method
    * 
-   * @param api3
-   * @param resourceName
+   * @param specsUrl Specs URL to check endpoints against
+   * @param path     path of endpoint
+   * @param method   method at the endpoint path
    * @return true if spec contains the path and the path has the http method; false otherwise. 
    */
-  private static boolean assertPaths(OpenApi3 api3, String path, HttpMethod method) {  
+  public static boolean assertEndpoint(URL specsUrl, String path, HttpMethod method) {
+    OpenApi3 openApi3 = parseSpecUrl(specsUrl) ;      
     boolean methodOnPathExists = false;
-    for (String key : api3.getPaths().keySet()) {
+    for (String key : openApi3.getPaths().keySet()) {
       if (key.equals(path)
-          && api3.getPaths().get(key).getOperation(method.name().toLowerCase()) != null) {
+          && openApi3.getPaths().get(key).getOperation(method.name().toLowerCase()) != null) {
         methodOnPathExists = true;
         break;
       }
     }    
    return methodOnPathExists;
-  }  
+  }
+  
+  private static OpenApi3 parseSpecUrl(URL specsUrl) {
+    OpenApi3 openApi3 = null ;
+    try {
+      openApi3 = parseAndValidateOpenAPI3Specs(specsUrl);
+    } catch (ResolutionException | ValidationException ex) {
+      fail("Failed to parse and validate the provided schema", ex);
+    }
+    return openApi3;    
+  }
 
 }
