@@ -68,15 +68,15 @@ public final class OpenAPI3Assertions {
     Objects.requireNonNull(schemaName, "schemaName shall be provided");
     Objects.requireNonNull(apiResponse, "apiResponse shall be provided");
     
-    OpenApi3 openApi3 = parseSpecUrl(specsUrl) ;
+    OpenApi3 openApi3 = innerParseAndValidateOpenAPI3Specs(specsUrl) ;
     assertSchema(openApi3, schemaName, apiResponse);  
   }
 
   /**
    * Assert an API response against the provided OpenAPI 3 Specification.
    * 
-   * @param schNode1
-   * @param prop
+   * @param openApi
+   * @param schemaName
    * @param apiResponse
    */
   public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse) {
@@ -103,14 +103,13 @@ public final class OpenAPI3Assertions {
 
     if (!validationData.isValid()) {
       fail(validationData.results().toString());
-      return;
     }
   }
 
   /**
    * Load a schema inside an OpenApi3 object.
    * 
-   * @param specUrl
+   * @param openApi
    * @param schemaName
    * @return the schema as {@link JsonNode}
    * @throws EncodeException
@@ -123,7 +122,7 @@ public final class OpenAPI3Assertions {
   /**
    * Parse and validate the OpenAPI 3 specifications at the provided URL.
    * 
-   * @param schemaURL
+   * @param specsURL
    * @return the OpenApi3 as {@link OpenApi3}
    * @throws ValidationException
    * @throws ResolutionException
@@ -143,29 +142,25 @@ public final class OpenAPI3Assertions {
    * @param specsUrl Specs URL to check endpoints against
    * @param path     path of endpoint
    * @param method   method at the endpoint path
-   * @return true if spec contains the path and the path has the http method; false otherwise. 
    */
-  public static boolean assertEndpoint(URL specsUrl, String path, HttpMethod method) {
-    OpenApi3 openApi3 = parseSpecUrl(specsUrl) ;      
-    boolean methodOnPathExists = false;
+  public static void assertEndpoint(URL specsUrl, String path, HttpMethod method) {
+    OpenApi3 openApi3 = innerParseAndValidateOpenAPI3Specs(specsUrl);
     for (String key : openApi3.getPaths().keySet()) {
       if (key.equals(path)
           && openApi3.getPaths().get(key).getOperation(method.name().toLowerCase()) != null) {
-        methodOnPathExists = true;
-        break;
+        return;
       }
-    }    
-   return methodOnPathExists;
+    }
+    fail("Failed find " + method.name() + " " + path + " in OpenAPI 3 specs");
   }
   
-  private static OpenApi3 parseSpecUrl(URL specsUrl) {
-    OpenApi3 openApi3 = null ;
+  private static OpenApi3 innerParseAndValidateOpenAPI3Specs(URL specsUrl) {
     try {
-      openApi3 = parseAndValidateOpenAPI3Specs(specsUrl);
+      return parseAndValidateOpenAPI3Specs(specsUrl);
     } catch (ResolutionException | ValidationException ex) {
       fail("Failed to parse and validate the provided schema", ex);
     }
-    return openApi3;    
+    return null;
   }
 
 }
