@@ -9,6 +9,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 
 import org.junit.Test;
+import org.springframework.http.HttpMethod;
 
 import ca.gc.aafc.dina.testsupport.TestResourceHelper;
 
@@ -43,4 +44,11 @@ public class OpenAPI3AssertionsTest {
     String responseJson = TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json");
     OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson);
   }
+
+  @Test
+  public void assertEndPointTest() throws IOException {
+    URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
+    OpenAPI3Assertions.assertEndpoint(specsUrl, "/v1/managed-attribute", HttpMethod.GET);
+  }  
+
 }

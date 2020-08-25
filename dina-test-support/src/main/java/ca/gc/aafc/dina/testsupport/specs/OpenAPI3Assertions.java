@@ -16,11 +16,12 @@ import org.openapi4j.parser.model.v3.Schema;
 import org.openapi4j.parser.validation.v3.OpenApi3Validator;
 import org.openapi4j.schema.validator.ValidationData;
 import org.openapi4j.schema.validator.v3.SchemaValidator;
-
-import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpMethod;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Collections of utility test methods related to OpenAPI 3 specifications and
@@ -66,22 +67,16 @@ public final class OpenAPI3Assertions {
     Objects.requireNonNull(specsUrl, "specsUrl shall be provided");
     Objects.requireNonNull(schemaName, "schemaName shall be provided");
     Objects.requireNonNull(apiResponse, "apiResponse shall be provided");
-
-    OpenApi3 openApi = null;
-    try {
-      openApi = parseAndValidateOpenAPI3Specs(specsUrl);
-    } catch (ResolutionException | ValidationException ex) {
-      fail("Failed to parse and validate the provided schema", ex);
-      return;
-    }
-    assertSchema(openApi, schemaName, apiResponse);
+    
+    OpenApi3 openApi3 = innerParseAndValidateOpenAPI3Specs(specsUrl) ;
+    assertSchema(openApi3, schemaName, apiResponse);  
   }
 
   /**
    * Assert an API response against the provided OpenAPI 3 Specification.
    * 
-   * @param schNode1
-   * @param prop
+   * @param openApi
+   * @param schemaName
    * @param apiResponse
    */
   public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse) {
@@ -108,14 +103,13 @@ public final class OpenAPI3Assertions {
 
     if (!validationData.isValid()) {
       fail(validationData.results().toString());
-      return;
     }
   }
 
   /**
    * Load a schema inside an OpenApi3 object.
    * 
-   * @param specUrl
+   * @param openApi
    * @param schemaName
    * @return the schema as {@link JsonNode}
    * @throws EncodeException
@@ -128,7 +122,7 @@ public final class OpenAPI3Assertions {
   /**
    * Parse and validate the OpenAPI 3 specifications at the provided URL.
    * 
-   * @param schemaURL
+   * @param specsURL
    * @return the OpenApi3 as {@link OpenApi3}
    * @throws ValidationException
    * @throws ResolutionException
@@ -139,6 +133,34 @@ public final class OpenAPI3Assertions {
     OpenApi3Validator.instance().validate(api);
 
     return api;
+  }
+  
+  /**
+   * Checking the given path is existing in Open API 3 spec
+   * and the path contains the provided http method
+   * 
+   * @param specsUrl Specs URL to check endpoints against
+   * @param path     path of endpoint
+   * @param method   method at the endpoint path
+   */
+  public static void assertEndpoint(URL specsUrl, String path, HttpMethod method) {
+    OpenApi3 openApi3 = innerParseAndValidateOpenAPI3Specs(specsUrl);
+    for (String key : openApi3.getPaths().keySet()) {
+      if (key.equals(path)
+          && openApi3.getPaths().get(key).getOperation(method.name().toLowerCase()) != null) {
+        return;
+      }
+    }
+    fail("Failed find " + method.name() + " " + path + " in OpenAPI 3 specs");
+  }
+  
+  private static OpenApi3 innerParseAndValidateOpenAPI3Specs(URL specsUrl) {
+    try {
+      return parseAndValidateOpenAPI3Specs(specsUrl);
+    } catch (ResolutionException | ValidationException ex) {
+      fail("Failed to parse and validate the provided schema", ex);
+    }
+    return null;
   }
 
 }
