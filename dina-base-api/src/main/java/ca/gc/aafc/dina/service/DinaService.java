@@ -78,16 +78,16 @@ public class DinaService<E extends DinaEntity> {
    *                      - maximun number of results to return
    * @return list of entities
    */
-  public List<E> findAll(
-    @NonNull Class<E> entityClass,
-    @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> where,
-    BiFunction<CriteriaBuilder, Root<E>, List<Order>> orderBy,
+  public <T> List<T> findAll(
+    @NonNull Class<T> entityClass,
+    @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> where,
+    BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
     int startIndex,
     int maxResult
   ) {
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
-    CriteriaQuery<E> criteria = criteriaBuilder.createQuery(entityClass);
-    Root<E> root = criteria.from(entityClass);
+    CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
+    Root<T> root = criteria.from(entityClass);
 
     criteria.where(where.apply(criteriaBuilder, root)).select(root);
     if (orderBy != null) {
@@ -105,9 +105,9 @@ public class DinaService<E extends DinaEntity> {
    *                            - function to return the predicates cannot be null
    * @return resource count
    */
-  public Long getResourceCount(
-    @NonNull Class<E> entityClass,
-    @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> predicateSupplier
+  public <T> Long getResourceCount(
+    @NonNull Class<T> entityClass,
+    @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
   ) {
     return baseDAO.getResourceCount(entityClass, predicateSupplier);
   }
