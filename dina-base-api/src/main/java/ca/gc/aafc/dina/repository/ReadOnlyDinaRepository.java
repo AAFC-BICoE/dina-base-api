@@ -5,7 +5,6 @@ import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.exception.MethodNotAllowedException;
-import lombok.NonNull;
 
 import java.io.Serializable;
 import java.util.Optional;
