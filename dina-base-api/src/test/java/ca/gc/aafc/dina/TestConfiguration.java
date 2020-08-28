@@ -8,6 +8,10 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import ca.gc.aafc.dina.dto.VocabularyDto;
+import ca.gc.aafc.dina.entity.Vocabulary;
+import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
+import ca.gc.aafc.dina.service.DinaService;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.mockito.Mockito;
@@ -168,6 +172,17 @@ public class TestConfiguration {
       PersonDTO.class,
       Person.class,
       filterResolver);
+  }
+
+  @Bean
+  public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(BaseDAO baseDAO) {
+    DinaMapper<VocabularyDto, Vocabulary> dinaMapper = new DinaMapper<>(VocabularyDto.class);
+    return new ReadOnlyDinaRepository<VocabularyDto, Vocabulary>(
+        new DinaService<>(baseDAO),
+        dinaMapper,
+        VocabularyDto.class,
+        Vocabulary.class,
+        filterResolver);
   }
 
   /**
