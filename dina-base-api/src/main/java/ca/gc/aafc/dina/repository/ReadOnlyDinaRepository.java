@@ -18,9 +18,9 @@ import java.util.Optional;
  * @param <E>
  */
 public class ReadOnlyDinaRepository<D, E extends DinaEntity> extends DinaRepository<D, E > {
-  public ReadOnlyDinaRepository(@NonNull DinaService<E> dinaService,
-                                @NonNull DinaMapper<D, E> dinaMapper, @NonNull Class<D> resourceClass,
-                                @NonNull Class<E> entityClass, @NonNull DinaFilterResolver filterResolver) {
+  public ReadOnlyDinaRepository(DinaService<E> dinaService,
+                                DinaMapper<D, E> dinaMapper, Class<D> resourceClass,
+                                Class<E> entityClass, DinaFilterResolver filterResolver) {
     super(dinaService, Optional.empty(), Optional.empty() , dinaMapper, resourceClass, entityClass, filterResolver);
   }
 
