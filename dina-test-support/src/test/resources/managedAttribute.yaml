@@ -172,24 +172,24 @@ components:
                   example: 
                     specimen_view
                 managedAttributeType:
-                  description: type of the managed attribute          
+                  description: type of the managed attribute
                   enum: [
                      STRING,
                      INTEGER]
-                # SYED acceptedValues would be array of string or interger items. 
+                # SYED acceptedValues would be array of string or integer items.
                 # This is implemented using oneOf keyword
                 acceptedValues:
                   type: array
                   description: accepted values of the named attribute (if any)      
-                  items: 
+                  items:
                     oneOf:
-                      - $ref: '#/components/schemas/AcceptedValuesStr'
-                      - $ref: '#/components/schemas/AcceptedValuesInt'                  
+                      - type: string
+                      - type: integer
                   example: 
                     - dorsal
                     - 1 
                 createdDate:
-                  type: string							      
+                  type: string
                   description: initial date this managed attribute was created if any      
                 description:
                   type: object
@@ -197,8 +197,3 @@ components:
                   example: {
                      "fr":  Description en Français,
                      "en":  English description}
-    AcceptedValuesStr:
-      type: string
-    AcceptedValuesInt:
-      type: integer
-      
