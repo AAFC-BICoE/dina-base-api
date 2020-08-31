@@ -420,6 +420,43 @@ public class DinaRepositoryIT {
     assertThrows(ResourceNotFoundException.class, () -> dinaRepository.delete(UUID.randomUUID()));
   }
 
+  /**
+   * Test to make sure the bug is fixed where relations were set to null in the background when doing a findOne + edit + save.
+   * https://redmine.biodiversity.agr.gc.ca/issues/20144
+   */
+  @Test
+  public void findOneEditAttributeAndSave_onSuccess_relationsAreUnaffected() {
+    PersonDTO initialDto = persistPerson();
+    UUID uuid = initialDto.getUuid();
+    
+    PersonDTO fetchedPersonDto = dinaRepository.findOne(uuid, new QuerySpec(PersonDTO.class));
+    
+    // Check that the Person DTO has a shallow reference to the Department:
+    assertNotNull(fetchedPersonDto.getDepartment());
+    assertNotNull(fetchedPersonDto.getDepartment().getUuid());
+    assertNull(fetchedPersonDto.getDepartment().getName());
+    
+    // Edit an attribute:
+    fetchedPersonDto.setNickNames(new String[] { "test updated nickname 1", "test updated nickname 2" });
+    
+    PersonDTO savedPersonDto = dinaRepository.save(fetchedPersonDto);
+    
+    // Same check on the saved DTO:
+    assertNotNull(savedPersonDto.getDepartment());
+    assertNotNull(savedPersonDto.getDepartment().getUuid());
+    assertNull(savedPersonDto.getDepartment().getName());
+    // Check for the updated field:
+    assertArrayEquals(new String[] { "test updated nickname 1", "test updated nickname 2" }, fetchedPersonDto.getNickNames());
+    
+    PersonDTO reFetchedPersonDto = dinaRepository.findOne(uuid, new QuerySpec(PersonDTO.class));
+    // Same check on the re-fetched DTO:
+    assertNotNull(reFetchedPersonDto.getDepartment());
+    assertNotNull(reFetchedPersonDto.getDepartment().getUuid());
+    assertNull(reFetchedPersonDto.getDepartment().getName());
+    // Check for the updated field again:
+    assertArrayEquals(new String[] { "test updated nickname 1", "test updated nickname 2" }, reFetchedPersonDto.getNickNames());
+  }
+
   private void assertEqualsPersonDtos(PersonDTO dto, PersonDTO result, boolean testRelations) {
     assertEquals(dto.getUuid(), result.getUuid());
     assertEquals(dto.getName(), result.getName());
