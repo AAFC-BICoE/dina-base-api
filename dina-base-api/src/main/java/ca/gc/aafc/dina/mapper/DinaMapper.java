@@ -20,7 +20,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
-import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -122,14 +121,9 @@ public class DinaMapper<D, E> {
    * @return - A new instance of a class with the mapped fields
    */
   @SneakyThrows
-  public D toDto(E entity, Map<Class<?>, Set<String>> selectedFieldPerClass, Set<String> includedRelations) {
+  public D toDto(E entity, Map<Class<?>, Set<String>> selectedFieldPerClass, Set<String> relations) {
     D dto = dtoClass.getConstructor().newInstance();
-
-    // Include shallow references to relations not explicitly included:
-    Set<String> shallowRelations = new HashSet<>(relationPerClass.get(dtoClass));
-    shallowRelations.removeAll(includedRelations);
-  
-    mapSourceToTarget(entity, dto, selectedFieldPerClass, includedRelations, shallowRelations, new IdentityHashMap<>());
+    mapSourceToTarget(entity, dto, selectedFieldPerClass, relations, new IdentityHashMap<>());
     return dto;
   }
 
@@ -160,9 +154,9 @@ public class DinaMapper<D, E> {
     D dto,
     E entity,
     Map<Class<?>, Set<String>> selectedFieldPerClass,
-    Set<String> includedRelations
+    Set<String> relations
   ) {
-    mapSourceToTarget(dto, entity, selectedFieldPerClass, includedRelations, Collections.emptySet(), new IdentityHashMap<>());
+    mapSourceToTarget(dto, entity, selectedFieldPerClass, relations , new IdentityHashMap<>());
   }
 
   /**
@@ -179,7 +173,7 @@ public class DinaMapper<D, E> {
    *                                - target of the mapping
    * @param selectedFieldPerClass
    *                                - selected fields to map
-   * @param includedRelations
+   * @param relations
    *                                - relations to map
    * @param visited
    *                                - map of visted objects and there corresponding target.
@@ -188,8 +182,7 @@ public class DinaMapper<D, E> {
     @NonNull S source,
     @NonNull T target,
     @NonNull Map<Class<?>, Set<String>> selectedFieldPerClass,
-    @NonNull Set<String> includedRelations,
-    @NonNull Set<String> shallowRelations,
+    @NonNull Set<String> relations,
     @NonNull Map<Object, Object> visited
   ) {
     visited.putIfAbsent(source, target);
@@ -199,7 +192,7 @@ public class DinaMapper<D, E> {
         && handlers.get(sourceType).hasCustomFieldResolver(field);
 
     mapFieldsToTarget(source, target, selectedFields, ignoreIf);
-    mapRelationsToTarget(source, target, selectedFieldPerClass, includedRelations, shallowRelations, visited);
+    mapRelationsToTarget(source, target, selectedFieldPerClass, relations, visited);
     if (handlers.containsKey(sourceType)) {
       handlers.get(sourceType).resolveFields(selectedFields, source, target);
     }
@@ -230,11 +223,10 @@ public class DinaMapper<D, E> {
     S source,
     T target,
     Map<Class<?>, Set<String>> fieldsPerClass,
-    Set<String> includeRelations,
-    Set<String> shallowRelations,
+    Set<String> relations,
     Map<Object, Object> visited
   ) {
-    for (String relationFieldName : includeRelations) {
+    for (String relationFieldName : relations) {
       if (!hasfield(source.getClass(), relationFieldName)
           || !hasfield(target.getClass(), relationFieldName)) {
         continue;
@@ -260,41 +252,6 @@ public class DinaMapper<D, E> {
       }
 
       PropertyUtils.setProperty(target, relationFieldName, targetRelation);
-    }
-    // For each shallow relation create the target object with only the ID field set:
-    for (String relationFieldName : shallowRelations) {
-      Class<?> sourceReferenceType = PropertyUtils.getPropertyType(source, relationFieldName);
-
-      // Skip if either class is missing the field, or if the field is a collection type:
-      if (!hasfield(source.getClass(), relationFieldName)
-          || !hasfield(target.getClass(), relationFieldName)
-          || isCollection(sourceReferenceType)) {
-        continue;
-      }
-
-      Class<?> targetReferenceType = PropertyUtils.getPropertyType(target, relationFieldName);
-
-      Object sourceReference = PropertyUtils.getProperty(source, relationFieldName);
-      String idField = FieldUtils.getFieldsListWithAnnotation(targetReferenceType, JsonApiId.class)
-        .stream()
-        .findFirst()
-        .map(Field::getName)
-        .orElse(null);
-
-      // Skip if there is no source to map from or if the target has no ID field:
-      if (sourceReference == null || idField == null) {
-        continue;
-      }
-
-      // Get the shallow reference's ID value (e.g. the UUID):
-      Object id = PropertyUtils.getNestedProperty(source, relationFieldName + "." + idField);
-
-      // Create the shallow reference with only the ID set:
-      Object shallowReference = targetReferenceType.getDeclaredConstructor().newInstance();
-      PropertyUtils.setProperty(shallowReference, idField, id);
-
-      // Set the shallow reference into the source object's relation field:
-      PropertyUtils.setProperty(target, relationFieldName, shallowReference);
     }
   }
 
@@ -337,11 +294,11 @@ public class DinaMapper<D, E> {
      * side contains the relationships.
      */
     if (CollectionUtils.isNotEmpty(set1)) {
-      mapSourceToTarget(source, target, fields, set1, Collections.emptySet(), visited);
+      mapSourceToTarget(source, target, fields, set1, visited);
     } else if (CollectionUtils.isNotEmpty(set2)) {
-      mapSourceToTarget(source, target, fields, set2, Collections.emptySet(), visited);
+      mapSourceToTarget(source, target, fields, set2, visited);
     } else {
-      mapSourceToTarget(source, target, fields, Collections.emptySet(), Collections.emptySet(), visited);
+      mapSourceToTarget(source, target, fields, Collections.emptySet(), visited);
     }
     return target;
   }

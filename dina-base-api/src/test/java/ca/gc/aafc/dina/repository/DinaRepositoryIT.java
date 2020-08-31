@@ -85,18 +85,12 @@ public class DinaRepositoryIT {
   }
 
   @Test
-  public void findOne_ExcludeRelations_ShallowReferencesIncluded() {
+  public void findOne_ExcludeRelations_RelationsExcluded() {
     PersonDTO dto = persistPerson();
 
     PersonDTO result = dinaRepository.findOne(dto.getUuid(), new QuerySpec(PersonDTO.class));
     assertEqualsPersonDtos(dto, result, false);
-
-    // The department with the UUID is included:
-    assertNotNull(result.getDepartment());
-    assertNotNull(result.getDepartment().getUuid());
-
-    // The department name and any collection relations are not included:
-    assertNull(result.getDepartment().getName());
+    assertNull(result.getDepartment());
     assertNull(result.getDepartments());
   }
 
@@ -109,7 +103,7 @@ public class DinaRepositoryIT {
   }
 
   @Test
-  public void findAll_NoFilters_FindsAllAndIncludesShallowReferences() {
+  public void findAll_NoFilters_FindsAllAndExcludesRelationships() {
     Map<UUID, PersonDTO> expectedPersons = new HashMap<>();
 
     for (int i = 0; i < 10; i++) {
@@ -123,13 +117,7 @@ public class DinaRepositoryIT {
     for (PersonDTO resultElement : result) {
       PersonDTO expectedDto = expectedPersons.get(resultElement.getUuid());
       assertEqualsPersonDtos(expectedDto, resultElement, false);
-
-      // The department with the UUID is included:
-      assertNotNull(resultElement.getDepartment());
-      assertNotNull(resultElement.getDepartment().getUuid());
-
-      // The department name and any collection relations are not included:
-      assertNull(resultElement.getDepartment().getName());
+      assertNull(resultElement.getDepartment());
       assertNull(resultElement.getDepartments());
     }
   }
