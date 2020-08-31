@@ -116,7 +116,7 @@ public final class OpenAPI3Assertions {
    */
   private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName) throws EncodeException {
     Schema schema = openApi.getComponents().getSchema(schemaName);
-    return schema.toNode(openApi.getContext(), true);
+    return schema.toNode();
   }
 
   /**
