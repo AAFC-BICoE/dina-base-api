@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Helper builder to create CRNK Operation map.
  */
-public class JsonAPIOperationBuilder {
+public final class JsonAPIOperationBuilder {
 
   private final List<Map<String, Object>> operations = new ArrayList<>();
 
