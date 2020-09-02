@@ -1,16 +1,19 @@
 package ca.gc.aafc.dina.security.spring;
 
-import java.util.Set;
-
+import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
+import ca.gc.aafc.dina.security.DinaRole;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
 
-import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Custom spring security expression root. Can override or add custom spring
@@ -63,6 +66,22 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
     }
 
     return userGroups.stream().anyMatch(entity.getGroup()::equalsIgnoreCase);
+  }
+
+  public boolean hasDinaRole(DinaAuthenticatedUser user, String role) {
+    if (user == null || StringUtils.isBlank(role)) {
+      return false;
+    }
+
+    Map<String, Set<DinaRole>> rolesPerGroup = user.getRolesPerGroup();
+    if (MapUtils.isEmpty(rolesPerGroup)) {
+      return false;
+    }
+
+    return rolesPerGroup.values()
+      .stream()
+      .flatMap(Set::stream)
+      .anyMatch(dinaRole -> dinaRole.name().equalsIgnoreCase(role.strip()));
   }
 
   @Override
