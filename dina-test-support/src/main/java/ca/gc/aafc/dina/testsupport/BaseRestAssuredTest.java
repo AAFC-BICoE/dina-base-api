@@ -35,6 +35,7 @@ public class BaseRestAssuredTest {
   public static final String JSON_API_CONTENT_TYPE = "application/vnd.api+json";
 
   private static final Header CRNK_HEADER = new Header("crnk-compact", "true");
+  private static final String CRNK_OPERATION_ENDPOINT = "operations";
 
   @LocalServerPort
   protected int testPort;
@@ -112,6 +113,24 @@ public class BaseRestAssuredTest {
       .delete(StringUtils.appendIfMissing(path, "/") + "{id}", id);
     
     response.then().statusCode(expectedReturnCode);
+  }
+
+  /**
+   * Send a PATCH to the Crnk Operation endpoint.
+   * Operation requires all entries to have an id even for POST to uniquely identify them.
+   * The id assigned to POST can be any values, it will be changed by the backend.
+   * @param body
+   * @return
+   */
+  protected ValidatableResponse sendOperation(Object body) {
+    Response response = newRequest()
+        .accept("application/json-patch+json")
+        .contentType("application/json-patch+json")
+        .body(body)
+        .patch(CRNK_OPERATION_ENDPOINT);
+
+    return response.then()
+        .statusCode(HttpStatus.OK.value());
   }
 
 }

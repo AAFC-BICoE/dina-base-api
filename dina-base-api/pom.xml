@@ -97,6 +97,12 @@
       <groupId>javax.validation</groupId>
       <artifactId>validation-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>ca.gc.aafc</groupId>
+      <artifactId>dina-test-support</artifactId>
+      <version>0.35-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
