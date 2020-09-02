@@ -22,10 +22,16 @@ public class JsonAPIOperationBuilder {
     return new JsonAPIOperationBuilder();
   }
 
+  /**
+   * Add an operation to the current builder instance.
+   * @param method
+   * @param path
+   * @param values usually comes from JsonAPITestHelper.toJsonAPIMap
+   * @return
+   */
   public JsonAPIOperationBuilder addOperation(HttpMethod method, String path, Map<String, Object> values) {
 
     ImmutableMap.Builder<String, Object> operationsMap = new ImmutableMap.Builder<>();
-
     operationsMap.put("op", method.name());
     operationsMap.put("path", path);
     // since toJsonAPIMap returns the value under "data" we remove it if present
