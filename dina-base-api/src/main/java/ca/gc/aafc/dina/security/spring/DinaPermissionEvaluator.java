@@ -47,7 +47,7 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
   /**
    * Returns true if the given authenticated user is a member of the group the
    * given target object belongs to.
-   * 
+   *
    * @param user               - Dina user being authenticated
    * @param targetDomainObject - Target resouce of the request
    * @return - true if the given authenticated user is a member of the group the
@@ -68,6 +68,13 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
     return userGroups.stream().anyMatch(entity.getGroup()::equalsIgnoreCase);
   }
 
+  /**
+   * returns true if the given user has a given role in one of it's many groups.
+   *
+   * @param user user with roles
+   * @param role role to check for
+   * @return - true if the given user has a given role in one of it's many groups
+   */
   public boolean hasDinaRole(DinaAuthenticatedUser user, String role) {
     if (user == null || StringUtils.isBlank(role)) {
       return false;
