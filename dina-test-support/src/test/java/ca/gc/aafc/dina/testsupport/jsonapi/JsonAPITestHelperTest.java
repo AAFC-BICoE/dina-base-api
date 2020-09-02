@@ -20,11 +20,11 @@ import lombok.Data;
 public class JsonAPITestHelperTest {
   
   @Data   
-  static class TestObject  extends ComplexObject{
+  static class TestObject extends ComplexObject{
     private String email;
     private String displayName;
     private LocalDateTime createDate;
-  };    
+  }
 
   private final static JsonAPIRelationship RELATIONSHIP = JsonAPIRelationship.of("derivedFrom", "metadata", 
       "947f77ee-d144-45b5-b559-e239db0caa18");
