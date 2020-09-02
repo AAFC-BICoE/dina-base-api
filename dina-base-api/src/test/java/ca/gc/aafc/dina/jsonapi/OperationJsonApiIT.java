@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.jsonapi;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
@@ -32,11 +33,12 @@ public class OperationJsonApiIT extends BaseRestAssuredTest {
   /**
    * Testing a complete CRUD cycle using {@link BaseRestAssuredTest} methods.
    */
-  @Test public void operations_OnCRUDOperations_ExpectedReturnCodesReturned() {
-
+  @Test
+  public void operations_OnCRUDOperations_ExpectedReturnCodesReturned() {
     PersonDTO person1 = PersonDTO.builder()
         .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
         .name(RandomStringUtils.randomAlphabetic(4)).build();
+    String person1Uuid = UUID.randomUUID().toString();
     PersonDTO person2 = PersonDTO.builder()
         .nickNames(Arrays.asList("a", "w", "y").toArray(new String[0]))
         .name(RandomStringUtils.randomAlphabetic(4)).build();
@@ -44,15 +46,19 @@ public class OperationJsonApiIT extends BaseRestAssuredTest {
     List<Map<String, Object>> operationMap = JsonAPIOperationBuilder.newBuilder()
         .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
             .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person1), null,
-                UUID.randomUUID().toString())) //we need to provide an identifier for operation
+                person1Uuid)) // Crnk requires an identifier even if it's a POST
         .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
             .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person2), null,
-                UUID.randomUUID().toString())).buildOperation();
+                "1234")) //the id can even be a non-uuid value
+        .buildOperation();
 
-    ValidatableResponse operationResponse = sendOperation(operationMap, 200);
+    ValidatableResponse operationResponse = sendOperation(operationMap);
 
     Integer returnCode = operationResponse.extract().body().jsonPath().getInt("[0].status");
+    String person1AssignedId = operationResponse.extract().body().jsonPath().getString("[0].data.id");
+
     assertEquals(201, returnCode);
+    assertNotEquals("Assigned id should differ from the one provided", person1Uuid, person1AssignedId);
   }
 
 }

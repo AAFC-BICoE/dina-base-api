@@ -115,7 +115,14 @@ public class BaseRestAssuredTest {
     response.then().statusCode(expectedReturnCode);
   }
 
-  protected ValidatableResponse sendOperation(Object body, int expectedReturnCode) {
+  /**
+   * Send a PATCH to the Crnk Operation endpoint.
+   * Operation requires all entries to have an id even for POST to uniquely identify them.
+   * The id assigned to POST can be any values, it will be changed by the backend.
+   * @param body
+   * @return
+   */
+  protected ValidatableResponse sendOperation(Object body) {
     Response response = newRequest()
         .accept("application/json-patch+json")
         .contentType("application/json-patch+json")
@@ -123,7 +130,7 @@ public class BaseRestAssuredTest {
         .patch(CRNK_OPERATION_ENDPOINT);
 
     return response.then()
-        .statusCode(expectedReturnCode);
+        .statusCode(HttpStatus.OK.value());
   }
 
 }
