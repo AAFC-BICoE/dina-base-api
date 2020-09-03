@@ -1,0 +1,2 @@
+# Enable to use a postgres Docker container in tests that use the PostgresTestContainerInitializer.
+embedded.postgresql.enabled: true
