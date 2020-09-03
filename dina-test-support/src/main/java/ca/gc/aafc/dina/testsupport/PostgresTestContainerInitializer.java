@@ -1,0 +1,50 @@
+package ca.gc.aafc.dina.testsupport;
+
+import java.util.Objects;
+import java.util.Optional;
+
+import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.testcontainers.containers.PostgreSQLContainer;
+
+/**
+ * Initializes the Postgres TestContainer if the "embedded.postgresql.enabled" property is true.
+ * 
+ * Use this initializer in integration tests by adding this annotation to your test class:
+ * @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
+ */
+public class PostgresTestContainerInitializer
+  implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+  private static PostgreSQLContainer<?> sqlContainer;
+
+  @Override
+  public void initialize(ConfigurableApplicationContext ctx) {
+    ConfigurableEnvironment env = ctx.getEnvironment();
+
+    // If there is a postgres container enabled, point Spring's datasource properties to it:
+    if (!Objects.equals(env.getProperty("embedded.postgresql.enabled"), "false")) {
+      if (sqlContainer == null) {
+        sqlContainer = new PostgreSQLContainer<>("postgres:10.14")
+          .withDatabaseName(
+            Optional.ofNullable(env.getProperty("embedded.postgresql.database"))
+              .orElse("integration-tests-db"))
+          .withUsername("sa")
+          .withPassword("sa");
+        sqlContainer.withInitScript(env.getProperty("embedded.postgresql.init-script-file"));
+        sqlContainer.start();
+      }
+
+      TestPropertyValues.of(
+        "spring.datasource.url=" + sqlContainer.getJdbcUrl(),
+        "spring.datasource.username=" + sqlContainer.getUsername(),
+        "spring.datasource.password=" + sqlContainer.getPassword()
+      ).applyTo(env);
+
+    }
+
+  }
+
+}

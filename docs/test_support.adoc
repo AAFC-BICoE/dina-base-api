@@ -1,6 +1,24 @@
 = Test Support
 `dina-test-support` package is a set of utility classes to simplify testing in the different DINA Modules.
 
+== Running integration tests against a Postgres Docker container using PostgresTestContainerInitializer
+
+Initializes a Postgres TestContainer if the "embedded.postgresql.enabled" property is true.
+
+Use this initializer in integration tests by adding this annotation to your test class:
+
+```
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
+```
+
+You need to have the correct Spring launch properties set when running tests to enable the Postgres container:
+
+```
+embedded.postgresql:
+  enabled: true
+  init-script-file: create-test-users.sql
+  database: object_store_test
+```
 
 == OpenAPI3Assertions
 
