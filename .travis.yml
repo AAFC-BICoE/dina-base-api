@@ -1,4 +1,8 @@
 language: java
+
+services:
+  - docker
+
 cache:
   directories:
     - $HOME/.m2/repository #Cache one level down from .m2/ to avoid caching the GITHUB_TOKEN
