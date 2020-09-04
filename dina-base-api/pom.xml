@@ -12,7 +12,7 @@
   <parent>
     <groupId>ca.gc.aafc</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.34-SNAPSHOT</version>
+    <version>0.35-SNAPSHOT</version>
   </parent>
 
   <properties>
@@ -96,6 +96,12 @@
     <dependency>
       <groupId>javax.validation</groupId>
       <artifactId>validation-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ca.gc.aafc</groupId>
+      <artifactId>dina-test-support</artifactId>
+      <version>0.35-SNAPSHOT</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <build>

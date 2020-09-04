@@ -89,6 +89,6 @@ public final class JsonAPITestHelper {
     relBuilder.put(relationship.getName(), bldr.build());
     
     return relBuilder.build();
-  }  
-  
+  }
+
 }

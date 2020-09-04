@@ -6,7 +6,7 @@
 
   <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.34-SNAPSHOT</version>
+  <version>0.35-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
@@ -41,8 +41,8 @@
 
     <!-- Build plugin properties -->
     <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
-    <checkstyle.version>8.32</checkstyle.version>
-    <spotbugs.version>4.0.2</spotbugs.version>
+    <checkstyle.version>8.36</checkstyle.version>
+    <spotbugs.version>4.1.2</spotbugs.version>
     <maven-spotbugs.version>4.0.0</maven-spotbugs.version>
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
