@@ -14,6 +14,7 @@
     <jackson-datatype-jsr310.version>2.11.0</jackson-datatype-jsr310.version>
     <groovy.version>3.0.2</groovy.version> <!-- Required by rest-assured 4.3 -->
     <rest-assured.version>4.3.1</rest-assured.version>
+    <testcontainers.version>1.14.3</testcontainers.version>
   </properties>
 
   <parent>
@@ -53,6 +54,16 @@
       <groupId>org.openapi4j</groupId>
       <artifactId>openapi-schema-validator</artifactId>
       <version>${openapi4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>${testcontainers.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <distributionManagement>

@@ -1,0 +1,7 @@
+# Enable to use a postgres Docker container in tests that use the PostgresTestContainerInitializer.
+spring:
+  datasource:
+    # Use the default username and password for the embedded postgres container:
+    username: sa
+    password: sa
+embedded.postgresql.enabled: true
