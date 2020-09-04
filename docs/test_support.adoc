@@ -14,10 +14,20 @@ Use this initializer in integration tests by adding this annotation to your test
 You need to have the correct Spring launch properties set when running tests to enable the Postgres container:
 
 ```
+spring:
+  datasource:
+    username: web_user
+    password: test
+  liquibase:
+    liquibase-schema: object_store
+    user: migration_user
+    password: test
 embedded.postgresql:
   enabled: true
+  image: postgres:10.14
   init-script-file: create-test-users.sql
   database: object_store_test
+  schema: object_store
 ```
 
 == OpenAPI3Assertions

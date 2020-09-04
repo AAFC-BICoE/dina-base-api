@@ -32,10 +32,15 @@ public class PostgresTestContainerInitializer
     // If there is a postgres container enabled, point Spring's datasource properties to it:
     if (!Objects.equals(env.getProperty("embedded.postgresql.enabled"), "false")) {
       if (sqlContainer == null) {
-        sqlContainer = new PostgreSQLContainer<>("postgres:10.14")
+        sqlContainer = new PostgreSQLContainer<>(
+          Optional.ofNullable(env.getProperty("embedded.postgresql.image"))
+              .orElse("postgres"))
           .withDatabaseName(
             Optional.ofNullable(env.getProperty("embedded.postgresql.database"))
               .orElse("integration-tests-db"))
+          .withUrlParam("currentSchema",
+            Optional.ofNullable(env.getProperty("embedded.postgresql.schema"))
+              .orElse("public"))
           .withUsername("sa")
           .withPassword("sa");
         sqlContainer.withInitScript(env.getProperty("embedded.postgresql.init-script-file"));
@@ -43,9 +48,7 @@ public class PostgresTestContainerInitializer
       }
 
       TestPropertyValues.of(
-        "spring.datasource.url=" + sqlContainer.getJdbcUrl(),
-        "spring.datasource.username=" + sqlContainer.getUsername(),
-        "spring.datasource.password=" + sqlContainer.getPassword()
+        "spring.datasource.url=" + sqlContainer.getJdbcUrl()
       ).applyTo(env);
 
     }
