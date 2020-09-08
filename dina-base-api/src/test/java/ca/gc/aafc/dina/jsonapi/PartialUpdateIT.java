@@ -1,8 +1,10 @@
 package ca.gc.aafc.dina.jsonapi;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -70,6 +72,11 @@ public class PartialUpdateIT extends BaseRestAssuredTest {
       200);
 
     ValidatableResponse patchedPersonResponse = sendGet("person/" + personUUID + "?include=department", 200);
+
+    List<String> newNicknames = patchedPersonResponse.extract()
+      .body().jsonPath().getList("data.attributes.nickNames");
+
+    assertEquals(Arrays.asList("new nickname"), newNicknames);
 
     String postUpdatePersonDepartmentUuid = patchedPersonResponse.extract()
       .body().jsonPath().getString("data.relationships.department.data.id");
