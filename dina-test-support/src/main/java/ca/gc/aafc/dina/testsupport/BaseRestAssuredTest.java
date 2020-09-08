@@ -64,6 +64,14 @@ public class BaseRestAssuredTest {
       .basePath(basePath);
   }
 
+  protected ValidatableResponse sendGet(String path, int id) {
+    Response response = newRequest()
+      .get(path);
+
+    return response.then()
+      .statusCode(id);
+  }
+
   protected ValidatableResponse sendGet(String path, String id) {
     return sendGet(path, id, HttpStatus.OK.value());
   }
