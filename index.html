@@ -461,7 +461,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_test_support">3. Test Support</a>
 <ul class="sectlevel2">
-<li><a href="#_openapi3assertions">3.1. OpenAPI3Assertions</a></li>
+<li><a href="#_running_integration_tests_against_a_postgres_docker_container_using_postgrestestcontainerinitializer">3.1. Running integration tests against a Postgres Docker container using PostgresTestContainerInitializer</a></li>
+<li><a href="#_openapi3assertions">3.2. OpenAPI3Assertions</a></li>
 </ul>
 </li>
 <li><a href="#_testing">4. Testing</a>
@@ -741,7 +742,42 @@ We should use a Validator based on Bean Validation 2.0 specification to validate
 <p><code>dina-test-support</code> package is a set of utility classes to simplify testing in the different DINA Modules.</p>
 </div>
 <div class="sect2">
-<h3 id="_openapi3assertions">3.1. OpenAPI3Assertions</h3>
+<h3 id="_running_integration_tests_against_a_postgres_docker_container_using_postgrestestcontainerinitializer">3.1. Running integration tests against a Postgres Docker container using PostgresTestContainerInitializer</h3>
+<div class="paragraph">
+<p>Initializes a Postgres TestContainer if the "embedded.postgresql.enabled" property is true.</p>
+</div>
+<div class="paragraph">
+<p>Use this initializer in integration tests by adding this annotation to your test class:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You need to have the correct Spring launch properties set when running tests to enable the Postgres container:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>spring:
+  datasource:
+    username: web_user
+    password: test
+  liquibase:
+    liquibase-schema: object_store
+    user: migration_user
+    password: test
+embedded.postgresql:
+  enabled: true
+  image: postgres:10.14
+  init-script-file: create-test-users.sql
+  database: object_store_test
+  schema: object_store</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_openapi3assertions">3.2. OpenAPI3Assertions</h3>
 <div class="paragraph">
 <p><code>OpenAPI3Assertions</code> contains methods to run assertions between an API response and an OpenAPI 3 specification&#8217;s schema. Some of the Open API 3 files could be
 stored on remote servers potentially making the tests unstable. When <code>OpenAPI3Assertions.assertRemoteSchema</code> is used, the system propety <code>testing.skip-remote-schema-validation</code> can be used to temporarly skip the validation of an API response against a remote schema.</p>
@@ -1086,7 +1122,7 @@ public class PersonDTO {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-08-31 13:15:40 UTC
+Last updated 2020-09-09 14:14:21 UTC
 </div>
 </div>
 </body>
