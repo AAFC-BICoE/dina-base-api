@@ -176,15 +176,16 @@ components:
                   enum: [
                      STRING,
                      INTEGER]
-                # SYED acceptedValues would be array of string or integer items.
-                # This is implemented using oneOf keyword
+                # acceptedValues would be array of string or integer items.
                 acceptedValues:
                   type: array
                   description: accepted values of the named attribute (if any)      
                   items:
                     oneOf:
-                      - type: string
-                      - type: integer
+                      # this should use value directly but we re using it from testing validation
+                      # when using $ref to another schema
+                      - $ref: '#/components/schemas/AcceptedValuesStr'
+                      - $ref: '#/components/schemas/AcceptedValuesInt'
                   example: 
                     - dorsal
                     - 1 
@@ -197,3 +198,7 @@ components:
                   example: {
                      "fr":  Description en Français,
                      "en":  English description}
+    AcceptedValuesStr:
+      type: string
+    AcceptedValuesInt:
+      type: integer
