@@ -118,9 +118,10 @@ public final class OpenAPI3Assertions {
    * @throws EncodeException
    * @throws ResolutionException
    */
-  private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName) throws EncodeException, ResolutionException {
+  private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName)
+      throws EncodeException, ResolutionException {
     Schema schema = openApi.getComponents().getSchema(schemaName);
-    if(!openApi.getComponents().hasSchema(schemaName)) {
+    if (!openApi.getComponents().hasSchema(schemaName)) {
       throw new ResolutionException("Can't locate schema " + schemaName);
     }
     return schema.toNode();
