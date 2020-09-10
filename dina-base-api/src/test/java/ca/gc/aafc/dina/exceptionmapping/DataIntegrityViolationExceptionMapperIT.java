@@ -14,14 +14,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 
-import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import io.crnk.core.engine.document.ErrorData;
 import io.crnk.core.engine.error.ErrorResponse;
 import io.crnk.core.repository.ResourceRepository;
 
 @Transactional
-@SpringBootTest(classes = TestConfiguration.class)
+@SpringBootTest(classes = TestDinaBaseApp.class)
 public class DataIntegrityViolationExceptionMapperIT {
   
   @Inject

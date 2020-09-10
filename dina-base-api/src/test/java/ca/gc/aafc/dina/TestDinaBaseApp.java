@@ -48,7 +48,7 @@ import ca.gc.aafc.dina.service.GroupAuthorizationService;
  */
 @SpringBootApplication
 @EntityScan(basePackageClasses = Department.class)
-public class TestConfiguration {
+public class TestDinaBaseApp {
 
   @Inject
   private JpaTotalMetaInformationProvider metaInformationProvider;

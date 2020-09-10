@@ -26,14 +26,14 @@ import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.DepartmentType;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import lombok.NonNull;
 
 @Transactional
-@SpringBootTest(classes = TestConfiguration.class)
+@SpringBootTest(classes = TestDinaBaseApp.class)
 public class DinaServiceTest {
 
   @Inject

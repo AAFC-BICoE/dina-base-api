@@ -21,14 +21,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.DinaRepository;
 
 @Transactional
-@SpringBootTest(classes = TestConfiguration.class, properties = "keycloak.enabled: true")
+@SpringBootTest(classes = TestDinaBaseApp.class, properties = "keycloak.enabled: true")
 public class DinaGroupBasedPermissionsTest {
 
   @Inject
@@ -44,7 +44,7 @@ public class DinaGroupBasedPermissionsTest {
     KeycloakAuthenticationToken mockToken = Mockito.mock(
       KeycloakAuthenticationToken.class,
       Answers.RETURNS_DEEP_STUBS);
-    TestConfiguration.mockToken(Arrays.asList("/" + GROUP_1 + "/staff"), mockToken);
+    TestDinaBaseApp.mockToken(Arrays.asList("/" + GROUP_1 + "/staff"), mockToken);
 
     SecurityContextHolder.getContext().setAuthentication(mockToken);
   }

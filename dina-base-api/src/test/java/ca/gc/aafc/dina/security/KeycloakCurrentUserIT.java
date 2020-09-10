@@ -16,10 +16,10 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.TestDinaBaseApp;
 
 @SpringBootTest(
-  classes = TestConfiguration.class,
+  classes = TestDinaBaseApp.class,
   properties = "keycloak.enabled: true"
 )
 public class KeycloakCurrentUserIT {
@@ -36,7 +36,7 @@ public class KeycloakCurrentUserIT {
       Answers.RETURNS_DEEP_STUBS
     );
 
-    TestConfiguration.mockToken(expectedGroups, mockToken);
+    TestDinaBaseApp.mockToken(expectedGroups, mockToken);
 
     SecurityContextHolder.getContext().setAuthentication(mockToken);
 
@@ -55,7 +55,7 @@ public class KeycloakCurrentUserIT {
     KeycloakAuthenticationToken mockToken = Mockito.mock(
       KeycloakAuthenticationToken.class,
       Answers.RETURNS_DEEP_STUBS);
-    TestConfiguration.mockToken(keycloakGroupClaim, mockToken);
+    TestDinaBaseApp.mockToken(keycloakGroupClaim, mockToken);
 
     SecurityContextHolder.getContext().setAuthentication(mockToken);
 

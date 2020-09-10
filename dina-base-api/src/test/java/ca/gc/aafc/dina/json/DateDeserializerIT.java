@@ -15,12 +15,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.TestDinaBaseApp;
 import io.crnk.core.engine.document.ErrorData;
 import io.crnk.core.exception.CrnkMappableException;
 import lombok.Data;
 
-@SpringBootTest(classes = TestConfiguration.class)
+@SpringBootTest(classes = TestDinaBaseApp.class)
 public class DateDeserializerIT {
 
   @Inject

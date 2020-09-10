@@ -21,7 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Employee;
@@ -38,7 +38,7 @@ import io.crnk.core.repository.ResourceRepository;
 import io.crnk.core.resource.list.ResourceList;
 
 @Transactional
-@SpringBootTest(classes = TestConfiguration.class, properties = "crnk.allow-unknown-attributes=true")
+@SpringBootTest(classes = TestDinaBaseApp.class, properties = "crnk.allow-unknown-attributes=true")
 public class RsqlFilterHandlerIT {
 
   @Inject
