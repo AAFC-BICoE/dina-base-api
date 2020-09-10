@@ -9,11 +9,14 @@ import java.util.Objects;
 
 import org.openapi4j.core.exception.EncodeException;
 import org.openapi4j.core.exception.ResolutionException;
+import org.openapi4j.core.model.v3.OAI3;
+import org.openapi4j.core.model.v3.OAI3Context;
 import org.openapi4j.core.validation.ValidationException;
 import org.openapi4j.parser.OpenApi3Parser;
 import org.openapi4j.parser.model.v3.OpenApi3;
 import org.openapi4j.parser.model.v3.Schema;
 import org.openapi4j.parser.validation.v3.OpenApi3Validator;
+import org.openapi4j.schema.validator.ValidationContext;
 import org.openapi4j.schema.validator.ValidationData;
 import org.openapi4j.schema.validator.v3.SchemaValidator;
 import org.springframework.http.HttpMethod;
@@ -83,9 +86,10 @@ public final class OpenAPI3Assertions {
 
     SchemaValidator schemaValidator = null;
     try {
+      ValidationContext<OAI3> context = new ValidationContext<>(openApi.getContext());
       JsonNode schemaNode = loadSchemaAsJsonNode(openApi, schemaName);
-      schemaValidator = new SchemaValidator(null, schemaNode);
-    } catch (ResolutionException | EncodeException rEx) {
+      schemaValidator = new SchemaValidator(context, null, schemaNode);
+    } catch ( EncodeException rEx) {
       fail(rEx);
       return;
     }
