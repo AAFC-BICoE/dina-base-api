@@ -1,6 +1,6 @@
 package ca.gc.aafc.dina.repository;
 
-import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.VocabularyDto;
 import ca.gc.aafc.dina.entity.Vocabulary;
 import ca.gc.aafc.dina.jpa.BaseDAO;
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Transactional
-@SpringBootTest(classes = TestConfiguration.class)
+@SpringBootTest(classes = TestDinaBaseApp.class)
 public class ReadOnlyDinaRepositoryIT {
 
   @Inject

@@ -17,13 +17,11 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
-import ca.gc.aafc.dina.repository.JpaRelationshipRepository;
-import ca.gc.aafc.dina.repository.JpaResourceRepository;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.IncludeFieldSpec;
 import io.crnk.core.queryspec.IncludeRelationSpec;
@@ -31,7 +29,7 @@ import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.list.ResourceList;
 
 @Transactional
-@SpringBootTest(classes = TestConfiguration.class)
+@SpringBootTest(classes = TestDinaBaseApp.class)
 public class JpaRelationshipRepositoryIT {
 
   @Inject

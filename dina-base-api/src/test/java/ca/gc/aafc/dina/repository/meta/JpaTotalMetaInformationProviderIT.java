@@ -12,7 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.entity.Department;
@@ -26,7 +26,7 @@ import io.crnk.core.resource.list.ResourceList;
 import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
 
 @Transactional
-@SpringBootTest(classes = TestConfiguration.class)
+@SpringBootTest(classes = TestDinaBaseApp.class)
 public class JpaTotalMetaInformationProviderIT {
 
   @Inject

@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.jsonapi;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIOperationBuilder;
@@ -21,7 +22,7 @@ import java.util.UUID;
 /**
  * Integration test making sure the operation endpoint is available and working as expected.
  */
-@SpringBootTest(classes = ca.gc.aafc.dina.TestConfiguration.class ,
+@SpringBootTest(classes = TestDinaBaseApp.class ,
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = { "dev-user.enabled: true", "keycloak.enabled: false" })
 public class OperationJsonApiIT extends BaseRestAssuredTest {

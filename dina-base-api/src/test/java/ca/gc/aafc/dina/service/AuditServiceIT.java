@@ -18,11 +18,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import ca.gc.aafc.dina.DinaUserConfig;
-import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.service.AuditService.AuditInstance;
 
-@SpringBootTest(classes = TestConfiguration.class, properties = "dina.auditing.enabled = true")
+@SpringBootTest(classes = TestDinaBaseApp.class, properties = "dina.auditing.enabled = true")
 public class AuditServiceIT {
 
   @Inject

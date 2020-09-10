@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.AuditSnapshotDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.repository.auditlog.AuditSnapshotRepository;
@@ -24,7 +24,7 @@ import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.list.ResourceList;
 import io.crnk.core.resource.meta.PagedMetaInformation;
 
-@SpringBootTest(classes = TestConfiguration.class, properties = "dina.auditing.enabled = true")
+@SpringBootTest(classes = TestDinaBaseApp.class, properties = "dina.auditing.enabled = true")
 public class AuditSnapshotRepositoryIT {
 
   @Inject

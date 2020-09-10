@@ -9,10 +9,10 @@ import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import ca.gc.aafc.dina.TestConfiguration;
+import ca.gc.aafc.dina.TestDinaBaseApp;
 
 @SpringBootTest(
-  classes = TestConfiguration.class,
+  classes = TestDinaBaseApp.class,
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"}
 )
 public class DevUserConfigIT {
