@@ -10,7 +10,6 @@ import java.util.Objects;
 import org.openapi4j.core.exception.EncodeException;
 import org.openapi4j.core.exception.ResolutionException;
 import org.openapi4j.core.model.v3.OAI3;
-import org.openapi4j.core.model.v3.OAI3Context;
 import org.openapi4j.core.validation.ValidationException;
 import org.openapi4j.parser.OpenApi3Parser;
 import org.openapi4j.parser.model.v3.OpenApi3;
@@ -84,17 +83,17 @@ public final class OpenAPI3Assertions {
    */
   public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse) {
 
-    SchemaValidator schemaValidator = null;
+    SchemaValidator schemaValidator;
     try {
       ValidationContext<OAI3> context = new ValidationContext<>(openApi.getContext());
       JsonNode schemaNode = loadSchemaAsJsonNode(openApi, schemaName);
       schemaValidator = new SchemaValidator(context, null, schemaNode);
-    } catch ( EncodeException rEx) {
+    } catch (ResolutionException | EncodeException rEx) {
       fail(rEx);
       return;
     }
 
-    JsonNode apiResponseNode = null;
+    JsonNode apiResponseNode;
     try {
       apiResponseNode = MAPPER.readTree(apiResponse);
     } catch (IOException ioEx) {
@@ -117,9 +116,13 @@ public final class OpenAPI3Assertions {
    * @param schemaName
    * @return the schema as {@link JsonNode}
    * @throws EncodeException
+   * @throws ResolutionException
    */
-  private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName) throws EncodeException {
+  private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName) throws EncodeException, ResolutionException {
     Schema schema = openApi.getComponents().getSchema(schemaName);
+    if(!openApi.getComponents().hasSchema(schemaName)) {
+      throw new ResolutionException("Can't locate schema " + schemaName);
+    }
     return schema.toNode();
   }
 
