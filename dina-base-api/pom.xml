@@ -16,7 +16,6 @@
   </parent>
 
   <properties>
-    <keycloak-starter.version>11.0.0</keycloak-starter.version>
     <jcip-annotations.version>1.0</jcip-annotations.version>
     <local-javax-jaxb.version>2.3.0.1</local-javax-jaxb.version>
     <javax.activation.version>1.2.0</javax.activation.version>
@@ -27,16 +26,10 @@
   </properties>
 
   <dependencies>
-    <!-- Spring -->
     <dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
-    <dependency>
-      <groupId>org.keycloak</groupId>
-      <artifactId>keycloak-spring-boot-starter</artifactId>
-      <version>${keycloak-starter.version}</version>
-  </dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
     <!-- Used by Spotbug annotation -->
     <dependency>
       <groupId>net.jcip</groupId>
