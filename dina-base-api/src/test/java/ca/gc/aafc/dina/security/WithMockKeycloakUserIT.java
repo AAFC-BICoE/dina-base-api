@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
     classes = TestDinaBaseApp.class,
     properties = "keycloak.enabled: true"
 )
-public class SpringSecurityExample {
+public class WithMockKeycloakUserIT {
 
   private static final String GROUP_1 = "group 1";
 

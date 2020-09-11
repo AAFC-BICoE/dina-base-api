@@ -17,8 +17,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Factory providing SecurityContext for tests annotated with {@link WithMockKeycloakUser}
+ */
 public class WithMockKeycloakSecurityContextFactory
     implements WithSecurityContextFactory<WithMockKeycloakUser> {
+
+  // In production, keys (and claims) are set by Keycloak
+  private static final String GROUPS_CLAIM_KEY = "groups";
+  private static final String AGENT_IDENTIFIER_CLAIM_KEY = "agent-identifier";
 
   @Override
   public SecurityContext createSecurityContext(WithMockKeycloakUser mockKeycloakUser) {
@@ -30,7 +37,11 @@ public class WithMockKeycloakSecurityContextFactory
     List<String> groupRoles = Arrays.stream(mockKeycloakUser.groupRole())
         .map(s -> StringUtils.prependIfMissing(StringUtils.replace(s, ":", "/"), "/"))
         .collect(Collectors.toList());
-    accessToken.setOtherClaims("groups", groupRoles);
+    accessToken.setOtherClaims(GROUPS_CLAIM_KEY, groupRoles);
+
+    if (StringUtils.isNotBlank(mockKeycloakUser.agentIdentifier())) {
+      accessToken.setOtherClaims(AGENT_IDENTIFIER_CLAIM_KEY, mockKeycloakUser.agentIdentifier());
+    }
 
     RefreshableKeycloakSecurityContext ctx = new RefreshableKeycloakSecurityContext(null, null,
         null, accessToken, null, null, null);

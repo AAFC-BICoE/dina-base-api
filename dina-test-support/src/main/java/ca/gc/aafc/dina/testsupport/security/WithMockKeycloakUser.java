@@ -5,6 +5,9 @@ import org.springframework.security.test.context.support.WithSecurityContext;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * Annotation used to mock a Keycloak user for testing purpose.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @WithSecurityContext(factory = WithMockKeycloakSecurityContextFactory.class)
 public @interface WithMockKeycloakUser {
@@ -16,5 +19,7 @@ public @interface WithMockKeycloakUser {
    * @return
    */
   String[] groupRole() default "";
+
+  String agentIdentifier() default "";
 
 }
