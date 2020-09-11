@@ -15,7 +15,7 @@ import io.restassured.response.ValidatableResponse;
 @SpringBootTest(classes = TestConfiguration.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BaseRestAssuredTestIT extends BaseRestAssuredTest {
 
-  private String RESOURCE_PATH = "crnk-test-data";
+  private static final String RESOURCE_PATH = "crnk-test-data";
 
   public BaseRestAssuredTestIT() {
     super("");
@@ -28,7 +28,7 @@ public class BaseRestAssuredTestIT extends BaseRestAssuredTest {
 	public void baseClass_OnCRUDOperations_ExpectedReturnCodesReturned() {
     CrnkTestData testData = CrnkTestData.builder().note("note").build();
 
-    ValidatableResponse postResponse = sendPost(RESOURCE_PATH, 
+    ValidatableResponse postResponse = sendPost(RESOURCE_PATH,
       JsonAPITestHelper.toJsonAPIMap(RESOURCE_PATH, 
       JsonAPITestHelper.toAttributeMap(testData), null, null));
     
