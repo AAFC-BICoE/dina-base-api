@@ -68,7 +68,7 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
 
   @BeforeEach
   void setUp() {
-    String url = "http://localhost:8080/" + super.basePath;
+    String url = "http://localhost:" + super.testPort + "/" + super.basePath;
     CrnkClient client = new CrnkClient(url);
     operationsClient = new OperationsClient(client);
     client.setHttpAdapter(new InMemoryHttpAdapter(boot, url));
