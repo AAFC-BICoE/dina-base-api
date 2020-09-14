@@ -133,7 +133,34 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     Assertions.assertEquals(0, projectRepo.findAll(new QuerySpec(ProjectDTO.class)).size());
   }
 
+  @Test
+  void bulkUpdate() {
+    ProjectDTO project1 = createProjectDTO();
+    ProjectDTO project2 = createProjectDTO();
+
+    OperationsCall call = operationsClient.createCall();
+    call.add(HttpMethod.POST, project1);
+    call.add(HttpMethod.POST, project2);
+    call.execute();
+
+    project1.setName(RandomStringUtils.randomAlphabetic(5));
+    project2.setName(RandomStringUtils.randomAlphabetic(5));
+
+    call = operationsClient.createCall();
+    call.add(HttpMethod.PATCH, project1);
+    call.add(HttpMethod.PATCH, project2);
+    call.execute();
+
+    assertProject(
+      project1,
+      projectRepo.findOne(project1.getUuid(), new QuerySpec(ProjectDTO.class)));
+    assertProject(
+      project2,
+      projectRepo.findOne(project2.getUuid(), new QuerySpec(ProjectDTO.class)));
+  }
+
   private void assertProject(ProjectDTO expected, ProjectDTO result) {
+    Assertions.assertEquals(expected.getUuid(), result.getUuid());
     Assertions.assertEquals(expected.getName(), result.getName());
   }
 
