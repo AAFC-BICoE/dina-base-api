@@ -8,13 +8,15 @@ import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
-import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIOperationBuilder;
-import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
+import io.crnk.client.CrnkClient;
+import io.crnk.client.http.inmemory.InMemoryHttpAdapter;
+import io.crnk.core.boot.CrnkBoot;
 import io.crnk.core.engine.http.HttpMethod;
+import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiResource;
-import io.restassured.path.json.JsonPath;
-import io.restassured.response.ValidatableResponse;
+import io.crnk.operations.client.OperationsCall;
+import io.crnk.operations.client.OperationsClient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,19 +25,20 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 
+import javax.inject.Inject;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,6 +47,13 @@ import java.util.UUID;
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
+
+  @Inject
+  private CrnkBoot boot;
+  @Inject
+  private DinaRepository<ProjectDTO, Project> projectRepo;
+
+  private OperationsClient operationsClient;
 
   public DinaRepoBulkOperationIT() {
     super("");
@@ -69,48 +79,68 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     }
   }
 
+  @BeforeEach
+  void setUp() {
+    String url = "http://localhost:8080/" + super.basePath;
+    CrnkClient client = new CrnkClient(url);
+    operationsClient = new OperationsClient(client);
+    client.setHttpAdapter(new InMemoryHttpAdapter(boot, url));
+  }
+
+  @AfterEach
+  void tearDown() {
+    //Clean up test data
+    projectRepo.findAll(new QuerySpec(ProjectDTO.class))
+      .forEach(projectDTO -> projectRepo.delete(projectDTO.getUuid()));
+  }
+
   @Test
   void bulkPost() {
     ProjectDTO project1 = createProjectDTO();
     ProjectDTO project2 = createProjectDTO();
-    Map<String, Object> project1Map = projectToMap(project1, UUID.randomUUID().toString());
-    Map<String, Object> project2Map = projectToMap(project2, UUID.randomUUID().toString());
 
-    List<Map<String, Object>> operationMap = JsonAPIOperationBuilder.newBuilder()
-      .addOperation(HttpMethod.POST, ProjectDTO.RESOURCE_TYPE, project1Map)
-      .addOperation(HttpMethod.POST, ProjectDTO.RESOURCE_TYPE, project2Map)
-      .buildOperation();
+    OperationsCall call = operationsClient.createCall();
+    call.add(HttpMethod.POST, project1);
+    call.add(HttpMethod.POST, project2);
+    call.execute();
 
-    ValidatableResponse operationResponse = sendOperation(operationMap);
-
-    Integer returnCodePerson1 = operationResponse.extract().body().jsonPath().getInt("[0].status");
-    String project1ID = operationResponse.extract().body().jsonPath().getString("[0].data.id");
-
-    Integer returnCodePerson2 = operationResponse.extract().body().jsonPath().getInt("[1].status");
-    String project2ID = operationResponse.extract().body().jsonPath().getString("[1].data.id");
-
-    Assertions.assertEquals(201, returnCodePerson1);
-    Assertions.assertEquals(201, returnCodePerson2);
-    assertPersonFromResponse(sendGet(ProjectDTO.RESOURCE_TYPE, project1ID, 200), project1);
-    assertPersonFromResponse(sendGet(ProjectDTO.RESOURCE_TYPE, project2ID, 200), project2);
+    Assertions.assertEquals(2, projectRepo.findAll(new QuerySpec(ProjectDTO.class)).size());
+    assertProject(
+      project1,
+      projectRepo.findOne(project1.getUuid(), new QuerySpec(ProjectDTO.class)));
+    assertProject(
+      project2,
+      projectRepo.findOne(project2.getUuid(), new QuerySpec(ProjectDTO.class)));
   }
 
-  private static void assertPersonFromResponse(ValidatableResponse response, ProjectDTO dto) {
-    JsonPath jsonPath = response.extract().body().jsonPath();
-    Assertions.assertEquals(dto.name, jsonPath.getString("data.attributes.name"));
+  private void assertProject(ProjectDTO expected, ProjectDTO result) {
+    Assertions.assertEquals(expected.getName(), result.getName());
   }
 
-  private static Map<String, Object> projectToMap(ProjectDTO project, String id) {
-    return JsonAPITestHelper.toJsonAPIMap(
-      ProjectDTO.RESOURCE_TYPE,
-      JsonAPITestHelper.toAttributeMap(project),
-      null,
-      id);
+  @Test
+  void bulkDelete() {
+    ProjectDTO project1 = createProjectDTO();
+    ProjectDTO project2 = createProjectDTO();
+
+    OperationsCall call = operationsClient.createCall();
+    call.add(HttpMethod.POST, project1);
+    call.add(HttpMethod.POST, project2);
+    call.execute();
+
+    Assertions.assertEquals(2, projectRepo.findAll(new QuerySpec(ProjectDTO.class)).size());
+
+    call = operationsClient.createCall();
+    call.add(HttpMethod.DELETE, project1);
+    call.add(HttpMethod.DELETE, project2);
+    call.execute();
+
+    Assertions.assertEquals(0, projectRepo.findAll(new QuerySpec(ProjectDTO.class)).size());
   }
 
   private static ProjectDTO createProjectDTO() {
     return ProjectDTO.builder()
       .name(RandomStringUtils.randomAlphabetic(5))
+      .uuid(UUID.randomUUID())
       .build();
   }
 
