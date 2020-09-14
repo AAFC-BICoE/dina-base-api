@@ -12,8 +12,10 @@ import io.crnk.client.CrnkClient;
 import io.crnk.client.http.inmemory.InMemoryHttpAdapter;
 import io.crnk.core.boot.CrnkBoot;
 import io.crnk.core.engine.http.HttpMethod;
+import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.annotations.JsonApiId;
+import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import io.crnk.operations.client.OperationsCall;
 import io.crnk.operations.client.OperationsClient;
@@ -22,6 +24,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
@@ -38,6 +41,8 @@ import javax.inject.Inject;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,31 +57,13 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
   private CrnkBoot boot;
   @Inject
   private DinaRepository<ProjectDTO, Project> projectRepo;
+  @Inject
+  private DinaRepository<TaskDTO, Task> taskRepo;
 
   private OperationsClient operationsClient;
 
   public DinaRepoBulkOperationIT() {
     super("");
-  }
-
-  @TestConfiguration
-  @EntityScan(basePackageClasses = DinaRepoBulkOperationIT.class)
-  static class DinaRepoBulkOperationITConfig {
-    @Bean
-    public DinaRepository<ProjectDTO, Project> projectRepo(
-      BaseDAO baseDAO,
-      DinaFilterResolver filterResolver
-    ) {
-      return new DinaRepository<>(
-        new DinaService<>(baseDAO),
-        Optional.empty(),
-        Optional.empty(),
-        new DinaMapper<>(ProjectDTO.class),
-        ProjectDTO.class,
-        Project.class,
-        filterResolver
-      );
-    }
   }
 
   @BeforeEach
@@ -90,31 +77,37 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
   @AfterEach
   void tearDown() {
     //Clean up test data
-    projectRepo.findAll(new QuerySpec(ProjectDTO.class))
+    projectRepo.findAll(createProjectQuerySpec())
       .forEach(projectDTO -> projectRepo.delete(projectDTO.getUuid()));
   }
 
   @Test
-  void bulkPost() {
+  void bulkPost_ResourcesCreatedWithRelationships() {
     ProjectDTO project1 = createProjectDTO();
+    project1.setTask(createTaskDTO());
     ProjectDTO project2 = createProjectDTO();
+    project2.setTask(createTaskDTO());
 
     OperationsCall call = operationsClient.createCall();
+    call.add(HttpMethod.POST, project1.getTask());
+    call.add(HttpMethod.POST, project2.getTask());
     call.add(HttpMethod.POST, project1);
     call.add(HttpMethod.POST, project2);
     call.execute();
 
-    Assertions.assertEquals(2, projectRepo.findAll(new QuerySpec(ProjectDTO.class)).size());
+    Assertions.assertEquals(2, projectRepo.findAll(createProjectQuerySpec()).size());
+    Assertions.assertEquals(2, taskRepo.findAll(new QuerySpec(TaskDTO.class)).size());
+
     assertProject(
       project1,
-      projectRepo.findOne(project1.getUuid(), new QuerySpec(ProjectDTO.class)));
+      projectRepo.findOne(project1.getUuid(), createProjectQuerySpec()));
     assertProject(
       project2,
-      projectRepo.findOne(project2.getUuid(), new QuerySpec(ProjectDTO.class)));
+      projectRepo.findOne(project2.getUuid(), createProjectQuerySpec()));
   }
 
   @Test
-  void bulkDelete() {
+  void bulkDelete_ResourcesDeleted() {
     ProjectDTO project1 = createProjectDTO();
     ProjectDTO project2 = createProjectDTO();
 
@@ -123,14 +116,14 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     call.add(HttpMethod.POST, project2);
     call.execute();
 
-    Assertions.assertEquals(2, projectRepo.findAll(new QuerySpec(ProjectDTO.class)).size());
+    Assertions.assertEquals(2, projectRepo.findAll(createProjectQuerySpec()).size());
 
     call = operationsClient.createCall();
     call.add(HttpMethod.DELETE, project1);
     call.add(HttpMethod.DELETE, project2);
     call.execute();
 
-    Assertions.assertEquals(0, projectRepo.findAll(new QuerySpec(ProjectDTO.class)).size());
+    Assertions.assertEquals(0, projectRepo.findAll(createProjectQuerySpec()).size());
   }
 
   @Test
@@ -151,17 +144,18 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     call.add(HttpMethod.PATCH, project2);
     call.execute();
 
-    assertProject(
-      project1,
-      projectRepo.findOne(project1.getUuid(), new QuerySpec(ProjectDTO.class)));
-    assertProject(
-      project2,
-      projectRepo.findOne(project2.getUuid(), new QuerySpec(ProjectDTO.class)));
+    assertProject(project1, projectRepo.findOne(project1.getUuid(), createProjectQuerySpec()));
+    assertProject(project2, projectRepo.findOne(project2.getUuid(), createProjectQuerySpec()));
   }
 
   private void assertProject(ProjectDTO expected, ProjectDTO result) {
     Assertions.assertEquals(expected.getUuid(), result.getUuid());
     Assertions.assertEquals(expected.getName(), result.getName());
+    if (expected.getTask() != null) {
+      Assertions.assertNotNull(result.getTask());
+      Assertions.assertEquals(expected.getTask().getUuid(), result.getTask().getUuid());
+      Assertions.assertEquals(expected.getTask().getPowerLevel(), result.getTask().getPowerLevel());
+    }
   }
 
   private static ProjectDTO createProjectDTO() {
@@ -169,6 +163,52 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
       .name(RandomStringUtils.randomAlphabetic(5))
       .uuid(UUID.randomUUID())
       .build();
+  }
+
+  private static TaskDTO createTaskDTO() {
+    return TaskDTO.builder().uuid(UUID.randomUUID()).powerLevel(RandomUtils.nextInt()).build();
+  }
+
+  private static QuerySpec createProjectQuerySpec() {
+    QuerySpec querySpec = new QuerySpec(ProjectDTO.class);
+    querySpec.includeRelation(PathSpec.of("task"));
+    return querySpec;
+  }
+
+  @TestConfiguration
+  @EntityScan(basePackageClasses = DinaRepoBulkOperationIT.class)
+  static class DinaRepoBulkOperationITConfig {
+    @Bean
+    public DinaRepository<ProjectDTO, Project> projectRepo(
+      BaseDAO baseDAO,
+      DinaFilterResolver filterResolver
+    ) {
+      return new DinaRepository<>(
+        new DinaService<>(baseDAO),
+        Optional.empty(),
+        Optional.empty(),
+        new DinaMapper<>(ProjectDTO.class),
+        ProjectDTO.class,
+        Project.class,
+        filterResolver
+      );
+    }
+
+    @Bean
+    public DinaRepository<TaskDTO, Task> taskRepo(
+      BaseDAO baseDAO,
+      DinaFilterResolver filterResolver
+    ) {
+      return new DinaRepository<>(
+        new DinaService<>(baseDAO),
+        Optional.empty(),
+        Optional.empty(),
+        new DinaMapper<>(TaskDTO.class),
+        TaskDTO.class,
+        Task.class,
+        filterResolver
+      );
+    }
   }
 
   @Data
@@ -185,6 +225,9 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     private String name;
     private OffsetDateTime createdOn;
     private String createdBy;
+    @OneToOne
+    @JoinColumn(name = "task_id")
+    private Task task;
   }
 
   @Data
@@ -201,6 +244,40 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     @PropertyName("id")
     private UUID uuid;
     private String name;
+    @JsonApiRelation
+    private TaskDTO task;
+  }
+
+  @Data
+  @Entity
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static final class Task implements DinaEntity {
+    @Id
+    @GeneratedValue
+    private Integer id;
+    @NaturalId
+    private UUID uuid;
+    private int powerLevel;
+    private OffsetDateTime createdOn;
+    private String createdBy;
+  }
+
+  @Data
+  @JsonApiResource(type = TaskDTO.RESOURCE_TYPE)
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @RelatedEntity(Task.class)
+  @TypeName(TaskDTO.RESOURCE_TYPE)
+  public static final class TaskDTO {
+    public static final String RESOURCE_TYPE = "Task";
+    @JsonApiId
+    @org.javers.core.metamodel.annotation.Id
+    @PropertyName("id")
+    private UUID uuid;
+    private int powerLevel;
   }
 
 }
