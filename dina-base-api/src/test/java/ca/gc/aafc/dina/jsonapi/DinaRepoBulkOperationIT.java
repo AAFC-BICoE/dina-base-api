@@ -98,12 +98,8 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     Assertions.assertEquals(2, projectRepo.findAll(createProjectQuerySpec()).size());
     Assertions.assertEquals(2, taskRepo.findAll(new QuerySpec(TaskDTO.class)).size());
 
-    assertProject(
-      project1,
-      projectRepo.findOne(project1.getUuid(), createProjectQuerySpec()));
-    assertProject(
-      project2,
-      projectRepo.findOne(project2.getUuid(), createProjectQuerySpec()));
+    assertProject(project1, projectRepo.findOne(project1.getUuid(), createProjectQuerySpec()));
+    assertProject(project2, projectRepo.findOne(project2.getUuid(), createProjectQuerySpec()));
   }
 
   @Test
