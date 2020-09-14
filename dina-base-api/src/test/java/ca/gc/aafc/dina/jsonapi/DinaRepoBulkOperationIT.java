@@ -79,6 +79,7 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     //Clean up test data
     projectRepo.findAll(createProjectQuerySpec())
       .forEach(projectDTO -> projectRepo.delete(projectDTO.getUuid()));
+    taskRepo.findAll(new QuerySpec(TaskDTO.class)).forEach(task -> taskRepo.delete(task.getUuid()));
   }
 
   @Test
@@ -123,7 +124,7 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
   }
 
   @Test
-  void bulkUpdate() {
+  void bulkUpdate_ResourcesUpdatedWithRelationship() {
     ProjectDTO project1 = createProjectDTO();
     ProjectDTO project2 = createProjectDTO();
 
@@ -133,9 +134,13 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     call.execute();
 
     project1.setName(RandomStringUtils.randomAlphabetic(5));
+    project1.setTask(createTaskDTO());
     project2.setName(RandomStringUtils.randomAlphabetic(5));
+    project2.setTask(createTaskDTO());
 
     call = operationsClient.createCall();
+    call.add(HttpMethod.POST, project1.getTask());
+    call.add(HttpMethod.POST, project2.getTask());
     call.add(HttpMethod.PATCH, project1);
     call.add(HttpMethod.PATCH, project2);
     call.execute();
@@ -151,6 +156,8 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
       Assertions.assertNotNull(result.getTask());
       Assertions.assertEquals(expected.getTask().getUuid(), result.getTask().getUuid());
       Assertions.assertEquals(expected.getTask().getPowerLevel(), result.getTask().getPowerLevel());
+    } else {
+      Assertions.assertNull(result.getTask());
     }
   }
 
