@@ -113,10 +113,6 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
       projectRepo.findOne(project2.getUuid(), new QuerySpec(ProjectDTO.class)));
   }
 
-  private void assertProject(ProjectDTO expected, ProjectDTO result) {
-    Assertions.assertEquals(expected.getName(), result.getName());
-  }
-
   @Test
   void bulkDelete() {
     ProjectDTO project1 = createProjectDTO();
@@ -135,6 +131,10 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     call.execute();
 
     Assertions.assertEquals(0, projectRepo.findAll(new QuerySpec(ProjectDTO.class)).size());
+  }
+
+  private void assertProject(ProjectDTO expected, ProjectDTO result) {
+    Assertions.assertEquals(expected.getName(), result.getName());
   }
 
   private static ProjectDTO createProjectDTO() {
