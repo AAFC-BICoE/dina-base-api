@@ -33,6 +33,7 @@ import io.restassured.specification.RequestSpecification;
 public class BaseRestAssuredTest {
 
   public static final String JSON_API_CONTENT_TYPE = "application/vnd.api+json";
+  public static final String JSON_PATCH_CONTENT_TYPE = "application/json-patch+json";
 
   private static final Header CRNK_HEADER = new Header("crnk-compact", "true");
   private static final String CRNK_OPERATION_ENDPOINT = "operations";
@@ -87,6 +88,7 @@ public class BaseRestAssuredTest {
       .post(path);
 
     return response.then()
+      .log().ifValidationFails()
       .statusCode(expectedReturnCode);
   }
 
@@ -101,6 +103,7 @@ public class BaseRestAssuredTest {
       .patch(StringUtils.appendIfMissing(path, "/") + "{id}", id);
 
     return response.then()
+      .log().ifValidationFails()
       .statusCode(expectedReturnCode);
   }
 
@@ -124,12 +127,13 @@ public class BaseRestAssuredTest {
    */
   protected ValidatableResponse sendOperation(Object body) {
     Response response = newRequest()
-        .accept("application/json-patch+json")
-        .contentType("application/json-patch+json")
+        .accept(JSON_PATCH_CONTENT_TYPE)
+        .contentType(JSON_PATCH_CONTENT_TYPE)
         .body(body)
         .patch(CRNK_OPERATION_ENDPOINT);
 
     return response.then()
+        .log().ifValidationFails()
         .statusCode(HttpStatus.OK.value());
   }
 
