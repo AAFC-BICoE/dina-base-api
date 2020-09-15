@@ -68,6 +68,7 @@
       <groupId>io.crnk</groupId>
       <artifactId>crnk-client</artifactId>
       <version>${crnk.version}</version>
+      <scope>test</scope>
     </dependency>
     <!-- RSQL -->
     <dependency>
