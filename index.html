@@ -463,6 +463,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_running_integration_tests_against_a_postgres_docker_container_using_postgrestestcontainerinitializer">3.1. Running integration tests against a Postgres Docker container using PostgresTestContainerInitializer</a></li>
 <li><a href="#_openapi3assertions">3.2. OpenAPI3Assertions</a></li>
+<li><a href="#_mock_keycloak_user">3.3. Mock Keycloak User</a></li>
 </ul>
 </li>
 <li><a href="#_testing">4. Testing</a>
@@ -780,7 +781,14 @@ embedded.postgresql:
 <h3 id="_openapi3assertions">3.2. OpenAPI3Assertions</h3>
 <div class="paragraph">
 <p><code>OpenAPI3Assertions</code> contains methods to run assertions between an API response and an OpenAPI 3 specification&#8217;s schema. Some of the Open API 3 files could be
-stored on remote servers potentially making the tests unstable. When <code>OpenAPI3Assertions.assertRemoteSchema</code> is used, the system propety <code>testing.skip-remote-schema-validation</code> can be used to temporarly skip the validation of an API response against a remote schema.</p>
+stored on remote servers potentially making the tests unstable. When <code>OpenAPI3Assertions.assertRemoteSchema</code> is used, the system property <code>testing.skip-remote-schema-validation</code> can be used to temporarily skip the validation of an API response against a remote schema.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mock_keycloak_user">3.3. Mock Keycloak User</h3>
+<div class="paragraph">
+<p><code>@WithMockKeycloakUser</code> can be used on a test to have a Keycloak security context created for testing purpose.
+For usage see <code>WithMockKeycloakUserIT</code>.</p>
 </div>
 </div>
 </div>
@@ -1122,7 +1130,7 @@ public class PersonDTO {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-09-10 16:37:07 UTC
+Last updated 2020-09-15 19:44:15 UTC
 </div>
 </div>
 </body>
