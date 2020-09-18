@@ -8,6 +8,7 @@ import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
+import com.google.common.collect.ImmutableMap;
 import io.crnk.client.CrnkClient;
 import io.crnk.client.http.inmemory.InMemoryHttpAdapter;
 import io.crnk.core.boot.CrnkBoot;
@@ -44,6 +45,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -147,6 +149,34 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
 
     assertProject(project1, projectRepo.findOne(project1.getUuid(), createProjectQuerySpec()));
     assertProject(project2, projectRepo.findOne(project2.getUuid(), createProjectQuerySpec()));
+  }
+
+  @Test
+  void partialUpdate_EmptyPatch_NothingChanges() {
+    ProjectDTO project1 = createProjectDTO();
+    project1.setTask(createTaskDTO());
+
+    OperationsCall call = operationsClient.createCall();
+    call.add(HttpMethod.POST, project1.getTask());
+    call.add(HttpMethod.POST, project1);
+    call.execute();
+
+    //Assert correct state
+    assertProject(project1, projectRepo.findOne(project1.getUuid(), createProjectQuerySpec()));
+
+    //Send empty patch
+    super.sendPatch(
+      ProjectDTO.RESOURCE_TYPE,
+      project1.getUuid().toString(),
+      ImmutableMap.of(
+        "data",
+        ImmutableMap.of(
+          "type", ProjectDTO.RESOURCE_TYPE,
+          "attributes", Collections.emptyMap()
+        )));
+
+    //Assert Nothing Changes
+    assertProject(project1, projectRepo.findOne(project1.getUuid(), createProjectQuerySpec()));
   }
 
   private void assertProject(ProjectDTO expected, ProjectDTO result) {
