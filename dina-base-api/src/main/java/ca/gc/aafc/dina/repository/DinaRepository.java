@@ -37,7 +37,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -81,8 +81,6 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private static final int DEFAULT_OFFSET = 0;
   private static final int DEFAULT_LIMIT = 100;
-
-  private final List<String> trackedModifiedRelations = new ArrayList<>();
 
   @Getter
   @Setter(onMethod_ = @Override)
@@ -181,23 +179,17 @@ public class DinaRepository<D, E extends DinaEntity>
           resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    List<ResourceField> modifiedRelations = resourceInformation.getRelationshipFields()
+    Set<String> relations = resourceInformation.getRelationshipFields()
       .stream()
-      .filter(field -> trackedModifiedRelations.stream()
-        .anyMatch(field.getUnderlyingName()::equalsIgnoreCase))
-      .collect(Collectors.toList());
-
-    Set<String> relationsToMap = modifiedRelations.stream()
       .map(ResourceField::getUnderlyingName)
       .collect(Collectors.toSet());
 
-    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relationsToMap);
-    linkRelations(entity, modifiedRelations);
+    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
+    linkRelations(entity, resourceInformation.getRelationshipFields());
 
     dinaService.update(entity);
     auditService.ifPresent(service -> service.audit(resource));
 
-    trackedModifiedRelations.clear();
     return resource;
   }
 
@@ -205,7 +197,7 @@ public class DinaRepository<D, E extends DinaEntity>
   @SneakyThrows
   @SuppressWarnings("unchecked")
   public <S extends D> S create(S resource) {
-    E entity = entityClass.newInstance();
+    E entity = entityClass.getConstructor().newInstance();
 
     ResourceInformation resourceInformation = this.resourceRegistry
       .findEntry(resourceClass)
@@ -226,7 +218,6 @@ public class DinaRepository<D, E extends DinaEntity>
     D dto = dinaMapper.toDto(entity, entityFieldsPerClass, relations);
     auditService.ifPresent(service -> service.audit(dto));
 
-    trackedModifiedRelations.clear();
     return (S) dto;
   }
 
@@ -436,13 +427,16 @@ public class DinaRepository<D, E extends DinaEntity>
     return t;
   }
 
+  @SneakyThrows
   @Override
   public ResourceIdentifier modifyOneRelationship(
     Object o,
     ResourceField resourceField,
     ResourceIdentifier resourceIdentifier
   ) {
-    this.trackedModifiedRelations.add(resourceField.getUnderlyingName());
+    Object relation = resourceField.getType().getConstructor().newInstance();
+    PropertyUtils.setProperty(relation, "uuid", UUID.fromString(resourceIdentifier.getId()));
+    PropertyUtils.setProperty(o, "task", relation);
     return resourceIdentifier;
   }
 
@@ -453,7 +447,6 @@ public class DinaRepository<D, E extends DinaEntity>
     ResourceRelationshipModificationType resourceRelationshipModificationType,
     List<ResourceIdentifier> list
   ) {
-    this.trackedModifiedRelations.add(resourceField.getUnderlyingName());
     return list;
   }
 }
