@@ -430,13 +430,17 @@ public class DinaRepository<D, E extends DinaEntity>
   @SneakyThrows
   @Override
   public ResourceIdentifier modifyOneRelationship(
-    Object o,
+    Object dto,
     ResourceField resourceField,
     ResourceIdentifier resourceIdentifier
   ) {
-    Object relation = resourceField.getType().getConstructor().newInstance();
-    PropertyUtils.setProperty(relation, "uuid", UUID.fromString(resourceIdentifier.getId()));
-    PropertyUtils.setProperty(o, "task", relation);
+    String relationIdFieldName = this.resourceRegistry
+      .findEntry(resourceField.getElementType())
+      .getResourceInformation().getIdField().getUnderlyingName();
+
+    Object relation = resourceField.getElementType().getConstructor().newInstance();
+    PropertyUtils.setProperty(relation, relationIdFieldName, UUID.fromString(resourceIdentifier.getId()));
+    PropertyUtils.setProperty(dto, resourceField.getUnderlyingName(), relation);
     return resourceIdentifier;
   }
 
