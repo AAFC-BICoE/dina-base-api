@@ -1,26 +1,5 @@
 package ca.gc.aafc.dina.repository;
 
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-
-import org.apache.commons.lang3.reflect.FieldUtils;
-
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
@@ -29,6 +8,9 @@ import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
+import io.crnk.core.engine.document.ResourceIdentifier;
+import io.crnk.core.engine.filter.ResourceModificationFilter;
+import io.crnk.core.engine.filter.ResourceRelationshipModificationType;
 import io.crnk.core.engine.information.resource.ResourceField;
 import io.crnk.core.engine.information.resource.ResourceInformation;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
@@ -45,12 +27,32 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.reflect.FieldUtils;
+
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * JSONAPI repository that interfaces using DTOs, and uses JPA entities
  * internally. Sparse fields sets are handled by the underlying Crnk
  * ResourceRepository.
- * 
+ *
  * @param <D>
  *              - Dto type
  * @param <E>
@@ -58,7 +60,7 @@ import lombok.SneakyThrows;
  */
 @Transactional
 public class DinaRepository<D, E extends DinaEntity>
-    implements ResourceRepository<D, Serializable>, ResourceRegistryAware {
+    implements ResourceRepository<D, Serializable>, ResourceRegistryAware, ResourceModificationFilter {
 
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
@@ -79,6 +81,8 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private static final int DEFAULT_OFFSET = 0;
   private static final int DEFAULT_LIMIT = 100;
+
+  private final List<String> trackedModifiedRelations = new ArrayList<>();
 
   @Getter
   @Setter(onMethod_ = @Override)
@@ -177,17 +181,23 @@ public class DinaRepository<D, E extends DinaEntity>
           resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    Set<String> relations = resourceInformation.getRelationshipFields()
+    List<ResourceField> modifiedRelations = resourceInformation.getRelationshipFields()
       .stream()
-      .map(rf -> rf.getUnderlyingName())
+      .filter(field -> trackedModifiedRelations.stream()
+        .anyMatch(field.getUnderlyingName()::equalsIgnoreCase))
+      .collect(Collectors.toList());
+
+    Set<String> relationsToMap = modifiedRelations.stream()
+      .map(ResourceField::getUnderlyingName)
       .collect(Collectors.toSet());
 
-    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
-    linkRelations(entity, resourceInformation.getRelationshipFields());
+    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relationsToMap);
+    linkRelations(entity, modifiedRelations);
 
     dinaService.update(entity);
     auditService.ifPresent(service -> service.audit(resource));
 
+    trackedModifiedRelations.clear();
     return resource;
   }
 
@@ -203,7 +213,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
     Set<String> relations = resourceInformation.getRelationshipFields()
       .stream()
-      .map(af -> af.getUnderlyingName())
+      .map(ResourceField::getUnderlyingName)
       .collect(Collectors.toSet());
 
     dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
@@ -216,6 +226,7 @@ public class DinaRepository<D, E extends DinaEntity>
     D dto = dinaMapper.toDto(entity, entityFieldsPerClass, relations);
     auditService.ifPresent(service -> service.audit(dto));
 
+    trackedModifiedRelations.clear();
     return (S) dto;
   }
 
@@ -251,7 +262,7 @@ public class DinaRepository<D, E extends DinaEntity>
    * given class. Used to determine the nessesasry classes and fields per class
    * when mapping a java bean. Fields marked with {@link JsonApiRelation} will be
    * teated as seperate classes to map and will be transversed and mapped.
-   * 
+   *
    * @param <T>
    *                         - Type of class
    * @param clazz
@@ -282,7 +293,7 @@ public class DinaRepository<D, E extends DinaEntity>
       .collect(Collectors.toList());
 
     Set<String> fieldsToInclude = attributeFields.stream()
-      .map(af -> af.getName())
+      .map(Field::getName)
       .collect(Collectors.toSet());
 
     fieldsPerClass.put(clazz, fieldsToInclude);
@@ -382,17 +393,17 @@ public class DinaRepository<D, E extends DinaEntity>
    * means if the field is generated (Marked with {@link DerivedDtoField}) or final.
    *
    * @param field - field to evaluate
-   * @return
+   * @return - true if the dina repo should not map the given field
    */
   private static boolean isNotMappable(Field field) {
-    return isGenerated(field.getDeclaringClass(), field.getName()) 
+    return isGenerated(field.getDeclaringClass(), field.getName())
       || Modifier.isFinal(field.getModifiers());
   }
 
   /**
    * Returns true if a dto field is generated and read-only (Marked with
    * {@link DerivedDtoField}).
-   * 
+   *
    * @param <T>
    *                - Class type
    * @param clazz
@@ -409,7 +420,7 @@ public class DinaRepository<D, E extends DinaEntity>
   /**
    * Returns a Dto's related entity (Marked with {@link RelatedEntity}) or else
    * null.
-   * 
+   *
    * @param <T>
    *                - Class type
    * @param clazz
@@ -420,4 +431,29 @@ public class DinaRepository<D, E extends DinaEntity>
     return clazz.getAnnotation(RelatedEntity.class);
   }
 
+  @Override
+  public <T> T modifyAttribute(Object o, ResourceField resourceField, String s, T t) {
+    return t;
+  }
+
+  @Override
+  public ResourceIdentifier modifyOneRelationship(
+    Object o,
+    ResourceField resourceField,
+    ResourceIdentifier resourceIdentifier
+  ) {
+    this.trackedModifiedRelations.add(resourceField.getUnderlyingName());
+    return resourceIdentifier;
+  }
+
+  @Override
+  public List<ResourceIdentifier> modifyManyRelationship(
+    Object o,
+    ResourceField resourceField,
+    ResourceRelationshipModificationType resourceRelationshipModificationType,
+    List<ResourceIdentifier> list
+  ) {
+    this.trackedModifiedRelations.add(resourceField.getUnderlyingName());
+    return list;
+  }
 }
