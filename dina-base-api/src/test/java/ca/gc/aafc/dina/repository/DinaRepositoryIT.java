@@ -85,16 +85,6 @@ public class DinaRepositoryIT {
   }
 
   @Test
-  public void findOne_ExcludeRelations_RelationsExcluded() {
-    PersonDTO dto = persistPerson();
-
-    PersonDTO result = dinaRepository.findOne(dto.getUuid(), new QuerySpec(PersonDTO.class));
-    assertEqualsPersonDtos(dto, result, false);
-    assertNull(result.getDepartment());
-    assertNull(result.getDepartments());
-  }
-
-  @Test
   public void findOne_NoResourceFound_ThrowsResourceNotFoundException() {
     assertThrows(
       ResourceNotFoundException.class,
