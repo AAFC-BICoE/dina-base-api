@@ -121,42 +121,42 @@ public class DinaRepository<D, E extends DinaEntity>
       .collect(Collectors.toSet());
 
     D dto = dinaMapper.toDto(entity, entityFieldsPerClass, includedRelations);
+    mapShallowRelations(entity, dto, includedRelations);
+    return dto;
+  }
 
+  private void mapShallowRelations(E entity, D dto, Set<String> excluded) {
     ResourceInformation resourceInformation = this.resourceRegistry
       .findEntry(resourceClass)
       .getResourceInformation();
 
-    List<ResourceField> relationshipFields = resourceInformation.getRelationshipFields()
+    List<ResourceField> notIncludedRelations = resourceInformation.getRelationshipFields()
       .stream()
-      .filter(resourceField -> includedRelations.stream()
+      .filter(resourceField -> excluded.stream()
         .noneMatch(resourceField.getUnderlyingName()::equalsIgnoreCase))
       .collect(Collectors.toList());
 
-    for (ResourceField relation : relationshipFields) {
-      String relationFieldName = relation.getUnderlyingName();
+    for (ResourceField relation : notIncludedRelations) {
+      String fieldName = relation.getUnderlyingName();
       String relationIdFieldName = resourceInformation.getIdField().getUnderlyingName();
       Class<?> elementType = relation.getElementType();
 
       if (relation.isCollection()) {
-        Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(
-          entity,
-          relationFieldName);
+        Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(entity, fieldName);
         if (relationValue != null) {
           Collection<?> mappedCollection = relationValue.stream()
             .map(rel -> createShallowDTO(relationIdFieldName, elementType, rel))
             .collect(Collectors.toList());
-          PropertyUtils.setProperty(dto, relationFieldName, mappedCollection);
+          PropertyUtils.setProperty(dto, fieldName, mappedCollection);
         }
       } else {
-        Object relationValue = PropertyUtils.getProperty(entity, relationFieldName);
+        Object relationValue = PropertyUtils.getProperty(entity, fieldName);
         if (relationValue != null) {
           Object shallowDTO = createShallowDTO(relationIdFieldName, elementType, relationValue);
-          PropertyUtils.setProperty(dto, relationFieldName, shallowDTO);
+          PropertyUtils.setProperty(dto, fieldName, shallowDTO);
         }
       }
     }
-
-    return dto;
   }
 
   @SneakyThrows
