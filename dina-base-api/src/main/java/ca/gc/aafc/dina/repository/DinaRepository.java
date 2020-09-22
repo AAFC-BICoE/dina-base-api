@@ -292,9 +292,9 @@ public class DinaRepository<D, E extends DinaEntity>
 
   /**
    * Transverses a given class to return a map of fields per class parsed from the
-   * given class. Used to determine the nessesasry classes and fields per class
+   * given class. Used to determine the necessary classes and fields per class
    * when mapping a java bean. Fields marked with {@link JsonApiRelation} will be
-   * teated as seperate classes to map and will be transversed and mapped.
+   * treated as separate classes to map and will be transversed and mapped.
    *
    * @param <T>
    *                         - Type of class
