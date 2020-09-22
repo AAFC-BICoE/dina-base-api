@@ -130,13 +130,13 @@ public class DinaRepository<D, E extends DinaEntity>
       .findEntry(resourceClass)
       .getResourceInformation();
 
-    List<ResourceField> notIncludedRelations = resourceInformation.getRelationshipFields()
+    List<ResourceField> relationsToMap = resourceInformation.getRelationshipFields()
       .stream()
       .filter(resourceField -> excluded.stream()
         .noneMatch(resourceField.getUnderlyingName()::equalsIgnoreCase))
       .collect(Collectors.toList());
 
-    for (ResourceField relation : notIncludedRelations) {
+    for (ResourceField relation : relationsToMap) {
       String fieldName = relation.getUnderlyingName();
       String relationIdFieldName = resourceInformation.getIdField().getUnderlyingName();
       Class<?> elementType = relation.getElementType();
