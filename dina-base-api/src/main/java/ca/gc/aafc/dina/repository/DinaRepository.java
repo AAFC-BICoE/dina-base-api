@@ -106,7 +106,6 @@ public class DinaRepository<D, E extends DinaEntity>
     this.entityFieldsPerClass = getFieldsPerEntity();
   }
 
-  @SneakyThrows
   @Override
   public D findOne(Serializable id, QuerySpec querySpec) {
     E entity = dinaService.findOne(id, entityClass);
@@ -133,21 +132,41 @@ public class DinaRepository<D, E extends DinaEntity>
         .noneMatch(resourceField.getUnderlyingName()::equalsIgnoreCase))
       .collect(Collectors.toList());
 
-    for (ResourceField relation: relationshipFields) {
+    for (ResourceField relation : relationshipFields) {
       String relationFieldName = relation.getUnderlyingName();
+      String relationIdFieldName = resourceInformation.getIdField().getUnderlyingName();
+      Class<?> elementType = relation.getElementType();
 
-      Object relationValue = PropertyUtils.getProperty(entity, relationFieldName);
-      if(relationValue != null){
-        String relationIdFieldName = resourceInformation.getIdField().getUnderlyingName();
-
-        Object shallowDTO = relation.getElementType().getConstructor().newInstance();
-        PropertyUtils.setProperty(shallowDTO, relationIdFieldName, PropertyUtils.getProperty(relationValue, relationIdFieldName));
-
-        PropertyUtils.setProperty(dto, relationFieldName, shallowDTO);
+      if (relation.isCollection()) {
+        Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(
+          entity,
+          relationFieldName);
+        if (relationValue != null) {
+          Collection<?> mappedCollection = relationValue.stream()
+            .map(rel -> createShallowDTO(relationIdFieldName, elementType, rel))
+            .collect(Collectors.toList());
+          PropertyUtils.setProperty(dto, relationFieldName, mappedCollection);
+        }
+      } else {
+        Object relationValue = PropertyUtils.getProperty(entity, relationFieldName);
+        if (relationValue != null) {
+          Object shallowDTO = createShallowDTO(relationIdFieldName, elementType, relationValue);
+          PropertyUtils.setProperty(dto, relationFieldName, shallowDTO);
+        }
       }
     }
 
     return dto;
+  }
+
+  @SneakyThrows
+  private static Object createShallowDTO(String idFieldName, Class<?> type, Object entity) {
+    Object shallowDTO = type.getConstructor().newInstance();
+    PropertyUtils.setProperty(
+      shallowDTO,
+      idFieldName,
+      PropertyUtils.getProperty(entity, idFieldName));
+    return shallowDTO;
   }
 
   @Override
