@@ -8,9 +8,6 @@ import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
-import io.crnk.core.engine.document.ResourceIdentifier;
-import io.crnk.core.engine.filter.ResourceModificationFilter;
-import io.crnk.core.engine.filter.ResourceRelationshipModificationType;
 import io.crnk.core.engine.information.resource.ResourceField;
 import io.crnk.core.engine.information.resource.ResourceInformation;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
@@ -44,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -60,7 +56,7 @@ import java.util.stream.Collectors;
  */
 @Transactional
 public class DinaRepository<D, E extends DinaEntity>
-    implements ResourceRepository<D, Serializable>, ResourceRegistryAware, ResourceModificationFilter {
+  implements ResourceRepository<D, Serializable>, ResourceRegistryAware {
 
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
@@ -110,6 +106,7 @@ public class DinaRepository<D, E extends DinaEntity>
     this.entityFieldsPerClass = getFieldsPerEntity();
   }
 
+  @SneakyThrows
   @Override
   public D findOne(Serializable id, QuerySpec querySpec) {
     E entity = dinaService.findOne(id, entityClass);
@@ -124,7 +121,33 @@ public class DinaRepository<D, E extends DinaEntity>
       .map(ir -> ir.getAttributePath().get(0))
       .collect(Collectors.toSet());
 
-    return dinaMapper.toDto(entity, entityFieldsPerClass, includedRelations);
+    D dto = dinaMapper.toDto(entity, entityFieldsPerClass, includedRelations);
+
+    ResourceInformation resourceInformation = this.resourceRegistry
+      .findEntry(resourceClass)
+      .getResourceInformation();
+
+    List<ResourceField> relationshipFields = resourceInformation.getRelationshipFields()
+      .stream()
+      .filter(resourceField -> includedRelations.stream()
+        .noneMatch(resourceField.getUnderlyingName()::equalsIgnoreCase))
+      .collect(Collectors.toList());
+
+    for (ResourceField relation: relationshipFields) {
+      String relationFieldName = relation.getUnderlyingName();
+
+      Object relationValue = PropertyUtils.getProperty(entity, relationFieldName);
+      if(relationValue != null){
+        String relationIdFieldName = resourceInformation.getIdField().getUnderlyingName();
+
+        Object shallowDTO = relation.getElementType().getConstructor().newInstance();
+        PropertyUtils.setProperty(shallowDTO, relationIdFieldName, PropertyUtils.getProperty(relationValue, relationIdFieldName));
+
+        PropertyUtils.setProperty(dto, relationFieldName, shallowDTO);
+      }
+    }
+
+    return dto;
   }
 
   @Override
@@ -422,35 +445,4 @@ public class DinaRepository<D, E extends DinaEntity>
     return clazz.getAnnotation(RelatedEntity.class);
   }
 
-  @Override
-  public <T> T modifyAttribute(Object o, ResourceField resourceField, String s, T t) {
-    return t;
-  }
-
-  @SneakyThrows
-  @Override
-  public ResourceIdentifier modifyOneRelationship(
-    Object dto,
-    ResourceField resourceField,
-    ResourceIdentifier resourceIdentifier
-  ) {
-    String relationIdFieldName = this.resourceRegistry
-      .findEntry(resourceField.getElementType())
-      .getResourceInformation().getIdField().getUnderlyingName();
-
-    Object relation = resourceField.getElementType().getConstructor().newInstance();
-    PropertyUtils.setProperty(relation, relationIdFieldName, UUID.fromString(resourceIdentifier.getId()));
-    PropertyUtils.setProperty(dto, resourceField.getUnderlyingName(), relation);
-    return resourceIdentifier;
-  }
-
-  @Override
-  public List<ResourceIdentifier> modifyManyRelationship(
-    Object o,
-    ResourceField resourceField,
-    ResourceRelationshipModificationType resourceRelationshipModificationType,
-    List<ResourceIdentifier> list
-  ) {
-    return list;
-  }
 }
