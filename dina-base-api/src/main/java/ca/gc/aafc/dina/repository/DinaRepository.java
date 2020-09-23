@@ -142,7 +142,7 @@ public class DinaRepository<D, E extends DinaEntity>
       entityClass,
       (cb, root) -> filterResolver.buildPredicates(querySpec, cb, root, ids, idName),
       (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
-      (int) querySpec.getOffset(),
+      Math.toIntExact(querySpec.getOffset()),
       Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
 
     Set<String> includedRelations = querySpec.getIncludedRelations()
