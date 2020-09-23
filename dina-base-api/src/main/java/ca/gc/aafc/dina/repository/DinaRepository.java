@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -127,32 +128,6 @@ public class DinaRepository<D, E extends DinaEntity>
       .collect(Collectors.toList());
     mapShallowRelations(entity, dto, shallowRelationsToMap);
     return dto;
-  }
-
-
-
-  private void mapShallowRelations(E entity, D dto, List<ResourceField> relationsToMap) {
-    for (ResourceField relation : relationsToMap) {
-      String fieldName = relation.getUnderlyingName();
-      Class<?> elementType = relation.getElementType();
-      String relationIdFieldName = findIdFieldName(elementType);
-
-      if (relation.isCollection()) {
-        Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(entity, fieldName);
-        if (relationValue != null) {
-          Collection<?> mappedCollection = relationValue.stream()
-            .map(rel -> createShallowDTO(relationIdFieldName, elementType, rel))
-            .collect(Collectors.toList());
-          PropertyUtils.setProperty(dto, fieldName, mappedCollection);
-        }
-      } else {
-        Object relationValue = PropertyUtils.getProperty(entity, fieldName);
-        if (relationValue != null) {
-          Object shallowDTO = createShallowDTO(relationIdFieldName, elementType, relationValue);
-          PropertyUtils.setProperty(dto, fieldName, shallowDTO);
-        }
-      }
-    }
   }
 
   @Override
@@ -358,23 +333,40 @@ public class DinaRepository<D, E extends DinaEntity>
    *                    - list of relations to map
    */
   private void linkRelations(@NonNull E entity, @NonNull List<ResourceField> relations) {
-    for (ResourceField relationField : relations) {
-      String fieldName = relationField.getUnderlyingName();
-      String idFieldName = findIdFieldName(relationField.getElementType());
+    mapRelations(entity, entity, relations,
+      (resourceField, relation) ->
+        returnPersistedObject(findIdFieldName(resourceField.getElementType()), relation));
+  }
 
-      if (relationField.isCollection()) {
-        Collection<?> relation = (Collection<?>) PropertyUtils.getProperty(entity, fieldName);
-        if (relation != null) {
-          Collection<?> mappedCollection = relation.stream()
-              .map(rel -> returnPersistedObject(idFieldName, rel))
-              .collect(Collectors.toList());
-          PropertyUtils.setProperty(entity, fieldName, mappedCollection);
+  private void mapShallowRelations(E entity, D dto, List<ResourceField> relationsToMap) {
+    mapRelations(entity, dto, relationsToMap,
+      (resourceField, relation) -> {
+        Class<?> elementType = resourceField.getElementType();
+        return createShallowDTO(findIdFieldName(elementType), elementType, relation);
+      });
+  }
+
+  private void mapRelations(
+    Object source,
+    Object target,
+    List<ResourceField> relations,
+    BiFunction<ResourceField, Object, Object> mapper
+  ) {
+    for (ResourceField relation : relations) {
+      String fieldName = relation.getUnderlyingName();
+      if (relation.isCollection()) {
+        Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(source, fieldName);
+        if (relationValue != null) {
+          Collection<?> mappedCollection = relationValue.stream()
+            .map(rel -> mapper.apply(relation, rel))
+            .collect(Collectors.toList());
+          PropertyUtils.setProperty(target, fieldName, mappedCollection);
         }
       } else {
-        Object relation = PropertyUtils.getProperty(entity, fieldName);
-        if (relation != null) {
-          Object persistedRelationObject = returnPersistedObject(idFieldName, relation);
-          PropertyUtils.setProperty(entity, fieldName, persistedRelationObject);
+        Object relationValue = PropertyUtils.getProperty(source, fieldName);
+        if (relationValue != null) {
+          Object mappedRelation = mapper.apply(relation, relationValue);
+          PropertyUtils.setProperty(target, fieldName, mappedRelation);
         }
       }
     }
