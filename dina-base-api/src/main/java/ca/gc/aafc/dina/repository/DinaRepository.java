@@ -9,7 +9,6 @@ import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.engine.information.resource.ResourceField;
-import io.crnk.core.engine.information.resource.ResourceInformation;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.engine.registry.ResourceRegistryAware;
@@ -121,25 +120,22 @@ public class DinaRepository<D, E extends DinaEntity>
       .collect(Collectors.toSet());
 
     D dto = dinaMapper.toDto(entity, entityFieldsPerClass, includedRelations);
-    mapShallowRelations(entity, dto, includedRelations);
+
+    List<ResourceField> shallowRelationsToMap = findRelations(resourceClass).stream()
+      .filter(resourceField -> includedRelations.stream()
+        .noneMatch(resourceField.getUnderlyingName()::equalsIgnoreCase))
+      .collect(Collectors.toList());
+    mapShallowRelations(entity, dto, shallowRelationsToMap);
     return dto;
   }
 
-  private void mapShallowRelations(E entity, D dto, Set<String> excluded) {
-    ResourceInformation resourceInformation = this.resourceRegistry
-      .findEntry(resourceClass)
-      .getResourceInformation();
 
-    List<ResourceField> relationsToMap = resourceInformation.getRelationshipFields()
-      .stream()
-      .filter(resourceField -> excluded.stream()
-        .noneMatch(resourceField.getUnderlyingName()::equalsIgnoreCase))
-      .collect(Collectors.toList());
 
+  private void mapShallowRelations(E entity, D dto, List<ResourceField> relationsToMap) {
     for (ResourceField relation : relationsToMap) {
       String fieldName = relation.getUnderlyingName();
-      String relationIdFieldName = resourceInformation.getIdField().getUnderlyingName();
       Class<?> elementType = relation.getElementType();
+      String relationIdFieldName = findIdFieldName(elementType);
 
       if (relation.isCollection()) {
         Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(entity, fieldName);
@@ -159,16 +155,6 @@ public class DinaRepository<D, E extends DinaEntity>
     }
   }
 
-  @SneakyThrows
-  private static Object createShallowDTO(String idFieldName, Class<?> type, Object entity) {
-    Object shallowDTO = type.getConstructor().newInstance();
-    PropertyUtils.setProperty(
-      shallowDTO,
-      idFieldName,
-      PropertyUtils.getProperty(entity, idFieldName));
-    return shallowDTO;
-  }
-
   @Override
   public ResourceList<D> findAll(QuerySpec querySpec) {
     return findAll(null, querySpec);
@@ -176,7 +162,6 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
-
     String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
 
     List<E> returnedEntities = dinaService.findAll(
@@ -206,11 +191,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public <S extends D> S save(S resource) {
-    ResourceInformation resourceInformation = this.resourceRegistry
-      .findEntry(resourceClass)
-      .getResourceInformation();
-
-    String idFieldName = resourceInformation.getIdField().getUnderlyingName();
+    String idFieldName = findIdFieldName(resourceClass);
     Object id = PropertyUtils.getProperty(resource, idFieldName);
 
     E entity = dinaService.findOne(id, entityClass);
@@ -221,13 +202,13 @@ public class DinaRepository<D, E extends DinaEntity>
           resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    Set<String> relations = resourceInformation.getRelationshipFields()
-      .stream()
+    List<ResourceField> relationFields = findRelations(resourceClass);
+    Set<String> relationsToMap = relationFields.stream()
       .map(ResourceField::getUnderlyingName)
       .collect(Collectors.toSet());
 
-    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
-    linkRelations(entity, resourceInformation.getRelationshipFields());
+    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relationsToMap);
+    linkRelations(entity, relationFields);
 
     dinaService.update(entity);
     auditService.ifPresent(service -> service.audit(resource));
@@ -241,23 +222,20 @@ public class DinaRepository<D, E extends DinaEntity>
   public <S extends D> S create(S resource) {
     E entity = entityClass.getConstructor().newInstance();
 
-    ResourceInformation resourceInformation = this.resourceRegistry
-      .findEntry(resourceClass)
-      .getResourceInformation();
+    List<ResourceField> relationFields = findRelations(resourceClass);
 
-    Set<String> relations = resourceInformation.getRelationshipFields()
-      .stream()
+    Set<String> relationsToMap = relationFields.stream()
       .map(ResourceField::getUnderlyingName)
       .collect(Collectors.toSet());
 
-    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
+    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relationsToMap);
 
-    linkRelations(entity, resourceInformation.getRelationshipFields());
+    linkRelations(entity, relationFields);
 
     authorizationService.ifPresent(auth -> auth.authorizeCreate(entity));
     dinaService.create(entity);
 
-    D dto = dinaMapper.toDto(entity, entityFieldsPerClass, relations);
+    D dto = dinaMapper.toDto(entity, entityFieldsPerClass, relationsToMap);
     auditService.ifPresent(service -> service.audit(dto));
 
     return (S) dto;
@@ -381,12 +359,8 @@ public class DinaRepository<D, E extends DinaEntity>
    */
   private void linkRelations(@NonNull E entity, @NonNull List<ResourceField> relations) {
     for (ResourceField relationField : relations) {
-      ResourceInformation relationInfo = this.resourceRegistry
-        .findEntry(relationField.getElementType())
-        .getResourceInformation();
-
       String fieldName = relationField.getUnderlyingName();
-      String idFieldName = relationInfo.getIdField().getUnderlyingName();
+      String idFieldName = findIdFieldName(relationField.getElementType());
 
       if (relationField.isCollection()) {
         Collection<?> relation = (Collection<?>) PropertyUtils.getProperty(entity, fieldName);
@@ -464,4 +438,24 @@ public class DinaRepository<D, E extends DinaEntity>
     return clazz.getAnnotation(RelatedEntity.class);
   }
 
+  @SneakyThrows
+  private static Object createShallowDTO(String idFieldName, Class<?> type, Object entity) {
+    Object shallowDTO = type.getConstructor().newInstance();
+    PropertyUtils.setProperty(
+      shallowDTO,
+      idFieldName,
+      PropertyUtils.getProperty(entity, idFieldName));
+    return shallowDTO;
+  }
+
+  private List<ResourceField> findRelations(Class<?> clazz) {
+    return this.resourceRegistry.findEntry(clazz).getResourceInformation().getRelationshipFields();
+  }
+
+  private String findIdFieldName(Class<?> elementType) {
+    return this.resourceRegistry.findEntry(elementType)
+      .getResourceInformation()
+      .getIdField()
+      .getUnderlyingName();
+  }
 }
