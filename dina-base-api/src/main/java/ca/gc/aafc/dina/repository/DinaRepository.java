@@ -338,6 +338,13 @@ public class DinaRepository<D, E extends DinaEntity>
         returnPersistedObject(findIdFieldName(resourceField.getElementType()), relation));
   }
 
+  /**
+   * Maps the given relations from the given entity to a given dto in a shallow form (Id only).
+   *
+   * @param entity         - source of the mapping
+   * @param dto            - target of the mapping
+   * @param relationsToMap - relations to map
+   */
   private void mapShallowRelations(E entity, D dto, List<ResourceField> relationsToMap) {
     mapRelations(entity, dto, relationsToMap,
       (resourceField, relation) -> {
@@ -346,6 +353,14 @@ public class DinaRepository<D, E extends DinaEntity>
       });
   }
 
+  /**
+   * Maps the given relations from a given source to a given target with a given mapping function.
+   *
+   * @param source    - source of the mapping
+   * @param target    - target of the mapping
+   * @param relations - relations to map
+   * @param mapper    - mapping function to apply
+   */
   private void mapRelations(
     Object source,
     Object target,
@@ -430,6 +445,14 @@ public class DinaRepository<D, E extends DinaEntity>
     return clazz.getAnnotation(RelatedEntity.class);
   }
 
+  /**
+   * Maps the given id field name from a given entity to a new instance of a given type.
+   *
+   * @param idFieldName - name of the id field for the mapping
+   * @param type        - type of new instance to return with the mapping
+   * @param entity      - entity with the id to map
+   * @return - a new instance of a given type with a id value mapped from a given entity.
+   */
   @SneakyThrows
   private static Object createShallowDTO(String idFieldName, Class<?> type, Object entity) {
     Object shallowDTO = type.getConstructor().newInstance();
@@ -440,12 +463,24 @@ public class DinaRepository<D, E extends DinaEntity>
     return shallowDTO;
   }
 
+  /**
+   * Returns a list of resource fields for a given class.
+   *
+   * @param clazz - class of relations to find
+   * @return - list of resource fields
+   */
   private List<ResourceField> findRelations(Class<?> clazz) {
     return this.resourceRegistry.findEntry(clazz).getResourceInformation().getRelationshipFields();
   }
 
-  private String findIdFieldName(Class<?> elementType) {
-    return this.resourceRegistry.findEntry(elementType)
+  /**
+   * Returns the id field name for a given class.
+   *
+   * @param clazz - class to find the id field name for
+   * @return - id field name for a given class.
+   */
+  private String findIdFieldName(Class<?> clazz) {
+    return this.resourceRegistry.findEntry(clazz)
       .getResourceInformation()
       .getIdField()
       .getUnderlyingName();
