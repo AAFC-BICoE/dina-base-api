@@ -75,8 +75,7 @@ public class DinaRepository<D, E extends DinaEntity>
   private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
   private final Map<Class<?>, Set<String>> entityFieldsPerClass;
 
-  private static final int DEFAULT_OFFSET = 0;
-  private static final int DEFAULT_LIMIT = 100;
+  private static final long DEFAULT_LIMIT = 100;
 
   @Getter
   @Setter(onMethod_ = @Override)
@@ -143,8 +142,8 @@ public class DinaRepository<D, E extends DinaEntity>
       entityClass,
       (cb, root) -> filterResolver.buildPredicates(querySpec, cb, root, ids, idName),
       (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
-      Optional.ofNullable(querySpec.getOffset()).orElse(Long.valueOf(DEFAULT_OFFSET)).intValue(),
-      Optional.ofNullable(querySpec.getLimit()).orElse(Long.valueOf(DEFAULT_LIMIT)).intValue());
+      (int) querySpec.getOffset(),
+      Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
 
     Set<String> includedRelations = querySpec.getIncludedRelations()
       .stream()
