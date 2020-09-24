@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import javax.inject.Inject;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,6 +58,26 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     QuerySpec querySpec = new QuerySpec(ChainDto.class);
     querySpec.includeRelation(PathSpec.of("chainTemplate"));
     ChainDto resultChain = chainRepoUnderTest.findOne(UUID.fromString(chainID), querySpec);
+
+    assertChain(chainDto, resultChain);
+    assertTemplate(persistedTemplate, resultChain.getChainTemplate());
+  }
+
+  @Test
+  void findAll_mapsLazyLoadedRelations() {
+    ChainTemplateDto persistedTemplate = persistTemplate();
+    ChainDto chainDto = newChain();
+
+    String chainID = sendPost(CHAIN_PATH, chainToMap(persistedTemplate, chainDto)).extract()
+      .body()
+      .jsonPath()
+      .getString("data.id");
+
+    QuerySpec querySpec = new QuerySpec(ChainDto.class);
+    querySpec.includeRelation(PathSpec.of("chainTemplate"));
+    ChainDto resultChain = chainRepoUnderTest.findAll(
+      Collections.singletonList(UUID.fromString(chainID)),
+      querySpec).get(0);
 
     assertChain(chainDto, resultChain);
     assertTemplate(persistedTemplate, resultChain.getChainTemplate());
