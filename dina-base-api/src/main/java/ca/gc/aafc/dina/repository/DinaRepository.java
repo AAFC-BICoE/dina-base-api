@@ -108,19 +108,15 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public D findOne(Serializable id, QuerySpec querySpec) {
-    E entity = dinaService.findOne(id, entityClass);
+    querySpec.setLimit(1L);
+    ResourceList<D> resourceList = findAll(Collections.singletonList(id), querySpec);
 
-    if (entity == null) {
+    if (resourceList.size() == 0) {
       throw new ResourceNotFoundException(
-          resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
+        resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    Set<String> includedRelations = querySpec.getIncludedRelations()
-      .stream()
-      .map(ir -> ir.getAttributePath().get(0))
-      .collect(Collectors.toSet());
-
-    return dinaMapper.toDto(entity, entityFieldsPerClass, includedRelations);
+    return resourceList.get(0);
   }
 
   @Override
