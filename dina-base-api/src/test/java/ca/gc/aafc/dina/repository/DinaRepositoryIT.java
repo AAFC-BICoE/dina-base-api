@@ -93,26 +93,6 @@ public class DinaRepositoryIT {
   }
 
   @Test
-  public void findAll_NoFilters_FindsAllAndExcludesRelationships() {
-    Map<UUID, PersonDTO> expectedPersons = new HashMap<>();
-
-    for (int i = 0; i < 10; i++) {
-      PersonDTO dto = persistPerson();
-      expectedPersons.put(dto.getUuid(), dto);
-    }
-
-    List<PersonDTO> result = dinaRepository.findAll(null, new QuerySpec(PersonDTO.class));
-
-    assertEquals(expectedPersons.size(), result.size());
-    for (PersonDTO resultElement : result) {
-      PersonDTO expectedDto = expectedPersons.get(resultElement.getUuid());
-      assertEqualsPersonDtos(expectedDto, resultElement, false);
-      assertNull(resultElement.getDepartment());
-      assertNull(resultElement.getDepartments());
-    }
-  }
-
-  @Test
   public void findAll_ResourceAndRelations_FindsResourceAndRelations() {
     Map<UUID, PersonDTO> expectedPersons = new HashMap<>();
 

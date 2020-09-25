@@ -43,35 +43,13 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.reflect.FieldUtils;
-
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
- * JSONAPI repository that interfaces using DTOs, and uses JPA entities
- * internally. Sparse fields sets are handled by the underlying Crnk
- * ResourceRepository.
+ * JSONAPI repository that interfaces using DTOs, and uses JPA entities internally. Sparse fields
+ * sets are handled by the underlying Crnk ResourceRepository.
  *
- * @param <D>
- *              - Dto type
- * @param <E>
- *              - Entity type
+ * @param <D> - Dto type
+ * @param <E> - Entity type
  */
 @Transactional
 public class DinaRepository<D, E extends DinaEntity>
@@ -134,19 +112,7 @@ public class DinaRepository<D, E extends DinaEntity>
         resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    Set<String> includedRelations = querySpec.getIncludedRelations()
-      .stream()
-      .map(ir -> ir.getAttributePath().get(0))
-      .collect(Collectors.toSet());
-
-    D dto = resourceList.get(0);
-
-    List<ResourceField> shallowRelationsToMap = findRelations(resourceClass).stream()
-      .filter(resourceField -> includedRelations.stream()
-        .noneMatch(resourceField.getUnderlyingName()::equalsIgnoreCase))
-      .collect(Collectors.toList());
-    mapShallowRelations(entity, dto, shallowRelationsToMap);
-    return dto;
+    return resourceList.get(0);
   }
 
   @Override
@@ -170,11 +136,20 @@ public class DinaRepository<D, E extends DinaEntity>
 
     Set<String> includedRelations = querySpec.getIncludedRelations()
       .stream()
-      .map(ir-> ir.getAttributePath().get(0))
+      .map(ir -> ir.getAttributePath().get(0))
       .collect(Collectors.toSet());
 
+    List<ResourceField> shallowRelationsToMap = findRelations(resourceClass).stream()
+      .filter(resourceField -> includedRelations.stream()
+        .noneMatch(resourceField.getUnderlyingName()::equalsIgnoreCase))
+      .collect(Collectors.toList());
+
     List<D> dtos = returnedEntities.stream()
-      .map(e -> dinaMapper.toDto(e, entityFieldsPerClass, includedRelations))
+      .map(e -> {
+        D dto = dinaMapper.toDto(e, entityFieldsPerClass, includedRelations);
+        mapShallowRelations(e, dto, shallowRelationsToMap);
+        return dto;
+      })
       .collect(Collectors.toList());
 
     Long resourceCount = dinaService.getResourceCount(
@@ -196,7 +171,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
     if (entity == null) {
       throw new ResourceNotFoundException(
-          resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
+        resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
     List<ResourceField> relationFields = findRelations(resourceClass);
@@ -243,7 +218,7 @@ public class DinaRepository<D, E extends DinaEntity>
     E entity = dinaService.findOne(id, entityClass);
     if (entity == null) {
       throw new ResourceNotFoundException(
-          resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
+        resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
     authorizationService.ifPresent(auth -> auth.authorizeDelete(entity));
     dinaService.delete(entity);
@@ -266,19 +241,15 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   /**
-   * Transverses a given class to return a map of fields per class parsed from the
-   * given class. Used to determine the necessary classes and fields per class
-   * when mapping a java bean. Fields marked with {@link JsonApiRelation} will be
-   * treated as separate classes to map and will be transversed and mapped.
+   * Transverses a given class to return a map of fields per class parsed from the given class. Used
+   * to determine the necessary classes and fields per class when mapping a java bean. Fields marked
+   * with {@link JsonApiRelation} will be treated as separate classes to map and will be transversed
+   * and mapped.
    *
-   * @param <T>
-   *                         - Type of class
-   * @param clazz
-   *                         - Class to parse
-   * @param fieldsPerClass
-   *                         - initial map to use
-   * @param ignoreIf
-   *                         - predicate to return true for fields to be removed
+   * @param <T>            - Type of class
+   * @param clazz          - Class to parse
+   * @param fieldsPerClass - initial map to use
+   * @param ignoreIf       - predicate to return true for fields to be removed
    * @return a map of fields per class
    */
   @SneakyThrows
@@ -312,17 +283,12 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   /**
-   * Helper method to parse the fields of a given list of relations and add them
-   * to a given map.
+   * Helper method to parse the fields of a given list of relations and add them to a given map.
    *
-   * @param <T>
-   *                         - Type of class
-   * @param clazz
-   *                         - class containing the relations
-   * @param fieldsPerClass
-   *                         - map to add to
-   * @param relationFields
-   *                         - relation fields to transverse
+   * @param <T>            - Type of class
+   * @param clazz          - class containing the relations
+   * @param fieldsPerClass - map to add to
+   * @param relationFields - relation fields to transverse
    */
   @SneakyThrows
   private static <T> void parseRelations(
@@ -346,13 +312,11 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   /**
-   * Replaces the given relations of given entity with there JPA entity
-   * equivalent. Relations id's are used to map a relation to its JPA equivalent.
+   * Replaces the given relations of given entity with there JPA entity equivalent. Relations id's
+   * are used to map a relation to its JPA equivalent.
    *
-   * @param entity
-   *                    - entity containing the relations
-   * @param relations
-   *                    - list of relations to map
+   * @param entity    - entity containing the relations
+   * @param relations - list of relations to map
    */
   private void linkRelations(@NonNull E entity, @NonNull List<ResourceField> relations) {
     mapRelations(entity, entity, relations,
@@ -410,13 +374,10 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   /**
-   * Returns the jpa entity representing a given object with an id field of a
-   * given id field name.
+   * Returns the jpa entity representing a given object with an id field of a given id field name.
    *
-   * @param idFieldName
-   *                      - name of the id field
-   * @param object
-   *                      - object to map
+   * @param idFieldName - name of the id field
+   * @param object      - object to map
    * @return - jpa entity representing a given object
    */
   private Object returnPersistedObject(String idFieldName, Object object) {
@@ -425,27 +386,23 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   /**
-   * Returns true if the dina repo should not map the given field. currently that
-   * means if the field is generated (Marked with {@link DerivedDtoField}) or final.
+   * Returns true if the dina repo should not map the given field. currently that means if the field
+   * is generated (Marked with {@link DerivedDtoField}) or final.
    *
    * @param field - field to evaluate
    * @return - true if the dina repo should not map the given field
    */
   private static boolean isNotMappable(Field field) {
     return isGenerated(field.getDeclaringClass(), field.getName())
-      || Modifier.isFinal(field.getModifiers());
+           || Modifier.isFinal(field.getModifiers());
   }
 
   /**
-   * Returns true if a dto field is generated and read-only (Marked with
-   * {@link DerivedDtoField}).
+   * Returns true if a dto field is generated and read-only (Marked with {@link DerivedDtoField}).
    *
-   * @param <T>
-   *                - Class type
-   * @param clazz
-   *                - class of the field
-   * @param field
-   *                - field to check
+   * @param <T>   - Class type
+   * @param clazz - class of the field
+   * @param field - field to check
    * @return true if a dto field is generated and read-only
    */
   @SneakyThrows(NoSuchFieldException.class)
@@ -454,13 +411,10 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   /**
-   * Returns a Dto's related entity (Marked with {@link RelatedEntity}) or else
-   * null.
+   * Returns a Dto's related entity (Marked with {@link RelatedEntity}) or else null.
    *
-   * @param <T>
-   *                - Class type
-   * @param clazz
-   *                - Class with a related entity.
+   * @param <T>   - Class type
+   * @param clazz - Class with a related entity.
    * @return a Dto's related entity, or else null
    */
   private static <T> RelatedEntity getRelatedEntity(Class<T> clazz) {
