@@ -1,26 +1,5 @@
 package ca.gc.aafc.dina.repository;
 
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-
-import org.apache.commons.lang3.reflect.FieldUtils;
-
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
@@ -45,6 +24,25 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.reflect.FieldUtils;
+
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * JSONAPI repository that interfaces using DTOs, and uses JPA entities
@@ -110,19 +108,15 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public D findOne(Serializable id, QuerySpec querySpec) {
-    E entity = dinaService.findOne(id, entityClass);
+    querySpec.setLimit(1L);
+    ResourceList<D> resourceList = findAll(Collections.singletonList(id), querySpec);
 
-    if (entity == null) {
+    if (resourceList.size() == 0) {
       throw new ResourceNotFoundException(
-          resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
+        resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    Set<String> includedRelations = querySpec.getIncludedRelations()
-      .stream()
-      .map(ir -> ir.getAttributePath().get(0))
-      .collect(Collectors.toSet());
-
-    return dinaMapper.toDto(entity, entityFieldsPerClass, includedRelations);
+    return resourceList.get(0);
   }
 
   @Override
@@ -137,7 +131,10 @@ public class DinaRepository<D, E extends DinaEntity>
 
     List<E> returnedEntities = dinaService.findAll(
       entityClass,
-      (cb, root) -> filterResolver.buildPredicates(querySpec, cb, root, ids, idName),
+      (cb, root) -> {
+        DinaFilterResolver.eagerLoadRelations(querySpec, root);
+        return filterResolver.buildPredicates(querySpec, cb, root, ids, idName);
+      },
       (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
       Optional.ofNullable(querySpec.getOffset()).orElse(Long.valueOf(DEFAULT_OFFSET)).intValue(),
       Optional.ofNullable(querySpec.getLimit()).orElse(Long.valueOf(DEFAULT_LIMIT)).intValue());

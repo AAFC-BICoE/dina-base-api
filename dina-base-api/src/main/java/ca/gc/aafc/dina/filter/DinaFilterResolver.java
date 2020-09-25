@@ -1,26 +1,27 @@
 package ca.gc.aafc.dina.filter;
 
+import io.crnk.core.queryspec.Direction;
+import io.crnk.core.queryspec.IncludeRelationSpec;
+import io.crnk.core.queryspec.QuerySpec;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections.CollectionUtils;
+import org.springframework.stereotype.Component;
+
+import javax.inject.Inject;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.FetchParent;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.springframework.stereotype.Component;
-
-import io.crnk.core.queryspec.Direction;
-import io.crnk.core.queryspec.QuerySpec;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Component used to map crnk filters into valid JPA objects.
@@ -92,6 +93,21 @@ public class DinaFilterResolver {
       }
       return sort.getDirection() == Direction.ASC ? cb.asc(from) : cb.desc(from);
     }).collect(Collectors.toList());
+  }
+
+  /**
+   * Adds left joins for eager Loading the relationships of a given query spec to a given root.
+   *
+   * @param querySpec - querySpec containing relations
+   * @param root      - root path to add joins
+   */
+  public static void eagerLoadRelations(QuerySpec querySpec, Root<?> root) {
+    for (IncludeRelationSpec relation : querySpec.getIncludedRelations()) {
+      FetchParent<?, ?> join = root;
+      for (String path : relation.getAttributePath()) {
+        join = join.fetch(path, JoinType.LEFT);
+      }
+    }
   }
 
 }
