@@ -56,9 +56,9 @@ import java.util.UUID;
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
   classes = {ExternalResourceProviderImplementation.class,
-    DinaRepoBulkOperationIT.DinaRepoBulkOperationITConfig.class}
+    DinaRepoRestIT.DinaRepoBulkOperationITConfig.class}
 )
-public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
+public class DinaRepoRestIT extends BaseRestAssuredTest {
 
   @Inject
   private CrnkBoot boot;
@@ -69,7 +69,7 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
 
   private OperationsClient operationsClient;
 
-  public DinaRepoBulkOperationIT() {
+  public DinaRepoRestIT() {
     super("");
   }
 
@@ -230,7 +230,7 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
   }
 
   @TestConfiguration
-  @EntityScan(basePackageClasses = DinaRepoBulkOperationIT.class)
+  @EntityScan(basePackageClasses = DinaRepoRestIT.class)
   static class DinaRepoBulkOperationITConfig {
     @Bean
     public DinaRepository<ProjectDTO, Project> projectRepo(
