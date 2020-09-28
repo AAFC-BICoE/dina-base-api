@@ -183,6 +183,7 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
   private void assertProject(ProjectDTO expected, ProjectDTO result) {
     Assertions.assertEquals(expected.getUuid(), result.getUuid());
     Assertions.assertEquals(expected.getName(), result.getName());
+    Assertions.assertEquals(expected.getAcMetaDataCreator(), result.getAcMetaDataCreator());
     if (expected.getTask() != null) {
       Assertions.assertNotNull(result.getTask());
       Assertions.assertEquals(expected.getTask().getUuid(), result.getTask().getUuid());
@@ -195,6 +196,7 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
   private static ProjectDTO createProjectDTO() {
     return ProjectDTO.builder()
       .name(RandomStringUtils.randomAlphabetic(5))
+      .acMetaDataCreator(UUID.randomUUID())
       .uuid(UUID.randomUUID())
       .build();
   }
@@ -281,7 +283,7 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     private String name;
     @JsonApiRelation
     private TaskDTO task;
-    @JsonApiExternalRelation(type = "")
+    @JsonApiExternalRelation(type = "Person")
     private UUID acMetaDataCreator;
   }
 
