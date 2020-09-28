@@ -5,20 +5,24 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
+import com.google.common.collect.ImmutableMap;
 import io.crnk.core.engine.information.resource.ResourceField;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.engine.registry.ResourceRegistryAware;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.QuerySpec;
+import io.crnk.core.repository.MetaRepository;
 import io.crnk.core.repository.ResourceRepository;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.list.DefaultResourceList;
 import io.crnk.core.resource.list.ResourceList;
 import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
+import io.crnk.core.resource.meta.MetaInformation;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -53,7 +57,7 @@ import java.util.stream.Collectors;
  */
 @Transactional
 public class DinaRepository<D, E extends DinaEntity>
-  implements ResourceRepository<D, Serializable>, ResourceRegistryAware {
+  implements ResourceRepository<D, Serializable>, ResourceRegistryAware, MetaRepository<DinaMetaInfo> {
 
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
@@ -460,5 +464,15 @@ public class DinaRepository<D, E extends DinaEntity>
       .getResourceInformation()
       .getIdField()
       .getUnderlyingName();
+  }
+
+  @Override
+  public MetaInformation getMetaInformation(
+    Collection<DinaMetaInfo> collection, QuerySpec querySpec, MetaInformation metaInformation
+  ) {
+    DinaMetaInfo metaInfo = new DinaMetaInfo();
+    metaInfo.setExternalTypes(ImmutableMap.of("Person", "www.something.com"));
+    metaInfo.setTotalResourceCount((long) collection.size());
+    return metaInfo;
   }
 }
