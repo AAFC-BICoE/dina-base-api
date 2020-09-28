@@ -5,6 +5,7 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.metaInfo.JsonApiExternalRelation;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
@@ -231,6 +232,7 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     @OneToOne
     @JoinColumn(name = "task_id")
     private Task task;
+    private UUID acMetaDataCreator;
   }
 
   @Data
@@ -249,6 +251,8 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     private String name;
     @JsonApiRelation
     private TaskDTO task;
+    @JsonApiExternalRelation(type = "")
+    private UUID acMetaDataCreator;
   }
 
   @Data
