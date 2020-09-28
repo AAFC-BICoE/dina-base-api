@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.repository;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.exception.MethodNotAllowedException;
 
@@ -16,11 +17,24 @@ import java.util.Optional;
  * @param <D>
  * @param <E>
  */
-public class ReadOnlyDinaRepository<D, E extends DinaEntity> extends DinaRepository<D, E > {
-  public ReadOnlyDinaRepository(DinaService<E> dinaService,
-                                DinaMapper<D, E> dinaMapper, Class<D> resourceClass,
-                                Class<E> entityClass, DinaFilterResolver filterResolver) {
-    super(dinaService, Optional.empty(), Optional.empty() , dinaMapper, resourceClass, entityClass, filterResolver);
+public class ReadOnlyDinaRepository<D, E extends DinaEntity> extends DinaRepository<D, E> {
+  public ReadOnlyDinaRepository(
+    DinaService<E> dinaService,
+    DinaMapper<D, E> dinaMapper,
+    Class<D> resourceClass,
+    Class<E> entityClass,
+    DinaFilterResolver filterResolver,
+    ExternalResourceProvider externalResourceProvider
+  ) {
+    super(
+      dinaService,
+      Optional.empty(),
+      Optional.empty(),
+      dinaMapper,
+      resourceClass,
+      entityClass,
+      filterResolver,
+      externalResourceProvider);
   }
 
   /**

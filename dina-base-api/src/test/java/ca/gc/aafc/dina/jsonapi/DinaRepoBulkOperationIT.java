@@ -1,12 +1,14 @@
 package ca.gc.aafc.dina.jsonapi;
 
+import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
-import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
+import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import com.google.common.collect.ImmutableMap;
@@ -52,7 +54,9 @@ import java.util.UUID;
 
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
-  webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+  webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+  classes = {ExternalResourceProviderImplementation.class,
+    DinaRepoBulkOperationIT.DinaRepoBulkOperationITConfig.class}
 )
 public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
 
@@ -230,7 +234,8 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     @Bean
     public DinaRepository<ProjectDTO, Project> projectRepo(
       BaseDAO baseDAO,
-      DinaFilterResolver filterResolver
+      DinaFilterResolver filterResolver,
+      ExternalResourceProvider externalResourceProvider
     ) {
       return new DinaRepository<>(
         new DinaService<>(baseDAO),
@@ -239,14 +244,16 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
         new DinaMapper<>(ProjectDTO.class),
         ProjectDTO.class,
         Project.class,
-        filterResolver
+        filterResolver,
+        externalResourceProvider
       );
     }
 
     @Bean
     public DinaRepository<TaskDTO, Task> taskRepo(
       BaseDAO baseDAO,
-      DinaFilterResolver filterResolver
+      DinaFilterResolver filterResolver,
+      ExternalResourceProvider externalResourceProvider
     ) {
       return new DinaRepository<>(
         new DinaService<>(baseDAO),
@@ -255,7 +262,8 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
         new DinaMapper<>(TaskDTO.class),
         TaskDTO.class,
         Task.class,
-        filterResolver
+        filterResolver,
+        externalResourceProvider
       );
     }
   }

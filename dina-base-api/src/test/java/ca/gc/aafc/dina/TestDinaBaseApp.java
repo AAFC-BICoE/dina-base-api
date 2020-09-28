@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import ca.gc.aafc.dina.dto.VocabularyDto;
 import ca.gc.aafc.dina.entity.Vocabulary;
 import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
+import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
 import ca.gc.aafc.dina.service.DinaService;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -162,7 +163,8 @@ public class TestDinaBaseApp {
   }
 
   @Bean
-  public DinaRepository<PersonDTO, Person> dinaRepository(DinaPersonService service, Optional<AuditService> auditService) {
+  public DinaRepository<PersonDTO, Person> dinaRepository(DinaPersonService service, Optional<AuditService> auditService,
+    ExternalResourceProvider externalResourceProvider) {
     DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(PersonDTO.class);
     return new DinaRepository<PersonDTO,Person>(
       service,
@@ -171,18 +173,20 @@ public class TestDinaBaseApp {
       dinaMapper,
       PersonDTO.class,
       Person.class,
-      filterResolver);
+      filterResolver,
+      externalResourceProvider);
   }
 
   @Bean
-  public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(BaseDAO baseDAO) {
+  public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(BaseDAO baseDAO, ExternalResourceProvider externalResourceProvider) {
     DinaMapper<VocabularyDto, Vocabulary> dinaMapper = new DinaMapper<>(VocabularyDto.class);
     return new ReadOnlyDinaRepository<VocabularyDto, Vocabulary>(
         new DinaService<>(baseDAO),
         dinaMapper,
         VocabularyDto.class,
         Vocabulary.class,
-        filterResolver);
+        filterResolver,
+        externalResourceProvider);
   }
 
   /**

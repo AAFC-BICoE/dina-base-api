@@ -8,6 +8,7 @@ import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
@@ -149,7 +150,8 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     @Bean
     public DinaRepository<ChainDto, Chain> chainRepo(
       BaseDAO baseDAO,
-      DinaFilterResolver filterResolver
+      DinaFilterResolver filterResolver,
+      ExternalResourceProvider externalResourceProvider
     ) {
       return new DinaRepository<>(
         new DinaService<>(baseDAO) {
@@ -163,14 +165,16 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
         new DinaMapper<>(ChainDto.class),
         ChainDto.class,
         Chain.class,
-        filterResolver
+        filterResolver,
+        externalResourceProvider
       );
     }
 
     @Bean
     public DinaRepository<ChainTemplateDto, ChainTemplate> TemplateRepo(
       BaseDAO baseDAO,
-      DinaFilterResolver filterResolver
+      DinaFilterResolver filterResolver,
+      ExternalResourceProvider externalResourceProvider
     ) {
       return new DinaRepository<>(
         new DinaService<>(baseDAO) {
@@ -185,7 +189,8 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
         new DinaMapper<>(ChainTemplateDto.class),
         ChainTemplateDto.class,
         ChainTemplate.class,
-        filterResolver
+        filterResolver,
+        externalResourceProvider
       );
     }
   }

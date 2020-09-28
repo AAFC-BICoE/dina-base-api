@@ -6,10 +6,11 @@ import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
+import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
+import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
-import com.google.common.collect.ImmutableMap;
 import io.crnk.core.engine.information.resource.ResourceField;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.engine.registry.ResourceRegistry;
@@ -45,6 +46,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -69,6 +71,7 @@ public class DinaRepository<D, E extends DinaEntity>
   private final DinaService<E> dinaService;
   private final Optional<DinaAuthorizationService> authorizationService;
   private final Optional<AuditService> auditService;
+  private final ExternalResourceProvider externalResourceProvider;
 
   private final DinaMapper<D, E> dinaMapper;
   private final DinaFilterResolver filterResolver;
@@ -90,7 +93,8 @@ public class DinaRepository<D, E extends DinaEntity>
     @NonNull DinaMapper<D, E> dinaMapper,
     @NonNull Class<D> resourceClass,
     @NonNull Class<E> entityClass,
-    @NonNull DinaFilterResolver filterResolver
+    @NonNull DinaFilterResolver filterResolver,
+    @NonNull ExternalResourceProvider externalResourceProvider
   ) {
     this.dinaService = dinaService;
     this.authorizationService = authorizationService;
@@ -104,6 +108,7 @@ public class DinaRepository<D, E extends DinaEntity>
       new HashMap<>(),
       DinaRepository::isNotMappable);
     this.entityFieldsPerClass = getFieldsPerEntity();
+    this.externalResourceProvider = externalResourceProvider;
   }
 
   @Override
@@ -471,7 +476,18 @@ public class DinaRepository<D, E extends DinaEntity>
     Collection<DinaMetaInfo> collection, QuerySpec querySpec, MetaInformation metaInformation
   ) {
     DinaMetaInfo metaInfo = new DinaMetaInfo();
-    metaInfo.setExternalTypes(ImmutableMap.of("Person", "www.something.com"));
+    metaInfo.setExternalTypes(
+      FieldUtils.getFieldsListWithAnnotation(
+        resourceClass,
+        JsonApiExternalRelation.class)
+        .stream()
+        .map(field -> field.getAnnotation(JsonApiExternalRelation.class).type())
+        .collect(Collectors.toSet())
+        .stream()
+        .collect(Collectors.toMap(
+          Function.identity(),
+          externalResourceProvider::getRelationsForType)));
+
     metaInfo.setTotalResourceCount((long) collection.size());
     return metaInfo;
   }
