@@ -9,7 +9,6 @@ import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.engine.information.resource.ResourceField;
-import io.crnk.core.engine.information.resource.ResourceInformation;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.engine.registry.ResourceRegistryAware;
@@ -41,22 +40,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * JSONAPI repository that interfaces using DTOs, and uses JPA entities
- * internally. Sparse fields sets are handled by the underlying Crnk
- * ResourceRepository.
- * 
- * @param <D>
- *              - Dto type
- * @param <E>
- *              - Entity type
+ * JSONAPI repository that interfaces using DTOs, and uses JPA entities internally. Sparse fields
+ * sets are handled by the underlying Crnk ResourceRepository.
+ *
+ * @param <D> - Dto type
+ * @param <E> - Entity type
  */
 @Transactional
 public class DinaRepository<D, E extends DinaEntity>
-    implements ResourceRepository<D, Serializable>, ResourceRegistryAware {
+  implements ResourceRepository<D, Serializable>, ResourceRegistryAware {
 
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
@@ -75,8 +72,7 @@ public class DinaRepository<D, E extends DinaEntity>
   private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
   private final Map<Class<?>, Set<String>> entityFieldsPerClass;
 
-  private static final int DEFAULT_OFFSET = 0;
-  private static final int DEFAULT_LIMIT = 100;
+  private static final long DEFAULT_LIMIT = 100;
 
   @Getter
   @Setter(onMethod_ = @Override)
@@ -126,7 +122,6 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
-
     String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
 
     List<E> returnedEntities = dinaService.findAll(
@@ -136,16 +131,25 @@ public class DinaRepository<D, E extends DinaEntity>
         return filterResolver.buildPredicates(querySpec, cb, root, ids, idName);
       },
       (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
-      Optional.ofNullable(querySpec.getOffset()).orElse(Long.valueOf(DEFAULT_OFFSET)).intValue(),
-      Optional.ofNullable(querySpec.getLimit()).orElse(Long.valueOf(DEFAULT_LIMIT)).intValue());
+      Math.toIntExact(querySpec.getOffset()),
+      Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
 
     Set<String> includedRelations = querySpec.getIncludedRelations()
       .stream()
-      .map(ir-> ir.getAttributePath().get(0))
+      .map(ir -> ir.getAttributePath().get(0))
       .collect(Collectors.toSet());
 
+    List<ResourceField> shallowRelationsToMap = findRelations(resourceClass).stream()
+      .filter(resourceField -> includedRelations.stream()
+        .noneMatch(resourceField.getUnderlyingName()::equalsIgnoreCase))
+      .collect(Collectors.toList());
+
     List<D> dtos = returnedEntities.stream()
-      .map(e -> dinaMapper.toDto(e, entityFieldsPerClass, includedRelations))
+      .map(e -> {
+        D dto = dinaMapper.toDto(e, entityFieldsPerClass, includedRelations);
+        mapShallowRelations(e, dto, shallowRelationsToMap);
+        return dto;
+      })
       .collect(Collectors.toList());
 
     Long resourceCount = dinaService.getResourceCount(
@@ -159,11 +163,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public <S extends D> S save(S resource) {
-    ResourceInformation resourceInformation = this.resourceRegistry
-      .findEntry(resourceClass)
-      .getResourceInformation();
-
-    String idFieldName = resourceInformation.getIdField().getUnderlyingName();
+    String idFieldName = findIdFieldName(resourceClass);
     Object id = PropertyUtils.getProperty(resource, idFieldName);
 
     E entity = dinaService.findOne(id, entityClass);
@@ -171,16 +171,16 @@ public class DinaRepository<D, E extends DinaEntity>
 
     if (entity == null) {
       throw new ResourceNotFoundException(
-          resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
+        resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    Set<String> relations = resourceInformation.getRelationshipFields()
-      .stream()
-      .map(rf -> rf.getUnderlyingName())
+    List<ResourceField> relationFields = findRelations(resourceClass);
+    Set<String> relationsToMap = relationFields.stream()
+      .map(ResourceField::getUnderlyingName)
       .collect(Collectors.toSet());
 
-    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
-    linkRelations(entity, resourceInformation.getRelationshipFields());
+    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relationsToMap);
+    linkRelations(entity, relationFields);
 
     dinaService.update(entity);
     auditService.ifPresent(service -> service.audit(resource));
@@ -192,25 +192,22 @@ public class DinaRepository<D, E extends DinaEntity>
   @SneakyThrows
   @SuppressWarnings("unchecked")
   public <S extends D> S create(S resource) {
-    E entity = entityClass.newInstance();
+    E entity = entityClass.getConstructor().newInstance();
 
-    ResourceInformation resourceInformation = this.resourceRegistry
-      .findEntry(resourceClass)
-      .getResourceInformation();
+    List<ResourceField> relationFields = findRelations(resourceClass);
 
-    Set<String> relations = resourceInformation.getRelationshipFields()
-      .stream()
-      .map(af -> af.getUnderlyingName())
+    Set<String> relationsToMap = relationFields.stream()
+      .map(ResourceField::getUnderlyingName)
       .collect(Collectors.toSet());
 
-    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relations);
+    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relationsToMap);
 
-    linkRelations(entity, resourceInformation.getRelationshipFields());
+    linkRelations(entity, relationFields);
 
     authorizationService.ifPresent(auth -> auth.authorizeCreate(entity));
     dinaService.create(entity);
 
-    D dto = dinaMapper.toDto(entity, entityFieldsPerClass, relations);
+    D dto = dinaMapper.toDto(entity, entityFieldsPerClass, relationsToMap);
     auditService.ifPresent(service -> service.audit(dto));
 
     return (S) dto;
@@ -221,7 +218,7 @@ public class DinaRepository<D, E extends DinaEntity>
     E entity = dinaService.findOne(id, entityClass);
     if (entity == null) {
       throw new ResourceNotFoundException(
-          resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
+        resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
     authorizationService.ifPresent(auth -> auth.authorizeDelete(entity));
     dinaService.delete(entity);
@@ -244,19 +241,15 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   /**
-   * Transverses a given class to return a map of fields per class parsed from the
-   * given class. Used to determine the nessesasry classes and fields per class
-   * when mapping a java bean. Fields marked with {@link JsonApiRelation} will be
-   * teated as seperate classes to map and will be transversed and mapped.
-   * 
-   * @param <T>
-   *                         - Type of class
-   * @param clazz
-   *                         - Class to parse
-   * @param fieldsPerClass
-   *                         - initial map to use
-   * @param ignoreIf
-   *                         - predicate to return true for fields to be removed
+   * Transverses a given class to return a map of fields per class parsed from the given class. Used
+   * to determine the necessary classes and fields per class when mapping a java bean. Fields marked
+   * with {@link JsonApiRelation} will be treated as separate classes to map and will be transversed
+   * and mapped.
+   *
+   * @param <T>            - Type of class
+   * @param clazz          - Class to parse
+   * @param fieldsPerClass - initial map to use
+   * @param ignoreIf       - predicate to return true for fields to be removed
    * @return a map of fields per class
    */
   @SneakyThrows
@@ -279,7 +272,7 @@ public class DinaRepository<D, E extends DinaEntity>
       .collect(Collectors.toList());
 
     Set<String> fieldsToInclude = attributeFields.stream()
-      .map(af -> af.getName())
+      .map(Field::getName)
       .collect(Collectors.toSet());
 
     fieldsPerClass.put(clazz, fieldsToInclude);
@@ -290,17 +283,12 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   /**
-   * Helper method to parse the fields of a given list of relations and add them
-   * to a given map.
+   * Helper method to parse the fields of a given list of relations and add them to a given map.
    *
-   * @param <T>
-   *                         - Type of class
-   * @param clazz
-   *                         - class containing the relations
-   * @param fieldsPerClass
-   *                         - map to add to
-   * @param relationFields
-   *                         - relation fields to transverse
+   * @param <T>            - Type of class
+   * @param clazz          - class containing the relations
+   * @param fieldsPerClass - map to add to
+   * @param relationFields - relation fields to transverse
    */
   @SneakyThrows
   private static <T> void parseRelations(
@@ -324,49 +312,72 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   /**
-   * Replaces the given relations of given entity with there JPA entity
-   * equivalent. Relations id's are used to map a relation to its JPA equivalent.
+   * Replaces the given relations of given entity with there JPA entity equivalent. Relations id's
+   * are used to map a relation to its JPA equivalent.
    *
-   * @param entity
-   *                    - entity containing the relations
-   * @param relations
-   *                    - list of relations to map
+   * @param entity    - entity containing the relations
+   * @param relations - list of relations to map
    */
   private void linkRelations(@NonNull E entity, @NonNull List<ResourceField> relations) {
-    for (ResourceField relationField : relations) {
-      ResourceInformation relationInfo = this.resourceRegistry
-        .findEntry(relationField.getElementType())
-        .getResourceInformation();
+    mapRelations(entity, entity, relations,
+      (resourceField, relation) ->
+        returnPersistedObject(findIdFieldName(resourceField.getElementType()), relation));
+  }
 
-      String fieldName = relationField.getUnderlyingName();
-      String idFieldName = relationInfo.getIdField().getUnderlyingName();
+  /**
+   * Maps the given relations from the given entity to a given dto in a shallow form (Id only).
+   *
+   * @param entity         - source of the mapping
+   * @param dto            - target of the mapping
+   * @param relationsToMap - relations to map
+   */
+  private void mapShallowRelations(E entity, D dto, List<ResourceField> relationsToMap) {
+    mapRelations(entity, dto, relationsToMap,
+      (resourceField, relation) -> {
+        Class<?> elementType = resourceField.getElementType();
+        return createShallowDTO(findIdFieldName(elementType), elementType, relation);
+      });
+  }
 
-      if (relationField.isCollection()) {
-        Collection<?> relation = (Collection<?>) PropertyUtils.getProperty(entity, fieldName);
-        if (relation != null) {
-          Collection<?> mappedCollection = relation.stream()
-              .map(rel -> returnPersistedObject(idFieldName, rel))
-              .collect(Collectors.toList());
-          PropertyUtils.setProperty(entity, fieldName, mappedCollection);
+  /**
+   * Maps the given relations from a given source to a given target with a given mapping function.
+   *
+   * @param source    - source of the mapping
+   * @param target    - target of the mapping
+   * @param relations - relations to map
+   * @param mapper    - mapping function to apply
+   */
+  private void mapRelations(
+    Object source,
+    Object target,
+    List<ResourceField> relations,
+    BiFunction<ResourceField, Object, Object> mapper
+  ) {
+    for (ResourceField relation : relations) {
+      String fieldName = relation.getUnderlyingName();
+      if (relation.isCollection()) {
+        Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(source, fieldName);
+        if (relationValue != null) {
+          Collection<?> mappedCollection = relationValue.stream()
+            .map(rel -> mapper.apply(relation, rel))
+            .collect(Collectors.toList());
+          PropertyUtils.setProperty(target, fieldName, mappedCollection);
         }
       } else {
-        Object relation = PropertyUtils.getProperty(entity, fieldName);
-        if (relation != null) {
-          Object persistedRelationObject = returnPersistedObject(idFieldName, relation);
-          PropertyUtils.setProperty(entity, fieldName, persistedRelationObject);
+        Object relationValue = PropertyUtils.getProperty(source, fieldName);
+        if (relationValue != null) {
+          Object mappedRelation = mapper.apply(relation, relationValue);
+          PropertyUtils.setProperty(target, fieldName, mappedRelation);
         }
       }
     }
   }
 
   /**
-   * Returns the jpa entity representing a given object with an id field of a
-   * given id field name.
+   * Returns the jpa entity representing a given object with an id field of a given id field name.
    *
-   * @param idFieldName
-   *                      - name of the id field
-   * @param object
-   *                      - object to map
+   * @param idFieldName - name of the id field
+   * @param object      - object to map
    * @return - jpa entity representing a given object
    */
   private Object returnPersistedObject(String idFieldName, Object object) {
@@ -375,27 +386,23 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   /**
-   * Returns true if the dina repo should not map the given field. currently that
-   * means if the field is generated (Marked with {@link DerivedDtoField}) or final.
+   * Returns true if the dina repo should not map the given field. currently that means if the field
+   * is generated (Marked with {@link DerivedDtoField}) or final.
    *
    * @param field - field to evaluate
-   * @return
+   * @return - true if the dina repo should not map the given field
    */
   private static boolean isNotMappable(Field field) {
-    return isGenerated(field.getDeclaringClass(), field.getName()) 
-      || Modifier.isFinal(field.getModifiers());
+    return isGenerated(field.getDeclaringClass(), field.getName())
+           || Modifier.isFinal(field.getModifiers());
   }
 
   /**
-   * Returns true if a dto field is generated and read-only (Marked with
-   * {@link DerivedDtoField}).
-   * 
-   * @param <T>
-   *                - Class type
-   * @param clazz
-   *                - class of the field
-   * @param field
-   *                - field to check
+   * Returns true if a dto field is generated and read-only (Marked with {@link DerivedDtoField}).
+   *
+   * @param <T>   - Class type
+   * @param clazz - class of the field
+   * @param field - field to check
    * @return true if a dto field is generated and read-only
    */
   @SneakyThrows(NoSuchFieldException.class)
@@ -404,17 +411,54 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   /**
-   * Returns a Dto's related entity (Marked with {@link RelatedEntity}) or else
-   * null.
-   * 
-   * @param <T>
-   *                - Class type
-   * @param clazz
-   *                - Class with a related entity.
+   * Returns a Dto's related entity (Marked with {@link RelatedEntity}) or else null.
+   *
+   * @param <T>   - Class type
+   * @param clazz - Class with a related entity.
    * @return a Dto's related entity, or else null
    */
   private static <T> RelatedEntity getRelatedEntity(Class<T> clazz) {
     return clazz.getAnnotation(RelatedEntity.class);
   }
 
+  /**
+   * Maps the given id field name from a given entity to a new instance of a given type.
+   *
+   * @param idFieldName - name of the id field for the mapping
+   * @param type        - type of new instance to return with the mapping
+   * @param entity      - entity with the id to map
+   * @return - a new instance of a given type with a id value mapped from a given entity.
+   */
+  @SneakyThrows
+  private static Object createShallowDTO(String idFieldName, Class<?> type, Object entity) {
+    Object shallowDTO = type.getConstructor().newInstance();
+    PropertyUtils.setProperty(
+      shallowDTO,
+      idFieldName,
+      PropertyUtils.getProperty(entity, idFieldName));
+    return shallowDTO;
+  }
+
+  /**
+   * Returns a list of resource fields for a given class.
+   *
+   * @param clazz - class of relations to find
+   * @return - list of resource fields
+   */
+  private List<ResourceField> findRelations(Class<?> clazz) {
+    return this.resourceRegistry.findEntry(clazz).getResourceInformation().getRelationshipFields();
+  }
+
+  /**
+   * Returns the id field name for a given class.
+   *
+   * @param clazz - class to find the id field name for
+   * @return - id field name for a given class.
+   */
+  private String findIdFieldName(Class<?> clazz) {
+    return this.resourceRegistry.findEntry(clazz)
+      .getResourceInformation()
+      .getIdField()
+      .getUnderlyingName();
+  }
 }
