@@ -7,7 +7,6 @@ import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
-import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
@@ -46,7 +45,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -234,6 +232,18 @@ public class DinaRepository<D, E extends DinaEntity>
 
     D dto = dinaMapper.toDto(entity, entityFieldsPerClass, Collections.emptySet());
     auditService.ifPresent(service -> service.auditDeleteEvent(dto));
+  }
+
+  @Override
+  public MetaInformation getMetaInformation(
+    Collection<DinaMetaInfo> collection, QuerySpec querySpec, MetaInformation metaInformation
+  ) {
+    DinaMetaInfo metaInfo = new DinaMetaInfo();
+    metaInfo.setExternalTypes(DinaMetaInfo.parseExternalTypes(
+      resourceClass,
+      externalResourceProvider));
+    metaInfo.setTotalResourceCount((long) collection.size());
+    return metaInfo;
   }
 
   /**
@@ -469,26 +479,5 @@ public class DinaRepository<D, E extends DinaEntity>
       .getResourceInformation()
       .getIdField()
       .getUnderlyingName();
-  }
-
-  @Override
-  public MetaInformation getMetaInformation(
-    Collection<DinaMetaInfo> collection, QuerySpec querySpec, MetaInformation metaInformation
-  ) {
-    DinaMetaInfo metaInfo = new DinaMetaInfo();
-    metaInfo.setExternalTypes(
-      FieldUtils.getFieldsListWithAnnotation(
-        resourceClass,
-        JsonApiExternalRelation.class)
-        .stream()
-        .map(field -> field.getAnnotation(JsonApiExternalRelation.class).type())
-        .collect(Collectors.toSet())
-        .stream()
-        .collect(Collectors.toMap(
-          Function.identity(),
-          externalResourceProvider::getRelationsForType)));
-
-    metaInfo.setTotalResourceCount((long) collection.size());
-    return metaInfo;
   }
 }
