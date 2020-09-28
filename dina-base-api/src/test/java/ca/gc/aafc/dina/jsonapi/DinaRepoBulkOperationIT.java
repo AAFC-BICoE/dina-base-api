@@ -214,6 +214,7 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     return ProjectDTO.builder()
       .name(RandomStringUtils.randomAlphabetic(5))
       .acMetaDataCreator(UUID.randomUUID())
+      .originalAuthor(UUID.randomUUID())
       .uuid(UUID.randomUUID())
       .build();
   }
@@ -286,6 +287,7 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     @JoinColumn(name = "task_id")
     private Task task;
     private UUID acMetaDataCreator;
+    private UUID originalAuthor;
   }
 
   @Data
@@ -306,6 +308,8 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     private TaskDTO task;
     @JsonApiExternalRelation(type = "Person")
     private UUID acMetaDataCreator;
+    @JsonApiExternalRelation(type = "Author")
+    private UUID originalAuthor;
   }
 
   @Data
