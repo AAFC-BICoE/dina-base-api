@@ -43,12 +43,14 @@ import ca.gc.aafc.dina.repository.meta.JpaTotalMetaInformationProvider;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaServiceTest.DinaServiceTestImplementation;
 import ca.gc.aafc.dina.service.GroupAuthorizationService;
+import org.springframework.context.annotation.Import;
 
 /**
  * Small test application running on dina-base-api
  */
 @SpringBootApplication
 @EntityScan(basePackageClasses = Department.class)
+@Import(ExternalResourceProviderImplementation.class)
 public class TestDinaBaseApp {
 
   @Inject
