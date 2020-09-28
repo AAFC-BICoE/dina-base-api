@@ -5,7 +5,7 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
-import ca.gc.aafc.dina.metaInfo.JsonApiExternalRelation;
+import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
@@ -178,6 +178,19 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
 
     //Assert Nothing Changes
     assertProject(project1, projectRepo.findOne(project1.getUuid(), createProjectQuerySpec()));
+  }
+
+  @Test
+  void metaInfo_ContainsExternalRelation(){
+    ProjectDTO project1 = createProjectDTO();
+    project1.setTask(createTaskDTO());
+
+    OperationsCall call = operationsClient.createCall();
+    call.add(HttpMethod.POST, project1.getTask());
+    call.add(HttpMethod.POST, project1);
+    call.execute();
+
+    super.sendGet( ProjectDTO.RESOURCE_TYPE,project1.getUuid().toString()).log().all(true);
   }
 
   private void assertProject(ProjectDTO expected, ProjectDTO result) {
