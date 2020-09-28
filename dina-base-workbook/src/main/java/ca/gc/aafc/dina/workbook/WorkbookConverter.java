@@ -1,7 +1,9 @@
 package ca.gc.aafc.dina.workbook;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -12,6 +14,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class WorkbookConverter {
 
@@ -39,7 +42,8 @@ public class WorkbookConverter {
     for (Row row : sheet) {
       String[] content = new String[expectedNumberOfColumn];
       for (int i = 0; i < expectedNumberOfColumn; i++) {
-        content[i] = SpreadsheetHelper.getCellAsString(row.getCell(i));
+        // do not include null in the content array, use empty string instead.
+        content[i] = Objects.toString(SpreadsheetHelper.getCellAsString(row.getCell(i)), "");
       }
       WorkbookRow currWorkbookRow = WorkbookRow.builder()
           .rowNumber(row.getRowNum())
@@ -55,6 +59,7 @@ public class WorkbookConverter {
   @Getter
   public static final class WorkbookRow {
     private final int rowNumber;
+
     private final String[] content;
 
     @Override
