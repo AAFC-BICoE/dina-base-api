@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.repository.meta;
 
 import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
+import lombok.NonNull;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.util.Map;
@@ -20,8 +21,8 @@ public class DinaMetaInfo extends DefaultPagedMetaInformation {
   }
 
   public static Map<String, String> parseExternalTypes(
-    Class<?> clazz,
-    ExternalResourceProvider provider
+    @NonNull Class<?> clazz,
+    @NonNull ExternalResourceProvider provider
   ) {
     return FieldUtils.getFieldsListWithAnnotation(clazz, JsonApiExternalRelation.class)
       .stream()
