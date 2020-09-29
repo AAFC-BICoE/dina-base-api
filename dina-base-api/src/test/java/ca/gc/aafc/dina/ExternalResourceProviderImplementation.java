@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 public class ExternalResourceProviderImplementation implements ExternalResourceProvider {
 
   @Override
-  public String getRelationsForType(String type) {
+  public String getReferenceForType(String type) {
     return "Something.com/api/v1/something";
   }
 

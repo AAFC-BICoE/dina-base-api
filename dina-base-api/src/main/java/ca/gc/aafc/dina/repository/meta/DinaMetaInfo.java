@@ -27,6 +27,6 @@ public class DinaMetaInfo extends DefaultPagedMetaInformation {
       .stream()
       .map(field -> field.getAnnotation(JsonApiExternalRelation.class).type())
       .distinct()
-      .collect(Collectors.toMap(Function.identity(), provider::getRelationsForType));
+      .collect(Collectors.toMap(Function.identity(), provider::getReferenceForType));
   }
 }
