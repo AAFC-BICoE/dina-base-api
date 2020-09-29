@@ -9,7 +9,7 @@ import java.util.Map;
 @TestConfiguration
 public class ExternalResourceProviderImplementation implements ExternalResourceProvider {
 
-  private Map<String, String> map = ImmutableMap.of(
+  public final Map<String, String> map = ImmutableMap.of(
     "Person", "Person/api/v1/person",
     "Author", "Author/api/v1/author");
 
