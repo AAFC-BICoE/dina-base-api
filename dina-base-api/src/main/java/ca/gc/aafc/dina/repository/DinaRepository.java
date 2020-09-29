@@ -57,7 +57,7 @@ import java.util.stream.Collectors;
  */
 @Transactional
 public class DinaRepository<D, E extends DinaEntity>
-  implements ResourceRepository<D, Serializable>, ResourceRegistryAware, MetaRepository<DinaMetaInfo> {
+  implements ResourceRepository<D, Serializable>, ResourceRegistryAware, MetaRepository<D> {
 
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
@@ -236,7 +236,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Override
   public MetaInformation getMetaInformation(
-    Collection<DinaMetaInfo> collection, QuerySpec querySpec, MetaInformation metaInformation
+    Collection<D> collection, QuerySpec querySpec, MetaInformation metaInformation
   ) {
     DinaMetaInfo metaInfo = new DinaMetaInfo();
     if (externalResourceProvider != null) {
