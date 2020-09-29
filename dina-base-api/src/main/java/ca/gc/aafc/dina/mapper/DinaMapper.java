@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.hibernate.Hibernate;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import io.crnk.core.resource.annotations.JsonApiRelation;
@@ -186,6 +187,8 @@ public class DinaMapper<D, E> {
     @NonNull Map<Object, Object> visited
   ) {
     visited.putIfAbsent(source, target);
+    // The source could be a Hibernate-proxied entity; unproxy it here:
+    source = (S) Hibernate.unproxy(source);
     Class<?> sourceType = source.getClass();
     Set<String> selectedFields = selectedFieldPerClass.getOrDefault(sourceType, new HashSet<>());
     Predicate<String> ignoreIf = field -> handlers.containsKey(sourceType)
