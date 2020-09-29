@@ -185,7 +185,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   }
 
   @Test
-  void metaInfo_ContainsExternalRelation(){
+  void fineOne_metaInfoContainsExternalRelation() {
     ProjectDTO project1 = createProjectDTO();
     project1.setTask(createTaskDTO());
 
@@ -194,7 +194,20 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     call.add(HttpMethod.POST, project1);
     call.execute();
 
-    super.sendGet( ProjectDTO.RESOURCE_TYPE,project1.getUuid().toString()).log().all(true);
+    super.sendGet(ProjectDTO.RESOURCE_TYPE, project1.getUuid().toString()).log().all(true);
+  }
+
+  @Test
+  void fineAll_metaInfoContainsExternalRelation() {
+    ProjectDTO project1 = createProjectDTO();
+    ProjectDTO project2 = createProjectDTO();
+
+    OperationsCall call = operationsClient.createCall();
+    call.add(HttpMethod.POST, project1);
+    call.add(HttpMethod.POST, project2);
+    call.execute();
+
+    super.sendGet(ProjectDTO.RESOURCE_TYPE, "").log().all(true);
   }
 
   private void assertProject(ProjectDTO expected, ProjectDTO result) {
