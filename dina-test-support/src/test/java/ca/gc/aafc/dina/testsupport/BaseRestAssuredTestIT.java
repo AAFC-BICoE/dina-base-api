@@ -18,7 +18,7 @@ public class BaseRestAssuredTestIT extends BaseRestAssuredTest {
   private static final String RESOURCE_PATH = "crnk-test-data";
 
   public BaseRestAssuredTestIT() {
-    super("");
+    super(RESOURCE_PATH);
   }
   
   /**
@@ -28,29 +28,25 @@ public class BaseRestAssuredTestIT extends BaseRestAssuredTest {
 	public void baseClass_OnCRUDOperations_ExpectedReturnCodesReturned() {
     CrnkTestData testData = CrnkTestData.builder().note("note").build();
 
-    ValidatableResponse postResponse = sendPost(RESOURCE_PATH,
-      JsonAPITestHelper.toJsonAPIMap(RESOURCE_PATH, 
-      JsonAPITestHelper.toAttributeMap(testData), null, null));
+    ValidatableResponse postResponse = sendPost(
+      JsonAPITestHelper.toJsonAPIMap(RESOURCE_PATH, testData));
     
-    String id =  postResponse.extract()
-      .body()
-      .jsonPath()
-      .get("data.id");
+    String id =  JsonAPITestHelper.extractId(postResponse);
 
-    sendGet(RESOURCE_PATH, id);
+    sendGet(id);
     
     CrnkTestData updatedTestData = CrnkTestData.builder().note("updated note").build();
-    sendPatch(RESOURCE_PATH, id,
+    sendPatch(id,
       JsonAPITestHelper.toJsonAPIMap(RESOURCE_PATH, 
       JsonAPITestHelper.toAttributeMap(updatedTestData), null, null));
 
     // re-get and make sure the note is updated
-    sendGet(RESOURCE_PATH, id)
+    sendGet(id)
       .body("data.attributes.note", Matchers.equalTo("updated note"));
     
-    sendDelete(RESOURCE_PATH, id);
+    sendDelete(id);
 
-    sendGet(RESOURCE_PATH, id, HttpStatus.NOT_FOUND.value());
+    sendGet("", id, HttpStatus.NOT_FOUND.value());
 
 	}
 }

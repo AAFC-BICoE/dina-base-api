@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableMap;
+import io.restassured.response.ValidatableResponse;
 
 /**
  * The class provides some helper methods to build JSON API compliant Map
@@ -18,7 +19,7 @@ import com.google.common.collect.ImmutableMap;
 public final class JsonAPITestHelper {
 
   private static final ObjectMapper IT_OBJECT_MAPPER = new ObjectMapper();
-  private static final TypeReference<Map<String, Object>> IT_OM_TYPE_REF = new TypeReference<Map<String, Object>>() { };
+  private static final TypeReference<Map<String, Object>> IT_OM_TYPE_REF = new TypeReference<>() { };
   
   static {
     IT_OBJECT_MAPPER.registerModule(new JavaTimeModule());
@@ -40,6 +41,30 @@ public final class JsonAPITestHelper {
   public static Map<String, Object> toAttributeMap(Object obj) {
     return IT_OBJECT_MAPPER.convertValue(obj, IT_OM_TYPE_REF);
   }
+
+  /**
+   * Creates a JSON API Map from the provided type name and object.
+   * No id will be set.
+   * @param typeName
+   * @param obj
+   * @return
+   */
+  public static Map<String, Object> toJsonAPIMap(String typeName, Object obj) {
+    return toJsonAPIMap(typeName, toAttributeMap(obj), null, null);
+  }
+
+  /**
+   * Creates a JSON API Map from the provided type name, object and id.
+   * @param typeName
+   * @param id
+   * @param obj
+   * @return
+   */
+  public static Map<String, Object> toJsonAPIMap(String typeName,
+      String id, Object obj) {
+    return toJsonAPIMap(typeName, toAttributeMap(obj), null, id);
+  }
+
   /**
    * Creates a JSON API Map from the provided type name, attributes and id.
    * 
@@ -89,6 +114,18 @@ public final class JsonAPITestHelper {
     relBuilder.put(relationship.getName(), bldr.build());
     
     return relBuilder.build();
+  }
+
+  /**
+   * Extract the id field as per JSON API standard
+   * @param response
+   * @return
+   */
+  public static String extractId(ValidatableResponse response) {
+    return response.extract()
+        .body()
+        .jsonPath()
+        .get("data.id");
   }
 
 }

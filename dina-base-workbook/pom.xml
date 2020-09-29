@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>dina-base-workbook</artifactId>
+  <name>dina-base-api</name>
+  <url>https://github.com/AAFC-BICoE/dina-base-api</url>
+
+  <parent>
+    <groupId>ca.gc.aafc</groupId>
+    <artifactId>dina-base-parent</artifactId>
+    <version>0.38-SNAPSHOT</version>
+  </parent>
+
+  <properties>
+    <poi-ooxml.version>4.1.2</poi-ooxml.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>${poi-ooxml.version}</version>
+    </dependency>
+  </dependencies>
+
+  <distributionManagement>
+    <repository>
+      <id>bintray-aafc-bice-BICoE</id>
+      <name>aafc-bice-BICoE</name>
+      <url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-base-workbook/;publish=1;</url>
+    </repository>
+  </distributionManagement>
+
+</project>
