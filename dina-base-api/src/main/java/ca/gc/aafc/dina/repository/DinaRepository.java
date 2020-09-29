@@ -23,6 +23,7 @@ import io.crnk.core.resource.list.DefaultResourceList;
 import io.crnk.core.resource.list.ResourceList;
 import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
 import io.crnk.core.resource.meta.MetaInformation;
+import io.crnk.core.resource.meta.PagedMetaInformation;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -239,12 +240,20 @@ public class DinaRepository<D, E extends DinaEntity>
     Collection<D> collection, QuerySpec querySpec, MetaInformation metaInformation
   ) {
     DinaMetaInfo metaInfo = new DinaMetaInfo();
+    // Set External types
     if (externalResourceProvider != null) {
-      metaInfo.setExternalTypes(DinaMetaInfo.parseExternalTypes(
-        resourceClass,
-        externalResourceProvider));
+      metaInfo.setExternalTypes(
+        DinaMetaInfo.parseExternalTypes(resourceClass, externalResourceProvider));
     }
-    metaInfo.setTotalResourceCount((long) collection.size());
+    // Set resource counts
+    if (metaInformation instanceof PagedMetaInformation) {
+      PagedMetaInformation pagedMetaInformation = (PagedMetaInformation) metaInformation;
+      if (pagedMetaInformation.getTotalResourceCount() != null) {
+        metaInfo.setTotalResourceCount(pagedMetaInformation.getTotalResourceCount());
+      }
+    } else {
+      metaInfo.setTotalResourceCount((long) collection.size());
+    }
     return metaInfo;
   }
 
