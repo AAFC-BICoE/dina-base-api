@@ -201,6 +201,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     Assertions.assertEquals(expected.getUuid(), result.getUuid());
     Assertions.assertEquals(expected.getName(), result.getName());
     Assertions.assertEquals(expected.getAcMetaDataCreator(), result.getAcMetaDataCreator());
+    Assertions.assertEquals(expected.getOriginalAuthor(), result.getOriginalAuthor());
     if (expected.getTask() != null) {
       Assertions.assertNotNull(result.getTask());
       Assertions.assertEquals(expected.getTask().getUuid(), result.getTask().getUuid());
