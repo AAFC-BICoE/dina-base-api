@@ -92,7 +92,7 @@ public class DinaRepository<D, E extends DinaEntity>
     @NonNull Class<D> resourceClass,
     @NonNull Class<E> entityClass,
     @NonNull DinaFilterResolver filterResolver,
-    @NonNull ExternalResourceProvider externalResourceProvider
+    ExternalResourceProvider externalResourceProvider
   ) {
     this.dinaService = dinaService;
     this.authorizationService = authorizationService;
@@ -239,9 +239,11 @@ public class DinaRepository<D, E extends DinaEntity>
     Collection<DinaMetaInfo> collection, QuerySpec querySpec, MetaInformation metaInformation
   ) {
     DinaMetaInfo metaInfo = new DinaMetaInfo();
-    metaInfo.setExternalTypes(DinaMetaInfo.parseExternalTypes(
-      resourceClass,
-      externalResourceProvider));
+    if (externalResourceProvider != null) {
+      metaInfo.setExternalTypes(DinaMetaInfo.parseExternalTypes(
+        resourceClass,
+        externalResourceProvider));
+    }
     metaInfo.setTotalResourceCount((long) collection.size());
     return metaInfo;
   }
