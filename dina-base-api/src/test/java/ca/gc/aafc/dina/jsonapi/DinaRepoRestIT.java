@@ -23,12 +23,14 @@ import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import io.crnk.operations.client.OperationsCall;
 import io.crnk.operations.client.OperationsClient;
+import io.restassured.response.ValidatableResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.hamcrest.Matchers;
 import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
@@ -194,7 +196,12 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     call.add(HttpMethod.POST, project1);
     call.execute();
 
-    super.sendGet(ProjectDTO.RESOURCE_TYPE, project1.getUuid().toString()).log().all(true);
+    ValidatableResponse validatableResponse = super.sendGet(
+      ProjectDTO.RESOURCE_TYPE,
+      project1.getUuid().toString());
+
+    ExternalResourceProviderImplementation.map.forEach((key, value) ->
+      validatableResponse.body("meta.externalTypes." + key, Matchers.equalTo(value)));
   }
 
   @Test
@@ -207,7 +214,9 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     call.add(HttpMethod.POST, project2);
     call.execute();
 
-    super.sendGet(ProjectDTO.RESOURCE_TYPE, "").log().all(true);
+    ValidatableResponse validatableResponse = super.sendGet(ProjectDTO.RESOURCE_TYPE, "");
+    ExternalResourceProviderImplementation.map.forEach((key, value) ->
+      validatableResponse.body("meta.externalTypes." + key, Matchers.equalTo(value)));
   }
 
   private void assertProject(ProjectDTO expected, ProjectDTO result) {

@@ -242,7 +242,7 @@ public class DinaRepository<D, E extends DinaEntity>
     DinaMetaInfo metaInfo = new DinaMetaInfo();
     // Set External types
     if (externalResourceProvider != null) {
-      metaInfo.setExternalTypes(
+      metaInfo.setExternalTypes(//TODO improve performance by determining this at run time
         DinaMetaInfo.parseExternalTypes(resourceClass, externalResourceProvider));
     }
     // Set resource counts
