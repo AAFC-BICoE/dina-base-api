@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.repository.meta;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
 import lombok.NonNull;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -10,6 +11,7 @@ import java.util.stream.Collectors;
 
 public class DinaMetaInfo extends DefaultPagedMetaInformation {
 
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private Map<String, String> externalTypes;
 
   public Map<String, String> getExternalTypes() {

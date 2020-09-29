@@ -187,7 +187,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   }
 
   @Test
-  void fineOne_metaInfoContainsExternalRelation() {
+  void metaInfo_findOne_metaInfoContainsExternalRelation() {
     ProjectDTO project1 = createProjectDTO();
     project1.setTask(createTaskDTO());
 
@@ -205,7 +205,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   }
 
   @Test
-  void fineAll_metaInfoContainsExternalRelation() {
+  void metaInfo_findAll_metaInfoContainsExternalRelation() {
     ProjectDTO project1 = createProjectDTO();
     ProjectDTO project2 = createProjectDTO();
 
@@ -217,6 +217,20 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     ValidatableResponse validatableResponse = super.sendGet(ProjectDTO.RESOURCE_TYPE, "");
     ExternalResourceProviderImplementation.map.forEach((key, value) ->
       validatableResponse.body("meta.externalTypes." + key, Matchers.equalTo(value)));
+  }
+
+  @Test
+  void metaInfo_WhenNoExternalTypes_ExcludedFromMetaInfo() {
+    TaskDTO taskDTO = createTaskDTO();
+
+    OperationsCall call = operationsClient.createCall();
+    call.add(HttpMethod.POST, taskDTO);
+    call.execute();
+
+    ValidatableResponse validatableResponse = super.sendGet(
+      TaskDTO.RESOURCE_TYPE,
+      taskDTO.getUuid().toString());
+    validatableResponse.body("meta.externalTypes", Matchers.nullValue());
   }
 
   private void assertProject(ProjectDTO expected, ProjectDTO result) {
