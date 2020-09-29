@@ -2,6 +2,7 @@
 *.classpath
 *.project
 *.factorypath
+*.iml
 *.versionsBackup
 /.metadata/
 /RemoteSystemsTempFiles/
