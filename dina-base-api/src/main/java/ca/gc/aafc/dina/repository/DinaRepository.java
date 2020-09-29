@@ -70,13 +70,13 @@ public class DinaRepository<D, E extends DinaEntity>
   private final DinaService<E> dinaService;
   private final Optional<DinaAuthorizationService> authorizationService;
   private final Optional<AuditService> auditService;
-  private final ExternalResourceProvider externalResourceProvider;
 
   private final DinaMapper<D, E> dinaMapper;
   private final DinaFilterResolver filterResolver;
 
   private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
   private final Map<Class<?>, Set<String>> entityFieldsPerClass;
+  private final Map<String, String> externalMetaMap;
 
   private static final long DEFAULT_LIMIT = 100;
 
@@ -107,7 +107,13 @@ public class DinaRepository<D, E extends DinaEntity>
       new HashMap<>(),
       DinaRepository::isNotMappable);
     this.entityFieldsPerClass = getFieldsPerEntity();
-    this.externalResourceProvider = externalResourceProvider;
+    if (externalResourceProvider != null) {
+      this.externalMetaMap = DinaMetaInfo.parseExternalTypes(
+        resourceClass,
+        externalResourceProvider);
+    } else {
+      this.externalMetaMap = null;
+    }
   }
 
   @Override
@@ -241,10 +247,7 @@ public class DinaRepository<D, E extends DinaEntity>
   ) {
     DinaMetaInfo metaInfo = new DinaMetaInfo();
     // Set External types
-    if (externalResourceProvider != null) {
-      metaInfo.setExternalTypes(//TODO improve performance by determining this at run time
-        DinaMetaInfo.parseExternalTypes(resourceClass, externalResourceProvider));
-    }
+    metaInfo.setExternalTypes(externalMetaMap);
     // Set resource counts
     if (metaInformation instanceof PagedMetaInformation) {
       PagedMetaInformation pagedMetaInformation = (PagedMetaInformation) metaInformation;
