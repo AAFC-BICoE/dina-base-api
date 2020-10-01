@@ -7,6 +7,7 @@ import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
+import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
@@ -15,6 +16,7 @@ import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.engine.registry.ResourceRegistryAware;
 import io.crnk.core.exception.ResourceNotFoundException;
+import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.MetaRepository;
 import io.crnk.core.repository.ResourceRepository;
@@ -33,6 +35,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -138,10 +141,15 @@ public class DinaRepository<D, E extends DinaEntity>
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
 
+    List<IncludeRelationSpec> relationsToEagerLoad = querySpec.getIncludedRelations().stream()
+      .filter(includeRelationSpec -> includeRelationSpec.getAttributePath().stream().noneMatch(
+        relation -> hasAnnotation(resourceClass, relation, JsonApiExternalRelation.class))
+      ).collect(Collectors.toList());
+
     List<E> returnedEntities = dinaService.findAll(
       entityClass,
       (cb, root) -> {
-        DinaFilterResolver.eagerLoadRelations(querySpec, root);
+        DinaFilterResolver.eagerLoadRelations(root, relationsToEagerLoad);
         return filterResolver.buildPredicates(querySpec, cb, root, ids, idName);
       },
       (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
@@ -155,7 +163,12 @@ public class DinaRepository<D, E extends DinaEntity>
 
     List<ResourceField> shallowRelationsToMap = findRelations(resourceClass).stream()
       .filter(resourceField -> includedRelations.stream()
-        .noneMatch(resourceField.getUnderlyingName()::equalsIgnoreCase))
+                                 .noneMatch(resourceField.getUnderlyingName()::equalsIgnoreCase)
+                               &&
+                               !hasAnnotation(
+                                 resourceClass,
+                                 resourceField.getUnderlyingName(),
+                                 JsonApiExternalRelation.class))
       .collect(Collectors.toList());
 
     List<D> dtos = returnedEntities.stream()
@@ -189,12 +202,19 @@ public class DinaRepository<D, E extends DinaEntity>
     }
 
     List<ResourceField> relationFields = findRelations(resourceClass);
+
     Set<String> relationsToMap = relationFields.stream()
       .map(ResourceField::getUnderlyingName)
       .collect(Collectors.toSet());
-
     dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relationsToMap);
-    linkRelations(entity, relationFields);
+
+    List<ResourceField> relationsToLink = relationFields.stream()
+      .filter(relation -> !hasAnnotation(
+        resourceClass,
+        relation.getUnderlyingName(),
+        JsonApiExternalRelation.class))
+      .collect(Collectors.toList());
+    linkRelations(entity, relationsToLink);
 
     dinaService.update(entity);
     auditService.ifPresent(service -> service.audit(resource));
@@ -216,7 +236,13 @@ public class DinaRepository<D, E extends DinaEntity>
 
     dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relationsToMap);
 
-    linkRelations(entity, relationFields);
+    List<ResourceField> relationsToLink = relationFields.stream()
+      .filter(relation -> !hasAnnotation(
+        resourceClass,
+        relation.getUnderlyingName(),
+        JsonApiExternalRelation.class))
+      .collect(Collectors.toList());
+    linkRelations(entity, relationsToLink);
 
     authorizationService.ifPresent(auth -> auth.authorizeCreate(entity));
     dinaService.create(entity);
@@ -426,21 +452,26 @@ public class DinaRepository<D, E extends DinaEntity>
    * @return - true if the dina repo should not map the given field
    */
   private static boolean isNotMappable(Field field) {
-    return isGenerated(field.getDeclaringClass(), field.getName())
+    return hasAnnotation(field.getDeclaringClass(), field.getName(), DerivedDtoField.class)
            || Modifier.isFinal(field.getModifiers());
   }
 
   /**
-   * Returns true if a dto field is generated and read-only (Marked with {@link DerivedDtoField}).
+   * Returns true if the given class has a given field with an annotation of a given type.
    *
-   * @param <T>   - Class type
-   * @param clazz - class of the field
-   * @param field - field to check
+   * @param <T>             - Class type
+   * @param clazz           - class of the field
+   * @param field           - field to check
+   * @param annotationClass - annotation that is present
    * @return true if a dto field is generated and read-only
    */
   @SneakyThrows(NoSuchFieldException.class)
-  private static <T> boolean isGenerated(Class<T> clazz, String field) {
-    return clazz.getDeclaredField(field).isAnnotationPresent(DerivedDtoField.class);
+  private static <T> boolean hasAnnotation(
+    Class<T> clazz,
+    String field,
+    Class<? extends Annotation> annotationClass
+  ) {
+    return clazz.getDeclaredField(field).isAnnotationPresent(annotationClass);
   }
 
   /**

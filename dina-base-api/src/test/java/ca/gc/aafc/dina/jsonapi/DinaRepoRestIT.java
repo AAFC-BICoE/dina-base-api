@@ -249,7 +249,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
       .header(CRNK_HEADER)
       .port(testPort)
       .basePath(basePath)
-      .queryParams(ImmutableMap.of("include", "acMetaDataCreator"))
+      .queryParams(ImmutableMap.of("include", "acMetaDataCreator,originalAuthor"))
       .get(StringUtils.appendIfMissing(ProjectDTO.RESOURCE_TYPE, "/") +
            project1.getUuid().toString())
       .then().log().all(true);
@@ -259,14 +259,23 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   private void assertProject(ProjectDTO expected, ProjectDTO result) {
     Assertions.assertEquals(expected.getUuid(), result.getUuid());
     Assertions.assertEquals(expected.getName(), result.getName());
-    Assertions.assertEquals(expected.getAcMetaDataCreator(), result.getAcMetaDataCreator());
-    Assertions.assertEquals(expected.getOriginalAuthor(), result.getOriginalAuthor());
+    assertExternalType(expected.getAcMetaDataCreator(),result.getAcMetaDataCreator());
+    assertExternalType(expected.getOriginalAuthor(),result.getOriginalAuthor());
     if (expected.getTask() != null) {
       Assertions.assertNotNull(result.getTask());
       Assertions.assertEquals(expected.getTask().getUuid(), result.getTask().getUuid());
       Assertions.assertEquals(expected.getTask().getPowerLevel(), result.getTask().getPowerLevel());
     } else {
       Assertions.assertNull(result.getTask());
+    }
+  }
+
+  private static void assertExternalType(ExternalRelationDto expected, ExternalRelationDto result) {
+    if (expected == null) {
+      Assertions.assertNull(result);
+    } else {
+      Assertions.assertNotNull(result);
+      Assertions.assertEquals(expected.getId(), result.getId());
     }
   }
 
@@ -286,6 +295,8 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   private static QuerySpec createProjectQuerySpec() {
     QuerySpec querySpec = new QuerySpec(ProjectDTO.class);
     querySpec.includeRelation(PathSpec.of("task"));
+    querySpec.includeRelation(PathSpec.of("acMetaDataCreator"));
+    querySpec.includeRelation(PathSpec.of("originalAuthor"));
     return querySpec;
   }
 
