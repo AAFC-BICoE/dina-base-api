@@ -181,8 +181,7 @@ public class TestDinaBaseApp {
       dinaMapper,
       VocabularyDto.class,
       Vocabulary.class,
-      filterResolver,
-      null);
+      filterResolver);
   }
 
   /**
