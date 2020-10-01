@@ -58,8 +58,7 @@ import java.util.UUID;
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import({ExternalResourceProviderImplementation.class,
-  DinaRepoRestIT.DinaRepoBulkOperationITConfig.class})
+@Import(DinaRepoRestIT.DinaRepoBulkOperationITConfig.class)
 public class DinaRepoRestIT extends BaseRestAssuredTest {
 
   @Inject
@@ -268,6 +267,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
 
   @TestConfiguration
   @EntityScan(basePackageClasses = DinaRepoRestIT.class)
+  @Import(ExternalResourceProviderImplementation.class)
   static class DinaRepoBulkOperationITConfig {
     @Bean
     public DinaRepository<ProjectDTO, Project> projectRepo(
