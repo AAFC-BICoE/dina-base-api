@@ -1,5 +1,14 @@
 package ca.gc.aafc.dina.mapper;
 
+import ca.gc.aafc.dina.dto.RelatedEntity;
+import io.crnk.core.resource.annotations.JsonApiRelation;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -14,16 +23,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
-
-import ca.gc.aafc.dina.dto.RelatedEntity;
-import io.crnk.core.resource.annotations.JsonApiRelation;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 
 /**
  * DTO to Entity Bean mapper (and vice-versa). Used to map fields between DTO's
@@ -52,7 +51,7 @@ public class DinaMapper<D, E> {
    * unsure if you can supply the custom field handlers per class.
    * <p>
    * 
-   * @param dtoClass
+   * @param dtoClass - class to map
    */
   public DinaMapper(@NonNull Class<D> dtoClass) {
     this(dtoClass, new HashMap<>(), new HashMap<>(), new HashMap<>());
@@ -194,7 +193,9 @@ public class DinaMapper<D, E> {
     mapFieldsToTarget(source, target, selectedFields, ignoreIf);
     mapRelationsToTarget(source, target, selectedFieldPerClass, relations, visited);
     if (handlers.containsKey(sourceType)) {
-      handlers.get(sourceType).resolveFields(selectedFields, source, target);
+      Set<String> allFields = Stream.concat(selectedFields.stream(), relations.stream())
+        .collect(Collectors.toSet());
+      handlers.get(sourceType).resolveFields(allFields, source, target);
     }
   }
 
@@ -213,8 +214,6 @@ public class DinaMapper<D, E> {
    *                         - target of the mapping
    * @param fieldsPerClass
    *                         - selected fields of the relations source class
-   * @param fieldName
-   *                         - field name of the relation
    * @param visited
    *                         - map of visted objects and there corresponding target.
    */
@@ -227,8 +226,10 @@ public class DinaMapper<D, E> {
     Map<Object, Object> visited
   ) {
     for (String relationFieldName : relations) {
-      if (!hasfield(source.getClass(), relationFieldName)
-          || !hasfield(target.getClass(), relationFieldName)) {
+      if ((handlers.containsKey(source.getClass())
+           && handlers.get(source.getClass()).hasCustomFieldResolver(relationFieldName))
+          || noFieldPresent(source.getClass(), relationFieldName)
+          || noFieldPresent(target.getClass(), relationFieldName)) {
         continue;
       }
 
@@ -280,7 +281,7 @@ public class DinaMapper<D, E> {
       return null;
     }
 
-    if (visited.keySet().contains(source)) {
+    if (visited.containsKey(source)) {
       return visited.get(source);
     }
 
@@ -289,7 +290,7 @@ public class DinaMapper<D, E> {
     Set<String> set1 = relationPerClass.getOrDefault(source.getClass(), Collections.emptySet());
     Set<String> set2 = relationPerClass.getOrDefault(targetType, Collections.emptySet());
 
-    /**
+    /*
      * Here we check which side had the relationships ( source or target ), only one
      * side contains the relationships.
      */
@@ -332,7 +333,6 @@ public class DinaMapper<D, E> {
    *
    * given class is assumed to be a {@link ParameterizedType}
    *
-   * @param <T>
    * @param source    given class
    * @param fieldName field name of the given class to parse
    * @return class of the paramterized type at the first position
@@ -404,13 +404,13 @@ public class DinaMapper<D, E> {
   }
 
   /**
-   * Returns true if the given class has the given field.
+   * Returns true if the given class does not have the given field.
    * 
    * @param cls       - class to check
    * @param fieldName - field to check
-   * @return true if the given class has the given field.
+   * @return true if the given class does not have the given field.
    */
-  private boolean hasfield(Class<?> cls, String fieldName) {
-    return fieldsPerClass.containsKey(cls) && fieldsPerClass.get(cls).contains(fieldName);
+  private boolean noFieldPresent(Class<?> cls, String fieldName) {
+    return !fieldsPerClass.containsKey(cls) || !fieldsPerClass.get(cls).contains(fieldName);
   }
 }
