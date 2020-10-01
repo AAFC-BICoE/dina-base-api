@@ -42,6 +42,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 
 import javax.inject.Inject;
 import javax.persistence.Entity;
@@ -56,10 +57,9 @@ import java.util.UUID;
 
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
-  webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-  classes = {ExternalResourceProviderImplementation.class,
-    DinaRepoRestIT.DinaRepoBulkOperationITConfig.class}
-)
+  webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import({ExternalResourceProviderImplementation.class,
+  DinaRepoRestIT.DinaRepoBulkOperationITConfig.class})
 public class DinaRepoRestIT extends BaseRestAssuredTest {
 
   @Inject
