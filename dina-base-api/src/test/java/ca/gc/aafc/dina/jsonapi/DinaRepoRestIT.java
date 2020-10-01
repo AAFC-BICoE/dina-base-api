@@ -1,14 +1,16 @@
 package ca.gc.aafc.dina.jsonapi;
 
 import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
+import ca.gc.aafc.dina.dto.ExternalRelationDto;
+import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.entity.Project;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
-import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import com.google.common.collect.ImmutableMap;
@@ -19,10 +21,10 @@ import io.crnk.core.engine.http.HttpMethod;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import io.crnk.operations.client.OperationsCall;
 import io.crnk.operations.client.OperationsClient;
+import io.restassured.http.Header;
 import io.restassured.response.ValidatableResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,6 +32,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
@@ -48,18 +51,20 @@ import javax.inject.Inject;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
+
+import static io.restassured.RestAssured.given;
 
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(DinaRepoRestIT.DinaRepoBulkOperationITConfig.class)
 public class DinaRepoRestIT extends BaseRestAssuredTest {
+
+  private static final Header CRNK_HEADER = new Header("crnk-compact", "true");
 
   @Inject
   private CrnkBoot boot;
@@ -232,6 +237,25 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     validatableResponse.body("meta.externalTypes", Matchers.nullValue());
   }
 
+  @Test
+  void externalRelation() {
+    ProjectDTO project1 = createProjectDTO();
+
+    OperationsCall call = operationsClient.createCall();
+    call.add(HttpMethod.POST, project1);
+    call.execute();
+
+    given()
+      .header(CRNK_HEADER)
+      .port(testPort)
+      .basePath(basePath)
+      .queryParams(ImmutableMap.of("include", "acMetaDataCreator"))
+      .get(StringUtils.appendIfMissing(ProjectDTO.RESOURCE_TYPE, "/") +
+           project1.getUuid().toString())
+      .then().log().all(true);
+
+  }
+
   private void assertProject(ProjectDTO expected, ProjectDTO result) {
     Assertions.assertEquals(expected.getUuid(), result.getUuid());
     Assertions.assertEquals(expected.getName(), result.getName());
@@ -249,8 +273,8 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   private static ProjectDTO createProjectDTO() {
     return ProjectDTO.builder()
       .name(RandomStringUtils.randomAlphabetic(5))
-      .acMetaDataCreator(UUID.randomUUID())
-      .originalAuthor(UUID.randomUUID())
+      .acMetaDataCreator(ExternalRelationDto.builder().id(UUID.randomUUID()).build())
+      .originalAuthor(ExternalRelationDto.builder().id(UUID.randomUUID()).build())
       .uuid(UUID.randomUUID())
       .build();
   }
@@ -304,49 +328,6 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         externalResourceProvider
       );
     }
-  }
-
-  @Data
-  @Entity
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static final class Project implements DinaEntity {
-    @Id
-    @GeneratedValue
-    private Integer id;
-    @NaturalId
-    private UUID uuid;
-    private String name;
-    private OffsetDateTime createdOn;
-    private String createdBy;
-    @OneToOne
-    @JoinColumn(name = "task_id")
-    private Task task;
-    private UUID acMetaDataCreator;
-    private UUID originalAuthor;
-  }
-
-  @Data
-  @JsonApiResource(type = ProjectDTO.RESOURCE_TYPE)
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @RelatedEntity(Project.class)
-  @TypeName(ProjectDTO.RESOURCE_TYPE)
-  public static final class ProjectDTO {
-    public static final String RESOURCE_TYPE = "Project";
-    @JsonApiId
-    @org.javers.core.metamodel.annotation.Id
-    @PropertyName("id")
-    private UUID uuid;
-    private String name;
-    @JsonApiRelation
-    private TaskDTO task;
-    @JsonApiExternalRelation(type = "Person")
-    private UUID acMetaDataCreator;
-    @JsonApiExternalRelation(type = "Author")
-    private UUID originalAuthor;
   }
 
   @Data
