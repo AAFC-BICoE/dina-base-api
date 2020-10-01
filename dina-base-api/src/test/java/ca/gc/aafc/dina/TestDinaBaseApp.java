@@ -1,31 +1,14 @@
 package ca.gc.aafc.dina;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.inject.Inject;
-
-import ca.gc.aafc.dina.dto.VocabularyDto;
-import ca.gc.aafc.dina.entity.Vocabulary;
-import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
-import ca.gc.aafc.dina.service.DinaService;
-import org.apache.commons.lang3.StringUtils;
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
-import org.mockito.Mockito;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.context.annotation.Bean;
-
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
+import ca.gc.aafc.dina.dto.VocabularyDto;
 import ca.gc.aafc.dina.entity.ComplexObject;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.entity.Vocabulary;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.filter.RsqlFilterHandler;
 import ca.gc.aafc.dina.filter.SimpleFilterHandler;
@@ -38,10 +21,25 @@ import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
 import ca.gc.aafc.dina.repository.JpaDtoRepository;
 import ca.gc.aafc.dina.repository.JpaRelationshipRepository;
 import ca.gc.aafc.dina.repository.JpaResourceRepository;
+import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
 import ca.gc.aafc.dina.repository.meta.JpaTotalMetaInformationProvider;
 import ca.gc.aafc.dina.service.AuditService;
+import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.service.DinaServiceTest.DinaServiceTestImplementation;
 import ca.gc.aafc.dina.service.GroupAuthorizationService;
+import org.apache.commons.lang3.StringUtils;
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
+import org.mockito.Mockito;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.Bean;
+
+import javax.inject.Inject;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Small test application running on dina-base-api
@@ -171,18 +169,19 @@ public class TestDinaBaseApp {
       dinaMapper,
       PersonDTO.class,
       Person.class,
-      filterResolver);
+      filterResolver,
+      null);
   }
 
   @Bean
   public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(BaseDAO baseDAO) {
     DinaMapper<VocabularyDto, Vocabulary> dinaMapper = new DinaMapper<>(VocabularyDto.class);
     return new ReadOnlyDinaRepository<VocabularyDto, Vocabulary>(
-        new DinaService<>(baseDAO),
-        dinaMapper,
-        VocabularyDto.class,
-        Vocabulary.class,
-        filterResolver);
+      new DinaService<>(baseDAO),
+      dinaMapper,
+      VocabularyDto.class,
+      Vocabulary.class,
+      filterResolver);
   }
 
   /**

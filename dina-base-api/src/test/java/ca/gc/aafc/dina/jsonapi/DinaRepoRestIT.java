@@ -1,11 +1,14 @@
 package ca.gc.aafc.dina.jsonapi;
 
+import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
+import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import com.google.common.collect.ImmutableMap;
@@ -20,12 +23,14 @@ import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import io.crnk.operations.client.OperationsCall;
 import io.crnk.operations.client.OperationsClient;
+import io.restassured.response.ValidatableResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.hamcrest.Matchers;
 import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
@@ -37,6 +42,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 
 import javax.inject.Inject;
 import javax.persistence.Entity;
@@ -51,9 +57,9 @@ import java.util.UUID;
 
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
-  webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-)
-public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
+  webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(DinaRepoRestIT.DinaRepoBulkOperationITConfig.class)
+public class DinaRepoRestIT extends BaseRestAssuredTest {
 
   @Inject
   private CrnkBoot boot;
@@ -64,7 +70,7 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
 
   private OperationsClient operationsClient;
 
-  public DinaRepoBulkOperationIT() {
+  public DinaRepoRestIT() {
     super("");
   }
 
@@ -179,9 +185,58 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     assertProject(project1, projectRepo.findOne(project1.getUuid(), createProjectQuerySpec()));
   }
 
+  @Test
+  void metaInfo_findOne_metaInfoContainsExternalRelation() {
+    ProjectDTO project1 = createProjectDTO();
+    project1.setTask(createTaskDTO());
+
+    OperationsCall call = operationsClient.createCall();
+    call.add(HttpMethod.POST, project1.getTask());
+    call.add(HttpMethod.POST, project1);
+    call.execute();
+
+    ValidatableResponse validatableResponse = super.sendGet(
+      ProjectDTO.RESOURCE_TYPE,
+      project1.getUuid().toString());
+
+    ExternalResourceProviderImplementation.map.forEach((key, value) ->
+      validatableResponse.body("meta.externalTypes." + key, Matchers.equalTo(value)));
+  }
+
+  @Test
+  void metaInfo_findAll_metaInfoContainsExternalRelation() {
+    ProjectDTO project1 = createProjectDTO();
+    ProjectDTO project2 = createProjectDTO();
+
+    OperationsCall call = operationsClient.createCall();
+    call.add(HttpMethod.POST, project1);
+    call.add(HttpMethod.POST, project2);
+    call.execute();
+
+    ValidatableResponse validatableResponse = super.sendGet(ProjectDTO.RESOURCE_TYPE, "");
+    ExternalResourceProviderImplementation.map.forEach((key, value) ->
+      validatableResponse.body("meta.externalTypes." + key, Matchers.equalTo(value)));
+  }
+
+  @Test
+  void metaInfo_WhenNoExternalTypes_ExcludedFromMetaInfo() {
+    TaskDTO taskDTO = createTaskDTO();
+
+    OperationsCall call = operationsClient.createCall();
+    call.add(HttpMethod.POST, taskDTO);
+    call.execute();
+
+    ValidatableResponse validatableResponse = super.sendGet(
+      TaskDTO.RESOURCE_TYPE,
+      taskDTO.getUuid().toString());
+    validatableResponse.body("meta.externalTypes", Matchers.nullValue());
+  }
+
   private void assertProject(ProjectDTO expected, ProjectDTO result) {
     Assertions.assertEquals(expected.getUuid(), result.getUuid());
     Assertions.assertEquals(expected.getName(), result.getName());
+    Assertions.assertEquals(expected.getAcMetaDataCreator(), result.getAcMetaDataCreator());
+    Assertions.assertEquals(expected.getOriginalAuthor(), result.getOriginalAuthor());
     if (expected.getTask() != null) {
       Assertions.assertNotNull(result.getTask());
       Assertions.assertEquals(expected.getTask().getUuid(), result.getTask().getUuid());
@@ -194,6 +249,8 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
   private static ProjectDTO createProjectDTO() {
     return ProjectDTO.builder()
       .name(RandomStringUtils.randomAlphabetic(5))
+      .acMetaDataCreator(UUID.randomUUID())
+      .originalAuthor(UUID.randomUUID())
       .uuid(UUID.randomUUID())
       .build();
   }
@@ -209,12 +266,14 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
   }
 
   @TestConfiguration
-  @EntityScan(basePackageClasses = DinaRepoBulkOperationIT.class)
+  @EntityScan(basePackageClasses = DinaRepoRestIT.class)
+  @Import(ExternalResourceProviderImplementation.class)
   static class DinaRepoBulkOperationITConfig {
     @Bean
     public DinaRepository<ProjectDTO, Project> projectRepo(
       BaseDAO baseDAO,
-      DinaFilterResolver filterResolver
+      DinaFilterResolver filterResolver,
+      ExternalResourceProvider externalResourceProvider
     ) {
       return new DinaRepository<>(
         new DinaService<>(baseDAO),
@@ -223,14 +282,16 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
         new DinaMapper<>(ProjectDTO.class),
         ProjectDTO.class,
         Project.class,
-        filterResolver
+        filterResolver,
+        externalResourceProvider
       );
     }
 
     @Bean
     public DinaRepository<TaskDTO, Task> taskRepo(
       BaseDAO baseDAO,
-      DinaFilterResolver filterResolver
+      DinaFilterResolver filterResolver,
+      ExternalResourceProvider externalResourceProvider
     ) {
       return new DinaRepository<>(
         new DinaService<>(baseDAO),
@@ -239,7 +300,8 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
         new DinaMapper<>(TaskDTO.class),
         TaskDTO.class,
         Task.class,
-        filterResolver
+        filterResolver,
+        externalResourceProvider
       );
     }
   }
@@ -261,6 +323,8 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     @OneToOne
     @JoinColumn(name = "task_id")
     private Task task;
+    private UUID acMetaDataCreator;
+    private UUID originalAuthor;
   }
 
   @Data
@@ -279,6 +343,10 @@ public class DinaRepoBulkOperationIT extends BaseRestAssuredTest {
     private String name;
     @JsonApiRelation
     private TaskDTO task;
+    @JsonApiExternalRelation(type = "Person")
+    private UUID acMetaDataCreator;
+    @JsonApiExternalRelation(type = "Author")
+    private UUID originalAuthor;
   }
 
   @Data

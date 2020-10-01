@@ -5,6 +5,8 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
+import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
@@ -14,11 +16,14 @@ import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.engine.registry.ResourceRegistryAware;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.QuerySpec;
+import io.crnk.core.repository.MetaRepository;
 import io.crnk.core.repository.ResourceRepository;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.list.DefaultResourceList;
 import io.crnk.core.resource.list.ResourceList;
 import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
+import io.crnk.core.resource.meta.MetaInformation;
+import io.crnk.core.resource.meta.PagedMetaInformation;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -53,7 +58,7 @@ import java.util.stream.Collectors;
  */
 @Transactional
 public class DinaRepository<D, E extends DinaEntity>
-  implements ResourceRepository<D, Serializable>, ResourceRegistryAware {
+  implements ResourceRepository<D, Serializable>, ResourceRegistryAware, MetaRepository<D> {
 
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
@@ -71,6 +76,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
   private final Map<Class<?>, Set<String>> entityFieldsPerClass;
+  private final Map<String, String> externalMetaMap;
 
   private static final long DEFAULT_LIMIT = 100;
 
@@ -86,7 +92,8 @@ public class DinaRepository<D, E extends DinaEntity>
     @NonNull DinaMapper<D, E> dinaMapper,
     @NonNull Class<D> resourceClass,
     @NonNull Class<E> entityClass,
-    @NonNull DinaFilterResolver filterResolver
+    @NonNull DinaFilterResolver filterResolver,
+    ExternalResourceProvider externalResourceProvider
   ) {
     this.dinaService = dinaService;
     this.authorizationService = authorizationService;
@@ -100,6 +107,13 @@ public class DinaRepository<D, E extends DinaEntity>
       new HashMap<>(),
       DinaRepository::isNotMappable);
     this.entityFieldsPerClass = getFieldsPerEntity();
+    if (externalResourceProvider != null) {
+      this.externalMetaMap = DinaMetaInfo.parseExternalTypes(
+        resourceClass,
+        externalResourceProvider);
+    } else {
+      this.externalMetaMap = null;
+    }
   }
 
   @Override
@@ -225,6 +239,25 @@ public class DinaRepository<D, E extends DinaEntity>
 
     D dto = dinaMapper.toDto(entity, entityFieldsPerClass, Collections.emptySet());
     auditService.ifPresent(service -> service.auditDeleteEvent(dto));
+  }
+
+  @Override
+  public MetaInformation getMetaInformation(
+    Collection<D> collection, QuerySpec querySpec, MetaInformation metaInformation
+  ) {
+    DinaMetaInfo metaInfo = new DinaMetaInfo();
+    // Set External types
+    metaInfo.setExternalTypes(externalMetaMap);
+    // Set resource counts
+    if (metaInformation instanceof PagedMetaInformation) {
+      PagedMetaInformation pagedMetaInformation = (PagedMetaInformation) metaInformation;
+      if (pagedMetaInformation.getTotalResourceCount() != null) {
+        metaInfo.setTotalResourceCount(pagedMetaInformation.getTotalResourceCount());
+      }
+    } else {
+      metaInfo.setTotalResourceCount((long) collection.size());
+    }
+    return metaInfo;
   }
 
   /**
