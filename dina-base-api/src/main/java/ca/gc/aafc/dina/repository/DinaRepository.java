@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * JSONAPI repository that interfaces using DTOs, and uses JPA entities internally. Sparse fields
@@ -156,10 +157,11 @@ public class DinaRepository<D, E extends DinaEntity>
       Math.toIntExact(querySpec.getOffset()),
       Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
 
-    Set<String> includedRelations = querySpec.getIncludedRelations()
-      .stream()
-      .map(ir -> ir.getAttributePath().get(0))
-      .collect(Collectors.toSet());
+    Set<String> includedRelations = Stream.concat(
+      querySpec.getIncludedRelations().stream().map(ir -> ir.getAttributePath().get(0)),
+      FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
+        .stream().map(Field::getName)
+    ).collect(Collectors.toSet());
 
     List<ResourceField> shallowRelationsToMap = findRelations(resourceClass).stream()
       .filter(resourceField -> includedRelations.stream()
