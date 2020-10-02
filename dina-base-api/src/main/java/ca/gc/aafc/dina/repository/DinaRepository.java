@@ -139,12 +139,25 @@ public class DinaRepository<D, E extends DinaEntity>
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
 
+    List<E> returnedEntities = fetchEntities(ids, querySpec, idName);
+    List<D> dList = mapToDto(querySpec, returnedEntities);
+
+    Long resourceCount = dinaService.getResourceCount(
+      entityClass,
+      (cb, root) -> filterResolver.buildPredicates(querySpec, cb, root, ids, idName));
+
+    DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
+    metaInformation.setTotalResourceCount(resourceCount);
+    return new DefaultResourceList<>(dList, metaInformation, NO_LINK_INFORMATION);
+  }
+
+  private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName) {
     List<IncludeRelationSpec> relationsToEagerLoad = querySpec.getIncludedRelations().stream()
-      .filter(includeRelationSpec -> includeRelationSpec.getAttributePath().stream().noneMatch(
-        relation -> hasAnnotation(resourceClass, relation, JsonApiExternalRelation.class))
+      .filter(ir -> ir.getAttributePath().stream()
+        .noneMatch(rel -> hasAnnotation(resourceClass, rel, JsonApiExternalRelation.class))
       ).collect(Collectors.toList());
 
-    List<E> returnedEntities = dinaService.findAll(
+    return dinaService.findAll(
       entityClass,
       (cb, root) -> {
         DinaFilterResolver.eagerLoadRelations(root, relationsToEagerLoad);
@@ -153,7 +166,9 @@ public class DinaRepository<D, E extends DinaEntity>
       (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
       Math.toIntExact(querySpec.getOffset()),
       Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
+  }
 
+  private List<D> mapToDto(QuerySpec querySpec, List<E> returnedEntities) {
     Set<String> relationsToMap = Stream.concat(
       querySpec.getIncludedRelations().stream().map(ir -> ir.getAttributePath().get(0)),
       FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
@@ -161,31 +176,21 @@ public class DinaRepository<D, E extends DinaEntity>
     ).collect(Collectors.toSet());
 
     List<ResourceField> shallowRelationsToMap = findRelations(resourceClass).stream()
-      .filter(relation ->
-        relationsToMap.stream().noneMatch(relation.getUnderlyingName()::equalsIgnoreCase))
+      .filter(rel -> relationsToMap.stream().noneMatch(rel.getUnderlyingName()::equalsIgnoreCase))
       .collect(Collectors.toList());
 
-    List<D> dtos = returnedEntities.stream()
+    return returnedEntities.stream()
       .map(e -> {
         D dto = dinaMapper.toDto(e, entityFieldsPerClass, relationsToMap);
         mapShallowRelations(e, dto, shallowRelationsToMap);
         return dto;
       })
       .collect(Collectors.toList());
-
-    Long resourceCount = dinaService.getResourceCount(
-      entityClass,
-      (cb, root) -> filterResolver.buildPredicates(querySpec, cb, root, ids, idName));
-
-    DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
-    metaInformation.setTotalResourceCount(resourceCount);
-    return new DefaultResourceList<>(dtos, metaInformation, NO_LINK_INFORMATION);
   }
 
   @Override
   public <S extends D> S save(S resource) {
-    String idFieldName = findIdFieldName(resourceClass);
-    Object id = PropertyUtils.getProperty(resource, idFieldName);
+    Object id = PropertyUtils.getProperty(resource, findIdFieldName(resourceClass));
 
     E entity = dinaService.findOne(id, entityClass);
     authorizationService.ifPresent(auth -> auth.authorizeUpdate(entity));
@@ -195,9 +200,7 @@ public class DinaRepository<D, E extends DinaEntity>
         resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    List<ResourceField> relationFields = findRelations(resourceClass);
-    mapToEntity(resource, entity, relationFields);
-
+    mapToEntity(resource, entity, findRelations(resourceClass));
     dinaService.update(entity);
     auditService.ifPresent(service -> service.audit(resource));
     return resource;
