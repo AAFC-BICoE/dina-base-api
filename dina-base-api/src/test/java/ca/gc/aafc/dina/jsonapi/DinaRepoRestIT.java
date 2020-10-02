@@ -282,8 +282,8 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   private static ProjectDTO createProjectDTO() {
     return ProjectDTO.builder()
       .name(RandomStringUtils.randomAlphabetic(5))
-      .acMetaDataCreator(ExternalRelationDto.builder().id(UUID.randomUUID()).build())
-      .originalAuthor(ExternalRelationDto.builder().id(UUID.randomUUID()).build())
+      .acMetaDataCreator(ExternalRelationDto.builder().id(UUID.randomUUID().toString()).build())
+      .originalAuthor(ExternalRelationDto.builder().id(UUID.randomUUID().toString()).build())
       .uuid(UUID.randomUUID())
       .build();
   }

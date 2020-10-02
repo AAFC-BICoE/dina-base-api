@@ -47,8 +47,9 @@ public final class ProjectDTO {
 
   @CustomFieldResolver(fieldName = "acMetaDataCreator")
   public static ExternalRelationDto acMetaDataCreatorToDTO(@NonNull Project entity) {
-    return entity.getAcMetaDataCreator() ==
-           null ? null : ExternalRelationDto.builder().id(entity.getAcMetaDataCreator()).build();
+    return entity.getAcMetaDataCreator() == null ? null : ExternalRelationDto.builder()
+      .id(entity.getAcMetaDataCreator().toString())
+      .build();
   }
 
   @CustomFieldResolver(fieldName = "acMetaDataCreator")
@@ -59,8 +60,9 @@ public final class ProjectDTO {
 
   @CustomFieldResolver(fieldName = "originalAuthor")
   public static ExternalRelationDto originalAuthorToDTO(@NonNull Project entity) {
-    return entity.getOriginalAuthor() ==
-           null ? null : ExternalRelationDto.builder().id(entity.getOriginalAuthor()).build();
+    return entity.getOriginalAuthor() == null ? null : ExternalRelationDto.builder()
+      .id(entity.getOriginalAuthor().toString())
+      .build();
   }
 
   @CustomFieldResolver(fieldName = "originalAuthor")
