@@ -17,5 +17,5 @@ import java.io.Serializable;
 public class ExternalRelationDto {
   public static final String RESOURCE_TYPE = "external-relation";
   @JsonApiId
-  private Serializable id;
+  private String id;
 }
