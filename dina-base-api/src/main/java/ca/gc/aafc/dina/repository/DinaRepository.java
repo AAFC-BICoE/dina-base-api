@@ -139,8 +139,7 @@ public class DinaRepository<D, E extends DinaEntity>
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
 
-    List<E> returnedEntities = fetchEntities(ids, querySpec, idName);
-    List<D> dList = mapToDto(querySpec, returnedEntities);
+    List<D> dList = mapToDto(querySpec, fetchEntities(ids, querySpec, idName));
 
     Long resourceCount = dinaService.getResourceCount(
       entityClass,
