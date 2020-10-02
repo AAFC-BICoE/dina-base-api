@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
 @JsonApiResource(type = ExternalRelationDto.RESOURCE_TYPE)
 @Data
 @Builder
