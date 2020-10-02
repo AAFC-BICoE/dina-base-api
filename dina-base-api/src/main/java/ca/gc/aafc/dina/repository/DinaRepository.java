@@ -106,15 +106,12 @@ public class DinaRepository<D, E extends DinaEntity>
     this.resourceClass = resourceClass;
     this.entityClass = entityClass;
     this.filterResolver = filterResolver;
-    this.resourceFieldsPerClass = parseFieldsPerClass(
-      resourceClass,
-      new HashMap<>(),
-      DinaRepository::isNotMappable);
+    this.resourceFieldsPerClass =
+      parseFieldsPerClass(resourceClass, new HashMap<>(), DinaRepository::isNotMappable);
     this.entityFieldsPerClass = getFieldsPerEntity();
     if (externalResourceProvider != null) {
-      this.externalMetaMap = DinaMetaInfo.parseExternalTypes(
-        resourceClass,
-        externalResourceProvider);
+      this.externalMetaMap =
+        DinaMetaInfo.parseExternalTypes(resourceClass, externalResourceProvider);
     } else {
       this.externalMetaMap = null;
     }
@@ -157,25 +154,20 @@ public class DinaRepository<D, E extends DinaEntity>
       Math.toIntExact(querySpec.getOffset()),
       Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
 
-    Set<String> includedRelations = Stream.concat(
+    Set<String> relationsToMap = Stream.concat(
       querySpec.getIncludedRelations().stream().map(ir -> ir.getAttributePath().get(0)),
       FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
         .stream().map(Field::getName)
     ).collect(Collectors.toSet());
 
     List<ResourceField> shallowRelationsToMap = findRelations(resourceClass).stream()
-      .filter(resourceField -> includedRelations.stream()
-                                 .noneMatch(resourceField.getUnderlyingName()::equalsIgnoreCase)
-                               &&
-                               !hasAnnotation(
-                                 resourceClass,
-                                 resourceField.getUnderlyingName(),
-                                 JsonApiExternalRelation.class))
+      .filter(relation ->
+        relationsToMap.stream().noneMatch(relation.getUnderlyingName()::equalsIgnoreCase))
       .collect(Collectors.toList());
 
     List<D> dtos = returnedEntities.stream()
       .map(e -> {
-        D dto = dinaMapper.toDto(e, entityFieldsPerClass, includedRelations);
+        D dto = dinaMapper.toDto(e, entityFieldsPerClass, relationsToMap);
         mapShallowRelations(e, dto, shallowRelationsToMap);
         return dto;
       })
@@ -204,23 +196,10 @@ public class DinaRepository<D, E extends DinaEntity>
     }
 
     List<ResourceField> relationFields = findRelations(resourceClass);
-
-    Set<String> relationsToMap = relationFields.stream()
-      .map(ResourceField::getUnderlyingName)
-      .collect(Collectors.toSet());
-    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relationsToMap);
-
-    List<ResourceField> relationsToLink = relationFields.stream()
-      .filter(relation -> !hasAnnotation(
-        resourceClass,
-        relation.getUnderlyingName(),
-        JsonApiExternalRelation.class))
-      .collect(Collectors.toList());
-    linkRelations(entity, relationsToLink);
+    mapToEntity(resource, entity, relationFields);
 
     dinaService.update(entity);
     auditService.ifPresent(service -> service.audit(resource));
-
     return resource;
   }
 
@@ -231,28 +210,27 @@ public class DinaRepository<D, E extends DinaEntity>
     E entity = entityClass.getConstructor().newInstance();
 
     List<ResourceField> relationFields = findRelations(resourceClass);
-
-    Set<String> relationsToMap = relationFields.stream()
-      .map(ResourceField::getUnderlyingName)
-      .collect(Collectors.toSet());
-
-    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relationsToMap);
-
-    List<ResourceField> relationsToLink = relationFields.stream()
-      .filter(relation -> !hasAnnotation(
-        resourceClass,
-        relation.getUnderlyingName(),
-        JsonApiExternalRelation.class))
-      .collect(Collectors.toList());
-    linkRelations(entity, relationsToLink);
+    mapToEntity(resource, entity, relationFields);
 
     authorizationService.ifPresent(auth -> auth.authorizeCreate(entity));
     dinaService.create(entity);
 
-    D dto = dinaMapper.toDto(entity, entityFieldsPerClass, relationsToMap);
+    D dto = dinaMapper.toDto(entity, entityFieldsPerClass,
+      relationFields.stream().map(ResourceField::getUnderlyingName).collect(Collectors.toSet()));
     auditService.ifPresent(service -> service.audit(dto));
-
     return (S) dto;
+  }
+
+  private <S extends D> void mapToEntity(S dto, E entity, List<ResourceField> relationFields) {
+    Set<String> relationsToMap = relationFields.stream()
+      .map(ResourceField::getUnderlyingName).collect(Collectors.toSet());
+    dinaMapper.applyDtoToEntity(dto, entity, resourceFieldsPerClass, relationsToMap);
+
+    List<ResourceField> relationsToLink = relationFields.stream()
+      .filter(relation ->
+        !hasAnnotation(resourceClass, relation.getUnderlyingName(), JsonApiExternalRelation.class))
+      .collect(Collectors.toList());
+    linkRelations(entity, relationsToLink);
   }
 
   @Override
