@@ -3,9 +3,9 @@ package ca.gc.aafc.dina.jsonapi;
 import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.ProjectDTO;
-import ca.gc.aafc.dina.dto.RelatedEntity;
-import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.dto.TaskDTO;
 import ca.gc.aafc.dina.entity.Project;
+import ca.gc.aafc.dina.entity.Task;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
@@ -20,23 +20,14 @@ import io.crnk.core.boot.CrnkBoot;
 import io.crnk.core.engine.http.HttpMethod;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiResource;
 import io.crnk.operations.client.OperationsCall;
 import io.crnk.operations.client.OperationsClient;
 import io.restassured.http.Header;
 import io.restassured.response.ValidatableResponse;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
-import org.hibernate.annotations.NaturalId;
-import org.javers.core.metamodel.annotation.PropertyName;
-import org.javers.core.metamodel.annotation.TypeName;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,10 +39,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
 import javax.inject.Inject;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
@@ -339,38 +326,6 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         externalResourceProvider
       );
     }
-  }
-
-  @Data
-  @Entity
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static final class Task implements DinaEntity {
-    @Id
-    @GeneratedValue
-    private Integer id;
-    @NaturalId
-    private UUID uuid;
-    private int powerLevel;
-    private OffsetDateTime createdOn;
-    private String createdBy;
-  }
-
-  @Data
-  @JsonApiResource(type = TaskDTO.RESOURCE_TYPE)
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @RelatedEntity(Task.class)
-  @TypeName(TaskDTO.RESOURCE_TYPE)
-  public static final class TaskDTO {
-    public static final String RESOURCE_TYPE = "Task";
-    @JsonApiId
-    @org.javers.core.metamodel.annotation.Id
-    @PropertyName("id")
-    private UUID uuid;
-    private int powerLevel;
   }
 
 }

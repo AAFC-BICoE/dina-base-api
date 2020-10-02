@@ -9,8 +9,6 @@ import org.hibernate.annotations.NaturalId;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -19,18 +17,13 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public final class Project implements DinaEntity {
+public final class Task implements DinaEntity {
   @Id
   @GeneratedValue
   private Integer id;
   @NaturalId
   private UUID uuid;
-  private String name;
+  private int powerLevel;
   private OffsetDateTime createdOn;
   private String createdBy;
-  @OneToOne
-  @JoinColumn(name = "task_id")
-  private Task task;
-  private UUID acMetaDataCreator;
-  private UUID originalAuthor;
 }

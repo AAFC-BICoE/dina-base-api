@@ -1,7 +1,6 @@
 package ca.gc.aafc.dina.dto;
 
 import ca.gc.aafc.dina.entity.Project;
-import ca.gc.aafc.dina.jsonapi.DinaRepoRestIT;
 import ca.gc.aafc.dina.mapper.CustomFieldResolver;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import io.crnk.core.resource.annotations.JsonApiId;
@@ -35,7 +34,7 @@ public final class ProjectDTO {
   private String name;
 
   @JsonApiRelation
-  private DinaRepoRestIT.TaskDTO task;
+  private TaskDTO task;
 
   @JsonApiExternalRelation(type = "Person")
   @JsonApiRelation
