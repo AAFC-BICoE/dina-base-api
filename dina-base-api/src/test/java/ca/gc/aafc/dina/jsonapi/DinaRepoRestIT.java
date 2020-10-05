@@ -12,7 +12,6 @@ import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
-import ca.gc.aafc.dina.repository.ExternalRepository;
 import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
@@ -194,7 +193,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
       ProjectDTO.RESOURCE_TYPE,
       project1.getUuid().toString());
 
-    ExternalResourceProviderImplementation.map.forEach((key, value) ->
+    ExternalResourceProviderImplementation.typeToReferenceMap.forEach((key, value) ->
       validatableResponse.body("meta.externalTypes." + key, Matchers.equalTo(value)));
   }
 
@@ -209,7 +208,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     call.execute();
 
     ValidatableResponse validatableResponse = super.sendGet(ProjectDTO.RESOURCE_TYPE, "");
-    ExternalResourceProviderImplementation.map.forEach((key, value) ->
+    ExternalResourceProviderImplementation.typeToReferenceMap.forEach((key, value) ->
       validatableResponse.body("meta.externalTypes." + key, Matchers.equalTo(value)));
   }
 
@@ -334,16 +333,6 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         filterResolver,
         externalResourceProvider
       );
-    }
-
-    @Bean
-    public ExternalRepository<AuthorExternalDTO> authorRepo() {
-      return new ExternalRepository<>(AuthorExternalDTO.class);//TODO create repos at runtime
-    }
-
-    @Bean
-    public ExternalRepository<AgentExternalDTO> agentRepo() {
-      return new ExternalRepository<>(AgentExternalDTO.class);
     }
   }
 
