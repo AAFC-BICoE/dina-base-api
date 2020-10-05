@@ -1,6 +1,8 @@
 package ca.gc.aafc.dina.jsonapi;
 
 import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
+import ca.gc.aafc.dina.dto.AgentExternalDTO;
+import ca.gc.aafc.dina.dto.AuthorExternalDTO;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.TaskDTO;
@@ -10,6 +12,7 @@ import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.repository.ExternalRepository;
 import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
@@ -275,8 +278,8 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   private static ProjectDTO createProjectDTO() {
     return ProjectDTO.builder()
       .name(RandomStringUtils.randomAlphabetic(5))
-      .acMetaDataCreator(ExternalRelationDto.builder().id(UUID.randomUUID().toString()).build())
-      .originalAuthor(ExternalRelationDto.builder().id(UUID.randomUUID().toString()).build())
+      .acMetaDataCreator(AgentExternalDTO.builder().id(UUID.randomUUID().toString()).build())
+      .originalAuthor(AuthorExternalDTO.builder().id(UUID.randomUUID().toString()).build())
       .uuid(UUID.randomUUID())
       .build();
   }
@@ -331,6 +334,16 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         filterResolver,
         externalResourceProvider
       );
+    }
+
+    @Bean
+    public ExternalRepository<AuthorExternalDTO> authorRepo() {
+      return new ExternalRepository<>(AuthorExternalDTO.class);//TODO create repos at runtime
+    }
+
+    @Bean
+    public ExternalRepository<AgentExternalDTO> agentRepo() {
+      return new ExternalRepository<>(AgentExternalDTO.class);
     }
   }
 
