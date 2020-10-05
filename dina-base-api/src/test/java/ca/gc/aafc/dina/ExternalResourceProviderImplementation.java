@@ -10,7 +10,7 @@ import java.util.Map;
 public class ExternalResourceProviderImplementation implements ExternalResourceProvider {
 
   public static final Map<String, String> map = ImmutableMap.of(
-    "Person", "Person/api/v1/person",
+    "Agent", "Agent/api/v1/agent",
     "Author", "Author/api/v1/author");
 
   @Override

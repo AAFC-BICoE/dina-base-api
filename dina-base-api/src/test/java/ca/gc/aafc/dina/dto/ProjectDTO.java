@@ -36,37 +36,37 @@ public final class ProjectDTO {
   @JsonApiRelation
   private TaskDTO task;
 
-  @JsonApiExternalRelation(type = "Person")
+  @JsonApiExternalRelation(type = "Agent")
   @JsonApiRelation
-  private ExternalRelationDto acMetaDataCreator;
+  private AgentExternalDTO acMetaDataCreator;
 
   @JsonApiExternalRelation(type = "Author")
   @JsonApiRelation
-  private ExternalRelationDto originalAuthor;
+  private AuthorExternalDTO originalAuthor;
 
   @CustomFieldResolver(fieldName = "acMetaDataCreator")
-  public static ExternalRelationDto acMetaDataCreatorToDTO(@NonNull Project entity) {
-    return entity.getAcMetaDataCreator() == null ? null : ExternalRelationDto.builder()
+  public static AgentExternalDTO acMetaDataCreatorToDTO(@NonNull Project entity) {
+    return entity.getAcMetaDataCreator() == null ? null : AgentExternalDTO.builder()
       .id(entity.getAcMetaDataCreator().toString())
       .build();
   }
 
   @CustomFieldResolver(fieldName = "acMetaDataCreator")
   public static UUID acMetaDataCreatorToEntity(@NonNull ProjectDTO dto) {
-    return dto.getAcMetaDataCreator() ==
-           null ? null : UUID.fromString((String) dto.getAcMetaDataCreator().getId());
+    return dto.getAcMetaDataCreator() == null ? null : UUID.fromString(dto.getAcMetaDataCreator()
+      .getId());
   }
 
   @CustomFieldResolver(fieldName = "originalAuthor")
-  public static ExternalRelationDto originalAuthorToDTO(@NonNull Project entity) {
-    return entity.getOriginalAuthor() == null ? null : ExternalRelationDto.builder()
+  public static AuthorExternalDTO originalAuthorToDTO(@NonNull Project entity) {
+    return entity.getOriginalAuthor() == null ? null : AuthorExternalDTO.builder()
       .id(entity.getOriginalAuthor().toString())
       .build();
   }
 
   @CustomFieldResolver(fieldName = "originalAuthor")
   public static UUID originalAuthorToEntity(@NonNull ProjectDTO dto) {
-    return dto.getOriginalAuthor() == null ? null : UUID.fromString((String) dto.getOriginalAuthor()
+    return dto.getOriginalAuthor() == null ? null : UUID.fromString(dto.getOriginalAuthor()
       .getId());
   }
 }
