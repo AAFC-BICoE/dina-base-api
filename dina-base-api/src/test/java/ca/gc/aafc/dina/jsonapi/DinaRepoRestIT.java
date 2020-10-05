@@ -225,29 +225,35 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   }
 
   @Test
-  void externalRelation() {
+  void findAll_withExternalRelations_IncludedInResponse() {
     ProjectDTO project1 = createProjectDTO();
 
     OperationsCall call = operationsClient.createCall();
     call.add(HttpMethod.POST, project1);
     call.execute();
 
-    given()
-      .header(CRNK_HEADER)
-      .port(testPort)
-      .basePath(basePath)
+    ValidatableResponse response = given()
+      .header(CRNK_HEADER).port(testPort).basePath(basePath)
       .queryParams(ImmutableMap.of("include", "acMetaDataCreator,originalAuthor"))
-      .get(StringUtils.appendIfMissing(ProjectDTO.RESOURCE_TYPE, "/") +
-           project1.getUuid().toString())
-      .then().log().all(true);
+      .get(
+        StringUtils.appendIfMissing(ProjectDTO.RESOURCE_TYPE, "/")
+        + project1.getUuid().toString())
+      .then();
 
+    response.body(
+      "data.relationships.acMetaDataCreator.data.id",
+      Matchers.equalTo(project1.getAcMetaDataCreator().getId()));
+    response.body(
+      "data.relationships.originalAuthor.data.id",
+      Matchers.equalTo(project1.getOriginalAuthor().getId()));
+    response.log().all(true);//TODO remove me
   }
 
   private void assertProject(ProjectDTO expected, ProjectDTO result) {
     Assertions.assertEquals(expected.getUuid(), result.getUuid());
     Assertions.assertEquals(expected.getName(), result.getName());
-    assertExternalType(expected.getAcMetaDataCreator(),result.getAcMetaDataCreator());
-    assertExternalType(expected.getOriginalAuthor(),result.getOriginalAuthor());
+    assertExternalType(expected.getAcMetaDataCreator(), result.getAcMetaDataCreator());
+    assertExternalType(expected.getOriginalAuthor(), result.getOriginalAuthor());
     if (expected.getTask() != null) {
       Assertions.assertNotNull(result.getTask());
       Assertions.assertEquals(expected.getTask().getUuid(), result.getTask().getUuid());
