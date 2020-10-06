@@ -1,7 +1,5 @@
 package ca.gc.aafc.dina.repository.meta;
 
-import ca.gc.aafc.dina.dto.ExternalRelationDto;
-
 import java.util.Set;
 
 /**
@@ -17,11 +15,6 @@ public interface ExternalResourceProvider {
    */
   String getReferenceForType(String type);
 
-  /**
-   * Returns a set of external DTO types to be supported.
-   *
-   * @return a set of external DTO types.
-   */
-  Set<Class<? extends ExternalRelationDto>> getClasses();
+  Set<String> getClasses();
 
 }

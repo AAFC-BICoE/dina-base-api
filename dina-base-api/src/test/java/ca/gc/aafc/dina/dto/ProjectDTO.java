@@ -36,18 +36,18 @@ public final class ProjectDTO {
   @JsonApiRelation
   private TaskDTO task;
 
-  @JsonApiExternalRelation(type = "Agent")
+  @JsonApiExternalRelation(type = "agent")
   @JsonApiRelation
-  private AgentExternalDTO acMetaDataCreator;
+  private ExternalRelationDto acMetaDataCreator;
 
-  @JsonApiExternalRelation(type = "Author")
+  @JsonApiExternalRelation(type = "author")
   @JsonApiRelation
-  private AuthorExternalDTO originalAuthor;
+  private ExternalRelationDto originalAuthor;
 
   @CustomFieldResolver(fieldName = "acMetaDataCreator")
-  public static AgentExternalDTO acMetaDataCreatorToDTO(@NonNull Project entity) {
-    return entity.getAcMetaDataCreator() == null ? null : AgentExternalDTO.builder()
-      .id(entity.getAcMetaDataCreator().toString())
+  public static ExternalRelationDto acMetaDataCreatorToDTO(@NonNull Project entity) {
+    return entity.getAcMetaDataCreator() == null ? null : ExternalRelationDto.builder()
+      .type("agent").id(entity.getAcMetaDataCreator().toString())
       .build();
   }
 
@@ -58,9 +58,9 @@ public final class ProjectDTO {
   }
 
   @CustomFieldResolver(fieldName = "originalAuthor")
-  public static AuthorExternalDTO originalAuthorToDTO(@NonNull Project entity) {
-    return entity.getOriginalAuthor() == null ? null : AuthorExternalDTO.builder()
-      .id(entity.getOriginalAuthor().toString())
+  public static ExternalRelationDto originalAuthorToDTO(@NonNull Project entity) {
+    return entity.getOriginalAuthor() == null ? null : ExternalRelationDto.builder()
+      .type("author").id(entity.getOriginalAuthor().toString())
       .build();
   }
 

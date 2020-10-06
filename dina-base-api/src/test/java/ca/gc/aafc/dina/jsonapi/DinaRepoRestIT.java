@@ -1,8 +1,6 @@
 package ca.gc.aafc.dina.jsonapi;
 
 import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
-import ca.gc.aafc.dina.dto.AgentExternalDTO;
-import ca.gc.aafc.dina.dto.AuthorExternalDTO;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.TaskDTO;
@@ -15,6 +13,9 @@ import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
+import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIOperationBuilder;
+import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
+import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import com.google.common.collect.ImmutableMap;
 import io.crnk.client.CrnkClient;
 import io.crnk.client.http.inmemory.InMemoryHttpAdapter;
@@ -30,6 +31,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +43,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
 import javax.inject.Inject;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -86,23 +91,41 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
 
   @Test
   void bulkPost_ResourcesCreatedWithRelationships() {
-    ProjectDTO project1 = createProjectDTO();
-    project1.setTask(createTaskDTO());
-    ProjectDTO project2 = createProjectDTO();
-    project2.setTask(createTaskDTO());
+    TaskDTO task = postTask();
+    ProjectDTO project = ProjectDTO.builder().name(RandomStringUtils.randomAlphabetic(5)).build();
 
-    OperationsCall call = operationsClient.createCall();
-    call.add(HttpMethod.POST, project1.getTask());
-    call.add(HttpMethod.POST, project2.getTask());
-    call.add(HttpMethod.POST, project1);
-    call.add(HttpMethod.POST, project2);
-    call.execute();
+    String agentID = UUID.randomUUID().toString();
+    String authorID = UUID.randomUUID().toString();
 
-    Assertions.assertEquals(2, projectRepo.findAll(createProjectQuerySpec()).size());
-    Assertions.assertEquals(2, taskRepo.findAll(new QuerySpec(TaskDTO.class)).size());
+    List<Map<String, Object>> operationMap = JsonAPIOperationBuilder.newBuilder()
+      .addOperation(
+        HttpMethod.POST,
+        ProjectDTO.RESOURCE_TYPE,
+        mapProject(project, agentID, authorID, task.getUuid().toString()))
+      .buildOperation();
 
-    assertProject(project1, projectRepo.findOne(project1.getUuid(), createProjectQuerySpec()));
-    assertProject(project2, projectRepo.findOne(project2.getUuid(), createProjectQuerySpec()));
+    ValidatableResponse operationResponse = sendOperation(operationMap);
+    String resultID = operationResponse.extract().body().jsonPath().getString("[0].data.id");
+    ProjectDTO result = projectRepo.findOne(UUID.fromString(resultID), createProjectQuerySpec());
+
+    Assertions.assertEquals(project.getName(), result.getName());
+    Assertions.assertEquals(agentID, result.getAcMetaDataCreator().getId());
+    Assertions.assertEquals(authorID, result.getOriginalAuthor().getId());
+
+    Assertions.assertEquals(task.getUuid(), result.getTask().getUuid());
+    Assertions.assertEquals(task.getPowerLevel(), result.getTask().getPowerLevel());
+  }
+
+  @NotNull
+  private TaskDTO postTask() {
+    TaskDTO task = TaskDTO.builder().powerLevel(RandomUtils.nextInt()).build();
+    String taskid = sendPost(
+      TaskDTO.RESOURCE_TYPE,
+      JsonAPITestHelper.toJsonAPIMap(TaskDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(task),
+        null,
+        UUID.randomUUID().toString())).extract().body().jsonPath().getString("data.id");
+    task.setUuid(UUID.fromString(taskid));
+    return task;
   }
 
   @Test
@@ -229,30 +252,52 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   @Test
   void findAll_withExternalRelations_IncludedInResponse() {
     ProjectDTO project1 = createProjectDTO();
+    project1.setUuid(null);
+    project1.setAcMetaDataCreator(null);
+    project1.setOriginalAuthor(null);
 
-    OperationsCall call = operationsClient.createCall();
-    call.add(HttpMethod.POST, project1);
-    call.execute();
+    String agentID = UUID.randomUUID().toString();
+    String authorID = UUID.randomUUID().toString();
+    String taskID = UUID.randomUUID().toString();
+
+    String id = sendPost(ProjectDTO.RESOURCE_TYPE, mapProject(project1, agentID, authorID, taskID))
+      .extract().body().jsonPath().getString("data.id");
 
     ValidatableResponse response = given()
       .header(CRNK_HEADER).port(testPort).basePath(basePath)
       .queryParams(ImmutableMap.of("include", "acMetaDataCreator,originalAuthor"))
-      .get(
-        StringUtils.appendIfMissing(ProjectDTO.RESOURCE_TYPE, "/")
-        + project1.getUuid().toString())
+      .get(StringUtils.appendIfMissing(ProjectDTO.RESOURCE_TYPE, "/") + id)
       .then();
 
     response.body(
       "data.relationships.acMetaDataCreator.data.id",
-      Matchers.equalTo(project1.getAcMetaDataCreator().getId()));
+      Matchers.equalTo(agentID));
     response.body(
       "data.relationships.originalAuthor.data.id",
-      Matchers.equalTo(project1.getOriginalAuthor().getId()));
+      Matchers.equalTo(authorID));
     response.log().all(true);//TODO remove me
   }
 
+  @NotNull
+  private Map<String, Object> mapProject(
+    ProjectDTO project,
+    String agentID,
+    String authorID,
+    String taskID
+  ) {
+    return JsonAPITestHelper.toJsonAPIMap(
+      ProjectDTO.RESOURCE_TYPE,
+      JsonAPITestHelper.toAttributeMap(project),
+      JsonAPITestHelper.toRelationshipMap(
+        Arrays.asList(
+          JsonAPIRelationship.of("acMetaDataCreator", "agent", agentID),
+          JsonAPIRelationship.of("originalAuthor", "author", authorID),
+          JsonAPIRelationship.of("task", TaskDTO.RESOURCE_TYPE, taskID))),
+      UUID.randomUUID().toString()
+    );
+  }
+
   private void assertProject(ProjectDTO expected, ProjectDTO result) {
-    Assertions.assertEquals(expected.getUuid(), result.getUuid());
     Assertions.assertEquals(expected.getName(), result.getName());
     assertExternalType(expected.getAcMetaDataCreator(), result.getAcMetaDataCreator());
     assertExternalType(expected.getOriginalAuthor(), result.getOriginalAuthor());
@@ -277,14 +322,11 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   private static ProjectDTO createProjectDTO() {
     return ProjectDTO.builder()
       .name(RandomStringUtils.randomAlphabetic(5))
-      .acMetaDataCreator(AgentExternalDTO.builder().id(UUID.randomUUID().toString()).build())
-      .originalAuthor(AuthorExternalDTO.builder().id(UUID.randomUUID().toString()).build())
-      .uuid(UUID.randomUUID())
       .build();
   }
 
   private static TaskDTO createTaskDTO() {
-    return TaskDTO.builder().uuid(UUID.randomUUID()).powerLevel(RandomUtils.nextInt()).build();
+    return TaskDTO.builder().powerLevel(RandomUtils.nextInt()).build();
   }
 
   private static QuerySpec createProjectQuerySpec() {
