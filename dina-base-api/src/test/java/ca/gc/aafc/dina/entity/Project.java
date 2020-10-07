@@ -28,9 +28,12 @@ public final class Project implements DinaEntity {
   private String name;
   private OffsetDateTime createdOn;
   private String createdBy;
+  //Internal Relation
   @OneToOne
   @JoinColumn(name = "task_id")
   private Task task;
+  // External Relation
   private UUID acMetaDataCreator;
+  // External Relation
   private UUID originalAuthor;
 }
