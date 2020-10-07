@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.repository.meta;
+package ca.gc.aafc.dina.repository.external;
 
 import java.util.Set;
 

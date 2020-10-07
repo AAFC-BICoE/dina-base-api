@@ -1,7 +1,6 @@
-package ca.gc.aafc.dina.repository;
+package ca.gc.aafc.dina.repository.external;
 
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
-import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
 import io.crnk.core.engine.information.resource.ResourceFieldType;
 import io.crnk.core.engine.registry.RegistryEntry;
 import io.crnk.core.engine.registry.RegistryEntryBuilder;

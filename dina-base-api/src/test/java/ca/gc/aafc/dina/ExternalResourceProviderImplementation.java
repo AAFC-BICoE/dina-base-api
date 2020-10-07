@@ -1,6 +1,6 @@
 package ca.gc.aafc.dina;
 
-import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
+import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
