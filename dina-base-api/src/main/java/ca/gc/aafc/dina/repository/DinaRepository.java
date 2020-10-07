@@ -117,6 +117,13 @@ public class DinaRepository<D, E extends DinaEntity>
     }
   }
 
+  /**
+   * Returns a resource with a given id. Relations that are not included in the query spec are
+   * mapped in a shallow form. Relations included in the query spec are eager loaded.
+   *
+   * @param querySpec - query spec of the request
+   * @return - list of resources
+   */
   @Override
   public D findOne(Serializable id, QuerySpec querySpec) {
     querySpec.setLimit(1L);
@@ -130,11 +137,28 @@ public class DinaRepository<D, E extends DinaEntity>
     return resourceList.get(0);
   }
 
+  /**
+   * Returns a list of resources from a given query spec. Relations that are not included in the
+   * query spec are mapped in a shallow form. Relations included in the query spec are eager
+   * loaded.
+   *
+   * @param querySpec - query spec of the request
+   * @return - list of resources
+   */
   @Override
   public ResourceList<D> findAll(QuerySpec querySpec) {
     return findAll(null, querySpec);
   }
 
+  /**
+   * Returns a list of resources from a given collection of ids and a query spec. Relations that are
+   * not included in the query spec are mapped in a shallow form. Relations included in the query
+   * spec are eager loaded.
+   *
+   * @param ids       - ids to query
+   * @param querySpec - query spec of the request
+   * @return - list of resources
+   */
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
