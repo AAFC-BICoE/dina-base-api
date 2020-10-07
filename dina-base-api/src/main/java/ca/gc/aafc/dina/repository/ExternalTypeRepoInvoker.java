@@ -11,6 +11,11 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
+/**
+ * Sets up the external type repositories as provided by a {@link ExternalResourceProvider}. This
+ * component is conditional on a {@link ExternalResourceProvider} being present in the application
+ * context.
+ */
 @Component
 @ConditionalOnBean(ExternalResourceProvider.class)
 public class ExternalTypeRepoInvoker implements InitializingModule {
