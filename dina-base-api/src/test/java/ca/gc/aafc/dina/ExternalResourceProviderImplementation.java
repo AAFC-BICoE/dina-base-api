@@ -20,7 +20,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
   }
 
   @Override
-  public Set<String> getClasses() {
+  public Set<String> getTypes() {
     return typeToReferenceMap.keySet();
   }
 

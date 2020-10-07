@@ -21,7 +21,7 @@ public class ExternalTypeRepoInvoker implements InitializingModule {
 
   @Override
   public void init() {
-    externalResourceProvider.getClasses().forEach(aClass -> {
+    externalResourceProvider.getTypes().forEach(aClass -> {
       RegistryEntryBuilder builder = context.newRegistryEntryBuilder();
 
       RegistryEntryBuilder.ResourceRepositoryEntryBuilder resourceRepository = builder.resourceRepository();

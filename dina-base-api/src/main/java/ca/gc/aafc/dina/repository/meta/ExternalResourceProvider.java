@@ -15,6 +15,11 @@ public interface ExternalResourceProvider {
    */
   String getReferenceForType(String type);
 
-  Set<String> getClasses();
+  /**
+   * Returns a set of the supported types
+   *
+   * @return a set of the supported types
+   */
+  Set<String> getTypes();
 
 }
