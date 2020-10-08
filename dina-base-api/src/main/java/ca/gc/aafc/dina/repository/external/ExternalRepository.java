@@ -9,6 +9,10 @@ import io.crnk.core.resource.list.ResourceList;
 
 import java.util.Collection;
 
+/**
+ * Internal Repository required to mimic relations for ExternalRelationDto's usage. External
+ * relations are not backed by a real resource.
+ */
 @JsonApiExposed(false)
 public class ExternalRepository implements UntypedResourceRepository<ExternalRelationDto, String> {
 
