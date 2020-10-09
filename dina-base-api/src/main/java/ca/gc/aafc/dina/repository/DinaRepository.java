@@ -246,6 +246,7 @@ public class DinaRepository<D, E extends DinaEntity>
     dinaService.create(entity);
 
     D dto = dinaMapper.toDto(entity, entityFieldsPerClass, relationsToMap);
+    mapShallowRelations(entity, dto, relationFields);
     auditService.ifPresent(service -> service.audit(dto));
 
     return (S) dto;
