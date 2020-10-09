@@ -50,7 +50,7 @@ public class DinaMapper<D, E> {
    * Use this constructor if you have no custom fields to resolve or you are
    * unsure if you can supply the custom field handlers per class.
    * <p>
-   * 
+   *
    * @param dtoClass - class to map
    */
   public DinaMapper(@NonNull Class<D> dtoClass) {
@@ -113,7 +113,7 @@ public class DinaMapper<D, E> {
    * Selected fields per class should also contain the relations source class and
    * target fields to map.
    * <p>
-   * 
+   *
    * @param entity                - source of the mapping
    * @param selectedFieldPerClass - selected fields of source classes to map
    * @param relations             - Set of relation field names
@@ -187,8 +187,7 @@ public class DinaMapper<D, E> {
     visited.putIfAbsent(source, target);
     Class<?> sourceType = source.getClass();
     Set<String> selectedFields = selectedFieldPerClass.getOrDefault(sourceType, new HashSet<>());
-    Predicate<String> ignoreIf = field -> handlers.containsKey(sourceType)
-        && handlers.get(sourceType).hasCustomFieldResolver(field);
+    Predicate<String> ignoreIf = field -> hasResolvers(field, sourceType);
 
     mapFieldsToTarget(source, target, selectedFields, ignoreIf);
     mapRelationsToTarget(source, target, selectedFieldPerClass, relations, visited);
@@ -226,33 +225,34 @@ public class DinaMapper<D, E> {
     Map<Object, Object> visited
   ) {
     for (String relationFieldName : relations) {
-      if ((handlers.containsKey(source.getClass())
-           && handlers.get(source.getClass()).hasCustomFieldResolver(relationFieldName))
-          || noFieldPresent(source.getClass(), relationFieldName)
-          || noFieldPresent(target.getClass(), relationFieldName)) {
-        continue;
-      }
+      if (!hasResolvers(relationFieldName, source.getClass())
+          && containsField(relationFieldName, source.getClass(), target.getClass())) {
 
-      // Each relation requires a sepearte tracking set
-      Map<Object, Object> currentVisited = new IdentityHashMap<>(visited);
+        // Each relation requires a separate tracking set
+        Map<Object, Object> currentVisited = new IdentityHashMap<>(visited);
 
-      Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, relationFieldName);
-      Class<?> targetType = getResolvedType(target, relationFieldName);
+        Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, relationFieldName);
+        Class<?> targetType = getResolvedType(target, relationFieldName);
 
-      Object sourceRelation = PropertyUtils.getProperty(source, relationFieldName);
-      Object targetRelation = null;
+        Object sourceRelation = PropertyUtils.getProperty(source, relationFieldName);
+        Object targetRelation = null;
 
-      if (sourceRelation != null) {
-        if (isCollection(sourceRelationType)) {
-          targetRelation = ((Collection<?>) sourceRelation).stream()
-            .map(ele -> mapRelation(fieldsPerClass, ele, targetType, currentVisited))
-            .collect(Collectors.toCollection(ArrayList::new));
-        } else {
-          targetRelation = mapRelation(fieldsPerClass, sourceRelation, targetType, currentVisited);
+        if (sourceRelation != null) {
+          if (isCollection(sourceRelationType)) {
+            targetRelation = ((Collection<?>) sourceRelation).stream()
+              .map(ele -> mapRelation(fieldsPerClass, ele, targetType, currentVisited))
+              .collect(Collectors.toCollection(ArrayList::new));
+          } else {
+            targetRelation = mapRelation(
+              fieldsPerClass,
+              sourceRelation,
+              targetType,
+              currentVisited);
+          }
         }
-      }
 
-      PropertyUtils.setProperty(target, relationFieldName, targetRelation);
+        PropertyUtils.setProperty(target, relationFieldName, targetRelation);
+      }
     }
   }
 
@@ -348,7 +348,7 @@ public class DinaMapper<D, E> {
   /**
    * Returns the resolved type of a fieldname for a given source. If the type is a
    * collection, the first generic type is returned.
-   * 
+   *
    * @param source
    *                    - source object of the field
    * @param fieldName
@@ -363,7 +363,7 @@ public class DinaMapper<D, E> {
 
   /**
    * Returns true if the given class is a collection
-   * 
+   *
    * @param clazz
    *                - class to check
    * @return true if the given class is a collection
@@ -374,7 +374,7 @@ public class DinaMapper<D, E> {
 
   /**
    * Returns the JsonApiRelations for a given class.
-   * 
+   *
    * @param cls
    *              - class to parse
    * @return JsonApiRelations for a given class
@@ -385,7 +385,7 @@ public class DinaMapper<D, E> {
 
   /**
    * Returns the JsonApiRelation field names for a given class.
-   * 
+   *
    * @param cls - class to parse
    * @return JsonApiRelations field names for a given class
    */
@@ -395,7 +395,7 @@ public class DinaMapper<D, E> {
 
   /**
    * Returns a set of field names for a given class.
-   * 
+   *
    * @param cls - class to parse
    * @return set of field names for a given class.
    */
@@ -404,13 +404,26 @@ public class DinaMapper<D, E> {
   }
 
   /**
-   * Returns true if the given class does not have the given field.
-   * 
-   * @param cls       - class to check
-   * @param fieldName - field to check
-   * @return true if the given class does not have the given field.
+   * Returns true if the given classes all contain the given field.
+   *
+   * @param field   field to check
+   * @param classes classes to check
+   * @return true if the given classes all contain the given field.
    */
-  private boolean noFieldPresent(Class<?> cls, String fieldName) {
-    return !fieldsPerClass.containsKey(cls) || !fieldsPerClass.get(cls).contains(fieldName);
+  private boolean containsField(String field, Class<?>... classes) {
+    return Stream.of(classes).allMatch(aClass ->
+      fieldsPerClass.containsKey(aClass) && fieldsPerClass.get(aClass).contains(field));
+  }
+
+  /**
+   * Returns true if the given class and field have custom field resolvers tracked by the mapper
+   *
+   * @param field  field to check
+   * @param aClass class to check
+   * @return rue if the given class and field have custom field resolvers tracked by the mapper.
+   */
+  private boolean hasResolvers(String field, Class<?> aClass) {
+    return handlers.containsKey(aClass)
+           && handlers.get(aClass).hasCustomFieldResolver(field);
   }
 }
