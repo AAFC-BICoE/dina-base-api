@@ -1,13 +1,12 @@
 package ca.gc.aafc.dina.auditing;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.UUID;
-
-import javax.inject.Inject;
-
+import ca.gc.aafc.dina.DinaUserConfig;
+import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.dto.DepartmentDto;
+import ca.gc.aafc.dina.dto.PersonDTO;
+import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.repository.JpaResourceRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.javers.core.Javers;
 import org.javers.core.metamodel.object.CdoSnapshot;
@@ -17,14 +16,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import ca.gc.aafc.dina.DinaUserConfig;
-import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.dto.PersonDTO;
-import ca.gc.aafc.dina.entity.Person;
-import ca.gc.aafc.dina.repository.DinaRepository;
+import javax.inject.Inject;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(
-  classes = { TestDinaBaseApp.class, DinaUserConfig.class },
+  classes = {TestDinaBaseApp.class, DinaUserConfig.class},
   properties = "dina.auditing.enabled = true")
 public class DinaRepoAuditingIT {
 
@@ -33,6 +33,9 @@ public class DinaRepoAuditingIT {
 
   @Inject
   private DinaRepository<PersonDTO, Person> dinaRepository;
+
+  @Inject
+  private JpaResourceRepository<DepartmentDto> departmentRepository;
 
   @Inject
   private NamedParameterJdbcTemplate jdbcTemplate;
@@ -44,7 +47,13 @@ public class DinaRepoAuditingIT {
 
   @Test
   public void create_SnapShotsPersisted() {
-    UUID id = dinaRepository.create(createPersonDto()).getUuid();
+    DepartmentDto department = DepartmentDto.builder().location("loc").build();
+    department.setUuid(departmentRepository.create(department).getUuid());
+
+    PersonDTO personDto = createPersonDto();
+    personDto.setDepartment(department);
+    UUID id = dinaRepository.create(personDto).getUuid();
+
     CdoSnapshot result = javers.getLatestSnapshot(id.toString(), PersonDTO.class).get();
     assertEquals(SnapshotType.INITIAL, result.getType());
     assertEquals(DinaUserConfig.AUTH_USER_NAME, result.getCommitMetadata().getAuthor());
@@ -52,9 +61,16 @@ public class DinaRepoAuditingIT {
 
   @Test
   public void update_SnapShotsPersisted() {
-    UUID id = dinaRepository.create(createPersonDto()).getUuid();
+    DepartmentDto department = DepartmentDto.builder().location("loc").build();
+    department.setUuid(departmentRepository.create(department).getUuid());
 
-    dinaRepository.save(PersonDTO.builder().uuid(id).name(RandomStringUtils.random(4)).build());
+    UUID id = dinaRepository.create(createPersonDto()).getUuid();
+    PersonDTO personDTO = PersonDTO.builder()
+      .uuid(id)
+      .department(department)
+      .name(RandomStringUtils.random(4)).build();
+
+    dinaRepository.save(personDTO);
     CdoSnapshot result = javers.getLatestSnapshot(id.toString(), PersonDTO.class).get();
     assertEquals(SnapshotType.UPDATE, result.getType());
     assertEquals(DinaUserConfig.AUTH_USER_NAME, result.getCommitMetadata().getAuthor());
@@ -71,8 +87,12 @@ public class DinaRepoAuditingIT {
   }
 
   private void cleanSnapShotRepo() {
-    jdbcTemplate.update("DELETE FROM jv_snapshot where commit_fk IS NOT null", Collections.emptyMap());
-    jdbcTemplate.update("DELETE FROM jv_commit where commit_pk IS NOT null", Collections.emptyMap());
+    jdbcTemplate.update(
+      "DELETE FROM jv_snapshot where commit_fk IS NOT null",
+      Collections.emptyMap());
+    jdbcTemplate.update(
+      "DELETE FROM jv_commit where commit_pk IS NOT null",
+      Collections.emptyMap());
   }
 
   private PersonDTO createPersonDto() {

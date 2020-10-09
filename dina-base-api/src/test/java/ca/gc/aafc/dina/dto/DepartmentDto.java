@@ -12,6 +12,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.javers.core.metamodel.annotation.Id;
+import org.javers.core.metamodel.annotation.PropertyName;
+import org.javers.core.metamodel.annotation.TypeName;
 
 @Data
 @JsonApiResource(type = "department")
@@ -19,9 +22,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @RelatedEntity(Department.class)
+@TypeName("department")
 public class DepartmentDto {
 
   @JsonApiId
+  @Id
+  @PropertyName("id")
   private UUID uuid;
 
   private String name;
@@ -31,7 +37,7 @@ public class DepartmentDto {
   @DerivedDtoField
   private Integer employeeCount;
 
-  @JsonApiRelation(opposite = "department")
+  @JsonApiRelation(mappedBy = "department")
   private List<EmployeeDto> employees;
 
 }
