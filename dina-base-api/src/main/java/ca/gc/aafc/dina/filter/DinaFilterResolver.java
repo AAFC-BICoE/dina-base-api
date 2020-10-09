@@ -68,7 +68,7 @@ public class DinaFilterResolver {
       restrictions.add(root.get(idFieldName).in(ids));
     }
 
-    return restrictions.stream().toArray(Predicate[]::new);
+    return restrictions.toArray(Predicate[]::new);
   }
 
   /**
@@ -83,7 +83,7 @@ public class DinaFilterResolver {
    *               - critera builder to build orders
    * @param root
    *               - root path of entity
-   * @return
+   * @return a list of {@link Order} from a given {@link CriteriaBuilder} and {@link Path}
    */
   public static <T> List<Order> getOrders(QuerySpec qs, CriteriaBuilder cb, Path<T> root) {
     return qs.getSort().stream().map(sort -> {
@@ -98,11 +98,11 @@ public class DinaFilterResolver {
   /**
    * Adds left joins for eager Loading the relationships of a given query spec to a given root.
    *
-   * @param querySpec - querySpec containing relations
    * @param root      - root path to add joins
+   * @param includedRelations - relations to map
    */
-  public static void eagerLoadRelations(QuerySpec querySpec, Root<?> root) {
-    for (IncludeRelationSpec relation : querySpec.getIncludedRelations()) {
+  public static void eagerLoadRelations(Root<?> root, List<IncludeRelationSpec> includedRelations) {
+    for (IncludeRelationSpec relation : includedRelations) {
       FetchParent<?, ?> join = root;
       for (String path : relation.getAttributePath()) {
         join = join.fetch(path, JoinType.LEFT);
