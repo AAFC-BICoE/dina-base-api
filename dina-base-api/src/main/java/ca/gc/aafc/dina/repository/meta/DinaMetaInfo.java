@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.repository.meta;
 
+import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
 import lombok.NonNull;

@@ -6,7 +6,8 @@ import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
-import ca.gc.aafc.dina.repository.meta.ExternalResourceProvider;
+import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
+import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
@@ -15,6 +16,7 @@ import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.engine.registry.ResourceRegistryAware;
 import io.crnk.core.exception.ResourceNotFoundException;
+import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.MetaRepository;
 import io.crnk.core.repository.ResourceRepository;
@@ -33,6 +35,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -48,6 +51,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * JSONAPI repository that interfaces using DTOs, and uses JPA entities internally. Sparse fields
@@ -102,15 +106,12 @@ public class DinaRepository<D, E extends DinaEntity>
     this.resourceClass = resourceClass;
     this.entityClass = entityClass;
     this.filterResolver = filterResolver;
-    this.resourceFieldsPerClass = parseFieldsPerClass(
-      resourceClass,
-      new HashMap<>(),
-      DinaRepository::isNotMappable);
+    this.resourceFieldsPerClass =
+      parseFieldsPerClass(resourceClass, new HashMap<>(), DinaRepository::isNotMappable);
     this.entityFieldsPerClass = getFieldsPerEntity();
     if (externalResourceProvider != null) {
-      this.externalMetaMap = DinaMetaInfo.parseExternalTypes(
-        resourceClass,
-        externalResourceProvider);
+      this.externalMetaMap =
+        DinaMetaInfo.parseExternalTypes(resourceClass, externalResourceProvider);
     } else {
       this.externalMetaMap = null;
     }
@@ -162,33 +163,7 @@ public class DinaRepository<D, E extends DinaEntity>
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
 
-    List<E> returnedEntities = dinaService.findAll(
-      entityClass,
-      (cb, root) -> {
-        DinaFilterResolver.eagerLoadRelations(querySpec, root);
-        return filterResolver.buildPredicates(querySpec, cb, root, ids, idName);
-      },
-      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
-      Math.toIntExact(querySpec.getOffset()),
-      Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
-
-    Set<String> includedRelations = querySpec.getIncludedRelations()
-      .stream()
-      .map(ir -> ir.getAttributePath().get(0))
-      .collect(Collectors.toSet());
-
-    List<ResourceField> shallowRelationsToMap = findRelations(resourceClass).stream()
-      .filter(resourceField -> includedRelations.stream()
-        .noneMatch(resourceField.getUnderlyingName()::equalsIgnoreCase))
-      .collect(Collectors.toList());
-
-    List<D> dtos = returnedEntities.stream()
-      .map(e -> {
-        D dto = dinaMapper.toDto(e, entityFieldsPerClass, includedRelations);
-        mapShallowRelations(e, dto, shallowRelationsToMap);
-        return dto;
-      })
-      .collect(Collectors.toList());
+    List<D> dList = mapToDto(querySpec, fetchEntities(ids, querySpec, idName));
 
     Long resourceCount = dinaService.getResourceCount(
       entityClass,
@@ -196,13 +171,49 @@ public class DinaRepository<D, E extends DinaEntity>
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
-    return new DefaultResourceList<>(dtos, metaInformation, NO_LINK_INFORMATION);
+    return new DefaultResourceList<>(dList, metaInformation, NO_LINK_INFORMATION);
+  }
+
+  private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName) {
+    List<IncludeRelationSpec> relationsToEagerLoad = querySpec.getIncludedRelations().stream()
+      .filter(ir -> ir.getAttributePath().stream()
+        .noneMatch(rel -> hasAnnotation(resourceClass, rel, JsonApiExternalRelation.class))
+      ).collect(Collectors.toList());
+
+    return dinaService.findAll(
+      entityClass,
+      (cb, root) -> {
+        DinaFilterResolver.eagerLoadRelations(root, relationsToEagerLoad);
+        return filterResolver.buildPredicates(querySpec, cb, root, ids, idName);
+      },
+      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
+      Math.toIntExact(querySpec.getOffset()),
+      Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
+  }
+
+  private List<D> mapToDto(QuerySpec querySpec, List<E> returnedEntities) {
+    Set<String> relationsToMap = Stream.concat(
+      querySpec.getIncludedRelations().stream().map(ir -> ir.getAttributePath().get(0)),
+      FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
+        .stream().map(Field::getName)
+    ).collect(Collectors.toSet());
+
+    List<ResourceField> shallowRelationsToMap = findRelations(resourceClass).stream()
+      .filter(rel -> relationsToMap.stream().noneMatch(rel.getUnderlyingName()::equalsIgnoreCase))
+      .collect(Collectors.toList());
+
+    return returnedEntities.stream()
+      .map(e -> {
+        D dto = dinaMapper.toDto(e, entityFieldsPerClass, relationsToMap);
+        mapShallowRelations(e, dto, shallowRelationsToMap);
+        return dto;
+      })
+      .collect(Collectors.toList());
   }
 
   @Override
   public <S extends D> S save(S resource) {
-    String idFieldName = findIdFieldName(resourceClass);
-    Object id = PropertyUtils.getProperty(resource, idFieldName);
+    Object id = PropertyUtils.getProperty(resource, findIdFieldName(resourceClass));
 
     E entity = dinaService.findOne(id, entityClass);
     authorizationService.ifPresent(auth -> auth.authorizeUpdate(entity));
@@ -212,17 +223,9 @@ public class DinaRepository<D, E extends DinaEntity>
         resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    List<ResourceField> relationFields = findRelations(resourceClass);
-    Set<String> relationsToMap = relationFields.stream()
-      .map(ResourceField::getUnderlyingName)
-      .collect(Collectors.toSet());
-
-    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relationsToMap);
-    linkRelations(entity, relationFields);
-
+    mapToEntity(resource, entity, findRelations(resourceClass));
     dinaService.update(entity);
     auditService.ifPresent(service -> service.audit(resource));
-
     return resource;
   }
 
@@ -233,23 +236,27 @@ public class DinaRepository<D, E extends DinaEntity>
     E entity = entityClass.getConstructor().newInstance();
 
     List<ResourceField> relationFields = findRelations(resourceClass);
-
-    Set<String> relationsToMap = relationFields.stream()
-      .map(ResourceField::getUnderlyingName)
-      .collect(Collectors.toSet());
-
-    dinaMapper.applyDtoToEntity(resource, entity, resourceFieldsPerClass, relationsToMap);
-
-    linkRelations(entity, relationFields);
+    mapToEntity(resource, entity, relationFields);
 
     authorizationService.ifPresent(auth -> auth.authorizeCreate(entity));
     dinaService.create(entity);
 
-    D dto = dinaMapper.toDto(entity, entityFieldsPerClass, relationsToMap);
-    mapShallowRelations(entity, dto, relationFields);
+    D dto = dinaMapper.toDto(entity, entityFieldsPerClass,
+      relationFields.stream().map(ResourceField::getUnderlyingName).collect(Collectors.toSet()));
     auditService.ifPresent(service -> service.audit(dto));
-
     return (S) dto;
+  }
+
+  private <S extends D> void mapToEntity(S dto, E entity, List<ResourceField> relationFields) {
+    Set<String> relationsToMap = relationFields.stream()
+      .map(ResourceField::getUnderlyingName).collect(Collectors.toSet());
+    dinaMapper.applyDtoToEntity(dto, entity, resourceFieldsPerClass, relationsToMap);
+
+    List<ResourceField> relationsToLink = relationFields.stream()
+      .filter(relation ->
+        !hasAnnotation(resourceClass, relation.getUnderlyingName(), JsonApiExternalRelation.class))
+      .collect(Collectors.toList());
+    linkRelations(entity, relationsToLink);
   }
 
   @Override
@@ -451,21 +458,26 @@ public class DinaRepository<D, E extends DinaEntity>
    * @return - true if the dina repo should not map the given field
    */
   private static boolean isNotMappable(Field field) {
-    return isGenerated(field.getDeclaringClass(), field.getName())
+    return hasAnnotation(field.getDeclaringClass(), field.getName(), DerivedDtoField.class)
            || Modifier.isFinal(field.getModifiers());
   }
 
   /**
-   * Returns true if a dto field is generated and read-only (Marked with {@link DerivedDtoField}).
+   * Returns true if the given class has a given field with an annotation of a given type.
    *
-   * @param <T>   - Class type
-   * @param clazz - class of the field
-   * @param field - field to check
+   * @param <T>             - Class type
+   * @param clazz           - class of the field
+   * @param field           - field to check
+   * @param annotationClass - annotation that is present
    * @return true if a dto field is generated and read-only
    */
   @SneakyThrows(NoSuchFieldException.class)
-  private static <T> boolean isGenerated(Class<T> clazz, String field) {
-    return clazz.getDeclaredField(field).isAnnotationPresent(DerivedDtoField.class);
+  private static <T> boolean hasAnnotation(
+    Class<T> clazz,
+    String field,
+    Class<? extends Annotation> annotationClass
+  ) {
+    return clazz.getDeclaredField(field).isAnnotationPresent(annotationClass);
   }
 
   /**
