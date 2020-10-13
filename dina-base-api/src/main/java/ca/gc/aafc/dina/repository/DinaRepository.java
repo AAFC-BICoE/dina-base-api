@@ -5,8 +5,8 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DerivedDtoField;
 import ca.gc.aafc.dina.mapper.DinaMapper;
-import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
+import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
@@ -243,6 +243,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
     D dto = dinaMapper.toDto(entity, entityFieldsPerClass,
       relationFields.stream().map(ResourceField::getUnderlyingName).collect(Collectors.toSet()));
+    mapShallowRelations(entity, dto, relationFields);
     auditService.ifPresent(service -> service.audit(dto));
     return (S) dto;
   }
