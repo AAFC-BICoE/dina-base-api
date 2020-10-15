@@ -491,7 +491,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_accessing_the_auditing_endpoint">7.3. Accessing the Auditing Endpoint</a></li>
 </ul>
 </li>
-<li><a href="#_releasing_dina_base_api">8. Releasing dina-base-api</a></li>
+<li><a href="#_external_types_guide">8. External Types Guide</a>
+<ul class="sectlevel2">
+<li><a href="#_set_up_your_entity">8.1. Set up your entity</a></li>
+<li><a href="#_set_up_your_dto">8.2. Set up your DTO</a></li>
+<li><a href="#_set_up_your_external_resource_provider_component">8.3. Set up your External Resource Provider Component</a></li>
+</ul>
+</li>
+<li><a href="#_releasing_dina_base_api">9. Releasing dina-base-api</a></li>
 </ul>
 </div>
 </div>
@@ -1058,7 +1065,106 @@ public class PersonDTO {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releasing_dina_base_api">8. Releasing dina-base-api</h2>
+<h2 id="_external_types_guide">8. External Types Guide</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_set_up_your_entity">8.1. Set up your entity</h3>
+<div class="paragraph">
+<p>Your entity needs to hold the identifier of the resource in a field.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">  private UUID acMetaDataCreator;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_set_up_your_dto">8.2. Set up your DTO</h3>
+<div class="sect3">
+<h4 id="_1_field_declaration">8.2.1. 1) Field declaration</h4>
+<div class="paragraph">
+<p>Your Dto needs to declare the type of the field as a <code>ExternalRelationDto</code> and provide the needed annotations. The <code>JsonApiExternalRelation</code> type is the name of the resource type.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">  @JsonApiExternalRelation(type = "agent")
+  @JsonApiRelation
+  private ExternalRelationDto acMetaDataCreator;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_2_custom_field_resolvers">8.2.2. 2) Custom field resolvers</h4>
+<div class="paragraph">
+<p>Your Dto needs to provide the functions to map the External Types of the entity to the External Types of the Dto and vice versa.</p>
+</div>
+<div class="paragraph">
+<p>An example of such functions for this example would look like the following.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">  @CustomFieldResolver(fieldName = "acMetaDataCreator")
+  public static ExternalRelationDto acMetaDataCreatorToDTO(@NonNull Project entity) {
+    return entity.getAcMetaDataCreator() == null ? null : ExternalRelationDto.builder()
+      .type("agent").id(entity.getAcMetaDataCreator().toString())
+      .build();
+  }
+
+  @CustomFieldResolver(fieldName = "acMetaDataCreator")
+  public static UUID acMetaDataCreatorToEntity(@NonNull ProjectDTO dto) {
+    return dto.getAcMetaDataCreator() == null ? null : UUID.fromString(dto.getAcMetaDataCreator()
+      .getId());
+  }</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_set_up_your_external_resource_provider_component">8.3. Set up your External Resource Provider Component</h3>
+<div class="paragraph">
+<p>You need to create a component implementing an <code>ExternalResourceProvider</code>. A simple example would look like the following.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">@Component
+public class ExternalResourceProviderImplementation implements ExternalResourceProvider {
+
+  public static final Map&lt;String, String&gt; typeToReferenceMap = ImmutableMap.of(
+    "agent", "Agent/api/v1/agent");
+
+  @Override
+  public String getReferenceForType(String type) {
+    return typeToReferenceMap.get(type);
+  }
+
+  @Override
+  public Set&lt;String&gt; getTypes() {
+    return typeToReferenceMap.keySet();
+  }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Finally, you need to pass your <code>ExternalResourceProvider</code> to your <code>DinaRepo</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"> public DinaRepository&lt;ProjectDTO, Project&gt; projectRepo(
+      BaseDAO baseDAO,
+      DinaFilterResolver filterResolver,
+      ExternalResourceProvider externalResourceProvider
+    ) {
+      return new DinaRepository&lt;&gt;(
+        ...
+        externalResourceProvider
+      );</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_releasing_dina_base_api">9. Releasing dina-base-api</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The process of releasing dina-base-api is partially automated.</p>
@@ -1130,7 +1236,7 @@ public class PersonDTO {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-09-25 18:31:10 UTC
+Last updated 2020-10-15 17:20:06 UTC
 </div>
 </div>
 </body>
