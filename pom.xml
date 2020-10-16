@@ -6,7 +6,7 @@
 
   <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.38-SNAPSHOT</version>
+  <version>0.39-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
@@ -37,7 +37,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>11</java.version>
 
-    <crnk.version>3.3.20200920055408</crnk.version>
+    <crnk.version>3.2.20200419165537</crnk.version>
 
     <!-- Build plugin properties -->
     <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>

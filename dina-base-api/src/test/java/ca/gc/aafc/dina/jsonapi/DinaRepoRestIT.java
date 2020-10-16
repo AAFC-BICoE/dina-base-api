@@ -4,6 +4,7 @@ import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.TaskDTO;
+import ca.gc.aafc.dina.entity.ComplexObject;
 import ca.gc.aafc.dina.entity.Project;
 import ca.gc.aafc.dina.entity.Task;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
@@ -146,7 +147,6 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
       ProjectDTO.RESOURCE_TYPE,
       sendProjectByOperations(sendTask()).getUuid().toString());
     ValidatableResponse findAll = super.sendGet(ProjectDTO.RESOURCE_TYPE, "");
-
     ExternalResourceProviderImplementation.typeToReferenceMap.forEach((key, value) ->
     {
       findOne.body("meta.externalTypes." + key, Matchers.equalTo(value));
@@ -183,6 +183,16 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     response.body("data.relationships.originalAuthor.data.type", Matchers.equalTo("author"));
   }
 
+  @Test
+  void jsonIncludeNonEmpty_WhenCollectionPresent_SerializesCollection() {
+    ValidatableResponse findOne = super.sendGet(
+      ProjectDTO.RESOURCE_TYPE,
+      sendProjectByOperations(sendTask()).getUuid().toString());
+    ValidatableResponse findAll = super.sendGet(ProjectDTO.RESOURCE_TYPE, "");
+    findOne.body("data.attributes.nameTranslations", Matchers.notNullValue());
+    findAll.body("data[0].attributes.nameTranslations", Matchers.notNullValue());
+  }
+
   private TaskDTO sendTask() {
     TaskDTO task = TaskDTO.builder().powerLevel(RandomUtils.nextInt()).build();
     UUID uuid = UUID.randomUUID();
@@ -194,7 +204,9 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   }
 
   private ProjectDTO sendProjectByOperations(TaskDTO task) {
-    ProjectDTO project = ProjectDTO.builder().name(RandomStringUtils.randomAlphabetic(5)).build();
+    ProjectDTO project = ProjectDTO.builder()
+      .nameTranslations(Collections.singletonList(ComplexObject.builder().name("complex").build()))
+      .name(RandomStringUtils.randomAlphabetic(5)).build();
     String agentID = UUID.randomUUID().toString();
     String authorID = UUID.randomUUID().toString();
 
