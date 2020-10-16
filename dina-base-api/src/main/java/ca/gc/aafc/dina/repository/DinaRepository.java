@@ -241,9 +241,9 @@ public class DinaRepository<D, E extends DinaEntity>
     authorizationService.ifPresent(auth -> auth.authorizeCreate(entity));
     dinaService.create(entity);
 
-    D dto = dinaMapper.toDto(entity, entityFieldsPerClass,
-      relationFields.stream().map(ResourceField::getUnderlyingName).collect(Collectors.toSet()));
-    mapShallowRelations(entity, dto, relationFields);
+    D dto = findOne(
+      (Serializable) PropertyUtils.getProperty(entity, findIdFieldName(resourceClass)),
+      new QuerySpec(resourceClass));
     auditService.ifPresent(service -> service.audit(dto));
     return (S) dto;
   }
