@@ -5,14 +5,14 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>dina-base-workbook</artifactId>
+  <artifactId>dina-workbook</artifactId>
   <name>dina-base-api</name>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <parent>
     <groupId>ca.gc.aafc</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.38-SNAPSHOT</version>
+    <version>0.39-SNAPSHOT</version>
   </parent>
 
   <properties>
@@ -31,7 +31,7 @@
     <repository>
       <id>bintray-aafc-bice-BICoE</id>
       <name>aafc-bice-BICoE</name>
-      <url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-base-workbook/;publish=1;</url>
+      <url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-workbook/;publish=1;</url>
     </repository>
   </distributionManagement>
 

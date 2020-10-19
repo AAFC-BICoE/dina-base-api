@@ -21,6 +21,7 @@
 
   <modules>
     <module>dina-base-api</module>
+    <module>dina-workbook</module>
     <module>dina-test-support</module>
   </modules>
 

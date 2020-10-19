@@ -81,8 +81,8 @@ public final class SpreadsheetHelper {
         return Optional.empty();
       }
 
-      if (value.equals("1") || value.equals("0")) {
-        value = String.valueOf(BooleanUtils.toBoolean(Integer.valueOf(value)));
+      if ("1".equals(value) || "0".equals(value)) {
+        value = String.valueOf(BooleanUtils.toBoolean(Integer.parseInt(value)));
       }
 
       Boolean result = BooleanUtils.toBooleanObject(value);
@@ -147,7 +147,7 @@ public final class SpreadsheetHelper {
    *          the {@link Cell} object with the integer value as numeric or string.
    * @return Optional containing the integer value of the cell content or Optional.empty()
    * @throws NumberFormatException
-   *           if the cell value doens't represent an integer
+   *           if the cell value doesn't represent an integer
    */
   public static Optional<Integer> getCellAsInteger(Cell cell) {
     if (cell == null) {
@@ -167,7 +167,7 @@ public final class SpreadsheetHelper {
    *          the {@link Cell} object with the content as numeric or string.
    * @return Optional with the double value of the cell contents or Optional.empty()
    * @throws NumberFormatException
-   *           if the cell value doens't represent a double
+   *           if the cell value doesn't represent a double
    */
   public static Optional<Double> getCellAsDouble(Cell cell) {
     if (cell == null) {
@@ -221,23 +221,24 @@ public final class SpreadsheetHelper {
 
     CellType effectiveCellType = cell.getCellType() == CellType.FORMULA ? cell.getCachedFormulaResultType() : cell.getCellType();
     switch (effectiveCellType) {
-    case STRING:
-      value = cell.getStringCellValue();
-      break;
-    case BLANK:
-      value = null;
-      break;
-    case BOOLEAN:
-      value = String.valueOf(cell.getBooleanCellValue());
-      break;
-    case NUMERIC:
-      double n = cell.getNumericCellValue();
-      if (Math.ceil(n) == Math.floor(n)) {
-        value = String.valueOf(Math.round(n));
-      } else {
-        value = String.valueOf(n);
-      }
-      break;
+      case STRING:
+        value = cell.getStringCellValue();
+        break;
+      case BLANK:
+        value = null;
+        break;
+      case BOOLEAN:
+        value = String.valueOf(cell.getBooleanCellValue());
+        break;
+      case NUMERIC:
+        double n = cell.getNumericCellValue();
+        if (Math.ceil(n) == Math.floor(n)) {
+          value = String.valueOf(Math.round(n));
+        } else {
+          value = String.valueOf(n);
+        }
+        break;
+      default: //noop, continue
     }
 
     if (value != null) {

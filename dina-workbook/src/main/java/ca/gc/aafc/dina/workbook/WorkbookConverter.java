@@ -1,9 +1,8 @@
 package ca.gc.aafc.dina.workbook;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Builder;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -16,10 +15,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class WorkbookConverter {
+@SuppressFBWarnings({ "EI_EXPOSE_REP", "EI_EXPOSE_REP2" })
+public final class WorkbookConverter {
 
   // Utility class
-  private WorkbookConverter() {}
+  private WorkbookConverter() { }
 
   /**
    * Converts the first sheet of a Workbook into a list of WorkbookRow.
