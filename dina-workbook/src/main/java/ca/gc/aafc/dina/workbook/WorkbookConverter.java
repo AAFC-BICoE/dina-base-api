@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.workbook;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Builder;
 import lombok.Getter;
 import org.apache.poi.ss.usermodel.Row;
@@ -14,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+@SuppressFBWarnings({ "EI_EXPOSE_REP", "EI_EXPOSE_REP2" })
 public final class WorkbookConverter {
 
   // Utility class
