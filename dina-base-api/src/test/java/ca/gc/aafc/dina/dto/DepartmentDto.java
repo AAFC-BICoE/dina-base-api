@@ -34,4 +34,6 @@ public class DepartmentDto {
   @JsonApiRelation(opposite = "department")
   private List<EmployeeDto> employees;
 
+  private PersonDTO departmentHead;
+
 }

@@ -29,8 +29,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
+import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
+import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.service.DinaService;
@@ -312,6 +314,20 @@ public class DinaRepositoryIT {
   public void findAll_NothingPersisted_ReturnsEmpty() {
     List<PersonDTO> result = dinaRepository.findAll(null, new QuerySpec(PersonDTO.class));
     assertEquals(0, result.size());
+  }
+
+  @Test
+  /** Tests the fix from #20605 for an error on nested include relations. */
+  public void findAll_whenNestedIncludeRequested_noErrorThrown() {
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.setIncludedRelations(
+      List.of(
+        new IncludeRelationSpec(List.of("department")),
+        new IncludeRelationSpec(List.of("department", "departmentHead")),
+        new IncludeRelationSpec(List.of("department", "departmentHead", "department"))
+      ));
+    
+    dinaRepository.findAll(querySpec);
   }
 
   @Test
