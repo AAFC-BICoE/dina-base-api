@@ -40,4 +40,6 @@ public class DepartmentDto {
   @JsonApiRelation(mappedBy = "department")
   private List<EmployeeDto> employees;
 
+  private PersonDTO departmentHead;
+
 }

@@ -176,9 +176,17 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName) {
     List<IncludeRelationSpec> relationsToEagerLoad = querySpec.getIncludedRelations().stream()
-      .filter(ir -> ir.getAttributePath().stream()
-        .noneMatch(rel -> hasAnnotation(resourceClass, rel, JsonApiExternalRelation.class))
-      ).collect(Collectors.toList());
+      .filter(ir -> {
+        // Skip eager loading on JsonApiExternalRelation-marked fields:
+        Class<?> dtoClass = querySpec.getResourceClass();
+        for (String attr : ir.getAttributePath()) {
+          if (hasAnnotation(dtoClass, attr, JsonApiExternalRelation.class)) {
+            return false;
+          }
+          dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
+        }
+        return true;
+      }).collect(Collectors.toList());
 
     return dinaService.findAll(
       entityClass,
