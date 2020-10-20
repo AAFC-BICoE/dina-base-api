@@ -1,0 +1,84 @@
+= External Types Guide
+
+== Set up your entity
+
+Your entity needs to hold the identifier of the resource in a field.
+
+[source,java]
+----
+  private UUID acMetaDataCreator;
+----
+
+== Set up your DTO
+
+=== 1) Field declaration
+
+Your Dto needs to declare the type of the field as a `ExternalRelationDto` and provide the needed annotations. The `JsonApiExternalRelation` type is the name of the resource type.
+
+[source,java]
+----
+  @JsonApiExternalRelation(type = "agent")
+  @JsonApiRelation
+  private ExternalRelationDto acMetaDataCreator;
+----
+
+=== 2) Custom field resolvers
+
+Your Dto needs to provide the functions to map the External Types of the entity to the External Types of the Dto and vice versa.
+
+An example of such functions for this example would look like the following.
+
+[source,java]
+----
+  @CustomFieldResolver(fieldName = "acMetaDataCreator")
+  public static ExternalRelationDto acMetaDataCreatorToDTO(@NonNull Project entity) {
+    return entity.getAcMetaDataCreator() == null ? null : ExternalRelationDto.builder()
+      .type("agent").id(entity.getAcMetaDataCreator().toString())
+      .build();
+  }
+
+  @CustomFieldResolver(fieldName = "acMetaDataCreator")
+  public static UUID acMetaDataCreatorToEntity(@NonNull ProjectDTO dto) {
+    return dto.getAcMetaDataCreator() == null ? null : UUID.fromString(dto.getAcMetaDataCreator()
+      .getId());
+  }
+----
+
+== Set up your External Resource Provider Component
+
+You need to create a component implementing an `ExternalResourceProvider`. A simple example would look like the following.
+
+[source,java]
+----
+@Component
+public class ExternalResourceProviderImplementation implements ExternalResourceProvider {
+
+  public static final Map<String, String> typeToReferenceMap = ImmutableMap.of(
+    "agent", "Agent/api/v1/agent");
+
+  @Override
+  public String getReferenceForType(String type) {
+    return typeToReferenceMap.get(type);
+  }
+
+  @Override
+  public Set<String> getTypes() {
+    return typeToReferenceMap.keySet();
+  }
+}
+----
+
+Finally, you need to pass your `ExternalResourceProvider` to your `DinaRepo`.
+
+[source,java]
+----
+ public DinaRepository<ProjectDTO, Project> projectRepo(
+      BaseDAO baseDAO,
+      DinaFilterResolver filterResolver,
+      ExternalResourceProvider externalResourceProvider
+    ) {
+      return new DinaRepository<>(
+        ...
+        externalResourceProvider
+      );
+----

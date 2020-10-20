@@ -13,8 +13,6 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import ca.gc.aafc.dina.testsupport.entity.ComplexObject;
-import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
-import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import lombok.Data;
 
 public class JsonAPITestHelperTest {
@@ -65,7 +63,7 @@ public class JsonAPITestHelperTest {
 
     TestObject myTestObj = createTestObject();
 
-    Map<String, Object> relationshipMap = new HashMap<String, Object>();
+    Map<String, Object> relationshipMap = new HashMap<>();
     relationshipMap.put("uploadedBy", myTestObj);
 
     Map<String, Object> jsonAPIMap = JsonAPITestHelper.toJsonAPIMap("metadata", attributeMap, 
@@ -79,26 +77,26 @@ public class JsonAPITestHelperTest {
     assertTrue(dataMap.containsKey("attributes"));
     assertTrue(dataMap.containsKey("relationships"));
     
-    assertTrue(dataMap.get("id").equals("30ef7300-baf4-4ab0-b3e0-7f841c3d211e"));
-    assertTrue(dataMap.get("type").equals("metadata"));
+    assertEquals("30ef7300-baf4-4ab0-b3e0-7f841c3d211e", dataMap.get("id"));
+    assertEquals("metadata", dataMap.get("type"));
     
     Map<String, Object> attributesMap = (Map<String, Object>) dataMap.get("attributes");    
     
     
     assertTrue(attributesMap.containsKey("bucket"));
     assertTrue(attributesMap.containsKey("dcFormat"));
-    assertTrue((attributesMap.get("bucket").equals("myBucket")));
-    assertTrue((attributesMap.get("dcFormat").equals("image")));
+    assertEquals("myBucket", attributesMap.get("bucket"));
+    assertEquals("image", attributesMap.get("dcFormat"));
     
-    Map<String, Object> relationshipsMap = (Map<String, Object>) dataMap.get("relationships");    
-    
-    assertTrue(relationshipsMap.get("uploadedBy").equals(myTestObj));    
+    Map<String, Object> relationshipsMap = (Map<String, Object>) dataMap.get("relationships");
+
+    assertEquals(myTestObj, relationshipsMap.get("uploadedBy"));
   }
   
   @SuppressWarnings("unchecked")
   @Test
   public void toRelationshipMap_whenGivenRelationshipObjectList_thenReturnProperRelationshipMap() {
-    List<JsonAPIRelationship> relationshipList = new ArrayList<JsonAPIRelationship>();
+    List<JsonAPIRelationship> relationshipList = new ArrayList<>();
     relationshipList.add(RELATIONSHIP);  
 
     Map<String, Object> relationshipMap = JsonAPITestHelper.toRelationshipMap(relationshipList);
@@ -111,7 +109,18 @@ public class JsonAPITestHelperTest {
     assertEquals( relationshipData.get("id"), "947f77ee-d144-45b5-b559-e239db0caa18");
     assertEquals( relationshipData.get("type"), "metadata");
     
-  }  
-  
+  }
+  @SuppressWarnings("unchecked")
+  @Test
+  public void toJsonAPIMap_whenGivenAnObject_thenReturnJsonApiMap() {
+
+    TestObject myTestObj = createTestObject();
+
+    Map<String, Object> jsonMap = JsonAPITestHelper.toJsonAPIMap("test12", myTestObj);
+    Map<String, Object> dataMap = (Map<String, Object>) jsonMap.get("data");
+    Map<String, Object> attributesMap = (Map<String, Object>)dataMap.get("attributes");
+
+    assertTrue(attributesMap.containsKey("email"));
+  }
 
 }

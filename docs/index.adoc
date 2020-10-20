@@ -18,4 +18,6 @@ include::authorization.adoc[]
 
 include::auditing.adoc[]
 
+include::externalTypes.adoc[]
+
 include::release.adoc[]

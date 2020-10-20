@@ -65,6 +65,15 @@ public class BaseRestAssuredTest {
       .basePath(basePath);
   }
 
+  /**
+   * Send GET from a specific identifier from basePath
+   * @param id
+   * @return
+   */
+  protected ValidatableResponse sendGet(String id) {
+    return sendGet("", id, HttpStatus.OK.value());
+  }
+
   protected ValidatableResponse sendGet(String path, String id) {
     return sendGet(path, id, HttpStatus.OK.value());
   }
@@ -75,6 +84,15 @@ public class BaseRestAssuredTest {
 
     return response.then()
       .statusCode(expectedReturnCode);
+  }
+
+  /**
+   * Send a POST to basePath.
+   * @param body
+   * @return
+   */
+  protected ValidatableResponse sendPost(Object body) {
+    return sendPost("", body, HttpStatus.CREATED.value());
   }
 
   protected ValidatableResponse sendPost(String path, Object body) {
@@ -90,6 +108,16 @@ public class BaseRestAssuredTest {
     return response.then()
       .log().ifValidationFails()
       .statusCode(expectedReturnCode);
+  }
+
+  /**
+   * Send a PATCH to basePath.
+   * @param id
+   * @param body
+   * @return
+   */
+  protected ValidatableResponse sendPatch(String id, Object body) {
+    return sendPatch("", id, body, HttpStatus.OK.value());
   }
 
   protected ValidatableResponse sendPatch(String path, String id, Object body) {
@@ -109,6 +137,14 @@ public class BaseRestAssuredTest {
 
   protected void sendDelete(String path, String id) {
     sendDelete(path, id, HttpStatus.NO_CONTENT.value());
+  }
+
+  /**
+   * Send DELETE to basePath.
+   * @param id
+   */
+  protected void sendDelete(String id) {
+    sendDelete("", id, HttpStatus.NO_CONTENT.value());
   }
 
   protected void sendDelete(String path, String id, int expectedReturnCode) {
