@@ -2,29 +2,26 @@ package ca.gc.aafc.dina.repository.meta;
 
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.collect.ImmutableMap;
 import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
+import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * Meta information to be returned in a JSON response.
  */
+@Getter
+@Setter
 public class DinaMetaInfo extends DefaultPagedMetaInformation {
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  private Map<String, String> externalTypes;
-
-  public Map<String, String> getExternalTypes() {
-    return externalTypes;
-  }
-
-  public void setExternalTypes(Map<String, String> externalTypes) {
-    this.externalTypes = externalTypes;
-  }
+  private List<Map<String, String>> external;
 
   /**
    * Returns a map of a given classes {@link JsonApiExternalRelation} types mapped to their current
@@ -35,7 +32,7 @@ public class DinaMetaInfo extends DefaultPagedMetaInformation {
    * @return Returns a map of a given classes {@link JsonApiExternalRelation} types mapped to their
    * current reference
    */
-  public static Map<String, String> parseExternalTypes(
+  public static List<Map<String, String>> parseExternalTypes(
     @NonNull Class<?> clazz,
     @NonNull ExternalResourceProvider provider
   ) {
@@ -43,6 +40,8 @@ public class DinaMetaInfo extends DefaultPagedMetaInformation {
       .stream()
       .map(field -> field.getAnnotation(JsonApiExternalRelation.class).type())
       .distinct()
-      .collect(Collectors.toMap(Function.identity(), provider::getReferenceForType));
+      .map(s -> ImmutableMap.of("type", s, "href", provider.getReferenceForType(s)))
+      .collect(Collectors.toList());
   }
+
 }

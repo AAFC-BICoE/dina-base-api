@@ -147,11 +147,12 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
       ProjectDTO.RESOURCE_TYPE,
       sendProjectByOperations(sendTask()).getUuid().toString());
     ValidatableResponse findAll = super.sendGet(ProjectDTO.RESOURCE_TYPE, "");
-    ExternalResourceProviderImplementation.typeToReferenceMap.forEach((key, value) ->
-    {
-      findOne.body("meta.externalTypes." + key, Matchers.equalTo(value));
-      findAll.body("meta.externalTypes." + key, Matchers.equalTo(value));
-    });
+    findOne.body("meta.external[0].type", Matchers.equalTo("agent"));
+    findOne.body("meta.external[0].href", Matchers.equalTo(
+      ExternalResourceProviderImplementation.typeToReferenceMap.get("agent")));
+    findOne.body("meta.external[1].type", Matchers.equalTo("author"));
+    findOne.body("meta.external[1].href", Matchers.equalTo(
+      ExternalResourceProviderImplementation.typeToReferenceMap.get("author")));
   }
 
   @Test
@@ -159,7 +160,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     ValidatableResponse validatableResponse = super.sendGet(
       TaskDTO.RESOURCE_TYPE,
       sendTask().getUuid().toString());
-    validatableResponse.body("meta.externalTypes", Matchers.nullValue());
+    validatableResponse.body("meta.external", Matchers.nullValue());
   }
 
   @Test
