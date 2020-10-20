@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -21,6 +20,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
@@ -33,8 +33,8 @@ import io.crnk.core.engine.information.bean.BeanInformation;
 import lombok.NonNull;
 
 /**
- * Base Data Access Object layer. This class should be the only one holding a reference to the
- * {@link EntityManager}.
+ * Base Data Access Object layer. This class should be the only one holding a
+ * reference to the {@link EntityManager}.
  *
  */
 @Component
@@ -57,7 +57,8 @@ public class BaseDAO {
   }
 
   /**
-   * Utility function that can check if a lazy loaded attribute is actually loaded.
+   * Utility function that can check if a lazy loaded attribute is actually
+   * loaded.
    * 
    * @param entity
    * @param fieldName
@@ -72,8 +73,8 @@ public class BaseDAO {
   }
 
   /**
-   * Find an entity by it's natural ID or database ID. The method assumes that the naturalId is
-   * unique.
+   * Find an entity by it's natural ID or database ID. The method assumes that the
+   * naturalId is unique.
    * 
    * @param id
    * @param entityClass
@@ -84,7 +85,8 @@ public class BaseDAO {
   }
 
   /**
-   * Find an entity by it's {@link NaturalId}. The method assumes that the naturalId is unique.
+   * Find an entity by it's {@link NaturalId}. The method assumes that the
+   * naturalId is unique.
    * 
    * @param id
    * @param entityClass
@@ -96,7 +98,8 @@ public class BaseDAO {
   }
 
   /**
-   * Find an entity by a specific property. The method assumes that the property is unique.
+   * Find an entity by a specific property. The method assumes that the property
+   * is unique.
    * 
    * @param clazz
    * @param property
@@ -121,22 +124,31 @@ public class BaseDAO {
   }
 
   /**
-   * Check for the existence of a record by natural id (as uuid).
+   * Check for the existence of a record by natural id.
    * 
    * @param uuid
    * @param entityClass
    * @return
    */
-  public boolean existsByNaturalId(UUID uuid, Class<?> entityClass) {
+  public <T> boolean existsByNaturalId(
+    @NonNull Object naturalId,
+    @NonNull Class<T> entityClass
+  ) {
     CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-    CriteriaQuery<Long> cq = cb.createQuery(Long.class);
-    Root<?> from = cq.from(entityClass);
+    CriteriaQuery<Boolean> cq = cb.createQuery(Boolean.class);
+    Root<T> from = cq.from(entityClass);
 
-    cq.select(cb.count(from));
-    cq.where(cb.equal(from.get(getNaturalIdFieldName(entityClass)), uuid));
+    Subquery<T> existsSubquery = cq.subquery(entityClass);
+    existsSubquery.select(existsSubquery.from(entityClass))
+      .where(
+        cb.equal(
+          from.get(getNaturalIdFieldName(entityClass)),
+          naturalId));
 
-    TypedQuery<Long> tq = entityManager.createQuery(cq);
-    return tq.getSingleResult() > 0;
+    cq.select(cb.exists(existsSubquery));
+
+    TypedQuery<Boolean> tq = entityManager.createQuery(cq);
+    return tq.getResultList().size() > 0 ? tq.getResultList().get(0) : false;
   }
 
   /**

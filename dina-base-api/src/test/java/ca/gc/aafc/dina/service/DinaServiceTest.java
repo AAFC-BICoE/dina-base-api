@@ -3,8 +3,10 @@ package ca.gc.aafc.dina.service;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -220,6 +222,18 @@ public class DinaServiceTest {
       .name(RandomStringUtils.random(5))
       .location(RandomStringUtils.random(5))
       .build();
+  }
+
+  @Test
+  public void exists_whenRecordExists_returnsTrue() {
+    Department result = persistDepartment();
+    assertTrue(serviceUnderTest.exists(Department.class, result.getUuid()));
+    serviceUnderTest.delete(result);
+  }
+
+  @Test
+  public void exists_whenRecordDoesNotExist_returnsFalse() {
+    assertFalse(serviceUnderTest.exists(Department.class, UUID.randomUUID()));
   }
 
   public static class DinaServiceTestImplementation extends DinaService<Department> {
