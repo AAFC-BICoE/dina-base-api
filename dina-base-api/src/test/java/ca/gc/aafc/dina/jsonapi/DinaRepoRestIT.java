@@ -143,15 +143,18 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
 
   @Test
   void metaInfo_find_metaInfoContainsExternalRelation() {
-    ValidatableResponse findOne = super.sendGet(
+    validateMetaOfResponse(super.sendGet(
       ProjectDTO.RESOURCE_TYPE,
-      sendProjectByOperations(sendTask()).getUuid().toString());
-    ValidatableResponse findAll = super.sendGet(ProjectDTO.RESOURCE_TYPE, "");
-    findOne.body("meta.external[0].type", Matchers.equalTo("agent"));
-    findOne.body("meta.external[0].href", Matchers.equalTo(
+      sendProjectByOperations(sendTask()).getUuid().toString()));
+    validateMetaOfResponse(super.sendGet(ProjectDTO.RESOURCE_TYPE, ""));
+  }
+
+  private static void validateMetaOfResponse(ValidatableResponse response) {
+    response.body("meta.external[0].type", Matchers.equalTo("agent"));
+    response.body("meta.external[0].href", Matchers.equalTo(
       ExternalResourceProviderImplementation.typeToReferenceMap.get("agent")));
-    findOne.body("meta.external[1].type", Matchers.equalTo("author"));
-    findOne.body("meta.external[1].href", Matchers.equalTo(
+    response.body("meta.external[1].type", Matchers.equalTo("author"));
+    response.body("meta.external[1].href", Matchers.equalTo(
       ExternalResourceProviderImplementation.typeToReferenceMap.get("author")));
   }
 
