@@ -80,7 +80,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
   private final Map<Class<?>, Set<String>> entityFieldsPerClass;
-  private final Map<String, String> externalMetaMap;
+  private final List<Map<String, String>> externalMetaMap;
 
   private static final long DEFAULT_LIMIT = 100;
 
@@ -288,7 +288,7 @@ public class DinaRepository<D, E extends DinaEntity>
   ) {
     DinaMetaInfo metaInfo = new DinaMetaInfo();
     // Set External types
-    metaInfo.setExternalTypes(externalMetaMap);
+    metaInfo.setExternal(externalMetaMap);
     // Set resource counts
     if (metaInformation instanceof PagedMetaInformation) {
       PagedMetaInformation pagedMetaInformation = (PagedMetaInformation) metaInformation;

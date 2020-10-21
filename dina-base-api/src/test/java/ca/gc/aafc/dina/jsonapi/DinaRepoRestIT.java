@@ -143,15 +143,19 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
 
   @Test
   void metaInfo_find_metaInfoContainsExternalRelation() {
-    ValidatableResponse findOne = super.sendGet(
+    validateMetaOfResponse(super.sendGet(
       ProjectDTO.RESOURCE_TYPE,
-      sendProjectByOperations(sendTask()).getUuid().toString());
-    ValidatableResponse findAll = super.sendGet(ProjectDTO.RESOURCE_TYPE, "");
-    ExternalResourceProviderImplementation.typeToReferenceMap.forEach((key, value) ->
-    {
-      findOne.body("meta.externalTypes." + key, Matchers.equalTo(value));
-      findAll.body("meta.externalTypes." + key, Matchers.equalTo(value));
-    });
+      sendProjectByOperations(sendTask()).getUuid().toString()));
+    validateMetaOfResponse(super.sendGet(ProjectDTO.RESOURCE_TYPE, ""));
+  }
+
+  private static void validateMetaOfResponse(ValidatableResponse response) {
+    response.body("meta.external[0].type", Matchers.equalTo("agent"));
+    response.body("meta.external[0].href", Matchers.equalTo(
+      ExternalResourceProviderImplementation.typeToReferenceMap.get("agent")));
+    response.body("meta.external[1].type", Matchers.equalTo("author"));
+    response.body("meta.external[1].href", Matchers.equalTo(
+      ExternalResourceProviderImplementation.typeToReferenceMap.get("author")));
   }
 
   @Test
@@ -159,7 +163,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     ValidatableResponse validatableResponse = super.sendGet(
       TaskDTO.RESOURCE_TYPE,
       sendTask().getUuid().toString());
-    validatableResponse.body("meta.externalTypes", Matchers.nullValue());
+    validatableResponse.body("meta.external", Matchers.nullValue());
   }
 
   @Test
