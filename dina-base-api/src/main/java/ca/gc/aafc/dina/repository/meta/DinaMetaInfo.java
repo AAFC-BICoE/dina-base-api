@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.repository.meta;
 
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.google.common.collect.ImmutableMap;
 import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
 import lombok.Getter;
 import lombok.NonNull;
@@ -40,7 +39,7 @@ public class DinaMetaInfo extends DefaultPagedMetaInformation {
       .stream()
       .map(field -> field.getAnnotation(JsonApiExternalRelation.class).type())
       .distinct()
-      .map(s -> ImmutableMap.of("type", s, "href", provider.getReferenceForType(s)))
+      .map(s -> Map.of("type", s, "href", provider.getReferenceForType(s)))
       .collect(Collectors.toList());
   }
 
