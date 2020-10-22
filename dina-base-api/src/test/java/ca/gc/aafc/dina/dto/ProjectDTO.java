@@ -50,29 +50,4 @@ public final class ProjectDTO {
   @JsonApiRelation
   private ExternalRelationDto originalAuthor;
 
-  @CustomFieldResolver(fieldName = "acMetaDataCreator")
-  public static ExternalRelationDto acMetaDataCreatorToDTO(@NonNull Project entity) {
-    return entity.getAcMetaDataCreator() == null ? null : ExternalRelationDto.builder()
-      .type("agent").id(entity.getAcMetaDataCreator().toString())
-      .build();
-  }
-
-  @CustomFieldResolver(fieldName = "acMetaDataCreator")
-  public static UUID acMetaDataCreatorToEntity(@NonNull ProjectDTO dto) {
-    return dto.getAcMetaDataCreator() == null ? null : UUID.fromString(dto.getAcMetaDataCreator()
-      .getId());
-  }
-
-  @CustomFieldResolver(fieldName = "originalAuthor")
-  public static ExternalRelationDto originalAuthorToDTO(@NonNull Project entity) {
-    return entity.getOriginalAuthor() == null ? null : ExternalRelationDto.builder()
-      .type("author").id(entity.getOriginalAuthor().toString())
-      .build();
-  }
-
-  @CustomFieldResolver(fieldName = "originalAuthor")
-  public static UUID originalAuthorToEntity(@NonNull ProjectDTO dto) {
-    return dto.getOriginalAuthor() == null ? null : UUID.fromString(dto.getOriginalAuthor()
-      .getId());
-  }
 }

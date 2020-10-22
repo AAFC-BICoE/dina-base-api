@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.mapper;
 
+import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.service.DinaService;
@@ -25,16 +26,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class DinaMappingLayer<D, E> {
 
   private final Class<D> resourceClass;
   private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
   private final Map<Class<?>, Set<String>> entityFieldsPerClass;
+  private final Set<String> externalRelations;
   private final DinaMapper<D, E> dinaMapper;
   private final DinaService<?> dinaService;
 
@@ -49,6 +51,9 @@ public class DinaMappingLayer<D, E> {
     this.entityFieldsPerClass = getFieldsPerEntity();
     this.dinaService = dinaService;
     this.dinaMapper = dinaMapper;
+    this.externalRelations = FieldUtils
+      .getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
+      .stream().map(Field::getName).collect(Collectors.toSet());
   }
 
   public List<D> mapEntitiesToDto(
@@ -56,23 +61,50 @@ public class DinaMappingLayer<D, E> {
     @NonNull List<E> entities,
     @NonNull List<ResourceField> relations
   ) {
-    Set<String> relationsToMap = Stream.concat(
-      query.getIncludedRelations().stream().map(ir -> ir.getAttributePath().get(0)),
-      FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
-        .stream().map(Field::getName)
-    ).collect(Collectors.toSet());
+    Set<String> relationsToMap = query.getIncludedRelations()
+      .stream().map(ir -> ir.getAttributePath().get(0)).collect(Collectors.toSet());
 
     List<ResourceField> shallowRelationsToMap = relations.stream()
-      .filter(rel -> relationsToMap.stream().noneMatch(rel.getUnderlyingName()::equalsIgnoreCase))
+      .filter(rel ->
+        relationsToMap.stream().noneMatch(rel.getUnderlyingName()::equalsIgnoreCase) &&
+        externalRelations.stream().noneMatch(rel.getUnderlyingName()::equalsIgnoreCase))
       .collect(Collectors.toList());
 
     return entities.stream()
       .map(e -> {
         D dto = dinaMapper.toDto(e, entityFieldsPerClass, relationsToMap);
         mapShallowRelations(e, dto, shallowRelationsToMap);
+        mapExternalRelationsToDto(e, dto);
         return dto;
       })
       .collect(Collectors.toList());
+  }
+
+  private void mapExternalRelationsToDto(E source, D target) {
+    externalRelations.forEach(external -> {
+      Field field = null;
+      try {
+        field = target.getClass().getDeclaredField(external);
+      } catch (NoSuchFieldException e) {
+        e.printStackTrace();
+      }
+      JsonApiExternalRelation annotation = field.getAnnotation(JsonApiExternalRelation.class);
+      String type = annotation.type();
+      String id = PropertyUtils.getProperty(source, external).toString();
+      PropertyUtils.setProperty(
+        target,
+        external,
+        ExternalRelationDto.builder().type(type).id(id).build());
+    });
+  }
+
+  private void mapExternalRelationsToEntity(D source, E target) {
+    externalRelations.forEach(external -> {
+      Object externalRelation = PropertyUtils.getProperty(source, external);
+      PropertyUtils.setProperty(
+        target, external,
+        UUID.fromString(PropertyUtils.getProperty(externalRelation, "id").toString()));
+    });
   }
 
   public <S extends D> void mapToEntity(
@@ -81,6 +113,8 @@ public class DinaMappingLayer<D, E> {
     @NonNull List<ResourceField> relations
   ) {
     Set<String> relationsToMap = relations.stream()
+      .filter(rel ->
+        externalRelations.stream().noneMatch(rel.getUnderlyingName()::equalsIgnoreCase))
       .map(ResourceField::getUnderlyingName).collect(Collectors.toSet());
     dinaMapper.applyDtoToEntity(dto, entity, resourceFieldsPerClass, relationsToMap);
 
@@ -89,6 +123,7 @@ public class DinaMappingLayer<D, E> {
         !hasAnnotation(resourceClass, relation.getUnderlyingName(), JsonApiExternalRelation.class))
       .collect(Collectors.toList());
     linkRelations(entity, relationsToLink);
+    mapExternalRelationsToEntity(dto, entity);
   }
 
   public D mapForDelete(E entity) {
