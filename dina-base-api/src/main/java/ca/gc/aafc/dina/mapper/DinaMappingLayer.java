@@ -13,7 +13,6 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -33,7 +32,6 @@ import java.util.stream.Collectors;
 
 public class DinaMappingLayer<D, E> {
 
-  private final Class<D> resourceClass;
   private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
   private final Map<Class<?>, Set<String>> entityFieldsPerClass;
   private final Map<String, String> externalNameToTypeMap;
@@ -45,7 +43,6 @@ public class DinaMappingLayer<D, E> {
     @NonNull DinaService<?> dinaService,
     @NonNull DinaMapper<D, E> dinaMapper
   ) {
-    this.resourceClass = resourceClass;
     this.resourceFieldsPerClass =
       parseFieldsPerClass(resourceClass, new HashMap<>(), DinaMappingLayer::isNotMappable);
     this.entityFieldsPerClass = getFieldsPerEntity();
@@ -87,16 +84,13 @@ public class DinaMappingLayer<D, E> {
     @NonNull E entity,
     @NonNull List<ResourceField> relations
   ) {
-    Set<String> relationsToMap = relations.stream()
-      .filter(this::isNotExternal)
-      .map(ResourceField::getUnderlyingName).collect(Collectors.toSet());
-    dinaMapper.applyDtoToEntity(dto, entity, resourceFieldsPerClass, relationsToMap);
-
     List<ResourceField> relationsToLink = relations.stream()
-      .filter(relation ->
-        !hasAnnotation(resourceClass, relation.getUnderlyingName(), JsonApiExternalRelation.class))
-      .collect(Collectors.toList());
+      .filter(this::isNotExternal).collect(Collectors.toList());
 
+    Set<String> relationsToMap = relationsToLink.stream()
+      .map(ResourceField::getUnderlyingName).collect(Collectors.toSet());
+
+    dinaMapper.applyDtoToEntity(dto, entity, resourceFieldsPerClass, relationsToMap);
     linkRelations(entity, relationsToLink);
     mapExternalRelationsToEntity(dto, entity);
   }
@@ -224,26 +218,7 @@ public class DinaMappingLayer<D, E> {
    * @return - true if the dina repo should not map the given field
    */
   private static boolean isNotMappable(Field field) {
-    return hasAnnotation(field.getDeclaringClass(), field.getName(), DerivedDtoField.class)
-           || Modifier.isFinal(field.getModifiers());
-  }
-
-  /**
-   * Returns true if the given class has a given field with an annotation of a given type.
-   *
-   * @param <T>             - Class type
-   * @param clazz           - class of the field
-   * @param field           - field to check
-   * @param annotationClass - annotation that is present
-   * @return true if a dto field is generated and read-only
-   */
-  @SneakyThrows(NoSuchFieldException.class)
-  private static <T> boolean hasAnnotation(
-    Class<T> clazz,
-    String field,
-    Class<? extends Annotation> annotationClass
-  ) {
-    return clazz.getDeclaredField(field).isAnnotationPresent(annotationClass);
+    return field.isAnnotationPresent(DerivedDtoField.class) || Modifier.isFinal(field.getModifiers());
   }
 
   /**
