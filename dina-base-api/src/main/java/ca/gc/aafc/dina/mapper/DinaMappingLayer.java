@@ -60,13 +60,14 @@ public class DinaMappingLayer<D, E> {
     @NonNull List<E> entities,
     @NonNull List<ResourceField> relations
   ) {
-    Set<String> relationsToMap = query.getIncludedRelations()
-      .stream().map(ir -> ir.getAttributePath().get(0)).collect(Collectors.toSet());
+    Set<String> relationsToMap = query.getIncludedRelations().stream()
+      .map(ir -> ir.getAttributePath().get(0))
+      .filter(this::isNotExternal).collect(Collectors.toSet());
 
     List<ResourceField> shallowRelationsToMap = relations.stream()
       .filter(
         rel -> relationsToMap.stream().noneMatch(rel.getUnderlyingName()::equalsIgnoreCase) &&
-               this.isNotExternal(rel)
+               this.isNotExternal(rel.getUnderlyingName())
       ).collect(Collectors.toList());
 
     return entities.stream()
@@ -85,7 +86,7 @@ public class DinaMappingLayer<D, E> {
     @NonNull List<ResourceField> relations
   ) {
     List<ResourceField> relationsToLink = relations.stream()
-      .filter(this::isNotExternal).collect(Collectors.toList());
+      .filter(field -> isNotExternal(field.getUnderlyingName())).collect(Collectors.toList());
 
     Set<String> relationsToMap = relationsToLink.stream()
       .map(ResourceField::getUnderlyingName).collect(Collectors.toSet());
@@ -218,7 +219,8 @@ public class DinaMappingLayer<D, E> {
    * @return - true if the dina repo should not map the given field
    */
   private static boolean isNotMappable(Field field) {
-    return field.isAnnotationPresent(DerivedDtoField.class) || Modifier.isFinal(field.getModifiers());
+    return field.isAnnotationPresent(DerivedDtoField.class) ||
+           Modifier.isFinal(field.getModifiers());
   }
 
   /**
@@ -325,10 +327,8 @@ public class DinaMappingLayer<D, E> {
       .getName();
   }
 
-  private boolean isNotExternal(ResourceField field) {
-    return externalNameToTypeMap.keySet()
-      .stream()
-      .noneMatch(field.getUnderlyingName()::equalsIgnoreCase);
+  private boolean isNotExternal(String field) {
+    return externalNameToTypeMap.keySet().stream().noneMatch(field::equalsIgnoreCase);
   }
 
 }
