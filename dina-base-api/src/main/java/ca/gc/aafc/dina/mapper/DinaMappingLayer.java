@@ -52,12 +52,12 @@ public class DinaMappingLayer<D, E> {
   }
 
   public List<D> mapEntitiesToDto(
-    QuerySpec querySpec,
-    List<E> returnedEntities,
-    List<ResourceField> relations
+    @NonNull QuerySpec query,
+    @NonNull List<E> entities,
+    @NonNull List<ResourceField> relations
   ) {
     Set<String> relationsToMap = Stream.concat(
-      querySpec.getIncludedRelations().stream().map(ir -> ir.getAttributePath().get(0)),
+      query.getIncludedRelations().stream().map(ir -> ir.getAttributePath().get(0)),
       FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
         .stream().map(Field::getName)
     ).collect(Collectors.toSet());
@@ -66,7 +66,7 @@ public class DinaMappingLayer<D, E> {
       .filter(rel -> relationsToMap.stream().noneMatch(rel.getUnderlyingName()::equalsIgnoreCase))
       .collect(Collectors.toList());
 
-    return returnedEntities.stream()
+    return entities.stream()
       .map(e -> {
         D dto = dinaMapper.toDto(e, entityFieldsPerClass, relationsToMap);
         mapShallowRelations(e, dto, shallowRelationsToMap);
@@ -75,12 +75,16 @@ public class DinaMappingLayer<D, E> {
       .collect(Collectors.toList());
   }
 
-  public <S extends D> void mapToEntity(S dto, E entity, List<ResourceField> relationFields) {
-    Set<String> relationsToMap = relationFields.stream()
+  public <S extends D> void mapToEntity(
+    @NonNull S dto,
+    @NonNull E entity,
+    @NonNull List<ResourceField> relations
+  ) {
+    Set<String> relationsToMap = relations.stream()
       .map(ResourceField::getUnderlyingName).collect(Collectors.toSet());
     dinaMapper.applyDtoToEntity(dto, entity, resourceFieldsPerClass, relationsToMap);
 
-    List<ResourceField> relationsToLink = relationFields.stream()
+    List<ResourceField> relationsToLink = relations.stream()
       .filter(relation ->
         !hasAnnotation(resourceClass, relation.getUnderlyingName(), JsonApiExternalRelation.class))
       .collect(Collectors.toList());
