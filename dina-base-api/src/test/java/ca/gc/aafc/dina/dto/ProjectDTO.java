@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.dto;
 
 import ca.gc.aafc.dina.entity.ComplexObject;
 import ca.gc.aafc.dina.entity.Project;
-import ca.gc.aafc.dina.mapper.CustomFieldResolver;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.crnk.core.resource.annotations.JsonApiId;
@@ -12,7 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
 
