@@ -229,6 +229,7 @@ public class DinaServiceTest {
     Department result = persistDepartment();
     assertTrue(serviceUnderTest.exists(Department.class, result.getUuid()));
     serviceUnderTest.delete(result);
+    assertFalse(serviceUnderTest.exists(Department.class, result.getUuid()));
   }
 
   @Test

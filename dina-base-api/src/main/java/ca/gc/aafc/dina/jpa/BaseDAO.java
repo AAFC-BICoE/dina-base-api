@@ -126,7 +126,7 @@ public class BaseDAO {
   /**
    * Check for the existence of a record by natural id.
    * 
-   * @param uuid
+   * @param naturalId
    * @param entityClass
    * @return
    */
@@ -138,12 +138,13 @@ public class BaseDAO {
     CriteriaQuery<Boolean> cq = cb.createQuery(Boolean.class);
     Root<T> from = cq.from(entityClass);
 
-    Subquery<T> existsSubquery = cq.subquery(entityClass);
-    existsSubquery.select(existsSubquery.from(entityClass))
+    Subquery<Integer> existsSubquery = cq.subquery(Integer.class);
+    existsSubquery.select(cb.literal(1))
       .where(
         cb.equal(
           from.get(getNaturalIdFieldName(entityClass)),
-          naturalId));
+          naturalId))
+        .from(entityClass);
 
     cq.select(cb.exists(existsSubquery));
 
