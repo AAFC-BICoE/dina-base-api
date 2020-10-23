@@ -338,7 +338,7 @@ public class DinaMapper<D, E> {
    * @return class of the paramterized type at the first position
    */
   @SneakyThrows
-  private static Class<?> getGenericType(Class<?> source, String fieldName) {
+  public static Class<?> getGenericType(Class<?> source, String fieldName) {
     ParameterizedType genericType = (ParameterizedType) source
         .getDeclaredField(fieldName)
         .getGenericType();
@@ -368,7 +368,7 @@ public class DinaMapper<D, E> {
    *                - class to check
    * @return true if the given class is a collection
    */
-  private static boolean isCollection(Class<?> clazz) {
+  public static boolean isCollection(Class<?> clazz) {
     return Collection.class.isAssignableFrom(clazz);
   }
 

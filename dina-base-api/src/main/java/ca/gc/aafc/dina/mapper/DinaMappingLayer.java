@@ -4,7 +4,6 @@ import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.service.DinaService;
-import io.crnk.core.engine.information.resource.ResourceField;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.annotations.JsonApiId;
@@ -35,6 +34,8 @@ public class DinaMappingLayer<D, E> {
   private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
   private final Map<Class<?>, Set<String>> entityFieldsPerClass;
   private final Map<String, String> externalNameToTypeMap;
+  private final Map<String, Class<?>> relationNamePerClass;
+  private final Set<String> collectionBasedRelations;
   private final DinaMapper<D, E> dinaMapper;
   private final DinaService<?> dinaService;
 
@@ -48,6 +49,18 @@ public class DinaMappingLayer<D, E> {
     this.entityFieldsPerClass = getFieldsPerEntity();
     this.dinaService = dinaService;
     this.dinaMapper = dinaMapper;
+    this.relationNamePerClass = FieldUtils
+      .getFieldsListWithAnnotation(resourceClass, JsonApiRelation.class).stream()
+      .filter(field -> !field.isAnnotationPresent(JsonApiExternalRelation.class))
+      .collect(Collectors.toMap(
+        Field::getName,
+        field -> DinaMapper.isCollection(field.getType()) ?
+          DinaMapper.getGenericType(field.getDeclaringClass(), field.getName()) : field.getType()));
+    this.collectionBasedRelations = FieldUtils
+      .getFieldsListWithAnnotation(resourceClass, JsonApiRelation.class)
+      .stream()
+      .filter(field -> DinaMapper.isCollection(field.getType()))
+      .map(Field::getName).collect(Collectors.toSet());
     this.externalNameToTypeMap = FieldUtils
       .getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
       .stream().collect(Collectors.toMap(
@@ -55,20 +68,14 @@ public class DinaMappingLayer<D, E> {
         field -> field.getAnnotation(JsonApiExternalRelation.class).type()));
   }
 
-  public List<D> mapEntitiesToDto(
-    @NonNull QuerySpec query,
-    @NonNull List<E> entities,
-    @NonNull List<ResourceField> relations
-  ) {
+  public List<D> mapEntitiesToDto(@NonNull QuerySpec query, @NonNull List<E> entities) {
     Set<String> relationsToMap = query.getIncludedRelations().stream()
       .map(ir -> ir.getAttributePath().get(0))
       .filter(this::isNotExternal).collect(Collectors.toSet());
 
-    List<ResourceField> shallowRelationsToMap = relations.stream()
-      .filter(
-        rel -> relationsToMap.stream().noneMatch(rel.getUnderlyingName()::equalsIgnoreCase) &&
-               this.isNotExternal(rel.getUnderlyingName())
-      ).collect(Collectors.toList());
+    Map<String, Class<?>> shallowRelationsToMap = relationNamePerClass.entrySet().stream()
+      .filter(relation -> relationsToMap.stream().noneMatch(relation.getKey()::equalsIgnoreCase))
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     return entities.stream()
       .map(e -> {
@@ -80,23 +87,13 @@ public class DinaMappingLayer<D, E> {
       .collect(Collectors.toList());
   }
 
-  public <S extends D> void mapToEntity(
-    @NonNull S dto,
-    @NonNull E entity,
-    @NonNull List<ResourceField> relations
-  ) {
-    List<ResourceField> relationsToLink = relations.stream()
-      .filter(field -> isNotExternal(field.getUnderlyingName())).collect(Collectors.toList());
-
-    Set<String> relationsToMap = relationsToLink.stream()
-      .map(ResourceField::getUnderlyingName).collect(Collectors.toSet());
-
-    dinaMapper.applyDtoToEntity(dto, entity, resourceFieldsPerClass, relationsToMap);
-    linkRelations(entity, relationsToLink);
+  public <S extends D> void mapToEntity(@NonNull S dto, @NonNull E entity) {
+    dinaMapper.applyDtoToEntity(dto, entity, resourceFieldsPerClass, relationNamePerClass.keySet());
+    linkRelations(entity, relationNamePerClass);
     mapExternalRelationsToEntity(dto, entity);
   }
 
-  public D mapForDelete(E entity) {
+  public D mapForDelete(@NonNull E entity) {
     return dinaMapper.toDto(entity, entityFieldsPerClass, Collections.emptySet());
   }
 
@@ -226,16 +223,13 @@ public class DinaMappingLayer<D, E> {
   /**
    * Maps the given relations from the given entity to a given dto in a shallow form (Id only).
    *
-   * @param entity         - source of the mapping
-   * @param dto            - target of the mapping
-   * @param relationsToMap - relations to map
+   * @param entity    - source of the mapping
+   * @param dto       - target of the mapping
+   * @param relations - relations to map
    */
-  private void mapShallowRelations(E entity, D dto, List<ResourceField> relationsToMap) {
-    mapRelations(entity, dto, relationsToMap,
-      (resourceField, relation) -> {
-        Class<?> elementType = resourceField.getElementType();
-        return createShallowDTO(findIdFieldName(elementType), elementType, relation);
-      });
+  private void mapShallowRelations(E entity, D dto, @NonNull Map<String, Class<?>> relations) {
+    mapRelations(entity, dto, relations,
+      (aClass, relation) -> createShallowDTO(findIdFieldName(aClass), aClass, relation));
   }
 
   /**
@@ -245,41 +239,40 @@ public class DinaMappingLayer<D, E> {
    * @param entity    - entity containing the relations
    * @param relations - list of relations to map
    */
-  private void linkRelations(@NonNull E entity, @NonNull List<ResourceField> relations) {
+  private void linkRelations(@NonNull E entity, @NonNull Map<String, Class<?>> relations) {
     mapRelations(entity, entity, relations,
-      (resourceField, relation) ->
-        returnPersistedObject(findIdFieldName(resourceField.getElementType()), relation));
+      (aClass, relation) -> returnPersistedObject(findIdFieldName(aClass), relation));
   }
 
   /**
    * Maps the given relations from a given source to a given target with a given mapping function.
    *
-   * @param source    - source of the mapping
-   * @param target    - target of the mapping
-   * @param relations - relations to map
-   * @param mapper    - mapping function to apply
+   * @param source - source of the mapping
+   * @param target - target of the mapping
+   * @param mapper - mapping function to apply
    */
   private void mapRelations(
     Object source,
     Object target,
-    List<ResourceField> relations,
-    BiFunction<ResourceField, Object, Object> mapper
+    Map<String, Class<?>> relations,
+    BiFunction<Class<?>, Object, Object> mapper
   ) {
-    for (ResourceField relation : relations) {
-      String fieldName = relation.getUnderlyingName();
-      if (relation.isCollection()) {
-        Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(source, fieldName);
+    for (Map.Entry<String, Class<?>> relation : relations.entrySet()) {
+      String relationName = relation.getKey();
+      Class<?> relationType = relation.getValue();
+      if (collectionBasedRelations.contains(relationName)) {
+        Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(
+          source, relationName);
         if (relationValue != null) {
           Collection<?> mappedCollection = relationValue.stream()
-            .map(rel -> mapper.apply(relation, rel))
-            .collect(Collectors.toList());
-          PropertyUtils.setProperty(target, fieldName, mappedCollection);
+            .map(rel -> mapper.apply(relationType, rel)).collect(Collectors.toList());
+          PropertyUtils.setProperty(target, relationName, mappedCollection);
         }
       } else {
-        Object relationValue = PropertyUtils.getProperty(source, fieldName);
+        Object relationValue = PropertyUtils.getProperty(source, relationName);
         if (relationValue != null) {
-          Object mappedRelation = mapper.apply(relation, relationValue);
-          PropertyUtils.setProperty(target, fieldName, mappedRelation);
+          Object mappedRelation = mapper.apply(relationType, relationValue);
+          PropertyUtils.setProperty(target, relationName, mappedRelation);
         }
       }
     }

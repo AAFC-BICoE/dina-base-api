@@ -10,7 +10,6 @@ import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
-import io.crnk.core.engine.information.resource.ResourceField;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.engine.registry.ResourceRegistryAware;
@@ -144,10 +143,7 @@ public class DinaRepository<D, E extends DinaEntity>
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
 
-    List<D> dList = mappingLayer.mapEntitiesToDto(
-      querySpec,
-      fetchEntities(ids, querySpec, idName),
-      findRelations(resourceClass));
+    List<D> dList = mappingLayer.mapEntitiesToDto(querySpec, fetchEntities(ids, querySpec, idName));
 
     Long resourceCount = dinaService.getResourceCount(
       entityClass,
@@ -195,7 +191,7 @@ public class DinaRepository<D, E extends DinaEntity>
         resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    mappingLayer.mapToEntity(resource, entity, findRelations(resourceClass));
+    mappingLayer.mapToEntity(resource, entity);
     dinaService.update(entity);
     auditService.ifPresent(service -> service.audit(resource));
     return resource;
@@ -207,8 +203,7 @@ public class DinaRepository<D, E extends DinaEntity>
   public <S extends D> S create(S resource) {
     E entity = entityClass.getConstructor().newInstance();
 
-    List<ResourceField> relationFields = findRelations(resourceClass);
-    mappingLayer.mapToEntity(resource, entity, relationFields);
+    mappingLayer.mapToEntity(resource, entity);
 
     authorizationService.ifPresent(auth -> auth.authorizeCreate(entity));
     dinaService.create(entity);
@@ -263,16 +258,6 @@ public class DinaRepository<D, E extends DinaEntity>
   @SneakyThrows(NoSuchFieldException.class)
   private static <T> boolean isExternalRelation(Class<T> clazz, String field) {
     return clazz.getDeclaredField(field).isAnnotationPresent(JsonApiExternalRelation.class);
-  }
-
-  /**
-   * Returns a list of resource fields for a given class.
-   *
-   * @param clazz - class of relations to find
-   * @return - list of resource fields
-   */
-  private List<ResourceField> findRelations(Class<?> clazz) {
-    return this.resourceRegistry.findEntry(clazz).getResourceInformation().getRelationshipFields();
   }
 
   /**
