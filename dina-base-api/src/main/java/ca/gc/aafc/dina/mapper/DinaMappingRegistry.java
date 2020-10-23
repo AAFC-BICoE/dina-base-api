@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
+import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import lombok.Getter;
 import lombok.NonNull;
@@ -28,6 +29,7 @@ public class DinaMappingRegistry {
   private final Map<Class<?>, Set<String>> entityFieldsPerClass;
   private final Map<String, String> externalNameToTypeMap;
   private final Map<String, Class<?>> relationNamePerClass;
+  private final Map<Class<?>, String> jsonIdFieldNamePerClass;
   private final Set<String> collectionBasedRelations;
 
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
@@ -37,6 +39,24 @@ public class DinaMappingRegistry {
     this.relationNamePerClass = parseMappableRelations(resourceClass);
     this.collectionBasedRelations = parseCollectionBasedRelations(resourceClass);
     this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
+    this.jsonIdFieldNamePerClass = parseJsonIds(resourceClass, new HashMap<>());
+  }
+
+  private Map<Class<?>, String> parseJsonIds(Class<?> cls, Map<Class<?>, String> map) {
+    if (map.containsKey(cls)) {
+      return map;
+    }
+    for (Field field : FieldUtils.getAllFieldsList(cls)) {
+      if (field.isAnnotationPresent(JsonApiId.class)) {
+        map.put(cls, field.getName());
+      }
+    }
+    for (Field field : FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class)) {
+      Class<?> type = DinaMapper.isCollection(field.getType()) ?
+        DinaMapper.getGenericType(field.getDeclaringClass(), field.getName()) : field.getType();
+      parseJsonIds(type, map);
+    }
+    return map;
   }
 
   private Map<String, String> parseExternalRelationNamesToType(Class<?> resourceClass) {

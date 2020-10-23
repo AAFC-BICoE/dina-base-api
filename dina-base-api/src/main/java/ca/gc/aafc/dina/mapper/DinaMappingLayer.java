@@ -4,12 +4,9 @@ import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.queryspec.QuerySpec;
-import io.crnk.core.resource.annotations.JsonApiId;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.reflect.FieldUtils;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -96,7 +93,8 @@ public class DinaMappingLayer<D, E> {
    */
   private void mapShallowRelations(E entity, D dto, @NonNull Map<String, Class<?>> relations) {
     mapRelations(entity, dto, relations,
-      (aClass, relation) -> createShallowDTO(findIdFieldName(aClass), aClass, relation));
+      (aClass, relation) ->
+        createShallowDTO(registry.getJsonIdFieldNamePerClass().get(aClass), aClass, relation));
   }
 
   /**
@@ -108,7 +106,8 @@ public class DinaMappingLayer<D, E> {
    */
   private void linkRelations(@NonNull E entity, @NonNull Map<String, Class<?>> relations) {
     mapRelations(entity, entity, relations,
-      (aClass, relation) -> returnPersistedObject(findIdFieldName(aClass), relation));
+      (aClass, relation) ->
+        returnPersistedObject(registry.getJsonIdFieldNamePerClass().get(aClass), relation));
   }
 
   /**
@@ -173,18 +172,6 @@ public class DinaMappingLayer<D, E> {
   private Object returnPersistedObject(String idFieldName, Object object) {
     Object relationID = PropertyUtils.getProperty(object, idFieldName);
     return dinaService.findOneReferenceByNaturalId(object.getClass(), relationID);
-  }
-
-  /**
-   * Returns the id field name for a given class.
-   *
-   * @param clazz - class to find the id field name for
-   * @return - id field name for a given class.
-   */
-  private String findIdFieldName(Class<?> clazz) {
-    return Arrays.stream(FieldUtils.getFieldsWithAnnotation(clazz, JsonApiId.class))
-      .findAny().orElseThrow(() -> new IllegalArgumentException(""))
-      .getName();
   }
 
   private boolean isNotExternal(String field) {
