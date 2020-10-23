@@ -34,23 +34,33 @@ public class DinaMappingRegistry {
     this.resourceFieldsPerClass =
       parseFieldsPerClass(resourceClass, new HashMap<>(), DinaMappingRegistry::isNotMappable);
     this.entityFieldsPerClass = parseFieldsPerEntity();
-    this.relationNamePerClass = FieldUtils
-      .getFieldsListWithAnnotation(resourceClass, JsonApiRelation.class).stream()
+    this.relationNamePerClass = parseMappableRelations(resourceClass);
+    this.collectionBasedRelations = parseCollectionBasedRelations(resourceClass);
+    this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
+  }
+
+  private Map<String, String> parseExternalRelationNamesToType(Class<?> resourceClass) {
+    return FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
+      .stream()
+      .collect(Collectors.toMap(
+        Field::getName, field -> field.getAnnotation(JsonApiExternalRelation.class).type()));
+  }
+
+  private static Set<String> parseCollectionBasedRelations(Class<?> resourceClass) {
+    return FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiRelation.class)
+      .stream()
+      .filter(field -> DinaMapper.isCollection(field.getType()))
+      .map(Field::getName)
+      .collect(Collectors.toSet());
+  }
+
+  private static Map<String, Class<?>> parseMappableRelations(Class<?> resourceClass) {
+    return FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiRelation.class).stream()
       .filter(field -> !field.isAnnotationPresent(JsonApiExternalRelation.class))
       .collect(Collectors.toMap(
         Field::getName,
         field -> DinaMapper.isCollection(field.getType()) ?
           DinaMapper.getGenericType(field.getDeclaringClass(), field.getName()) : field.getType()));
-    this.collectionBasedRelations = FieldUtils
-      .getFieldsListWithAnnotation(resourceClass, JsonApiRelation.class)
-      .stream()
-      .filter(field -> DinaMapper.isCollection(field.getType()))
-      .map(Field::getName).collect(Collectors.toSet());
-    this.externalNameToTypeMap = FieldUtils
-      .getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
-      .stream().collect(Collectors.toMap(
-        Field::getName,
-        field -> field.getAnnotation(JsonApiExternalRelation.class).type()));
   }
 
   /**
