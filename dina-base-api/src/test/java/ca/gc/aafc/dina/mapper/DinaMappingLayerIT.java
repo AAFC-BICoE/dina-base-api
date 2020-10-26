@@ -58,6 +58,21 @@ public class DinaMappingLayerIT {
   }
 
   @Test
+  void mapEntitiesToDto_WhenNoRelationsIncluded_ShallowIdsMapped() {
+    Task expectedTask = Task.builder().uuid(UUID.randomUUID()).build();
+
+    Project entity1 = newProject();
+    entity1.setTask(expectedTask);
+    Project entity2 = newProject();
+
+    List<ProjectDTO> results = mappingLayer.mapEntitiesToDto(
+      new QuerySpec(ProjectDTO.class), Arrays.asList(entity1, entity2));
+
+    Assertions.assertEquals(expectedTask.getUuid(), results.get(0).getTask().getUuid());
+    Assertions.assertNull(results.get(1).getTask());
+  }
+
+  @Test
   void mapEntitiesToDto_WhenExternalRelationNull_NullMapped() {
     Project entity1 = newProject();
     entity1.setAcMetaDataCreator(null);
@@ -76,11 +91,9 @@ public class DinaMappingLayerIT {
     Assertions.assertTrue(entity.getCreatedOn().isEqual(result.getCreatedOn()));
     // Validate External Relation
     Assertions.assertEquals(
-      entity.getAcMetaDataCreator().toString(),
-      result.getAcMetaDataCreator().getId());
+      entity.getAcMetaDataCreator().toString(), result.getAcMetaDataCreator().getId());
     Assertions.assertEquals(
-      entity.getOriginalAuthor().toString(),
-      result.getOriginalAuthor().getId());
+      entity.getOriginalAuthor().toString(), result.getOriginalAuthor().getId());
   }
 
   private Project newProject() {
