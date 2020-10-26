@@ -112,6 +112,29 @@ public class DinaMappingLayerIT {
     Assertions.assertNull(results.get(0).getAcMetaDataCreator());
   }
 
+  @Test
+  void mapToEntity_WhenRelationsNull_NullsMapped() {
+    ProjectDTO dto = ProjectDTO.builder()
+      .uuid(UUID.randomUUID())
+      .createdBy(RandomStringUtils.randomAlphabetic(5))
+      .createdOn(OffsetDateTime.now())
+      .name(RandomStringUtils.randomAlphabetic(5))
+      .build();
+
+    Project result = new Project();
+    mappingLayer.mapToEntity(dto, result);
+
+    // Validate attributes
+    Assertions.assertEquals(dto.getName(), result.getName());
+    Assertions.assertEquals(dto.getUuid(), result.getUuid());
+    Assertions.assertEquals(dto.getCreatedBy(), result.getCreatedBy());
+    Assertions.assertTrue(dto.getCreatedOn().isEqual(result.getCreatedOn()));
+    // Validate Relations Null
+    Assertions.assertNull(result.getAcMetaDataCreator());
+    Assertions.assertNull(result.getOriginalAuthor());
+    Assertions.assertNull(result.getTask());
+  }
+
   private void assertProject(Project entity, ProjectDTO result) {
     // Validate attributes
     Assertions.assertEquals(entity.getName(), result.getName());

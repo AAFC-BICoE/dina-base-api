@@ -88,9 +88,11 @@ public class DinaMappingLayer<D, E> {
   private void mapExternalRelationsToEntity(D source, E target) {
     registry.getExternalRelations().forEach(external -> {
       Object externalRelation = PropertyUtils.getProperty(source, external);
-      String jsonIdFieldName = registry.findJsonIdFieldName(ExternalRelationDto.class);
-      PropertyUtils.setProperty(target, external,
-        UUID.fromString(PropertyUtils.getProperty(externalRelation, jsonIdFieldName).toString()));
+      if (externalRelation != null) {
+        String jsonIdFieldName = registry.findJsonIdFieldName(ExternalRelationDto.class);
+        PropertyUtils.setProperty(target, external,
+          UUID.fromString(PropertyUtils.getProperty(externalRelation, jsonIdFieldName).toString()));
+      }
     });
   }
 
