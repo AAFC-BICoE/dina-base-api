@@ -23,10 +23,11 @@ import org.springframework.context.annotation.Import;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class)
@@ -44,14 +45,43 @@ public class DinaMappingLayerIT {
   }
 
   @Test
-  void mapEntitiesToDto() {
-    Project entity = Project.builder().name(RandomStringUtils.randomAlphabetic(5)).build();
+  void mapEntitiesToDto_WhenNoRelationsIncluded_ExternalRelationsMapped() {
+    Project entity1 = newProject();
+    Project entity2 = newProject();
 
     QuerySpec querySpec = new QuerySpec(ProjectDTO.class);
+    List<ProjectDTO> results = mappingLayer.mapEntitiesToDto(
+      querySpec,
+      Arrays.asList(entity1, entity2));
 
-    List<ProjectDTO> results = mappingLayer.mapEntitiesToDto(querySpec, Arrays.asList(entity));
+    assertProject(entity1, results.get(0));
+    assertProject(entity2, results.get(1));
+  }
 
-    Assertions.assertEquals(entity.getName(),results.get(0).getName());
+  private void assertProject(Project entity, ProjectDTO result) {
+    // Validate attributes
+    Assertions.assertEquals(entity.getName(), result.getName());
+    Assertions.assertEquals(entity.getUuid(), result.getUuid());
+    Assertions.assertEquals(entity.getCreatedBy(), result.getCreatedBy());
+    Assertions.assertTrue(entity.getCreatedOn().isEqual(result.getCreatedOn()));
+    // Validate External Relation
+    Assertions.assertEquals(
+      entity.getAcMetaDataCreator().toString(),
+      result.getAcMetaDataCreator().getId());
+    Assertions.assertEquals(
+      entity.getOriginalAuthor().toString(),
+      result.getOriginalAuthor().getId());
+  }
+
+  private Project newProject() {
+    return Project.builder()
+      .uuid(UUID.randomUUID())
+      .createdBy(RandomStringUtils.randomAlphabetic(5))
+      .createdOn(OffsetDateTime.now())
+      .name(RandomStringUtils.randomAlphabetic(5))
+      .acMetaDataCreator(UUID.randomUUID())
+      .originalAuthor(UUID.randomUUID())
+      .build();
   }
 
   @TestConfiguration

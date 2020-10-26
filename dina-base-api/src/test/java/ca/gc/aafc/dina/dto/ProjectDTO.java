@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,6 +34,8 @@ public final class ProjectDTO {
   @PropertyName("id")
   private UUID uuid;
   private String name;
+  private OffsetDateTime createdOn;
+  private String createdBy;
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<ComplexObject> nameTranslations;
