@@ -11,8 +11,10 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.service.DinaService;
+import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,7 +61,7 @@ public class DinaMappingLayerIT {
 
   @Test
   void mapEntitiesToDto_WhenNoRelationsIncluded_ShallowIdsMapped() {
-    Task expectedTask = Task.builder().uuid(UUID.randomUUID()).build();
+    Task expectedTask = newTask();
 
     Project entity1 = newProject();
     entity1.setTask(expectedTask);
@@ -68,7 +70,34 @@ public class DinaMappingLayerIT {
     List<ProjectDTO> results = mappingLayer.mapEntitiesToDto(
       new QuerySpec(ProjectDTO.class), Arrays.asList(entity1, entity2));
 
+    Assertions.assertEquals(expectedTask.getUuid(), results.get(0).getTask().getUuid(),
+      "Shallow id should of been mapped");
+    Assertions.assertEquals(
+      0, results.get(0).getTask().getPowerLevel(),
+      "Shallow relation should not map an attribute");
+    Assertions.assertNull(
+      results.get(1).getTask(),
+      "Null Relation should map as null");
+  }
+
+  @Test
+  void mapEntitiesToDto_WhenRelationIncluded_RelationFullyMapped() {
+    Task expectedTask = newTask();
+
+    Project entity1 = newProject();
+    entity1.setTask(expectedTask);
+    Project entity2 = newProject();
+
+    QuerySpec query = new QuerySpec(ProjectDTO.class);
+    query.includeRelation(PathSpec.of("task"));
+    List<ProjectDTO> results = mappingLayer.mapEntitiesToDto(
+      query,
+      Arrays.asList(entity1, entity2));
+
+    assertProject(entity1, results.get(0));
+    assertProject(entity2, results.get(1));
     Assertions.assertEquals(expectedTask.getUuid(), results.get(0).getTask().getUuid());
+    Assertions.assertEquals(expectedTask.getPowerLevel(), results.get(0).getTask().getPowerLevel());
     Assertions.assertNull(results.get(1).getTask());
   }
 
@@ -96,7 +125,7 @@ public class DinaMappingLayerIT {
       entity.getOriginalAuthor().toString(), result.getOriginalAuthor().getId());
   }
 
-  private Project newProject() {
+  private static Project newProject() {
     return Project.builder()
       .uuid(UUID.randomUUID())
       .createdBy(RandomStringUtils.randomAlphabetic(5))
@@ -104,6 +133,13 @@ public class DinaMappingLayerIT {
       .name(RandomStringUtils.randomAlphabetic(5))
       .acMetaDataCreator(UUID.randomUUID())
       .originalAuthor(UUID.randomUUID())
+      .build();
+  }
+
+  private static Task newTask() {
+    return Task.builder()
+      .powerLevel(RandomUtils.nextInt())
+      .uuid(UUID.randomUUID())
       .build();
   }
 
