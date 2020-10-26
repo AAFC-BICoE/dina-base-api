@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,17 +13,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import io.crnk.core.resource.annotations.JsonApiRelation;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.hibernate.proxy.HibernateProxy;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.ComplexObject;
+import io.crnk.core.resource.annotations.JsonApiRelation;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -36,8 +39,8 @@ public class DinaMapperTest {
   public void toDto_BaseAttributesTest_SelectedFieldsMapped() {
     Student entity = createEntity();
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
-      Student.class, ImmutableSet.of("name","nickNames"));
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(Student.class,
+        ImmutableSet.of("name", "nickNames"));
     StudentDto dto = mapper.toDto(entity, selectedFieldPerClass, new HashSet<>());
 
     assertEquals(entity.getName(), dto.getName());
@@ -52,8 +55,7 @@ public class DinaMapperTest {
     Student entity = createEntity();
     Student friend = Student.builder().name("Friend").friend(entity).build();
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap
-      .of(Student.class, ImmutableSet.of("name","iq"));
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(Student.class, ImmutableSet.of("name", "iq"));
     Set<String> relations = ImmutableSet.of("friend");
 
     StudentDto dto = mapper.toDto(friend, selectedFieldPerClass, relations);
@@ -83,8 +85,7 @@ public class DinaMapperTest {
   public void toDto_ResolversTest_FieldResolversMapping() {
     Student entity = createEntity();
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
-      Student.class, ImmutableSet.of("customField"));
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(Student.class, ImmutableSet.of("customField"));
 
     StudentDto dto = mapper.toDto(entity, selectedFieldPerClass, new HashSet<>());
 
@@ -96,14 +97,12 @@ public class DinaMapperTest {
   public void toDto_NestedResolver_ResolversMapped() {
     Student entityToMap = createEntity();
     entityToMap.setFriend(createEntity());
-    entityToMap.getClassMates().addAll(
-      Arrays.asList(createEntity(), createEntity(), createEntity()));
+    entityToMap.getClassMates().addAll(Arrays.asList(createEntity(), createEntity(), createEntity()));
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
-      Student.class, ImmutableSet.of("name", "customField"),
-      NestedResolverRelation.class, ImmutableSet.of("name", "customField"));
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(Student.class,
+        ImmutableSet.of("name", "customField"), NestedResolverRelation.class, ImmutableSet.of("name", "customField"));
     Set<String> relations = ImmutableSet.of("relationWithResolver", "friend", "classMates");
-    
+
     StudentDto result = mapper.toDto(entityToMap, selectedFieldPerClass, relations);
 
     assertStudentCustomFields(entityToMap, result);
@@ -129,8 +128,8 @@ public class DinaMapperTest {
     entity.setNickNames(null);
     entity.setClassMates(null);
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
-      Student.class, ImmutableSet.of("name", "iq", "nickNames"));
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(Student.class,
+        ImmutableSet.of("name", "iq", "nickNames"));
     Set<String> relations = ImmutableSet.of("classMates", "friend");
 
     StudentDto dto = mapper.toDto(entity, selectedFieldPerClass, relations);
@@ -151,8 +150,7 @@ public class DinaMapperTest {
     friend.setFriend(entity);
     friend.getClassMates().add(entity);
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(
-      Student.class, ImmutableSet.of("name", "iq"));
+    Map<Class<?>, Set<String>> selectedFieldPerClass = ImmutableMap.of(Student.class, ImmutableSet.of("name", "iq"));
     Set<String> relations = ImmutableSet.of("friend", "classMates");
 
     StudentDto result = mapper.toDto(entity, selectedFieldPerClass, relations);
@@ -162,6 +160,27 @@ public class DinaMapperTest {
     StudentDto resultClassmate = result.getClassMates().get(0);
     assertEquals(friend.getName(), resultClassmate.getName());
     assertEquals(entity.getName(), resultClassmate.getFriend().getName());
+  }
+
+  @Test
+  public void toDto_FromHibernateProxy_FieldsMapped() {
+    /** Mockable abstract class that works as a Hibernate-proxied Student entity. */
+    abstract class MockStudentProxy extends Student implements HibernateProxy {
+      private static final long serialVersionUID = 1L;
+    }
+
+    Student entity = createEntity();
+
+    MockStudentProxy mockProxy = Mockito.mock(MockStudentProxy.class, RETURNS_DEEP_STUBS);
+    Mockito.when(mockProxy.getHibernateLazyInitializer().getImplementation()).thenReturn(entity);
+    StudentDto dto = mapper.toDto(
+      mockProxy,
+      ImmutableMap.of(Student.class, ImmutableSet.of("name", "iq")),
+      ImmutableSet.of()
+    );
+
+    assertEquals(entity.getName(), dto.getName());
+    assertEquals(entity.getIq(), dto.getIq());
   }
 
   @Test
@@ -441,7 +460,7 @@ public class DinaMapperTest {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
-  public static final class Student {
+  public static class Student {
 
     private String name;
 
