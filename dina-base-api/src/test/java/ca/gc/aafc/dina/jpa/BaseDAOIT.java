@@ -64,7 +64,7 @@ public class BaseDAOIT {
   }
   
   @Test
-  public void setRelationshipUsing_onExistingIdentifer_relationshipIsSet () {
+  public void setRelationshipUsing_onExistingIdentifier_relationshipIsSet () {
     Department dep = Department.builder().name("dep1").location("dep location").build();
     baseDAO.create(dep);
     
