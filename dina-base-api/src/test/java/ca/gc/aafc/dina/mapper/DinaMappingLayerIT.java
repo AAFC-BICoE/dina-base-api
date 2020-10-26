@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
 import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.TaskDTO;
 import ca.gc.aafc.dina.entity.Project;
@@ -37,14 +38,22 @@ import java.util.UUID;
 public class DinaMappingLayerIT {
 
   @Inject
-  private DinaService<Project> service;
+  private DinaService<Task> service;
 
   private DinaMappingLayer<ProjectDTO, Project> mappingLayer;
+
+  private Task persistedTask;
 
   @BeforeEach
   void setUp() {
     mappingLayer = new DinaMappingLayer<>(
       ProjectDTO.class, service, new DinaMapper<>(ProjectDTO.class));
+    persistedTask = Task.builder()
+      .uuid(UUID.randomUUID())
+      .powerLevel(RandomUtils.nextInt())
+      .build();
+    service.create(persistedTask);
+    Assertions.assertNotNull(service.findOne(persistedTask.getUuid(), Task.class));
   }
 
   @Test
@@ -114,12 +123,7 @@ public class DinaMappingLayerIT {
 
   @Test
   void mapToEntity_WhenRelationsNull_NullsMapped() {
-    ProjectDTO dto = ProjectDTO.builder()
-      .uuid(UUID.randomUUID())
-      .createdBy(RandomStringUtils.randomAlphabetic(5))
-      .createdOn(OffsetDateTime.now())
-      .name(RandomStringUtils.randomAlphabetic(5))
-      .build();
+    ProjectDTO dto = newProjectDto();
 
     Project result = new Project();
     mappingLayer.mapToEntity(dto, result);
@@ -135,6 +139,33 @@ public class DinaMappingLayerIT {
     Assertions.assertNull(result.getTask());
   }
 
+  @Test
+  void mapToEntity_WithRelations_RelationsMapped() {
+    ProjectDTO dto = newProjectDto();
+    dto.setTask(TaskDTO.builder().uuid(persistedTask.getUuid()).build());
+    dto.setAcMetaDataCreator(ExternalRelationDto.builder().id(UUID.randomUUID().toString())
+      .build());
+    dto.setOriginalAuthor(ExternalRelationDto.builder().id(UUID.randomUUID().toString()).build());
+
+    Project result = new Project();
+    mappingLayer.mapToEntity(dto, result);
+
+    // Validate attributes
+    Assertions.assertEquals(dto.getName(), result.getName());
+    Assertions.assertEquals(dto.getUuid(), result.getUuid());
+    Assertions.assertEquals(dto.getCreatedBy(), result.getCreatedBy());
+    Assertions.assertTrue(dto.getCreatedOn().isEqual(result.getCreatedOn()));
+    // Validate External Relation
+    Assertions.assertEquals(
+      dto.getAcMetaDataCreator().getId(), result.getAcMetaDataCreator().toString());
+    Assertions.assertEquals(
+      dto.getOriginalAuthor().getId(), result.getOriginalAuthor().toString());
+    // Validate internal relations
+    Assertions.assertEquals(persistedTask.getUuid(), result.getTask().getUuid());
+    Assertions.assertEquals(persistedTask.getPowerLevel(), result.getTask().getPowerLevel(),
+      "Internal Relation should of been linked");
+  }
+
   private void assertProject(Project entity, ProjectDTO result) {
     // Validate attributes
     Assertions.assertEquals(entity.getName(), result.getName());
@@ -146,6 +177,15 @@ public class DinaMappingLayerIT {
       entity.getAcMetaDataCreator().toString(), result.getAcMetaDataCreator().getId());
     Assertions.assertEquals(
       entity.getOriginalAuthor().toString(), result.getOriginalAuthor().getId());
+  }
+
+  private ProjectDTO newProjectDto() {
+    return ProjectDTO.builder()
+      .uuid(UUID.randomUUID())
+      .createdBy(RandomStringUtils.randomAlphabetic(5))
+      .createdOn(OffsetDateTime.now())
+      .name(RandomStringUtils.randomAlphabetic(5))
+      .build();
   }
 
   private static Project newProject() {
