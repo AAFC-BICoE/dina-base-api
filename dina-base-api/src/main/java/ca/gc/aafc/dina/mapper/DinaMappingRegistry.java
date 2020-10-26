@@ -22,27 +22,51 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-@Getter
 public class DinaMappingRegistry {
 
+  @Getter
   private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
+  @Getter
   private final Map<Class<?>, Set<String>> entityFieldsPerClass;
+  @Getter
+  private final Map<String, Class<?>> mappableRelationsPerClass;
+
   private final Map<String, String> externalNameToTypeMap;
-  private final Map<String, Class<?>> relationNamePerClass;
-  private final Map<Class<?>, String> jsonIdFieldNamePerClass;
   private final Set<String> collectionBasedRelations;
+  private final Map<Class<?>, String> jsonIdFieldNamePerClass;
 
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
     this.resourceFieldsPerClass =
       parseFieldsPerClass(resourceClass, new HashMap<>(), DinaMappingRegistry::isNotMappable);
     this.entityFieldsPerClass = parseFieldsPerEntity();
-    this.relationNamePerClass = parseMappableRelations(resourceClass);
+    this.mappableRelationsPerClass = parseMappableRelations(resourceClass);
     this.collectionBasedRelations = parseCollectionBasedRelations(resourceClass);
     this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
     this.jsonIdFieldNamePerClass = parseJsonIds(resourceClass, new HashMap<>());
   }
 
-  private Map<Class<?>, String> parseJsonIds(Class<?> cls, Map<Class<?>, String> map) {
+  public Set<String> getExternalRelations() {
+    return this.externalNameToTypeMap.keySet();
+  }
+
+  public String findExternalType(String relationFieldName) {
+    return this.externalNameToTypeMap.get(relationFieldName);
+  }
+
+  public boolean isRelationExternal(String relationFieldName) {
+    return this.externalNameToTypeMap.keySet().stream()
+      .anyMatch(relationFieldName::equalsIgnoreCase);
+  }
+
+  public boolean isCollection(String relationFieldName) {
+    return this.collectionBasedRelations.stream().anyMatch(relationFieldName::equalsIgnoreCase);
+  }
+
+  public String findJsonIdFieldName(Class<?> cls) {
+    return this.jsonIdFieldNamePerClass.get(cls);
+  }
+
+  private static Map<Class<?>, String> parseJsonIds(Class<?> cls, Map<Class<?>, String> map) {
     if (map.containsKey(cls)) {
       return map;
     }
@@ -59,7 +83,7 @@ public class DinaMappingRegistry {
     return map;
   }
 
-  private Map<String, String> parseExternalRelationNamesToType(Class<?> resourceClass) {
+  private static Map<String, String> parseExternalRelationNamesToType(Class<?> resourceClass) {
     return FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
       .stream()
       .collect(Collectors.toMap(
@@ -81,18 +105,6 @@ public class DinaMappingRegistry {
         Field::getName,
         field -> DinaMapper.isCollection(field.getType()) ?
           DinaMapper.getGenericType(field.getDeclaringClass(), field.getName()) : field.getType()));
-  }
-
-  /**
-   * Returns true if the dina repo should not map the given field. currently that means if the field
-   * is generated (Marked with {@link DerivedDtoField}) or final.
-   *
-   * @param field - field to evaluate
-   * @return - true if the dina repo should not map the given field
-   */
-  private static boolean isNotMappable(Field field) {
-    return field.isAnnotationPresent(DerivedDtoField.class) ||
-           Modifier.isFinal(field.getModifiers());
   }
 
   /**
@@ -188,6 +200,18 @@ public class DinaMappingRegistry {
    */
   private static <T> RelatedEntity parseRelatedEntity(Class<T> clazz) {
     return clazz.getAnnotation(RelatedEntity.class);
+  }
+
+  /**
+   * Returns true if the dina repo should not map the given field. currently that means if the field
+   * is generated (Marked with {@link DerivedDtoField}) or final.
+   *
+   * @param field - field to evaluate
+   * @return - true if the dina repo should not map the given field
+   */
+  private static boolean isNotMappable(Field field) {
+    return field.isAnnotationPresent(DerivedDtoField.class) ||
+           Modifier.isFinal(field.getModifiers());
   }
 
 }

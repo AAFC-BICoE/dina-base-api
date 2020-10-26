@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class DinaMappingLayer<D, E> {
@@ -33,19 +34,22 @@ public class DinaMappingLayer<D, E> {
   }
 
   public List<D> mapEntitiesToDto(@NonNull QuerySpec query, @NonNull List<E> entities) {
-    Set<String> relationsToMap = query.getIncludedRelations().stream()
+    Set<String> includedRelations = query.getIncludedRelations().stream()
       .map(ir -> ir.getAttributePath().get(0))
-      .filter(this::isNotExternal).collect(Collectors.toSet());
+      .filter(Predicate.not(registry::isRelationExternal)).collect(Collectors.toSet());
 
-    Map<String, Class<?>> shallowRelationsToMap = registry.getRelationNamePerClass()
+    Map<String, Class<?>> shallowRelationsToMap = registry.getMappableRelationsPerClass()
       .entrySet().stream()
-      .filter(relation -> relationsToMap.stream().noneMatch(relation.getKey()::equalsIgnoreCase))
+      .filter(relation -> includedRelations.stream().noneMatch(relation.getKey()::equalsIgnoreCase))
       .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     return entities.stream()
       .map(e -> {
-        D dto = dinaMapper.toDto(e, registry.getEntityFieldsPerClass(), relationsToMap);
+        // Bean mapping
+        D dto = dinaMapper.toDto(e, registry.getEntityFieldsPerClass(), includedRelations);
+        // Map shallow ids fo un-included relations
         mapShallowRelations(e, dto, shallowRelationsToMap);
+        // Map External Relations
         mapExternalRelationsToDto(e, dto);
         return dto;
       })
@@ -53,11 +57,14 @@ public class DinaMappingLayer<D, E> {
   }
 
   public <S extends D> void mapToEntity(@NonNull S dto, @NonNull E entity) {
+    // Bean mapping
     dinaMapper.applyDtoToEntity(
       dto, entity,
       registry.getResourceFieldsPerClass(),
-      registry.getRelationNamePerClass().keySet());
-    linkRelations(entity, registry.getRelationNamePerClass());
+      registry.getMappableRelationsPerClass().keySet());
+    // Link relations to Database backed resources
+    linkRelations(entity, registry.getMappableRelationsPerClass());
+    // Map External Relations
     mapExternalRelationsToEntity(dto, entity);
   }
 
@@ -66,21 +73,19 @@ public class DinaMappingLayer<D, E> {
   }
 
   private void mapExternalRelationsToDto(E source, D target) {
-    registry.getExternalNameToTypeMap().keySet().forEach(external -> {
+    registry.getExternalRelations().forEach(external -> {
       String id = PropertyUtils.getProperty(source, external).toString();
       PropertyUtils.setProperty(target, external,
-        ExternalRelationDto.builder()
-          .type(registry.getExternalNameToTypeMap().get(external))
-          .id(id)
-          .build());
+        ExternalRelationDto.builder().type(registry.findExternalType(external)).id(id).build());
     });
   }
 
   private void mapExternalRelationsToEntity(D source, E target) {
-    registry.getExternalNameToTypeMap().keySet().forEach(external -> {
+    registry.getExternalRelations().forEach(external -> {
       Object externalRelation = PropertyUtils.getProperty(source, external);
+      String jsonIdFieldName = registry.findJsonIdFieldName(ExternalRelationDto.class);
       PropertyUtils.setProperty(target, external,
-        UUID.fromString(PropertyUtils.getProperty(externalRelation, "id").toString()));
+        UUID.fromString(PropertyUtils.getProperty(externalRelation, jsonIdFieldName).toString()));
     });
   }
 
@@ -94,7 +99,7 @@ public class DinaMappingLayer<D, E> {
   private void mapShallowRelations(E entity, D dto, @NonNull Map<String, Class<?>> relations) {
     mapRelations(entity, dto, relations,
       (aClass, relation) ->
-        createShallowDTO(registry.getJsonIdFieldNamePerClass().get(aClass), aClass, relation));
+        createShallowDTO(registry.findJsonIdFieldName(aClass), aClass, relation));
   }
 
   /**
@@ -106,8 +111,7 @@ public class DinaMappingLayer<D, E> {
    */
   private void linkRelations(@NonNull E entity, @NonNull Map<String, Class<?>> relations) {
     mapRelations(entity, entity, relations,
-      (aClass, relation) ->
-        returnPersistedObject(registry.getJsonIdFieldNamePerClass().get(aClass), relation));
+      (aClass, relation) -> returnPersistedObject(registry.findJsonIdFieldName(aClass), relation));
   }
 
   /**
@@ -126,7 +130,7 @@ public class DinaMappingLayer<D, E> {
     for (Map.Entry<String, Class<?>> relation : relations.entrySet()) {
       String relationName = relation.getKey();
       Class<?> relationType = relation.getValue();
-      if (registry.getCollectionBasedRelations().contains(relationName)) {
+      if (registry.isCollection(relationName)) {
         Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(
           source, relationName);
         if (relationValue != null) {
@@ -172,10 +176,6 @@ public class DinaMappingLayer<D, E> {
   private Object returnPersistedObject(String idFieldName, Object object) {
     Object relationID = PropertyUtils.getProperty(object, idFieldName);
     return dinaService.findOneReferenceByNaturalId(object.getClass(), relationID);
-  }
-
-  private boolean isNotExternal(String field) {
-    return registry.getExternalNameToTypeMap().keySet().stream().noneMatch(field::equalsIgnoreCase);
   }
 
 }
