@@ -189,17 +189,17 @@ public class DinaMapper<D, E> {
   ) {
     visited.putIfAbsent(source, target);
     // The source could be a Hibernate-proxied entity; unproxy it here:
-    source = (S) Hibernate.unproxy(source);
-    Class<?> sourceType = source.getClass();
+    S unproxied = (S) Hibernate.unproxy(source);
+    Class<?> sourceType = unproxied.getClass();
     Set<String> selectedFields = selectedFieldPerClass.getOrDefault(sourceType, new HashSet<>());
     Predicate<String> ignoreIf = field -> hasResolvers(field, sourceType);
 
-    mapFieldsToTarget(source, target, selectedFields, ignoreIf);
-    mapRelationsToTarget(source, target, selectedFieldPerClass, relations, visited);
+    mapFieldsToTarget(unproxied, target, selectedFields, ignoreIf);
+    mapRelationsToTarget(unproxied, target, selectedFieldPerClass, relations, visited);
     if (handlers.containsKey(sourceType)) {
       Set<String> allFields = Stream.concat(selectedFields.stream(), relations.stream())
         .collect(Collectors.toSet());
-      handlers.get(sourceType).resolveFields(allFields, source, target);
+      handlers.get(sourceType).resolveFields(allFields, unproxied, target);
     }
   }
 
