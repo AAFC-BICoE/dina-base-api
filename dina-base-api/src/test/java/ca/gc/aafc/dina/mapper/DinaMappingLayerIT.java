@@ -25,6 +25,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,13 +50,22 @@ public class DinaMappingLayerIT {
     Project entity1 = newProject();
     Project entity2 = newProject();
 
-    QuerySpec querySpec = new QuerySpec(ProjectDTO.class);
     List<ProjectDTO> results = mappingLayer.mapEntitiesToDto(
-      querySpec,
-      Arrays.asList(entity1, entity2));
+      new QuerySpec(ProjectDTO.class), Arrays.asList(entity1, entity2));
 
     assertProject(entity1, results.get(0));
     assertProject(entity2, results.get(1));
+  }
+
+  @Test
+  void mapEntitiesToDto_WhenExternalRelationNull_NullMapped() {
+    Project entity1 = newProject();
+    entity1.setAcMetaDataCreator(null);
+
+    List<ProjectDTO> results = mappingLayer.mapEntitiesToDto(
+      new QuerySpec(ProjectDTO.class), Collections.singletonList(entity1));
+
+    Assertions.assertNull(results.get(0).getAcMetaDataCreator());
   }
 
   private void assertProject(Project entity, ProjectDTO result) {
