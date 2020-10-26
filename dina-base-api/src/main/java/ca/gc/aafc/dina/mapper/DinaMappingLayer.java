@@ -74,9 +74,14 @@ public class DinaMappingLayer<D, E> {
 
   private void mapExternalRelationsToDto(E source, D target) {
     registry.getExternalRelations().forEach(external -> {
-      String id = PropertyUtils.getProperty(source, external).toString();
-      PropertyUtils.setProperty(target, external,
-        ExternalRelationDto.builder().type(registry.findExternalType(external)).id(id).build());
+      Object id = PropertyUtils.getProperty(source, external);
+      if (id != null) {
+        PropertyUtils.setProperty(target, external,
+          ExternalRelationDto.builder()
+            .type(registry.findExternalType(external))
+            .id(id.toString())
+            .build());
+      }
     });
   }
 
