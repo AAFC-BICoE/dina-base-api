@@ -128,12 +128,7 @@ public class DinaMappingLayerIT {
     Project result = new Project();
     mappingLayer.mapToEntity(dto, result);
 
-    // Validate attributes
-    Assertions.assertEquals(dto.getName(), result.getName());
-    Assertions.assertEquals(dto.getUuid(), result.getUuid());
-    Assertions.assertEquals(dto.getCreatedBy(), result.getCreatedBy());
-    Assertions.assertTrue(dto.getCreatedOn().isEqual(result.getCreatedOn()));
-    // Validate Relations Null
+    validateProjectAttributes(dto, result);
     Assertions.assertNull(result.getAcMetaDataCreator());
     Assertions.assertNull(result.getOriginalAuthor());
     Assertions.assertNull(result.getTask());
@@ -150,11 +145,7 @@ public class DinaMappingLayerIT {
     Project result = new Project();
     mappingLayer.mapToEntity(dto, result);
 
-    // Validate attributes
-    Assertions.assertEquals(dto.getName(), result.getName());
-    Assertions.assertEquals(dto.getUuid(), result.getUuid());
-    Assertions.assertEquals(dto.getCreatedBy(), result.getCreatedBy());
-    Assertions.assertTrue(dto.getCreatedOn().isEqual(result.getCreatedOn()));
+    validateProjectAttributes(dto, result);
     // Validate External Relation
     Assertions.assertEquals(
       dto.getAcMetaDataCreator().getId(), result.getAcMetaDataCreator().toString());
@@ -164,6 +155,13 @@ public class DinaMappingLayerIT {
     Assertions.assertEquals(persistedTask.getUuid(), result.getTask().getUuid());
     Assertions.assertEquals(persistedTask.getPowerLevel(), result.getTask().getPowerLevel(),
       "Internal Relation should of been linked");
+  }
+
+  private static void validateProjectAttributes(ProjectDTO dto, Project result) {
+    Assertions.assertEquals(dto.getName(), result.getName());
+    Assertions.assertEquals(dto.getUuid(), result.getUuid());
+    Assertions.assertEquals(dto.getCreatedBy(), result.getCreatedBy());
+    Assertions.assertTrue(dto.getCreatedOn().isEqual(result.getCreatedOn()));
   }
 
   private void assertProject(Project entity, ProjectDTO result) {
