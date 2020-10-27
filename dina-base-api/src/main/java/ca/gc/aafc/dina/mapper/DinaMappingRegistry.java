@@ -57,22 +57,15 @@ public class DinaMappingRegistry {
     this.jsonIdFieldNamePerClass = parseJsonIds(resourceClass, new HashMap<>(), new HashSet<>());
   }
 
+  /**
+   * Returns a set of the mappable relations for a given class, or null if a given class is not
+   * tracked.
+   *
+   * @param cls - class with relations
+   * @return Returns a set of the mappable relations for a given class.
+   */
   public Set<String> findMappableRelationsForClass(Class<?> cls) {
     return this.mappableRelationsPerClass.get(cls);
-  }
-
-  /**
-   * Returns the resolved type of a fieldname for a given source. If the type is a collection, the
-   * first generic type is returned.
-   *
-   * @param source    - source object of the field
-   * @param fieldName - field name
-   * @return Field type or the first genric type if the field is a collection
-   */
-  @SneakyThrows
-  public static Class<?> getResolvedType(Object source, String fieldName) {
-    Class<?> propertyType = PropertyUtils.getPropertyType(source, fieldName);
-    return isCollection(propertyType) ? getGenericType(source.getClass(), fieldName) : propertyType;
   }
 
   /**
@@ -123,6 +116,20 @@ public class DinaMappingRegistry {
    */
   public String findJsonIdFieldName(Class<?> cls) {
     return this.jsonIdFieldNamePerClass.get(cls);
+  }
+
+  /**
+   * Returns the resolved type of a fieldname for a given source. If the type is a collection, the
+   * first generic type is returned.
+   *
+   * @param source    - source object of the field
+   * @param fieldName - field name
+   * @return Field type or the first genric type if the field is a collection
+   */
+  @SneakyThrows
+  public static Class<?> getResolvedType(Object source, String fieldName) {
+    Class<?> propertyType = PropertyUtils.getPropertyType(source, fieldName);
+    return isCollection(propertyType) ? getGenericType(source.getClass(), fieldName) : propertyType;
   }
 
   private static Map<Class<?>, String> parseJsonIds(
