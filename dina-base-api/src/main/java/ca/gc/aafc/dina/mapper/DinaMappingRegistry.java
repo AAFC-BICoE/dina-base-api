@@ -47,36 +47,16 @@ public class DinaMappingRegistry {
     this.resourceFieldsPerClass =
       parseFieldsPerClass(resourceClass, new HashMap<>(), DinaMappingRegistry::isNotMappable);
     this.entityFieldsPerClass = parseFieldsPerEntity();
-    this.mappableRelationsPerClass = parseMappableRelations(resourceClass, new HashMap<>());
+    this.mappableRelationsPerClass = parseMappableRelations(
+      resourceClass, new HashMap<>(), new HashSet<>());
     this.relationTypesPerMappableRelation = parseRelationTypesPerRelation(resourceClass);
     this.collectionBasedRelations = parseCollectionBasedRelations(resourceClass);
     this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
     this.jsonIdFieldNamePerClass = parseJsonIds(resourceClass, new HashMap<>(), new HashSet<>());
   }
 
-  public Set<String> findMappableRelationsForClass(Class<?> cls){
+  public Set<String> findMappableRelationsForClass(Class<?> cls) {
     return this.mappableRelationsPerClass.get(cls);
-  }
-
-  private Map<Class<?>, Set<String>> parseMappableRelations(
-    Class<?> cls,
-    Map<Class<?>, Set<String>> map
-  ) {
-    if (map.containsKey(cls)) {
-      return map;
-    }
-    List<Field> relations = FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class)
-      .stream()
-      .filter(field -> !field.isAnnotationPresent(JsonApiExternalRelation.class))
-      .collect(Collectors.toList());
-    map.put(cls, relations.stream().map(Field::getName).collect(Collectors.toSet()));
-
-    for (Field f : relations) {
-      Class<?> dtoType = DinaMapper.isCollection(f.getType()) ?
-        DinaMapper.getGenericType(f.getDeclaringClass(), f.getName()) : f.getType();
-      parseMappableRelations(dtoType, map);
-    }
-    return map;
   }
 
   /**
@@ -129,7 +109,11 @@ public class DinaMappingRegistry {
     return this.jsonIdFieldNamePerClass.get(cls);
   }
 
-  private static Map<Class<?>, String> parseJsonIds(Class<?> cls, Map<Class<?>, String> map, Set<Class<?>> visited) {
+  private static Map<Class<?>, String> parseJsonIds(
+    Class<?> cls,
+    Map<Class<?>, String> map,
+    Set<Class<?>> visited
+  ) {
     if (visited.contains(cls)) {
       return map;
     }
@@ -144,6 +128,30 @@ public class DinaMappingRegistry {
       Class<?> type = DinaMapper.isCollection(field.getType()) ?
         DinaMapper.getGenericType(field.getDeclaringClass(), field.getName()) : field.getType();
       parseJsonIds(type, map, visited);
+    }
+    return map;
+  }
+
+  private static Map<Class<?>, Set<String>> parseMappableRelations(
+    Class<?> cls,
+    Map<Class<?>, Set<String>> map,
+    Set<Class<?>> visited
+  ) {
+    if (visited.contains(cls)) {
+      return map;
+    }
+    visited.add(cls);
+
+    List<Field> relations = FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class)
+      .stream()
+      .filter(field -> !field.isAnnotationPresent(JsonApiExternalRelation.class))
+      .collect(Collectors.toList());
+    map.put(cls, relations.stream().map(Field::getName).collect(Collectors.toSet()));
+
+    for (Field f : relations) {
+      Class<?> dtoType = DinaMapper.isCollection(f.getType()) ?
+        DinaMapper.getGenericType(f.getDeclaringClass(), f.getName()) : f.getType();
+      parseMappableRelations(dtoType, map, visited);
     }
     return map;
   }

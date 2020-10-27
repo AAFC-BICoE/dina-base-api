@@ -164,7 +164,7 @@ public class DinaMapperTest {
 
   @Test
   public void toDto_FromHibernateProxy_FieldsMapped() {
-    /** Mockable abstract class that works as a Hibernate-proxied Student entity. */
+    /* Mockable abstract class that works as a Hibernate-proxied Student entity. */
     abstract class MockStudentProxy extends Student implements HibernateProxy {
       private static final long serialVersionUID = 1L;
     }
