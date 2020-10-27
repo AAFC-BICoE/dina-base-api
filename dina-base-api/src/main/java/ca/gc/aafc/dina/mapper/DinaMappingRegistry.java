@@ -16,6 +16,7 @@ import java.lang.reflect.Type;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,10 +31,12 @@ public class DinaMappingRegistry {
   // Tracks the entity graph for bean mapping
   @Getter
   private final Map<Class<?>, Set<String>> entityFieldsPerClass;
-  // Tracks the mappable relations
+  // Tracks the relation types per mappable relation
   @Getter
-  private final Map<String, Class<?>> mappableRelationsPerClass;
-  // Tracks external relations field names to types for external relations mapping
+  private final Map<String, Class<?>> relationTypesPerMappableRelation;
+  // Tracks the mappable relations per class
+  private final Map<Class<?>, Set<String>> mappableRelationsPerClass;
+  // Tracks external relation types per field name for external relations mapping
   private final Map<String, String> externalNameToTypeMap;
   // Tracks the name of relations which are collections
   private final Set<String> collectionBasedRelations;
@@ -44,10 +47,36 @@ public class DinaMappingRegistry {
     this.resourceFieldsPerClass =
       parseFieldsPerClass(resourceClass, new HashMap<>(), DinaMappingRegistry::isNotMappable);
     this.entityFieldsPerClass = parseFieldsPerEntity();
-    this.mappableRelationsPerClass = parseMappableRelations(resourceClass);
+    this.mappableRelationsPerClass = parseMappableRelations(resourceClass, new HashMap<>());
+    this.relationTypesPerMappableRelation = parseRelationTypesPerRelation(resourceClass);
     this.collectionBasedRelations = parseCollectionBasedRelations(resourceClass);
     this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
-    this.jsonIdFieldNamePerClass = parseJsonIds(resourceClass, new HashMap<>());
+    this.jsonIdFieldNamePerClass = parseJsonIds(resourceClass, new HashMap<>(), new HashSet<>());
+  }
+
+  public Set<String> findMappableRelationsForClass(Class<?> cls){
+    return this.mappableRelationsPerClass.get(cls);
+  }
+
+  private Map<Class<?>, Set<String>> parseMappableRelations(
+    Class<?> cls,
+    Map<Class<?>, Set<String>> map
+  ) {
+    if (map.containsKey(cls)) {
+      return map;
+    }
+    List<Field> relations = FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class)
+      .stream()
+      .filter(field -> !field.isAnnotationPresent(JsonApiExternalRelation.class))
+      .collect(Collectors.toList());
+    map.put(cls, relations.stream().map(Field::getName).collect(Collectors.toSet()));
+
+    for (Field f : relations) {
+      Class<?> dtoType = DinaMapper.isCollection(f.getType()) ?
+        DinaMapper.getGenericType(f.getDeclaringClass(), f.getName()) : f.getType();
+      parseMappableRelations(dtoType, map);
+    }
+    return map;
   }
 
   /**
@@ -100,10 +129,12 @@ public class DinaMappingRegistry {
     return this.jsonIdFieldNamePerClass.get(cls);
   }
 
-  private static Map<Class<?>, String> parseJsonIds(Class<?> cls, Map<Class<?>, String> map) {
-    if (map.containsKey(cls)) {
+  private static Map<Class<?>, String> parseJsonIds(Class<?> cls, Map<Class<?>, String> map, Set<Class<?>> visited) {
+    if (visited.contains(cls)) {
       return map;
     }
+    visited.add(cls);
+
     for (Field field : FieldUtils.getAllFieldsList(cls)) {
       if (field.isAnnotationPresent(JsonApiId.class)) {
         map.put(cls, field.getName());
@@ -112,7 +143,7 @@ public class DinaMappingRegistry {
     for (Field field : FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class)) {
       Class<?> type = DinaMapper.isCollection(field.getType()) ?
         DinaMapper.getGenericType(field.getDeclaringClass(), field.getName()) : field.getType();
-      parseJsonIds(type, map);
+      parseJsonIds(type, map, visited);
     }
     return map;
   }
@@ -146,14 +177,14 @@ public class DinaMappingRegistry {
   }
 
   /**
-   * Returns a map of relation field names per class that are not external relations and are
+   * Returns a map of relation types per relation field name that are not external relations and are
    * eligible for bean mapping and relation linking to a db backed source. relations that are
    * collections will be mapped to their collections generic type.
    *
    * @param resourceClass - a given class with relations.
    * @return a map of relation field names per class that are not external relations
    */
-  private static Map<String, Class<?>> parseMappableRelations(Class<?> resourceClass) {
+  private static Map<String, Class<?>> parseRelationTypesPerRelation(Class<?> resourceClass) {
     return FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiRelation.class).stream()
       .filter(field -> !field.isAnnotationPresent(JsonApiExternalRelation.class))
       .collect(Collectors.toMap(

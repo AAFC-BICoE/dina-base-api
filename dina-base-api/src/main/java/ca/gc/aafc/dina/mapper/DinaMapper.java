@@ -1,5 +1,15 @@
 package ca.gc.aafc.dina.mapper;
 
+import ca.gc.aafc.dina.dto.RelatedEntity;
+import io.crnk.core.resource.annotations.JsonApiRelation;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.hibernate.Hibernate;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -15,20 +25,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.hibernate.Hibernate;
-
-import ca.gc.aafc.dina.dto.RelatedEntity;
-import io.crnk.core.resource.annotations.JsonApiRelation;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-
 /**
- * DTO to Entity Bean mapper (and vice-versa). Used to map fields between DTO's
- * and Entities.
+ * DTO to Entity Bean mapper (and vice-versa). Used to map fields between DTO's and Entities.
  *
  * @param <D> - Type of Dto
  * @param <E> - Type of Entity
@@ -39,24 +37,23 @@ public class DinaMapper<D, E> {
   private final Class<D> dtoClass;
   private final Map<Class<?>, CustomFieldHandler<?, ?>> handlers;
   private final Map<Class<?>, Set<String>> fieldsPerClass;
-  private final Map<Class<?>, Set<String>> relationPerClass;
+  private final DinaMappingRegistry registry;
 
   /**
    * <p>
-   * Used to construct an instance of the dina mapper where the dto class will be
-   * scanned and all custom field handlers needed to resolve the entity graph will
-   * parsed from the given dto class.
+   * Used to construct an instance of the dina mapper where the dto class will be scanned and all
+   * custom field handlers needed to resolve the entity graph will parsed from the given dto class.
    * <p>
    *
    * <p>
-   * Use this constructor if you have no custom fields to resolve or you are
-   * unsure if you can supply the custom field handlers per class.
+   * Use this constructor if you have no custom fields to resolve or you are unsure if you can
+   * supply the custom field handlers per class.
    * <p>
    *
    * @param dtoClass - class to map
    */
   public DinaMapper(@NonNull Class<D> dtoClass) {
-    this(dtoClass, new HashMap<>(), new HashMap<>(), new HashMap<>());
+    this(dtoClass, new HashMap<>(), new HashMap<>(), new DinaMappingRegistry(dtoClass));
     initMaps(dtoClass);
   }
 
@@ -74,9 +71,6 @@ public class DinaMapper<D, E> {
 
         fieldsPerClass.put(dto, parseFieldNames(dto));
         fieldsPerClass.put(relatedEntity, parseFieldNames(relatedEntity));
-
-        relationPerClass.put(dto, parseRelationFieldNames(dto));
-        relationPerClass.put(relatedEntity, parseRelationFieldNames(relatedEntity));
       }
     }
   }
@@ -100,20 +94,19 @@ public class DinaMapper<D, E> {
 
   /**
    * <p>
-   * Returns a new dto mapped with the fields of a given entity. The given
-   * selected fields per class map which fields to apply from a source class to a
-   * target. A set of given relation field names designates which fields are
-   * mapped as relations.
+   * Returns a new dto mapped with the fields of a given entity. The given selected fields per class
+   * map which fields to apply from a source class to a target. A set of given relation field names
+   * designates which fields are mapped as relations.
    * <p>
    *
    * <p>
-   * The base attributes of a source are assumed to be of the same type as the
-   * target. Relations fields of a source are NOT expected to be of the same type.
+   * The base attributes of a source are assumed to be of the same type as the target. Relations
+   * fields of a source are NOT expected to be of the same type.
    * <p>
    *
    * <p>
-   * Selected fields per class should also contain the relations source class and
-   * target fields to map.
+   * Selected fields per class should also contain the relations source class and target fields to
+   * map.
    * <p>
    *
    * @param entity                - source of the mapping
@@ -122,7 +115,11 @@ public class DinaMapper<D, E> {
    * @return - A new instance of a class with the mapped fields
    */
   @SneakyThrows
-  public D toDto(E entity, Map<Class<?>, Set<String>> selectedFieldPerClass, Set<String> relations) {
+  public D toDto(
+    E entity,
+    Map<Class<?>, Set<String>> selectedFieldPerClass,
+    Set<String> relations
+  ) {
     D dto = dtoClass.getConstructor().newInstance();
     mapSourceToTarget(entity, dto, selectedFieldPerClass, relations, new IdentityHashMap<>());
     return dto;
@@ -130,19 +127,19 @@ public class DinaMapper<D, E> {
 
   /**
    * <p>
-   * Apply the fields of a given dto to a given entity. The given selected fields
-   * per class map which fields to apply from a source class to a target. A set of
-   * given relation field names designates which fields are mapped as relations.
+   * Apply the fields of a given dto to a given entity. The given selected fields per class map
+   * which fields to apply from a source class to a target. A set of given relation field names
+   * designates which fields are mapped as relations.
    * <p>
    *
    * <p>
-   * The base attributes of a source are assumed to be of the same type as the
-   * target. Relations fields of a source are NOT expected to be of the same type.
+   * The base attributes of a source are assumed to be of the same type as the target. Relations
+   * fields of a source are NOT expected to be of the same type.
    * <p>
    *
    * <p>
-   * Selected fields per class should also contain the relations source class and
-   * target fields to map.
+   * Selected fields per class should also contain the relations source class and target fields to
+   * map.
    * <p>
    *
    * @param dto                   - source of the mapping
@@ -157,30 +154,22 @@ public class DinaMapper<D, E> {
     Map<Class<?>, Set<String>> selectedFieldPerClass,
     Set<String> relations
   ) {
-    mapSourceToTarget(dto, entity, selectedFieldPerClass, relations , new IdentityHashMap<>());
+    mapSourceToTarget(dto, entity, selectedFieldPerClass, relations, new IdentityHashMap<>());
   }
 
   /**
-   * Map the given selected fields of a source to a target with the given
-   * relations.
+   * Map the given selected fields of a source to a target with the given relations.
    *
-   * @param <T>
-   *                                - target type
-   * @param <S>
-   *                                - source type
-   * @param source
-   *                                - source of the mapping
-   * @param target
-   *                                - target of the mapping
-   * @param selectedFieldPerClass
-   *                                - selected fields to map
-   * @param relations
-   *                                - relations to map
-   * @param visited
-   *                                - map of visted objects and there corresponding target.
+   * @param <T>                   - target type
+   * @param <S>                   - source type
+   * @param source                - source of the mapping
+   * @param target                - target of the mapping
+   * @param selectedFieldPerClass - selected fields to map
+   * @param relations             - relations to map
+   * @param visited               - map of visted objects and there corresponding target.
    */
   @SuppressWarnings("unchecked")
-  private <T,S> void mapSourceToTarget(
+  private <T, S> void mapSourceToTarget(
     @NonNull S source,
     @NonNull T target,
     @NonNull Map<Class<?>, Set<String>> selectedFieldPerClass,
@@ -204,22 +193,15 @@ public class DinaMapper<D, E> {
   }
 
   /**
-   * Maps the relation of a given source to a given target. The relation is
-   * designated from the given field name and only the given fields per relation
-   * source class are mapped.
+   * Maps the relation of a given source to a given target. The relation is designated from the
+   * given field name and only the given fields per relation source class are mapped.
    *
-   * @param <T>
-   *                         - Type of target
-   * @param <S>
-   *                         - Type of source
-   * @param source
-   *                         - source of the mapping
-   * @param target
-   *                         - target of the mapping
-   * @param fieldsPerClass
-   *                         - selected fields of the relations source class
-   * @param visited
-   *                         - map of visted objects and there corresponding target.
+   * @param <T>            - Type of target
+   * @param <S>            - Type of source
+   * @param source         - source of the mapping
+   * @param target         - target of the mapping
+   * @param fieldsPerClass - selected fields of the relations source class
+   * @param visited        - map of visted objects and there corresponding target.
    */
   @SneakyThrows
   private <T, S> void mapRelationsToTarget(
@@ -262,17 +244,13 @@ public class DinaMapper<D, E> {
   }
 
   /**
-   * Maps the given fields of a source object to new instance of a target type.
-   * mapped target is returned.
+   * Maps the given fields of a source object to new instance of a target type. mapped target is
+   * returned.
    *
-   * @param fields
-   *                     - fields to map
-   * @param source
-   *                     - source of the mapping
-   * @param targetType
-   *                     - target type of new target
-   * @param visited
-   *                     - map of visted objects and there corresponding target.
+   * @param fields     - fields to map
+   * @param source     - source of the mapping
+   * @param targetType - target type of new target
+   * @param visited    - map of visted objects and there corresponding target.
    * @return the mapped target
    */
   @SneakyThrows
@@ -292,8 +270,8 @@ public class DinaMapper<D, E> {
 
     Object target = targetType.getDeclaredConstructor().newInstance();
 
-    Set<String> set1 = relationPerClass.getOrDefault(source.getClass(), Collections.emptySet());
-    Set<String> set2 = relationPerClass.getOrDefault(targetType, Collections.emptySet());
+    Set<String> set1 = registry.findMappableRelationsForClass(source.getClass());
+    Set<String> set2 = registry.findMappableRelationsForClass(targetType);
 
     /*
      * Here we check which side had the relationships ( source or target ), only one
@@ -333,9 +311,9 @@ public class DinaMapper<D, E> {
   }
 
   /**
-   * Returns the class of the paramterized type at the first position of a given
-   * class's given field.
-   *
+   * Returns the class of the paramterized type at the first position of a given class's given
+   * field.
+   * <p>
    * given class is assumed to be a {@link ParameterizedType}
    *
    * @param source    given class
@@ -345,19 +323,17 @@ public class DinaMapper<D, E> {
   @SneakyThrows
   public static Class<?> getGenericType(Class<?> source, String fieldName) {
     ParameterizedType genericType = (ParameterizedType) source
-        .getDeclaredField(fieldName)
-        .getGenericType();
+      .getDeclaredField(fieldName)
+      .getGenericType();
     return (Class<?>) genericType.getActualTypeArguments()[0];
   }
 
   /**
-   * Returns the resolved type of a fieldname for a given source. If the type is a
-   * collection, the first generic type is returned.
+   * Returns the resolved type of a fieldname for a given source. If the type is a collection, the
+   * first generic type is returned.
    *
-   * @param source
-   *                    - source object of the field
-   * @param fieldName
-   *                    - field name
+   * @param source    - source object of the field
+   * @param fieldName - field name
    * @return Field type or the first genric type if the field is a collection
    */
   @SneakyThrows
@@ -369,8 +345,7 @@ public class DinaMapper<D, E> {
   /**
    * Returns true if the given class is a collection
    *
-   * @param clazz
-   *                - class to check
+   * @param clazz - class to check
    * @return true if the given class is a collection
    */
   public static boolean isCollection(Class<?> clazz) {
@@ -380,22 +355,11 @@ public class DinaMapper<D, E> {
   /**
    * Returns the JsonApiRelations for a given class.
    *
-   * @param cls
-   *              - class to parse
+   * @param cls - class to parse
    * @return JsonApiRelations for a given class
    */
   private static List<Field> getRelations(Class<?> cls) {
     return FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class);
-  }
-
-  /**
-   * Returns the JsonApiRelation field names for a given class.
-   *
-   * @param cls - class to parse
-   * @return JsonApiRelations field names for a given class
-   */
-  private static Set<String> parseRelationFieldNames(Class<?> cls) {
-    return getRelations(cls).stream().map(Field::getName).collect(Collectors.toSet());
   }
 
   /**

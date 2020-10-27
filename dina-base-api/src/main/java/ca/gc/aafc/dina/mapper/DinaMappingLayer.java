@@ -47,7 +47,7 @@ public class DinaMappingLayer<D, E> {
       .map(ir -> ir.getAttributePath().get(0))
       .filter(Predicate.not(registry::isRelationExternal)).collect(Collectors.toSet());
 
-    Map<String, Class<?>> shallowRelationsToMap = registry.getMappableRelationsPerClass()
+    Map<String, Class<?>> shallowRelationsToMap = registry.getRelationTypesPerMappableRelation()
       .entrySet().stream()
       .filter(relation -> includedRelations.stream().noneMatch(relation.getKey()::equalsIgnoreCase))
       .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -78,9 +78,9 @@ public class DinaMappingLayer<D, E> {
     dinaMapper.applyDtoToEntity(
       dto, entity,
       registry.getResourceFieldsPerClass(),
-      registry.getMappableRelationsPerClass().keySet());
+      registry.getRelationTypesPerMappableRelation().keySet());
     // Link relations to Database backed resources
-    linkRelations(entity, registry.getMappableRelationsPerClass());
+    linkRelations(entity, registry.getRelationTypesPerMappableRelation());
     // Map External Relations
     mapExternalRelationsToEntity(dto, entity);
   }
