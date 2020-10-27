@@ -1,14 +1,5 @@
 package ca.gc.aafc.dina.mapper;
 
-import ca.gc.aafc.dina.dto.RelatedEntity;
-import io.crnk.core.resource.annotations.JsonApiRelation;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -23,6 +14,17 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.hibernate.Hibernate;
+
+import ca.gc.aafc.dina.dto.RelatedEntity;
+import io.crnk.core.resource.annotations.JsonApiRelation;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 
 /**
  * DTO to Entity Bean mapper (and vice-versa). Used to map fields between DTO's
@@ -177,6 +179,7 @@ public class DinaMapper<D, E> {
    * @param visited
    *                                - map of visted objects and there corresponding target.
    */
+  @SuppressWarnings("unchecked")
   private <T,S> void mapSourceToTarget(
     @NonNull S source,
     @NonNull T target,
@@ -185,16 +188,18 @@ public class DinaMapper<D, E> {
     @NonNull Map<Object, Object> visited
   ) {
     visited.putIfAbsent(source, target);
-    Class<?> sourceType = source.getClass();
+    // The source could be a Hibernate-proxied entity; unproxy it here:
+    S unproxied = (S) Hibernate.unproxy(source);
+    Class<?> sourceType = unproxied.getClass();
     Set<String> selectedFields = selectedFieldPerClass.getOrDefault(sourceType, new HashSet<>());
     Predicate<String> ignoreIf = field -> hasResolvers(field, sourceType);
 
-    mapFieldsToTarget(source, target, selectedFields, ignoreIf);
-    mapRelationsToTarget(source, target, selectedFieldPerClass, relations, visited);
+    mapFieldsToTarget(unproxied, target, selectedFields, ignoreIf);
+    mapRelationsToTarget(unproxied, target, selectedFieldPerClass, relations, visited);
     if (handlers.containsKey(sourceType)) {
       Set<String> allFields = Stream.concat(selectedFields.stream(), relations.stream())
         .collect(Collectors.toSet());
-      handlers.get(sourceType).resolveFields(allFields, source, target);
+      handlers.get(sourceType).resolveFields(allFields, unproxied, target);
     }
   }
 

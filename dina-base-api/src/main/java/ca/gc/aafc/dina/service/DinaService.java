@@ -136,6 +136,11 @@ public class DinaService<E extends DinaEntity> {
     return baseDAO.getReferenceByNaturalId(entityClass, naturalId);
   }
 
+  /** Check for the existence of a record by natural id. */
+  public boolean exists(Class<?> entityClass, Object naturalId) {
+    return baseDAO.existsByNaturalId(naturalId, entityClass);
+  }
+
   /**
    * Run before the {@link DinaService#create(DinaEntity)} method.
    *
