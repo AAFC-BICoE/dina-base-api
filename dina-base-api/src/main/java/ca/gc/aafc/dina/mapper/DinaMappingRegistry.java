@@ -24,15 +24,20 @@ import java.util.stream.Collectors;
 
 public class DinaMappingRegistry {
 
+  // Tracks the resource graph for bean mapping
   @Getter
   private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
+  // Tracks the entity graph for bean mapping
   @Getter
   private final Map<Class<?>, Set<String>> entityFieldsPerClass;
+  // Tracks the mappable relations
   @Getter
   private final Map<String, Class<?>> mappableRelationsPerClass;
-
+  // Tracks external relations field names to types for external relations mapping
   private final Map<String, String> externalNameToTypeMap;
+  // Tracks the name of relations which are collections
   private final Set<String> collectionBasedRelations;
+  // Track Json Id field names for mapping
   private final Map<Class<?>, String> jsonIdFieldNamePerClass;
 
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
@@ -45,23 +50,52 @@ public class DinaMappingRegistry {
     this.jsonIdFieldNamePerClass = parseJsonIds(resourceClass, new HashMap<>());
   }
 
+  /**
+   * Returns the set of external relation field names tracked by the registry.
+   *
+   * @return set of external relation field names.
+   */
   public Set<String> getExternalRelations() {
     return this.externalNameToTypeMap.keySet();
   }
 
+  /**
+   * Returns the type of the given external relation if tracked by the registry otherwise null.
+   *
+   * @param relationFieldName - field name of the external relation.
+   * @return type of the given external relation.
+   */
   public String findExternalType(String relationFieldName) {
     return this.externalNameToTypeMap.get(relationFieldName);
   }
 
+  /**
+   * Returns true if the relation with the given field name is external.
+   *
+   * @param relationFieldName - field name of the external relation.
+   * @return Returns true if the relation with the given field name is external.
+   */
   public boolean isRelationExternal(String relationFieldName) {
     return this.externalNameToTypeMap.keySet().stream()
       .anyMatch(relationFieldName::equalsIgnoreCase);
   }
 
+  /**
+   * Returns true if the relation with a given field name is a Java Collection type.
+   *
+   * @param relationFieldName - field name of the relation.
+   * @return Returns true if the relation with a given field name is a Java Collection type.
+   */
   public boolean isCollection(String relationFieldName) {
     return this.collectionBasedRelations.stream().anyMatch(relationFieldName::equalsIgnoreCase);
   }
 
+  /**
+   * Returns the json id field name of a given class.
+   *
+   * @param cls - cls with json id field
+   * @return the json id field name of a given class.
+   */
   public String findJsonIdFieldName(Class<?> cls) {
     return this.jsonIdFieldNamePerClass.get(cls);
   }
@@ -192,11 +226,11 @@ public class DinaMappingRegistry {
   }
 
   /**
-   * Returns a Dto's related entity (Marked with {@link RelatedEntity}) or else null.
+   * Returns the related entity of a dto (Marked with {@link RelatedEntity}) or else null.
    *
    * @param <T>   - Class type
    * @param clazz - Class with a related entity.
-   * @return a Dto's related entity, or else null
+   * @return the related entity of a dto, or else null
    */
   private static <T> RelatedEntity parseRelatedEntity(Class<T> clazz) {
     return clazz.getAnnotation(RelatedEntity.class);

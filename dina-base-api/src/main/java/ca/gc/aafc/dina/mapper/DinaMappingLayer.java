@@ -33,6 +33,15 @@ public class DinaMappingLayer<D, E> {
     this.registry = new DinaMappingRegistry(resourceClass);
   }
 
+  /**
+   * Returns a list of resources mapped from the given entities. Relations included in the query spec
+   * are fully mapped. External relations are always mapped. Relations not included in the query
+   * spec are shallow mapped (natural id only).
+   *
+   * @param query    - query spec of the request
+   * @param entities - entities to map
+   * @return - list of resources.
+   */
   public List<D> mapEntitiesToDto(@NonNull QuerySpec query, @NonNull List<E> entities) {
     Set<String> includedRelations = query.getIncludedRelations().stream()
       .map(ir -> ir.getAttributePath().get(0))
@@ -56,6 +65,14 @@ public class DinaMappingLayer<D, E> {
       .collect(Collectors.toList());
   }
 
+  /**
+   * Maps a given dto to a given entity. All external/internal relations are mapped, relations are
+   * linked to their database backed resource if they are not external.
+   *
+   * @param dto    - source of the mapping
+   * @param entity - target of the mapping
+   * @param <S>    dto type
+   */
   public <S extends D> void mapToEntity(@NonNull S dto, @NonNull E entity) {
     // Bean mapping
     dinaMapper.applyDtoToEntity(
@@ -68,10 +85,22 @@ public class DinaMappingLayer<D, E> {
     mapExternalRelationsToEntity(dto, entity);
   }
 
+  /**
+   * Returns a new dto with only the attributes mapped from a given entity.
+   *
+   * @param entity - source of the mapping
+   * @return a new dto mapped from a given source
+   */
   public D mapForDelete(@NonNull E entity) {
     return dinaMapper.toDto(entity, registry.getEntityFieldsPerClass(), Collections.emptySet());
   }
 
+  /**
+   * Maps the external relations from the given source to the given target
+   *
+   * @param source - source of the external relations
+   * @param target - target of the mapping
+   */
   private void mapExternalRelationsToDto(E source, D target) {
     registry.getExternalRelations().forEach(external -> {
       Object id = PropertyUtils.getProperty(source, external);
@@ -85,6 +114,12 @@ public class DinaMappingLayer<D, E> {
     });
   }
 
+  /**
+   * Maps the external relations from the given source to the given target.
+   *
+   * @param source - source of the external relations
+   * @param target - target of the mapping
+   */
   private void mapExternalRelationsToEntity(D source, E target) {
     registry.getExternalRelations().forEach(external -> {
       Object externalRelation = PropertyUtils.getProperty(source, external);
