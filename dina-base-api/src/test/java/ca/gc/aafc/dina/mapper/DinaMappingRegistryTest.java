@@ -24,8 +24,8 @@ public class DinaMappingRegistryTest {
   @Test
   void isCollection() {
     DinaMappingRegistry registry = new DinaMappingRegistry(PersonDTO.class);
-    Assertions.assertTrue(registry.isCollection("departments"));
-    Assertions.assertFalse(registry.isCollection("department"));
+    Assertions.assertTrue(registry.isRelationCollection("departments"));
+    Assertions.assertFalse(registry.isRelationCollection("department"));
   }
 
   @Test

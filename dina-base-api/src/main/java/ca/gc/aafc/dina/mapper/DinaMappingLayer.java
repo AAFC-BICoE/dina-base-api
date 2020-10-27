@@ -172,7 +172,7 @@ public class DinaMappingLayer<D, E> {
     for (Map.Entry<String, Class<?>> relation : relations.entrySet()) {
       String relationName = relation.getKey();
       Class<?> relationType = relation.getValue();
-      if (registry.isCollection(relationName)) {
+      if (registry.isRelationCollection(relationName)) {
         Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(
           source, relationName);
         if (relationValue != null) {

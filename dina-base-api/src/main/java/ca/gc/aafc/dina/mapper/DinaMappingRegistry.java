@@ -7,6 +7,7 @@ import io.crnk.core.resource.annotations.JsonApiRelation;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.lang.reflect.Field;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DinaMappingRegistry {
 
@@ -60,6 +62,20 @@ public class DinaMappingRegistry {
   }
 
   /**
+   * Returns the resolved type of a fieldname for a given source. If the type is a collection, the
+   * first generic type is returned.
+   *
+   * @param source    - source object of the field
+   * @param fieldName - field name
+   * @return Field type or the first genric type if the field is a collection
+   */
+  @SneakyThrows
+  public static Class<?> getResolvedType(Object source, String fieldName) {
+    Class<?> propertyType = PropertyUtils.getPropertyType(source, fieldName);
+    return isCollection(propertyType) ? getGenericType(source.getClass(), fieldName) : propertyType;
+  }
+
+  /**
    * Returns the set of external relation field names tracked by the registry.
    *
    * @return set of external relation field names.
@@ -95,7 +111,7 @@ public class DinaMappingRegistry {
    * @param relationFieldName - field name of the relation.
    * @return Returns true if the relation with a given field name is a Java Collection type.
    */
-  public boolean isCollection(String relationFieldName) {
+  public boolean isRelationCollection(String relationFieldName) {
     return this.collectionBasedRelations.stream().anyMatch(relationFieldName::equalsIgnoreCase);
   }
 
@@ -125,8 +141,8 @@ public class DinaMappingRegistry {
       }
     }
     for (Field field : FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class)) {
-      Class<?> type = DinaMapper.isCollection(field.getType()) ?
-        DinaMapper.getGenericType(field.getDeclaringClass(), field.getName()) : field.getType();
+      Class<?> type = isCollection(field.getType()) ?
+        getGenericType(field.getDeclaringClass(), field.getName()) : field.getType();
       parseJsonIds(type, map, visited);
     }
     return map;
@@ -142,16 +158,27 @@ public class DinaMappingRegistry {
     }
     visited.add(cls);
 
-    List<Field> relations = FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class)
-      .stream()
-      .filter(field -> !field.isAnnotationPresent(JsonApiExternalRelation.class))
-      .collect(Collectors.toList());
-    map.put(cls, relations.stream().map(Field::getName).collect(Collectors.toSet()));
+    RelatedEntity relatedEntity = cls.getAnnotation(RelatedEntity.class);
+    if (relatedEntity != null) {
+      List<Field> relations = FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class)
+        .stream()
+        .filter(field ->
+          !field.isAnnotationPresent(JsonApiExternalRelation.class) &&
+          Stream.of(relatedEntity.value().getDeclaredFields())
+            .map(Field::getName)
+            .anyMatch(field.getName()::equalsIgnoreCase))
+        .collect(Collectors.toList());
+      Set<String> relationsToKeep = relations.stream()
+        .map(Field::getName)
+        .collect(Collectors.toSet());
+      map.put(cls, relationsToKeep);
+      map.put(relatedEntity.value(), relationsToKeep);
 
-    for (Field f : relations) {
-      Class<?> dtoType = DinaMapper.isCollection(f.getType()) ?
-        DinaMapper.getGenericType(f.getDeclaringClass(), f.getName()) : f.getType();
-      parseMappableRelations(dtoType, map, visited);
+      for (Field f : relations) {
+        Class<?> dtoType = isCollection(f.getType()) ?
+          getGenericType(f.getDeclaringClass(), f.getName()) : f.getType();
+        parseMappableRelations(dtoType, map, visited);
+      }
     }
     return map;
   }
@@ -179,7 +206,7 @@ public class DinaMappingRegistry {
   private static Set<String> parseCollectionBasedRelations(Class<?> resourceClass) {
     return FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiRelation.class)
       .stream()
-      .filter(field -> DinaMapper.isCollection(field.getType()))
+      .filter(field -> isCollection(field.getType()))
       .map(Field::getName)
       .collect(Collectors.toSet());
   }
@@ -197,8 +224,8 @@ public class DinaMappingRegistry {
       .filter(field -> !field.isAnnotationPresent(JsonApiExternalRelation.class))
       .collect(Collectors.toMap(
         Field::getName,
-        field -> DinaMapper.isCollection(field.getType()) ?
-          DinaMapper.getGenericType(field.getDeclaringClass(), field.getName()) : field.getType()));
+        field -> isCollection(field.getType()) ?
+          getGenericType(field.getDeclaringClass(), field.getName()) : field.getType()));
   }
 
   /**
@@ -306,6 +333,34 @@ public class DinaMappingRegistry {
   private static boolean isNotMappable(Field field) {
     return field.isAnnotationPresent(DerivedDtoField.class) ||
            Modifier.isFinal(field.getModifiers());
+  }
+
+  /**
+   * Returns the class of the paramterized type at the first position of a given class's given
+   * field.
+   * <p>
+   * given class is assumed to be a {@link ParameterizedType}
+   *
+   * @param source    given class
+   * @param fieldName field name of the given class to parse
+   * @return class of the paramterized type at the first position
+   */
+  @SneakyThrows
+  private static Class<?> getGenericType(Class<?> source, String fieldName) {
+    ParameterizedType genericType = (ParameterizedType) source
+      .getDeclaredField(fieldName)
+      .getGenericType();
+    return (Class<?>) genericType.getActualTypeArguments()[0];
+  }
+
+  /**
+   * Returns true if the given class is a collection
+   *
+   * @param clazz - class to check
+   * @return true if the given class is a collection
+   */
+  private static boolean isCollection(Class<?> clazz) {
+    return Collection.class.isAssignableFrom(clazz);
   }
 
 }

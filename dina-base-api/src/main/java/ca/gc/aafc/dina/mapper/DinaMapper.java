@@ -11,14 +11,12 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.hibernate.Hibernate;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -36,7 +34,6 @@ public class DinaMapper<D, E> {
 
   private final Class<D> dtoClass;
   private final Map<Class<?>, CustomFieldHandler<?, ?>> handlers;
-  private final Map<Class<?>, Set<String>> fieldsPerClass;
   private final DinaMappingRegistry registry;
 
   /**
@@ -53,13 +50,12 @@ public class DinaMapper<D, E> {
    * @param dtoClass - class to map
    */
   public DinaMapper(@NonNull Class<D> dtoClass) {
-    this(dtoClass, new HashMap<>(), new HashMap<>(), new DinaMappingRegistry(dtoClass));
+    this(dtoClass, new HashMap<>(), new DinaMappingRegistry(dtoClass));
     initMaps(dtoClass);
   }
 
   private void initMaps(Class<D> dtoClass) {
     Set<Class<?>> dtoClasses = parseGraph(dtoClass);
-
     for (Class<?> dto : dtoClasses) {
       RelatedEntity annotation = dto.getAnnotation(RelatedEntity.class);
 
@@ -68,9 +64,6 @@ public class DinaMapper<D, E> {
         CustomFieldHandler<?, ?> handler = new CustomFieldHandler<>(dto, relatedEntity);
         handlers.put(dto, handler);
         handlers.put(relatedEntity, handler);
-
-        fieldsPerClass.put(dto, parseFieldNames(dto));
-        fieldsPerClass.put(relatedEntity, parseFieldNames(relatedEntity));
       }
     }
   }
@@ -79,14 +72,16 @@ public class DinaMapper<D, E> {
     return parseGraph(dto, new HashSet<>());
   }
 
+  @SneakyThrows
   private Set<Class<?>> parseGraph(Class<?> dto, Set<Class<?>> visited) {
     if (visited.contains(dto)) {
       return visited;
     }
     visited.add(dto);
 
-    for (Field f : getRelations(dto)) {
-      Class<?> dtoType = isCollection(f.getType()) ? getGenericType(dto, f.getName()) : f.getType();
+    for (Field f : FieldUtils.getFieldsListWithAnnotation(dto, JsonApiRelation.class)) {
+      Class<?> dtoType = DinaMappingRegistry.getResolvedType(
+        dto.getConstructor().newInstance(), f.getName());
       parseGraph(dtoType, visited);
     }
     return visited;
@@ -213,19 +208,17 @@ public class DinaMapper<D, E> {
   ) {
     for (String relationFieldName : relations) {
       if (!hasResolvers(relationFieldName, source.getClass())
-          && containsField(relationFieldName, source.getClass(), target.getClass())) {
+          && containsRelation(relationFieldName, source.getClass(), target.getClass())) {
 
         // Each relation requires a separate tracking set
         Map<Object, Object> currentVisited = new IdentityHashMap<>(visited);
 
-        Class<?> sourceRelationType = PropertyUtils.getPropertyType(source, relationFieldName);
-        Class<?> targetType = getResolvedType(target, relationFieldName);
-
+        Class<?> targetType = DinaMappingRegistry.getResolvedType(target, relationFieldName);
         Object sourceRelation = PropertyUtils.getProperty(source, relationFieldName);
         Object targetRelation = null;
 
         if (sourceRelation != null) {
-          if (isCollection(sourceRelationType)) {
+          if (registry.isRelationCollection(relationFieldName)) {
             targetRelation = ((Collection<?>) sourceRelation).stream()
               .map(ele -> mapRelation(fieldsPerClass, ele, targetType, currentVisited))
               .collect(Collectors.toCollection(ArrayList::new));
@@ -311,77 +304,17 @@ public class DinaMapper<D, E> {
   }
 
   /**
-   * Returns the class of the paramterized type at the first position of a given class's given
-   * field.
-   * <p>
-   * given class is assumed to be a {@link ParameterizedType}
-   *
-   * @param source    given class
-   * @param fieldName field name of the given class to parse
-   * @return class of the paramterized type at the first position
-   */
-  @SneakyThrows
-  public static Class<?> getGenericType(Class<?> source, String fieldName) {
-    ParameterizedType genericType = (ParameterizedType) source
-      .getDeclaredField(fieldName)
-      .getGenericType();
-    return (Class<?>) genericType.getActualTypeArguments()[0];
-  }
-
-  /**
-   * Returns the resolved type of a fieldname for a given source. If the type is a collection, the
-   * first generic type is returned.
-   *
-   * @param source    - source object of the field
-   * @param fieldName - field name
-   * @return Field type or the first genric type if the field is a collection
-   */
-  @SneakyThrows
-  private static Class<?> getResolvedType(Object source, String fieldName) {
-    Class<?> propertyType = PropertyUtils.getPropertyType(source, fieldName);
-    return isCollection(propertyType) ? getGenericType(source.getClass(), fieldName) : propertyType;
-  }
-
-  /**
-   * Returns true if the given class is a collection
-   *
-   * @param clazz - class to check
-   * @return true if the given class is a collection
-   */
-  public static boolean isCollection(Class<?> clazz) {
-    return Collection.class.isAssignableFrom(clazz);
-  }
-
-  /**
-   * Returns the JsonApiRelations for a given class.
-   *
-   * @param cls - class to parse
-   * @return JsonApiRelations for a given class
-   */
-  private static List<Field> getRelations(Class<?> cls) {
-    return FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class);
-  }
-
-  /**
-   * Returns a set of field names for a given class.
-   *
-   * @param cls - class to parse
-   * @return set of field names for a given class.
-   */
-  private static Set<String> parseFieldNames(Class<?> cls) {
-    return Stream.of(cls.getDeclaredFields()).map(Field::getName).collect(Collectors.toSet());
-  }
-
-  /**
-   * Returns true if the given classes all contain the given field.
+   * Returns true if the given classes all contain the given relation.
    *
    * @param field   field to check
    * @param classes classes to check
    * @return true if the given classes all contain the given field.
    */
-  private boolean containsField(String field, Class<?>... classes) {
+  private boolean containsRelation(String field, Class<?>... classes) {
     return Stream.of(classes).allMatch(aClass ->
-      fieldsPerClass.containsKey(aClass) && fieldsPerClass.get(aClass).contains(field));
+      registry.findMappableRelationsForClass(aClass) != null &&
+      registry.findMappableRelationsForClass(aClass).stream().anyMatch(field::equalsIgnoreCase)
+    );
   }
 
   /**
@@ -392,7 +325,6 @@ public class DinaMapper<D, E> {
    * @return rue if the given class and field have custom field resolvers tracked by the mapper.
    */
   private boolean hasResolvers(String field, Class<?> aClass) {
-    return handlers.containsKey(aClass)
-           && handlers.get(aClass).hasCustomFieldResolver(field);
+    return handlers.containsKey(aClass) && handlers.get(aClass).hasCustomFieldResolver(field);
   }
 }
