@@ -13,15 +13,12 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,9 +43,8 @@ public class DinaMappingRegistry {
   private final Map<Class<?>, String> jsonIdFieldNamePerClass;
 
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
-    this.resourceFieldsPerClass =
-      parseFieldsPerClass(resourceClass, new HashMap<>(), DinaMappingRegistry::isNotMappable);
-    this.entityFieldsPerClass = parseFieldsPerEntity();
+    this.resourceFieldsPerClass = new HashMap<>();
+    this.entityFieldsPerClass = new HashMap<>();
     this.mappableRelationsPerClass = new HashMap<>();
     this.relationTypesPerMappableRelation = parseRelationTypesPerRelation(resourceClass);
     this.collectionBasedRelationsPerClass = new HashMap<>();
@@ -141,13 +137,14 @@ public class DinaMappingRegistry {
     }
     visited.add(cls);
 
-    trackJsonId(cls);
-
+    List<Field> allFieldsList = FieldUtils.getAllFieldsList(cls);
     List<Field> relationFields = FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class);
 
+    trackJsonId(cls, allFieldsList);
     RelatedEntity relatedEntity = cls.getAnnotation(RelatedEntity.class);
     if (relatedEntity != null) {
       Class<?> entityType = relatedEntity.value();
+      trackFieldsPerClass(cls, entityType, allFieldsList, relationFields);
       trackMappableRelations(cls, entityType, relationFields);
       trackCollectionBasedRelations(cls, entityType, relationFields);
     }
@@ -162,12 +159,28 @@ public class DinaMappingRegistry {
     }
   }
 
-  private void trackJsonId(Class<?> cls) {
-    for (Field field : FieldUtils.getAllFieldsList(cls)) {
+  private void trackJsonId(Class<?> cls, List<Field> allFieldsList) {
+    for (Field field : allFieldsList) {
       if (field.isAnnotationPresent(JsonApiId.class)) {
         this.jsonIdFieldNamePerClass.put(cls, field.getName());
       }
     }
+  }
+
+  private void trackFieldsPerClass(
+    Class<?> cls,
+    Class<?> entityType,
+    List<Field> allFieldsList,
+    List<Field> relationFields
+  ) {
+    Set<String> fieldsToInclude = allFieldsList.stream()
+      .filter(f -> !relationFields.contains(f) &&
+                   !f.isSynthetic() &&
+                   !DinaMappingRegistry.isNotMappable(f))
+      .map(Field::getName)
+      .collect(Collectors.toSet());
+    this.resourceFieldsPerClass.put(cls, fieldsToInclude);
+    this.entityFieldsPerClass.put(entityType, fieldsToInclude);
   }
 
   private void trackMappableRelations(Class<?> cls, Class<?> entityType, List<Field> relations) {
@@ -232,98 +245,6 @@ public class DinaMappingRegistry {
         Field::getName,
         field -> isCollection(field.getType()) ?
           getGenericType(field.getDeclaringClass(), field.getName()) : field.getType()));
-  }
-
-  /**
-   * Transverses a given class to return a map of fields per class parsed from the given class. Used
-   * to determine the necessary classes and fields per class when mapping a java bean. Fields marked
-   * with {@link JsonApiRelation} will be treated as separate classes to map and will be transversed
-   * and mapped.
-   *
-   * @param <T>            - Type of class
-   * @param clazz          - Class to parse
-   * @param fieldsPerClass - initial map to use
-   * @param ignoreIf       - predicate to return true for fields to be removed
-   * @return a map of fields per class
-   */
-  @SneakyThrows
-  private static <T> Map<Class<?>, Set<String>> parseFieldsPerClass(
-    @NonNull Class<T> clazz,
-    @NonNull Map<Class<?>, Set<String>> fieldsPerClass,
-    @NonNull Predicate<Field> ignoreIf
-  ) {
-    if (fieldsPerClass.containsKey(clazz)) {
-      return fieldsPerClass;
-    }
-
-    List<Field> relationFields = FieldUtils.getFieldsListWithAnnotation(
-      clazz,
-      JsonApiRelation.class
-    );
-
-    Set<String> fieldsToInclude = FieldUtils.getAllFieldsList(clazz).stream()
-      .filter(f -> !relationFields.contains(f) && !f.isSynthetic() && !ignoreIf.test(f))
-      .map(Field::getName)
-      .collect(Collectors.toSet());
-
-    fieldsPerClass.put(clazz, fieldsToInclude);
-
-    parseRelations(clazz, fieldsPerClass, relationFields, ignoreIf);
-
-    return fieldsPerClass;
-  }
-
-  /**
-   * Helper method to parse the fields of a given list of relations and add them to a given map.
-   *
-   * @param <T>            - Type of class
-   * @param clazz          - class containing the relations
-   * @param fieldsPerClass - map to add to
-   * @param relationFields - relation fields to transverse
-   */
-  @SneakyThrows
-  private static <T> void parseRelations(
-    Class<T> clazz,
-    Map<Class<?>, Set<String>> fieldsPerClass,
-    List<Field> relationFields,
-    Predicate<Field> removeIf
-  ) {
-    for (Field relationField : relationFields) {
-      if (Collection.class.isAssignableFrom(relationField.getType())) {
-        ParameterizedType genericType = (ParameterizedType) clazz
-          .getDeclaredField(relationField.getName())
-          .getGenericType();
-        for (Type elementType : genericType.getActualTypeArguments()) {
-          parseFieldsPerClass((Class<?>) elementType, fieldsPerClass, removeIf);
-        }
-      } else {
-        parseFieldsPerClass(relationField.getType(), fieldsPerClass, removeIf);
-      }
-    }
-  }
-
-  /**
-   * Returns a map of fields per entity class.
-   *
-   * @return a map of fields per entity class.
-   */
-  private Map<Class<?>, Set<String>> parseFieldsPerEntity() {
-    return resourceFieldsPerClass.entrySet()
-      .stream()
-      .filter(e -> parseRelatedEntity(e.getKey()) != null)
-      .map(e -> new AbstractMap.SimpleEntry<>(parseRelatedEntity(e.getKey()).value(), e.getValue()))
-      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-  }
-
-  /**
-   * Returns the related entity of a dto (Marked with {@link RelatedEntity}) or else null.
-   *
-   * @param <T>   - Class type
-   * @param clazz - Class with a related entity.
-   * @return the related entity of a dto, or else null
-   */
-  private static <T> RelatedEntity parseRelatedEntity(Class<T> clazz) {
-    return clazz.getAnnotation(RelatedEntity.class);
   }
 
   /**
