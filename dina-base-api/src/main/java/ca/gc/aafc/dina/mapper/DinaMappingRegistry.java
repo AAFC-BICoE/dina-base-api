@@ -24,12 +24,9 @@ import java.util.stream.Stream;
 
 public class DinaMappingRegistry {
 
-  // Tracks the resource graph for bean mapping
+  // Tracks Attributes per class for bean mapping
   @Getter
-  private final Map<Class<?>, Set<String>> resourceFieldsPerClass;
-  // Tracks the entity graph for bean mapping
-  @Getter
-  private final Map<Class<?>, Set<String>> entityFieldsPerClass;
+  private final Map<Class<?>, Set<String>> attributesPerClass;
   // Tracks the relation types per mappable relation
   @Getter
   private final Map<String, Class<?>> relationTypesPerMappableRelation;
@@ -43,8 +40,7 @@ public class DinaMappingRegistry {
   private final Map<Class<?>, String> jsonIdFieldNamePerClass;
 
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
-    this.resourceFieldsPerClass = new HashMap<>();
-    this.entityFieldsPerClass = new HashMap<>();
+    this.attributesPerClass = new HashMap<>();
     this.mappableRelationsPerClass = new HashMap<>();
     this.relationTypesPerMappableRelation = parseRelationTypesPerRelation(resourceClass);
     this.collectionBasedRelationsPerClass = new HashMap<>();
@@ -179,8 +175,8 @@ public class DinaMappingRegistry {
                    !DinaMappingRegistry.isNotMappable(f))
       .map(Field::getName)
       .collect(Collectors.toSet());
-    this.resourceFieldsPerClass.put(cls, fieldsToInclude);
-    this.entityFieldsPerClass.put(entityType, fieldsToInclude);
+    this.attributesPerClass.put(cls, fieldsToInclude);
+    this.attributesPerClass.put(entityType, fieldsToInclude);
   }
 
   private void trackMappableRelations(Class<?> cls, Class<?> entityType, List<Field> relations) {

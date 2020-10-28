@@ -55,7 +55,7 @@ public class DinaMappingLayer<D, E> {
     return entities.stream()
       .map(e -> {
         // Bean mapping
-        D dto = dinaMapper.toDto(e, registry.getEntityFieldsPerClass(), includedRelations);
+        D dto = dinaMapper.toDto(e, registry.getAttributesPerClass(), includedRelations);
         // Map shallow ids fo un-included relations
         mapShallowRelations(e, dto, shallowRelationsToMap);
         // Map External Relations
@@ -77,7 +77,7 @@ public class DinaMappingLayer<D, E> {
     // Bean mapping
     dinaMapper.applyDtoToEntity(
       dto, entity,
-      registry.getResourceFieldsPerClass(),
+      registry.getAttributesPerClass(),
       registry.getRelationTypesPerMappableRelation().keySet());
     // Link relations to Database backed resources
     linkRelations(entity, registry.getRelationTypesPerMappableRelation());
@@ -92,7 +92,7 @@ public class DinaMappingLayer<D, E> {
    * @return a new dto mapped from a given source
    */
   public D mapForDelete(@NonNull E entity) {
-    return dinaMapper.toDto(entity, registry.getEntityFieldsPerClass(), Collections.emptySet());
+    return dinaMapper.toDto(entity, registry.getAttributesPerClass(), Collections.emptySet());
   }
 
   /**
