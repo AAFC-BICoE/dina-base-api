@@ -49,7 +49,7 @@ public class DinaMapper<D, E> {
    *
    * @param dtoClass - class to map
    */
-  public DinaMapper(@NonNull Class<D> dtoClass) {
+  public DinaMapper(Class<D> dtoClass) {
     this(dtoClass, new HashMap<>(), new DinaMappingRegistry(dtoClass));
     initMaps(dtoClass);
   }
