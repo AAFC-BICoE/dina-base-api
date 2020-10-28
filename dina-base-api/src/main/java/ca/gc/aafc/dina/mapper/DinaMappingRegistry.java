@@ -41,7 +41,7 @@ public class DinaMappingRegistry {
   // Tracks external relation types per field name for external relations mapping
   private final Map<String, String> externalNameToTypeMap;
   // Tracks the name of relations which are collections
-  private final Set<String> collectionBasedRelations;
+  private final Map<Class<?>, Set<String>> collectionBasedRelationsPerClass;
   // Track Json Id field names for mapping
   private final Map<Class<?>, String> jsonIdFieldNamePerClass;
 
@@ -52,7 +52,8 @@ public class DinaMappingRegistry {
     this.mappableRelationsPerClass = parseMappableRelations(
       resourceClass, new HashMap<>(), new HashSet<>());
     this.relationTypesPerMappableRelation = parseRelationTypesPerRelation(resourceClass);
-    this.collectionBasedRelations = parseCollectionBasedRelations(resourceClass);
+    this.collectionBasedRelationsPerClass = parseCollectionBasedRelations(
+      resourceClass, new HashMap<>(), new HashSet<>());
     this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
     this.jsonIdFieldNamePerClass = parseJsonIds(resourceClass, new HashMap<>(), new HashSet<>());
   }
@@ -99,13 +100,16 @@ public class DinaMappingRegistry {
   }
 
   /**
-   * Returns true if the relation with a given field name is a Java Collection type.
+   * Returns true if the given classes given relation field name is of a Java collection type.
    *
-   * @param relationFieldName - field name of the relation.
-   * @return Returns true if the relation with a given field name is a Java Collection type.
+   * @param cls               - class to check
+   * @param relationFieldName - field name to check
+   * @return true if the given classes given relation field name is of a Java collection type.
    */
-  public boolean isRelationCollection(String relationFieldName) {
-    return this.collectionBasedRelations.stream().anyMatch(relationFieldName::equalsIgnoreCase);
+  public boolean isRelationCollection(Class<?> cls, String relationFieldName) {
+    return this.collectionBasedRelationsPerClass.containsKey(cls) &&
+           this.collectionBasedRelationsPerClass.get(cls)
+             .stream().anyMatch(relationFieldName::equalsIgnoreCase);
   }
 
   /**
@@ -204,18 +208,38 @@ public class DinaMappingRegistry {
         Field::getName, field -> field.getAnnotation(JsonApiExternalRelation.class).type()));
   }
 
-  /**
-   * Returns a set of relations field names which are a Java Collection type.
-   *
-   * @param resourceClass - a given class with relations.
-   * @return a set of relations field names which are a Java Collection type
-   */
-  private static Set<String> parseCollectionBasedRelations(Class<?> resourceClass) {
-    return FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiRelation.class)
-      .stream()
-      .filter(field -> isCollection(field.getType()))
-      .map(Field::getName)
-      .collect(Collectors.toSet());
+  private static Map<Class<?>, Set<String>> parseCollectionBasedRelations(
+    Class<?> cls,
+    Map<Class<?>, Set<String>> map,
+    Set<Class<?>> visited
+  ) {
+    if (visited.contains(cls)) {
+      return map;
+    }
+    visited.add(cls);
+    RelatedEntity relatedEntity = cls.getAnnotation(RelatedEntity.class);
+    if (relatedEntity != null) {
+      for (Field field : FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class)) {
+        if (isCollection(field.getType())) {
+
+          Set<String> resourceRelations = map.getOrDefault(cls, new HashSet<>());
+          Set<String> relatedEntityRelations = map.getOrDefault(
+            relatedEntity.value(), new HashSet<>());
+
+          resourceRelations.add(field.getName());
+          relatedEntityRelations.add(field.getName());
+
+          map.put(cls, resourceRelations);
+          map.put(relatedEntity.value(), relatedEntityRelations);
+
+          Class<?> genericType = getGenericType(field.getDeclaringClass(), field.getName());
+          parseCollectionBasedRelations(genericType, map, visited);
+        } else {
+          parseCollectionBasedRelations(field.getType(), map, visited);
+        }
+      }
+    }
+    return map;
   }
 
   /**

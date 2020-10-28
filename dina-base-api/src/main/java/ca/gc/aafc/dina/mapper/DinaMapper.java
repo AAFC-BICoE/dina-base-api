@@ -218,7 +218,7 @@ public class DinaMapper<D, E> {
         Object targetRelation = null;
 
         if (sourceRelation != null) {
-          if (registry.isRelationCollection(relationFieldName)) {
+          if (registry.isRelationCollection(source.getClass(), relationFieldName)) {
             targetRelation = ((Collection<?>) sourceRelation).stream()
               .map(ele -> mapRelation(fieldsPerClass, ele, targetType, currentVisited))
               .collect(Collectors.toCollection(ArrayList::new));

@@ -1,9 +1,13 @@
 package ca.gc.aafc.dina.mapper;
 
+import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.TaskDTO;
+import ca.gc.aafc.dina.entity.ComplexObject;
+import ca.gc.aafc.dina.entity.Department;
+import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.entity.Task;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -22,10 +26,14 @@ public class DinaMappingRegistryTest {
   }
 
   @Test
-  void isCollection() {
+  void isRelationCollection() {
     DinaMappingRegistry registry = new DinaMappingRegistry(PersonDTO.class);
-    Assertions.assertTrue(registry.isRelationCollection("departments"));
-    Assertions.assertFalse(registry.isRelationCollection("department"));
+    Assertions.assertTrue(registry.isRelationCollection(PersonDTO.class, "departments"));
+    Assertions.assertTrue(registry.isRelationCollection(Person.class, "departments"));
+    Assertions.assertTrue(registry.isRelationCollection(DepartmentDto.class, "employees"));
+    Assertions.assertTrue(registry.isRelationCollection(Department.class, "employees"));
+    Assertions.assertFalse(registry.isRelationCollection(PersonDTO.class, "department"));
+    Assertions.assertFalse(registry.isRelationCollection(Person.class, "department"));
   }
 
   @Test
@@ -49,5 +57,13 @@ public class DinaMappingRegistryTest {
     MatcherAssert.assertThat(
       registry.getExternalRelations(),
       Matchers.containsInAnyOrder("acMetaDataCreator", "originalAuthor"));
+  }
+
+  @Test
+  void getResolvedType() {
+    ProjectDTO dto = ProjectDTO.builder().build();
+    Assertions.assertEquals(
+      ComplexObject.class, DinaMappingRegistry.getResolvedType(dto, "nameTranslations"));
+    Assertions.assertEquals(TaskDTO.class, DinaMappingRegistry.getResolvedType(dto, "task"));
   }
 }

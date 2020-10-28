@@ -34,9 +34,9 @@ public class DinaMappingLayer<D, E> {
   }
 
   /**
-   * Returns a list of resources mapped from the given entities. Relations included in the query spec
-   * are fully mapped. External relations are always mapped. Relations not included in the query
-   * spec are shallow mapped (natural id only).
+   * Returns a list of resources mapped from the given entities. Relations included in the query
+   * spec are fully mapped. External relations are always mapped. Relations not included in the
+   * query spec are shallow mapped (natural id only).
    *
    * @param query    - query spec of the request
    * @param entities - entities to map
@@ -172,7 +172,7 @@ public class DinaMappingLayer<D, E> {
     for (Map.Entry<String, Class<?>> relation : relations.entrySet()) {
       String relationName = relation.getKey();
       Class<?> relationType = relation.getValue();
-      if (registry.isRelationCollection(relationName)) {
+      if (registry.isRelationCollection(source.getClass(), relationName)) {
         Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(
           source, relationName);
         if (relationValue != null) {
