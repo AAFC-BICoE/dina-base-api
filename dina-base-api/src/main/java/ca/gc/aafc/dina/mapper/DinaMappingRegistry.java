@@ -49,13 +49,13 @@ public class DinaMappingRegistry {
     this.resourceFieldsPerClass =
       parseFieldsPerClass(resourceClass, new HashMap<>(), DinaMappingRegistry::isNotMappable);
     this.entityFieldsPerClass = parseFieldsPerEntity();
-    this.mappableRelationsPerClass = parseMappableRelations(
-      resourceClass, new HashMap<>(), new HashSet<>());
+    this.mappableRelationsPerClass = new HashMap<>();
     this.relationTypesPerMappableRelation = parseRelationTypesPerRelation(resourceClass);
     this.collectionBasedRelationsPerClass = parseCollectionBasedRelations(
       resourceClass, new HashMap<>(), new HashSet<>());
     this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
-    this.jsonIdFieldNamePerClass = parseJsonIds(resourceClass, new HashMap<>(), new HashSet<>());
+    this.jsonIdFieldNamePerClass = new HashMap<>();
+    parseGraph(resourceClass, new HashSet<>());
   }
 
   /**
@@ -136,62 +136,46 @@ public class DinaMappingRegistry {
     return isCollection(propertyType) ? getGenericType(source.getClass(), fieldName) : propertyType;
   }
 
-  private static Map<Class<?>, String> parseJsonIds(
-    Class<?> cls,
-    Map<Class<?>, String> map,
-    Set<Class<?>> visited
-  ) {
+  private void parseGraph(Class<?> cls, Set<Class<?>> visited) {
     if (visited.contains(cls)) {
-      return map;
+      return;
     }
     visited.add(cls);
 
+    //json ids
     for (Field field : FieldUtils.getAllFieldsList(cls)) {
       if (field.isAnnotationPresent(JsonApiId.class)) {
-        map.put(cls, field.getName());
+        this.jsonIdFieldNamePerClass.put(cls, field.getName());
       }
     }
-    for (Field field : FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class)) {
-      Class<?> type = isCollection(field.getType()) ?
-        getGenericType(field.getDeclaringClass(), field.getName()) : field.getType();
-      parseJsonIds(type, map, visited);
-    }
-    return map;
-  }
-
-  private static Map<Class<?>, Set<String>> parseMappableRelations(
-    Class<?> cls,
-    Map<Class<?>, Set<String>> map,
-    Set<Class<?>> visited
-  ) {
-    if (visited.contains(cls)) {
-      return map;
-    }
-    visited.add(cls);
 
     RelatedEntity relatedEntity = cls.getAnnotation(RelatedEntity.class);
+
+    List<Field> relationFields = FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class);
     if (relatedEntity != null) {
-      List<Field> relations = FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class)
-        .stream()
+      Class<?> entityType = relatedEntity.value();
+
+      //mappable relations
+      Set<String> mappableRelations = relationFields.stream()
         .filter(field ->
           !field.isAnnotationPresent(JsonApiExternalRelation.class) &&
-          Stream.of(relatedEntity.value().getDeclaredFields())
+          Stream.of(entityType.getDeclaredFields())
             .map(Field::getName)
             .anyMatch(field.getName()::equalsIgnoreCase))
-        .collect(Collectors.toList());
-      Set<String> relationsToKeep = relations.stream()
         .map(Field::getName)
         .collect(Collectors.toSet());
-      map.put(cls, relationsToKeep);
-      map.put(relatedEntity.value(), relationsToKeep);
+      this.mappableRelationsPerClass.put(cls, mappableRelations);
+      this.mappableRelationsPerClass.put(entityType, mappableRelations);
+    }
 
-      for (Field f : relations) {
-        Class<?> dtoType = isCollection(f.getType()) ?
-          getGenericType(f.getDeclaringClass(), f.getName()) : f.getType();
-        parseMappableRelations(dtoType, map, visited);
+    for (Field field : relationFields) {
+      if (isCollection(field.getType())) {
+        Class<?> genericType = getGenericType(field.getDeclaringClass(), field.getName());
+        parseGraph(genericType, visited);
+      } else {
+        parseGraph(field.getType(), visited);
       }
     }
-    return map;
   }
 
   /**

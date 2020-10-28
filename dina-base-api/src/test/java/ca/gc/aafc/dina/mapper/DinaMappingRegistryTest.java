@@ -26,6 +26,23 @@ public class DinaMappingRegistryTest {
   }
 
   @Test
+  void findMappableRelationsForClass() {
+    DinaMappingRegistry registry = new DinaMappingRegistry(PersonDTO.class);
+    MatcherAssert.assertThat(
+      registry.findMappableRelationsForClass(PersonDTO.class),
+      Matchers.containsInAnyOrder("department", "departments"));
+    MatcherAssert.assertThat(
+      registry.findMappableRelationsForClass(Person.class),
+      Matchers.containsInAnyOrder("department", "departments"));
+    MatcherAssert.assertThat(
+      registry.findMappableRelationsForClass(DepartmentDto.class),
+      Matchers.containsInAnyOrder("employees"));
+    MatcherAssert.assertThat(
+      registry.findMappableRelationsForClass(Department.class),
+      Matchers.containsInAnyOrder("employees"));
+  }
+
+  @Test
   void isRelationCollection() {
     DinaMappingRegistry registry = new DinaMappingRegistry(PersonDTO.class);
     Assertions.assertTrue(registry.isRelationCollection(PersonDTO.class, "departments"));
