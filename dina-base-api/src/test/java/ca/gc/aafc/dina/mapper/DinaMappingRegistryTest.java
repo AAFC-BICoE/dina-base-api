@@ -24,7 +24,8 @@ public class DinaMappingRegistryTest {
     Assertions.assertEquals("uuid", registry.findJsonIdFieldName(ProjectDTO.class));
     Assertions.assertEquals("uuid", registry.findJsonIdFieldName(TaskDTO.class));
     Assertions.assertEquals("id", registry.findJsonIdFieldName(ExternalRelationDto.class));
-    Assertions.assertNull(registry.findJsonIdFieldName(Task.class));
+    Assertions.assertThrows(
+      IllegalArgumentException.class, () -> registry.findJsonIdFieldName(Task.class));
   }
 
   @Test

@@ -35,21 +35,24 @@ public class DinaMappingRegistry {
   private final Map<Class<?>, String> jsonIdFieldNamePerClass;
 
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
+    this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
     this.attributesPerClass = new HashMap<>();
     this.mappableRelationsPerClass = new HashMap<>();
-    this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
     this.jsonIdFieldNamePerClass = new HashMap<>();
     parseGraph(resourceClass, new HashSet<>());
   }
 
   /**
-   * Returns a set of the mappable relations for a given class, or null if a given class is not
-   * tracked.
+   * Returns a set of the mappable relations for a given class.
    *
    * @param cls - class with relations
    * @return Returns a set of the mappable relations for a given class.
+   * @throws IllegalArgumentException if the class is not tracked by the registry
    */
   public Set<InternalRelation> findMappableRelationsForClass(Class<?> cls) {
+    if (!this.mappableRelationsPerClass.containsKey(cls)) {
+      throw new IllegalArgumentException(cls.getSimpleName() + " is not tracked by the registry");
+    }
     return this.mappableRelationsPerClass.get(cls);
   }
 
@@ -88,8 +91,12 @@ public class DinaMappingRegistry {
    *
    * @param cls - cls with json id field
    * @return the json id field name of a given class.
+   * @throws IllegalArgumentException if the class is not tracked by the registry
    */
   public String findJsonIdFieldName(Class<?> cls) {
+    if (!this.jsonIdFieldNamePerClass.containsKey(cls)) {
+      throw new IllegalArgumentException(cls.getSimpleName() + " is not tracked by the registry");
+    }
     return this.jsonIdFieldNamePerClass.get(cls);
   }
 
@@ -175,14 +182,13 @@ public class DinaMappingRegistry {
    */
   private static Map<String, String> parseExternalRelationNamesToType(Class<?> resourceClass) {
     return FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
-      .stream()
-      .collect(Collectors.toMap(
+      .stream().collect(Collectors.toMap(
         Field::getName, field -> field.getAnnotation(JsonApiExternalRelation.class).type()));
   }
 
   /**
-   * Returns true if the dina repo should not map the given field. currently that means if the field
-   * is generated (Marked with {@link DerivedDtoField}) or final.
+   * Returns true if the dina repo should map the given field. currently that means if the field is
+   * not generated (Marked with {@link DerivedDtoField}) or final.
    *
    * @param field - field to evaluate
    * @return - true if the dina repo should not map the given field
@@ -193,6 +199,15 @@ public class DinaMappingRegistry {
            && !field.isSynthetic();
   }
 
+  /**
+   * Returns true if the dina repo should map the given relation. A relation should be mapped if it
+   * is not external, and present in the given dto and entity classes.
+   *
+   * @param dto              - resource class of the relation
+   * @param entity           - entity class of the relation
+   * @param dtoRelationField - relation field to map
+   * @return true if the dina repo should map the given relation.
+   */
   private static boolean isRelationMappable(Class<?> dto, Class<?> entity, Field dtoRelationField) {
     return !dtoRelationField.isAnnotationPresent(JsonApiExternalRelation.class) &&
            Stream.of(entity.getDeclaredFields())
@@ -204,7 +219,7 @@ public class DinaMappingRegistry {
   }
 
   /**
-   * Returns the class of the paramterized type at the first position of a given class's given
+   * Returns the class of the parameterized type at the first position of a given class's given
    * field.
    * <p>
    * given class is assumed to be a {@link ParameterizedType}
@@ -231,6 +246,9 @@ public class DinaMappingRegistry {
     return Collection.class.isAssignableFrom(clazz);
   }
 
+  /**
+   * Internal Relation Representing a field of class to be mapped
+   */
   @Builder
   @Getter
   public static class InternalRelation {
