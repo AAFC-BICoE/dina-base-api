@@ -114,8 +114,7 @@ public class DinaMappingRegistry {
 
     List<Field> allFieldsList = FieldUtils.getAllFieldsList(dtoClass);
     List<Field> relationFields = FieldUtils.getFieldsListWithAnnotation(
-      dtoClass,
-      JsonApiRelation.class);
+      dtoClass, JsonApiRelation.class);
 
     trackJsonId(dtoClass, allFieldsList);
     RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
