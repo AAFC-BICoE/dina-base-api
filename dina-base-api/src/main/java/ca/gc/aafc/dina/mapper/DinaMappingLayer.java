@@ -115,6 +115,8 @@ public class DinaMappingLayer<D, E> {
             .type(registry.findExternalType(external))
             .id(id.toString())
             .build());
+      } else {
+        PropertyUtils.setProperty(target, external, null);
       }
     });
   }
@@ -132,6 +134,8 @@ public class DinaMappingLayer<D, E> {
         String jsonIdFieldName = registry.findJsonIdFieldName(ExternalRelationDto.class);
         PropertyUtils.setProperty(target, external,
           UUID.fromString(PropertyUtils.getProperty(externalRelation, jsonIdFieldName).toString()));
+      } else {
+        PropertyUtils.setProperty(target, external, null);
       }
     });
   }
