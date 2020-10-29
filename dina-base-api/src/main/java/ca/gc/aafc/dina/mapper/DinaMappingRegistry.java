@@ -4,10 +4,10 @@ import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.lang.reflect.Field;
@@ -27,23 +27,16 @@ public class DinaMappingRegistry {
   // Tracks Attributes per class for bean mapping
   @Getter
   private final Map<Class<?>, Set<String>> attributesPerClass;
-  // Tracks the relation types per mappable relation
-  @Getter
-  private final Map<String, Class<?>> relationTypesPerMappableRelation;
   // Tracks the mappable relations per class
-  private final Map<Class<?>, Set<String>> mappableRelationsPerClass;
+  private final Map<Class<?>, Set<InternalRelation>> mappableRelationsPerClass;
   // Tracks external relation types per field name for external relations mapping
   private final Map<String, String> externalNameToTypeMap;
-  // Tracks the name of relations which are collections
-  private final Map<Class<?>, Set<String>> collectionBasedRelationsPerClass;
   // Track Json Id field names for mapping
   private final Map<Class<?>, String> jsonIdFieldNamePerClass;
 
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
     this.attributesPerClass = new HashMap<>();
     this.mappableRelationsPerClass = new HashMap<>();
-    this.relationTypesPerMappableRelation = parseRelationTypesPerRelation(resourceClass);
-    this.collectionBasedRelationsPerClass = new HashMap<>();
     this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
     this.jsonIdFieldNamePerClass = new HashMap<>();
     parseGraph(resourceClass, new HashSet<>());
@@ -56,7 +49,7 @@ public class DinaMappingRegistry {
    * @param cls - class with relations
    * @return Returns a set of the mappable relations for a given class.
    */
-  public Set<String> findMappableRelationsForClass(Class<?> cls) {
+  public Set<InternalRelation> findMappableRelationsForClass(Class<?> cls) {
     return this.mappableRelationsPerClass.get(cls);
   }
 
@@ -91,19 +84,6 @@ public class DinaMappingRegistry {
   }
 
   /**
-   * Returns true if the given classes given relation field name is of a Java collection type.
-   *
-   * @param cls               - class to check
-   * @param relationFieldName - field name to check
-   * @return true if the given classes given relation field name is of a Java collection type.
-   */
-  public boolean isRelationCollection(Class<?> cls, String relationFieldName) {
-    return this.collectionBasedRelationsPerClass.containsKey(cls) &&
-           this.collectionBasedRelationsPerClass.get(cls)
-             .stream().anyMatch(relationFieldName::equalsIgnoreCase);
-  }
-
-  /**
    * Returns the json id field name of a given class.
    *
    * @param cls - cls with json id field
@@ -111,20 +91,6 @@ public class DinaMappingRegistry {
    */
   public String findJsonIdFieldName(Class<?> cls) {
     return this.jsonIdFieldNamePerClass.get(cls);
-  }
-
-  /**
-   * Returns the resolved type of a fieldname for a given source. If the type is a collection, the
-   * first generic type is returned.
-   *
-   * @param source    - source object of the field
-   * @param fieldName - field name
-   * @return Field type or the first genric type if the field is a collection
-   */
-  @SneakyThrows
-  public static Class<?> getResolvedType(Object source, String fieldName) {
-    Class<?> propertyType = PropertyUtils.getPropertyType(source, fieldName);
-    return isCollection(propertyType) ? getGenericType(source.getClass(), fieldName) : propertyType;
   }
 
   private void parseGraph(Class<?> cls, Set<Class<?>> visited) {
@@ -142,7 +108,6 @@ public class DinaMappingRegistry {
       Class<?> entityType = relatedEntity.value();
       trackFieldsPerClass(cls, entityType, allFieldsList, relationFields);
       trackMappableRelations(cls, entityType, relationFields);
-      trackCollectionBasedRelations(cls, entityType, relationFields);
     }
 
     for (Field field : relationFields) {
@@ -179,37 +144,31 @@ public class DinaMappingRegistry {
     this.attributesPerClass.put(entityType, fieldsToInclude);
   }
 
-  private void trackMappableRelations(Class<?> cls, Class<?> entityType, List<Field> relations) {
-    Set<String> mappableRelations = relations.stream()
+  private void trackMappableRelations(Class<?> dto, Class<?> entity, List<Field> relations) {
+    Set<InternalRelation> mappableRelations = relations.stream()
       .filter(field ->
         !field.isAnnotationPresent(JsonApiExternalRelation.class) &&
-        Stream.of(entityType.getDeclaredFields())
+        Stream.of(entity.getDeclaredFields())
           .map(Field::getName).anyMatch(field.getName()::equalsIgnoreCase))
-      .map(Field::getName)
+      .map(DinaMappingRegistry::mapToInternalRelation)
       .collect(Collectors.toSet());
-    this.mappableRelationsPerClass.put(cls, mappableRelations);
-    this.mappableRelationsPerClass.put(entityType, mappableRelations);
+    this.mappableRelationsPerClass.put(dto, mappableRelations);
+
+    this.mappableRelationsPerClass.put(entity, mappableRelations.stream().map(
+      ir -> InternalRelation.builder().name(ir.getName()).isCollection(ir.isCollection())
+        .elementType(ir.getElementType().getAnnotation(RelatedEntity.class).value()).build()
+    ).collect(Collectors.toSet()));
   }
 
-  private void trackCollectionBasedRelations(
-    Class<?> cls,
-    Class<?> entityType,
-    List<Field> relations
-  ) {
-    Set<String> collectionRelations = relations.stream()
-      .filter(field -> isCollection(field.getType()))
-      .map(Field::getName)
-      .collect(Collectors.toSet());
-
-    Set<String> resourceRelations = this.collectionBasedRelationsPerClass.getOrDefault(
-      cls, new HashSet<>());
-    Set<String> relatedEntityRelations = this.collectionBasedRelationsPerClass.getOrDefault(
-      entityType, new HashSet<>());
-    resourceRelations.addAll(collectionRelations);
-    relatedEntityRelations.addAll(collectionRelations);
-
-    this.collectionBasedRelationsPerClass.put(cls, resourceRelations);
-    this.collectionBasedRelationsPerClass.put(entityType, relatedEntityRelations);
+  private static InternalRelation mapToInternalRelation(Field field) {
+    if (isCollection(field.getType())) {
+      Class<?> genericType = getGenericType(field.getDeclaringClass(), field.getName());
+      return InternalRelation.builder()
+        .name(field.getName()).isCollection(true).elementType(genericType).build();
+    } else {
+      return InternalRelation.builder()
+        .name(field.getName()).isCollection(false).elementType(field.getType()).build();
+    }
   }
 
   /**
@@ -224,23 +183,6 @@ public class DinaMappingRegistry {
       .stream()
       .collect(Collectors.toMap(
         Field::getName, field -> field.getAnnotation(JsonApiExternalRelation.class).type()));
-  }
-
-  /**
-   * Returns a map of relation types per relation field name that are not external relations and are
-   * eligible for bean mapping and relation linking to a db backed source. relations that are
-   * collections will be mapped to their collections generic type.
-   *
-   * @param resourceClass - a given class with relations.
-   * @return a map of relation field names per class that are not external relations
-   */
-  private static Map<String, Class<?>> parseRelationTypesPerRelation(Class<?> resourceClass) {
-    return FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiRelation.class).stream()
-      .filter(field -> !field.isAnnotationPresent(JsonApiExternalRelation.class))
-      .collect(Collectors.toMap(
-        Field::getName,
-        field -> isCollection(field.getType()) ?
-          getGenericType(field.getDeclaringClass(), field.getName()) : field.getType()));
   }
 
   /**
@@ -283,4 +225,11 @@ public class DinaMappingRegistry {
     return Collection.class.isAssignableFrom(clazz);
   }
 
+  @Builder
+  @Getter
+  public static class InternalRelation {
+    private final String name;
+    private final Class<?> elementType;
+    private final boolean isCollection;
+  }
 }

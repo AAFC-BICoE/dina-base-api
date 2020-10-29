@@ -1,16 +1,13 @@
 package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
-import io.crnk.core.resource.annotations.JsonApiRelation;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.hibernate.Hibernate;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -79,10 +76,8 @@ public class DinaMapper<D, E> {
     }
     visited.add(dto);
 
-    for (Field f : FieldUtils.getFieldsListWithAnnotation(dto, JsonApiRelation.class)) {
-      Class<?> dtoType = DinaMappingRegistry.getResolvedType(
-        dto.getConstructor().newInstance(), f.getName());
-      parseGraph(dtoType, visited);
+    for (DinaMappingRegistry.InternalRelation rel : this.registry.findMappableRelationsForClass(dto)) {
+      parseGraph(rel.getElementType(), visited);
     }
     return visited;
   }
@@ -207,18 +202,20 @@ public class DinaMapper<D, E> {
     Map<Object, Object> visited
   ) {
     for (String relationFieldName : relations) {
-      if (!hasResolvers(relationFieldName, source.getClass())
-          && containsRelation(relationFieldName, source.getClass(), target.getClass())) {
+      DinaMappingRegistry.InternalRelation internalRelation = findInternalRelation(
+        target, relationFieldName);
+
+      if (!hasResolvers(relationFieldName, source.getClass()) && internalRelation != null) {
 
         // Each relation requires a separate tracking set
         Map<Object, Object> currentVisited = new IdentityHashMap<>(visited);
 
-        Class<?> targetType = DinaMappingRegistry.getResolvedType(target, relationFieldName);
+        Class<?> targetType = internalRelation.getElementType();
         Object sourceRelation = PropertyUtils.getProperty(source, relationFieldName);
         Object targetRelation = null;
 
         if (sourceRelation != null) {
-          if (registry.isRelationCollection(source.getClass(), relationFieldName)) {
+          if (internalRelation.isCollection()) {
             targetRelation = ((Collection<?>) sourceRelation).stream()
               .map(ele -> mapRelation(fieldsPerClass, ele, targetType, currentVisited))
               .collect(Collectors.toCollection(ArrayList::new));
@@ -257,25 +254,28 @@ public class DinaMapper<D, E> {
       return null;
     }
 
-    if (visited.containsKey(source)) {
-      return visited.get(source);
+    Object unBoxed = Hibernate.unproxy(source);
+    if (visited.containsKey(unBoxed)) {
+      return visited.get(unBoxed);
     }
 
     Object target = targetType.getDeclaredConstructor().newInstance();
 
-    Set<String> set1 = registry.findMappableRelationsForClass(source.getClass());
-    Set<String> set2 = registry.findMappableRelationsForClass(targetType);
+    Set<String> set1 = registry.findMappableRelationsForClass(unBoxed.getClass()).stream()
+      .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());
+    Set<String> set2 = registry.findMappableRelationsForClass(targetType).stream()
+      .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());
 
     /*
      * Here we check which side had the relationships ( source or target ), only one
      * side contains the relationships.
      */
     if (CollectionUtils.isNotEmpty(set1)) {
-      mapSourceToTarget(source, target, fields, set1, visited);
+      mapSourceToTarget(unBoxed, target, fields, set1, visited);
     } else if (CollectionUtils.isNotEmpty(set2)) {
-      mapSourceToTarget(source, target, fields, set2, visited);
+      mapSourceToTarget(unBoxed, target, fields, set2, visited);
     } else {
-      mapSourceToTarget(source, target, fields, Collections.emptySet(), visited);
+      mapSourceToTarget(unBoxed, target, fields, Collections.emptySet(), visited);
     }
     return target;
   }
@@ -304,20 +304,6 @@ public class DinaMapper<D, E> {
   }
 
   /**
-   * Returns true if the given classes all contain the given relation.
-   *
-   * @param field   field to check
-   * @param classes classes to check
-   * @return true if the given classes all contain the given field.
-   */
-  private boolean containsRelation(String field, Class<?>... classes) {
-    return Stream.of(classes).allMatch(aClass ->
-      registry.findMappableRelationsForClass(aClass) != null &&
-      registry.findMappableRelationsForClass(aClass).stream().anyMatch(field::equalsIgnoreCase)
-    );
-  }
-
-  /**
    * Returns true if the given class and field have custom field resolvers tracked by the mapper
    *
    * @param field  field to check
@@ -326,5 +312,16 @@ public class DinaMapper<D, E> {
    */
   private boolean hasResolvers(String field, Class<?> aClass) {
     return handlers.containsKey(aClass) && handlers.get(aClass).hasCustomFieldResolver(field);
+  }
+
+  private <T> DinaMappingRegistry.InternalRelation findInternalRelation(
+    T target,
+    String relationFieldName
+  ) {
+    return registry.findMappableRelationsForClass(target.getClass())
+      .stream()
+      .filter(ir -> ir.getName().equalsIgnoreCase(relationFieldName))
+      .findFirst()
+      .orElse(null);
   }
 }

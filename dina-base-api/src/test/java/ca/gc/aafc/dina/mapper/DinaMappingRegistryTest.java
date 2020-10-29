@@ -5,14 +5,16 @@ import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.TaskDTO;
-import ca.gc.aafc.dina.entity.ComplexObject;
 import ca.gc.aafc.dina.entity.Department;
+import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.entity.Task;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Set;
 
 public class DinaMappingRegistryTest {
 
@@ -26,31 +28,63 @@ public class DinaMappingRegistryTest {
   }
 
   @Test
-  void findMappableRelationsForClass() {
+  void findMappableRelationsForClass_DtoClass_MappableRelationsFound() {
     DinaMappingRegistry registry = new DinaMappingRegistry(PersonDTO.class);
-    MatcherAssert.assertThat(
-      registry.findMappableRelationsForClass(PersonDTO.class),
-      Matchers.containsInAnyOrder("department", "departments"));
-    MatcherAssert.assertThat(
-      registry.findMappableRelationsForClass(Person.class),
-      Matchers.containsInAnyOrder("department", "departments"));
-    MatcherAssert.assertThat(
-      registry.findMappableRelationsForClass(DepartmentDto.class),
-      Matchers.containsInAnyOrder("employees"));
-    MatcherAssert.assertThat(
-      registry.findMappableRelationsForClass(Department.class),
-      Matchers.containsInAnyOrder("employees"));
+
+    Set<DinaMappingRegistry.InternalRelation> results = registry
+      .findMappableRelationsForClass(PersonDTO.class);
+
+    Assertions.assertEquals(2, results.size());
+
+    DinaMappingRegistry.InternalRelation resultRelation = results.stream()
+      .filter(ir -> ir.getName().equals("department")).findFirst().orElse(null);
+    Assertions.assertNotNull(resultRelation);
+    Assertions.assertEquals(DepartmentDto.class, resultRelation.getElementType());
+    Assertions.assertFalse(resultRelation.isCollection());
+
+    DinaMappingRegistry.InternalRelation resultCollectionRelation = results.stream()
+      .filter(ir -> ir.getName().equals("departments")).findFirst().orElse(null);
+    Assertions.assertNotNull(resultCollectionRelation);
+    Assertions.assertEquals(DepartmentDto.class, resultCollectionRelation.getElementType());
+    Assertions.assertTrue(resultCollectionRelation.isCollection());
   }
 
   @Test
-  void isRelationCollection() {
+  void findMappableRelationsForClass_EntityClass_MappableRelationsFound() {
     DinaMappingRegistry registry = new DinaMappingRegistry(PersonDTO.class);
-    Assertions.assertTrue(registry.isRelationCollection(PersonDTO.class, "departments"));
-    Assertions.assertTrue(registry.isRelationCollection(Person.class, "departments"));
-    Assertions.assertTrue(registry.isRelationCollection(DepartmentDto.class, "employees"));
-    Assertions.assertTrue(registry.isRelationCollection(Department.class, "employees"));
-    Assertions.assertFalse(registry.isRelationCollection(PersonDTO.class, "department"));
-    Assertions.assertFalse(registry.isRelationCollection(Person.class, "department"));
+
+    Set<DinaMappingRegistry.InternalRelation> results = registry
+      .findMappableRelationsForClass(Person.class);
+
+    Assertions.assertEquals(2, results.size());
+
+    DinaMappingRegistry.InternalRelation resultRelation = results.stream()
+      .filter(ir -> ir.getName().equals("department")).findFirst().orElse(null);
+    Assertions.assertNotNull(resultRelation);
+    Assertions.assertEquals(Department.class, resultRelation.getElementType());
+    Assertions.assertFalse(resultRelation.isCollection());
+
+    DinaMappingRegistry.InternalRelation resultCollectionRelation = results.stream()
+      .filter(ir -> ir.getName().equals("departments")).findFirst().orElse(null);
+    Assertions.assertNotNull(resultCollectionRelation);
+    Assertions.assertEquals(Department.class, resultCollectionRelation.getElementType());
+    Assertions.assertTrue(resultCollectionRelation.isCollection());
+  }
+
+  @Test
+  void findMappableRelationsForClass_NestedRelations_NestedRelationsFound() {
+    DinaMappingRegistry registry = new DinaMappingRegistry(PersonDTO.class);
+
+    Set<DinaMappingRegistry.InternalRelation> results = registry
+      .findMappableRelationsForClass(Department.class);
+
+    Assertions.assertEquals(1, results.size());
+
+    DinaMappingRegistry.InternalRelation resultRelation = results.stream()
+      .filter(ir -> ir.getName().equals("employees")).findFirst().orElse(null);
+    Assertions.assertNotNull(resultRelation);
+    Assertions.assertEquals(Employee.class, resultRelation.getElementType());
+    Assertions.assertTrue(resultRelation.isCollection());
   }
 
   @Test
@@ -76,11 +110,4 @@ public class DinaMappingRegistryTest {
       Matchers.containsInAnyOrder("acMetaDataCreator", "originalAuthor"));
   }
 
-  @Test
-  void getResolvedType() {
-    ProjectDTO dto = ProjectDTO.builder().build();
-    Assertions.assertEquals(
-      ComplexObject.class, DinaMappingRegistry.getResolvedType(dto, "nameTranslations"));
-    Assertions.assertEquals(TaskDTO.class, DinaMappingRegistry.getResolvedType(dto, "task"));
-  }
 }
