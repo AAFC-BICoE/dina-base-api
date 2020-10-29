@@ -144,10 +144,7 @@ public class DinaMappingRegistry {
 
   private void trackMappableRelations(Class<?> dto, Class<?> entity, List<Field> relations) {
     Set<InternalRelation> mappableRelations = relations.stream()
-      .filter(field ->
-        !field.isAnnotationPresent(JsonApiExternalRelation.class) &&
-        Stream.of(entity.getDeclaredFields())
-          .map(Field::getName).anyMatch(field.getName()::equalsIgnoreCase))
+      .filter(field -> isRelationMappable(dto, entity, field))
       .map(DinaMappingRegistry::mapToInternalRelation)
       .collect(Collectors.toSet());
     this.mappableRelationsPerClass.put(dto, mappableRelations);
@@ -194,6 +191,16 @@ public class DinaMappingRegistry {
     return !field.isAnnotationPresent(DerivedDtoField.class)
            && !Modifier.isFinal(field.getModifiers())
            && !field.isSynthetic();
+  }
+
+  private static boolean isRelationMappable(Class<?> dto, Class<?> entity, Field dtoRelationField) {
+    return !dtoRelationField.isAnnotationPresent(JsonApiExternalRelation.class) &&
+           Stream.of(entity.getDeclaredFields())
+             .map(Field::getName)
+             .anyMatch(dtoRelationField.getName()::equalsIgnoreCase) &&
+           Stream.of(dto.getDeclaredFields())
+             .map(Field::getName)
+             .anyMatch(dtoRelationField.getName()::equalsIgnoreCase);
   }
 
   /**
