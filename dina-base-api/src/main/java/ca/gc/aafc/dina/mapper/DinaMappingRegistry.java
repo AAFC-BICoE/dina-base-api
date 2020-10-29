@@ -39,7 +39,7 @@ public class DinaMappingRegistry {
     this.attributesPerClass = new HashMap<>();
     this.mappableRelationsPerClass = new HashMap<>();
     this.jsonIdFieldNamePerClass = new HashMap<>();
-    parseGraph(resourceClass, new HashSet<>());
+    initTrackingMaps(resourceClass, new HashSet<>());
   }
 
   /**
@@ -106,43 +106,45 @@ public class DinaMappingRegistry {
     return this.jsonIdFieldNamePerClass.get(cls);
   }
 
-  private void parseGraph(Class<?> cls, Set<Class<?>> visited) {
-    if (visited.contains(cls)) {
+  private void initTrackingMaps(Class<?> dtoClass, Set<Class<?>> visited) {
+    if (visited.contains(dtoClass)) {
       return;
     }
-    visited.add(cls);
+    visited.add(dtoClass);
 
-    List<Field> allFieldsList = FieldUtils.getAllFieldsList(cls);
-    List<Field> relationFields = FieldUtils.getFieldsListWithAnnotation(cls, JsonApiRelation.class);
+    List<Field> allFieldsList = FieldUtils.getAllFieldsList(dtoClass);
+    List<Field> relationFields = FieldUtils.getFieldsListWithAnnotation(
+      dtoClass,
+      JsonApiRelation.class);
 
-    trackJsonId(cls, allFieldsList);
-    RelatedEntity relatedEntity = cls.getAnnotation(RelatedEntity.class);
+    trackJsonId(dtoClass, allFieldsList);
+    RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
     if (relatedEntity != null) {
       Class<?> entityType = relatedEntity.value();
-      trackFieldsPerClass(cls, entityType, allFieldsList, relationFields);
-      trackMappableRelations(cls, entityType, relationFields);
+      trackFieldsPerClass(dtoClass, entityType, allFieldsList, relationFields);
+      trackMappableRelations(dtoClass, entityType, relationFields);
     }
 
     for (Field field : relationFields) {
       if (isCollection(field.getType())) {
         Class<?> genericType = getGenericType(field.getDeclaringClass(), field.getName());
-        parseGraph(genericType, visited);
+        initTrackingMaps(genericType, visited);
       } else {
-        parseGraph(field.getType(), visited);
+        initTrackingMaps(field.getType(), visited);
       }
     }
   }
 
-  private void trackJsonId(Class<?> cls, List<Field> allFieldsList) {
+  private void trackJsonId(Class<?> dtoClass, List<Field> allFieldsList) {
     for (Field field : allFieldsList) {
       if (field.isAnnotationPresent(JsonApiId.class)) {
-        this.jsonIdFieldNamePerClass.put(cls, field.getName());
+        this.jsonIdFieldNamePerClass.put(dtoClass, field.getName());
       }
     }
   }
 
   private void trackFieldsPerClass(
-    Class<?> cls,
+    Class<?> dtoClass,
     Class<?> entityType,
     List<Field> allFieldsList,
     List<Field> relationFields
@@ -151,7 +153,7 @@ public class DinaMappingRegistry {
       .filter(f -> !relationFields.contains(f) && DinaMappingRegistry.isFieldMappable(f))
       .map(Field::getName)
       .collect(Collectors.toSet());
-    this.attributesPerClass.put(cls, fieldsToInclude);
+    this.attributesPerClass.put(dtoClass, fieldsToInclude);
     this.attributesPerClass.put(entityType, fieldsToInclude);
   }
 
