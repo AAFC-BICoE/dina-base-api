@@ -66,7 +66,8 @@ public class DinaMappingRegistry {
   }
 
   /**
-   * Returns the type of the given external relation field name if tracked by the registry.
+   * Returns the {@link JsonApiExternalRelation} type of the given external relation field name if
+   * tracked by the registry.
    *
    * @param relationFieldName - field name of the external relation.
    * @return type of the given external relation.
