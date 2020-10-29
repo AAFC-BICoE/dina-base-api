@@ -66,12 +66,17 @@ public class DinaMappingRegistry {
   }
 
   /**
-   * Returns the type of the given external relation if tracked by the registry otherwise null.
+   * Returns the type of the given external relation field name if tracked by the registry.
    *
    * @param relationFieldName - field name of the external relation.
    * @return type of the given external relation.
+   * @throws IllegalArgumentException if the relationFieldName is not tracked by the registry
    */
   public String findExternalType(String relationFieldName) {
+    if (!this.externalNameToTypeMap.containsKey(relationFieldName)) {
+      throw new IllegalArgumentException(
+        "external relation with name: " + relationFieldName + " is not tracked by the registry");
+    }
     return this.externalNameToTypeMap.get(relationFieldName);
   }
 
