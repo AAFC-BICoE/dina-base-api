@@ -135,9 +135,7 @@ public class DinaMappingRegistry {
     List<Field> relationFields
   ) {
     Set<String> fieldsToInclude = allFieldsList.stream()
-      .filter(f -> !relationFields.contains(f) &&
-                   !f.isSynthetic() &&
-                   !DinaMappingRegistry.isNotMappable(f))
+      .filter(f -> !relationFields.contains(f) && DinaMappingRegistry.isFieldMappable(f))
       .map(Field::getName)
       .collect(Collectors.toSet());
     this.attributesPerClass.put(cls, fieldsToInclude);
@@ -192,9 +190,10 @@ public class DinaMappingRegistry {
    * @param field - field to evaluate
    * @return - true if the dina repo should not map the given field
    */
-  private static boolean isNotMappable(Field field) {
-    return field.isAnnotationPresent(DerivedDtoField.class) ||
-           Modifier.isFinal(field.getModifiers());
+  private static boolean isFieldMappable(Field field) {
+    return !field.isAnnotationPresent(DerivedDtoField.class)
+           && !Modifier.isFinal(field.getModifiers())
+           && !field.isSynthetic();
   }
 
   /**
