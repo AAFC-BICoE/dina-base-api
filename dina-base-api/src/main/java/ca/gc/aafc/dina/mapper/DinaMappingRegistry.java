@@ -35,7 +35,7 @@ public class DinaMappingRegistry {
   // Tracks the mappable relations per class
   private final ImmutableMap<Class<?>, ImmutableSet<InternalRelation>> mappableRelationsPerClass;
   // Tracks external relation types per field name for external relations mapping
-  private final Map<String, String> externalNameToTypeMap;
+  private final ImmutableMap<String, String> externalNameToTypeMap;
   // Track Json Id field names for mapping
   private final ImmutableMap<Class<?>, String> jsonIdFieldNamePerClass;
 
@@ -202,10 +202,12 @@ public class DinaMappingRegistry {
    * @param resourceClass - a given class with external relations.
    * @return a map of external relation field names to their JsonApiExternalRelation.type
    */
-  private static Map<String, String> parseExternalRelationNamesToType(Class<?> resourceClass) {
-    return FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
-      .stream().collect(Collectors.toMap(
-        Field::getName, field -> field.getAnnotation(JsonApiExternalRelation.class).type()));
+  private static ImmutableMap<String, String> parseExternalRelationNamesToType(Class<?> resourceClass) {
+    return ImmutableMap.copyOf(
+      FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
+        .stream().collect(Collectors.toMap(
+        Field::getName,
+        field -> field.getAnnotation(JsonApiExternalRelation.class).type())));
   }
 
   /**
