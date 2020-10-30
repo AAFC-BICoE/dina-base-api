@@ -111,7 +111,7 @@ public class DinaMappingLayer<D, E> {
    * @param entity - source of the mapping
    * @return a new dto mapped from a given source
    */
-  public D mapForDelete(@NonNull E entity) {
+  public D toDtoSimpleMapping(@NonNull E entity) {
     return dinaMapper.toDto(entity, registry.getAttributesPerClass(), Collections.emptySet());
   }
 
