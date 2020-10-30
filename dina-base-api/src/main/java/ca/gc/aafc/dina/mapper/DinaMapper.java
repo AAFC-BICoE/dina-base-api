@@ -1,6 +1,8 @@
 package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -107,7 +109,7 @@ public class DinaMapper<D, E> {
   @SneakyThrows
   public D toDto(
     E entity,
-    Map<Class<?>, Set<String>> selectedFieldPerClass,
+    ImmutableMap<Class<?>, ImmutableSet<String>> selectedFieldPerClass,
     Set<String> relations
   ) {
     D dto = dtoClass.getConstructor().newInstance();
@@ -141,7 +143,7 @@ public class DinaMapper<D, E> {
   public void applyDtoToEntity(
     D dto,
     E entity,
-    Map<Class<?>, Set<String>> selectedFieldPerClass,
+    ImmutableMap<Class<?>, ImmutableSet<String>> selectedFieldPerClass,
     Set<String> relations
   ) {
     mapSourceToTarget(dto, entity, selectedFieldPerClass, relations, new IdentityHashMap<>());
@@ -162,7 +164,7 @@ public class DinaMapper<D, E> {
   private <T, S> void mapSourceToTarget(
     @NonNull S source,
     @NonNull T target,
-    @NonNull Map<Class<?>, Set<String>> selectedFieldPerClass,
+    @NonNull ImmutableMap<Class<?>, ImmutableSet<String>> selectedFieldPerClass,
     @NonNull Set<String> relations,
     @NonNull Map<Object, Object> visited
   ) {
@@ -170,7 +172,7 @@ public class DinaMapper<D, E> {
     // The source could be a Hibernate-proxied entity; unproxy it here:
     S unproxied = (S) Hibernate.unproxy(source);
     Class<?> sourceType = unproxied.getClass();
-    Set<String> selectedFields = selectedFieldPerClass.getOrDefault(sourceType, new HashSet<>());
+    ImmutableSet<String> selectedFields = selectedFieldPerClass.getOrDefault(sourceType, ImmutableSet.of());
     Predicate<String> ignoreIf = field -> hasResolvers(field, sourceType);
 
     mapFieldsToTarget(unproxied, target, selectedFields, ignoreIf);
@@ -197,7 +199,7 @@ public class DinaMapper<D, E> {
   private <T, S> void mapRelationsToTarget(
     S source,
     T target,
-    Map<Class<?>, Set<String>> fieldsPerClass,
+    ImmutableMap<Class<?>, ImmutableSet<String>> fieldsPerClass,
     Set<String> relations,
     Map<Object, Object> visited
   ) {
@@ -245,7 +247,7 @@ public class DinaMapper<D, E> {
    */
   @SneakyThrows
   private Object mapRelation(
-    Map<Class<?>, Set<String>> fields,
+    ImmutableMap<Class<?>, ImmutableSet<String>> fields,
     Object source,
     Class<?> targetType,
     Map<Object, Object> visited

@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.mapper;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import lombok.Builder;
@@ -31,7 +32,7 @@ public class DinaMappingRegistry {
 
   // Tracks Attributes per class for bean mapping
   @Getter
-  private final Map<Class<?>, Set<String>> attributesPerClass;
+  private final ImmutableMap<Class<?>, ImmutableSet<String>> attributesPerClass;
   // Tracks the mappable relations per class
   private final Map<Class<?>, Set<InternalRelation>> mappableRelationsPerClass;
   // Tracks external relation types per field name for external relations mapping
@@ -48,7 +49,7 @@ public class DinaMappingRegistry {
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
     Set<Class<?>> resources = parseGraph(resourceClass, new HashSet<>());
     this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
-    this.attributesPerClass = new HashMap<>();
+    this.attributesPerClass = parseAttributesPerClass(resources);
     this.mappableRelationsPerClass = new HashMap<>();
     this.jsonIdFieldNamePerClass = parseJsonIds(resources);
     initTrackingMaps(resourceClass, new HashSet<>());
@@ -141,14 +142,12 @@ public class DinaMappingRegistry {
     }
     visited.add(dtoClass);
 
-    List<Field> allFieldsList = FieldUtils.getAllFieldsList(dtoClass);
     List<Field> relationFields = FieldUtils.getFieldsListWithAnnotation(
       dtoClass, JsonApiRelation.class);
 
     RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
     if (relatedEntity != null) {
       Class<?> entityType = relatedEntity.value();
-      trackFieldsPerClass(dtoClass, entityType, allFieldsList, relationFields);
       trackMappableRelations(dtoClass, entityType, relationFields);
     }
 
@@ -175,18 +174,20 @@ public class DinaMappingRegistry {
     return ImmutableMap.copyOf(map);
   }
 
-  private void trackFieldsPerClass(
-    Class<?> dtoClass,
-    Class<?> entityType,
-    List<Field> allFieldsList,
-    List<Field> relationFields
-  ) {
-    Set<String> fieldsToInclude = allFieldsList.stream()
-      .filter(f -> !relationFields.contains(f) && DinaMappingRegistry.isFieldMappable(f))
-      .map(Field::getName)
-      .collect(Collectors.toSet());
-    this.attributesPerClass.put(dtoClass, fieldsToInclude);
-    this.attributesPerClass.put(entityType, fieldsToInclude);
+  private ImmutableMap<Class<?>, ImmutableSet<String>> parseAttributesPerClass(Set<Class<?>> resources) {
+    Map<Class<?>, ImmutableSet<String>> map = new HashMap<>();
+    resources.forEach(dtoClass -> {
+      RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
+      if (relatedEntity != null) {
+        Set<String> fieldsToInclude = FieldUtils.getAllFieldsList(dtoClass).stream()
+          .filter(DinaMappingRegistry::isFieldMappable)
+          .map(Field::getName)
+          .collect(Collectors.toSet());
+        map.put(dtoClass, ImmutableSet.copyOf(fieldsToInclude));
+        map.put(relatedEntity.value(), ImmutableSet.copyOf(fieldsToInclude));
+      }
+    });
+    return ImmutableMap.copyOf(map);
   }
 
   private void trackMappableRelations(Class<?> dto, Class<?> entity, List<Field> relations) {
@@ -228,13 +229,14 @@ public class DinaMappingRegistry {
 
   /**
    * Returns true if the dina repo should map the given field. currently that means if the field is
-   * not generated (Marked with {@link DerivedDtoField}) or final.
+   * not generated (Marked with {@link DerivedDtoField}), final, or is a {@link JsonApiRelation}.
    *
    * @param field - field to evaluate
    * @return - true if the dina repo should not map the given field
    */
   private static boolean isFieldMappable(Field field) {
-    return !field.isAnnotationPresent(DerivedDtoField.class)
+    return !field.isAnnotationPresent(DerivedDtoField.class) &&
+           !field.isAnnotationPresent(JsonApiRelation.class)
            && !Modifier.isFinal(field.getModifiers())
            && !field.isSynthetic();
   }
