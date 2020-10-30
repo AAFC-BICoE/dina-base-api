@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
+import com.google.common.collect.ImmutableMap;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import lombok.Builder;
@@ -36,7 +37,7 @@ public class DinaMappingRegistry {
   // Tracks external relation types per field name for external relations mapping
   private final Map<String, String> externalNameToTypeMap;
   // Track Json Id field names for mapping
-  private final Map<Class<?>, String> jsonIdFieldNamePerClass;
+  private final ImmutableMap<Class<?>, String> jsonIdFieldNamePerClass;
 
   /**
    * Parsing a given resource graph requires the use of reflection. A DinaMappingRegistry should not
@@ -45,10 +46,11 @@ public class DinaMappingRegistry {
    * @param resourceClass - resource class to track
    */
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
+    Set<Class<?>> resources = parseGraph(resourceClass, new HashSet<>());
     this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
     this.attributesPerClass = new HashMap<>();
     this.mappableRelationsPerClass = new HashMap<>();
-    this.jsonIdFieldNamePerClass = new HashMap<>();
+    this.jsonIdFieldNamePerClass = parseJsonIds(resources);
     initTrackingMaps(resourceClass, new HashSet<>());
   }
 
@@ -116,6 +118,23 @@ public class DinaMappingRegistry {
     return this.jsonIdFieldNamePerClass.get(cls);
   }
 
+  private Set<Class<?>> parseGraph(Class<?> dto, Set<Class<?>> visited) {
+    if (visited.contains(dto)) {
+      return visited;
+    }
+    visited.add(dto);
+
+    for (Field field : FieldUtils.getFieldsListWithAnnotation(dto, JsonApiRelation.class)) {
+      if (isCollection(field.getType())) {
+        Class<?> genericType = getGenericType(field.getDeclaringClass(), field.getName());
+        parseGraph(genericType, visited);
+      } else {
+        parseGraph(field.getType(), visited);
+      }
+    }
+    return visited;
+  }
+
   private void initTrackingMaps(Class<?> dtoClass, Set<Class<?>> visited) {
     if (visited.contains(dtoClass)) {
       return;
@@ -126,7 +145,6 @@ public class DinaMappingRegistry {
     List<Field> relationFields = FieldUtils.getFieldsListWithAnnotation(
       dtoClass, JsonApiRelation.class);
 
-    trackJsonId(dtoClass, allFieldsList);
     RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
     if (relatedEntity != null) {
       Class<?> entityType = relatedEntity.value();
@@ -144,12 +162,17 @@ public class DinaMappingRegistry {
     }
   }
 
-  private void trackJsonId(Class<?> dtoClass, List<Field> allFieldsList) {
-    for (Field field : allFieldsList) {
-      if (field.isAnnotationPresent(JsonApiId.class)) {
-        this.jsonIdFieldNamePerClass.put(dtoClass, field.getName());
+  private ImmutableMap<Class<?>, String> parseJsonIds(Set<Class<?>> resources) {
+    Map<Class<?>, String> map = new HashMap<>();
+    resources.forEach(dtoClass -> {
+      for (Field field : FieldUtils.getAllFieldsList(dtoClass)) {
+        if (field.isAnnotationPresent(JsonApiId.class)) {
+          map.put(dtoClass, field.getName());
+          break;
+        }
       }
-    }
+    });
+    return ImmutableMap.copyOf(map);
   }
 
   private void trackFieldsPerClass(
