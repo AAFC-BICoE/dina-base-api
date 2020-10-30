@@ -22,6 +22,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Registry to track information regarding a given resource class. Useful to obtain certain meta
+ * information regarding the domain of resource.
+ */
 public class DinaMappingRegistry {
 
   // Tracks Attributes per class for bean mapping
@@ -34,6 +38,12 @@ public class DinaMappingRegistry {
   // Track Json Id field names for mapping
   private final Map<Class<?>, String> jsonIdFieldNamePerClass;
 
+  /**
+   * Parsing a given resource graph requires the use of reflection. A DinaMappingRegistry should not
+   * be constructed in a repetitive manner where performance is needed.
+   *
+   * @param resourceClass - resource class to track
+   */
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
     this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
     this.attributesPerClass = new HashMap<>();

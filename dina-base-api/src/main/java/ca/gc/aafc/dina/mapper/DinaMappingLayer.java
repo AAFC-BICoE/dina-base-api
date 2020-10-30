@@ -16,6 +16,21 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * Mapping layer handles the responsibilities for dina repo mapping operations. Those
+ * responsibilities are the following.
+ * <pre>
+ *   <ul>
+ *   <li>Bean mapping from resource to entity and vise versa</li>
+ *   <li>Returning shallow ids when returning DTOs</li>
+ *   <li>Linking relations to database backed resources when returning entities</li>
+ *   <li>Mapping external relations for all mapping directions</li>
+ * </ul>
+ * </pre>
+ *
+ * @param <D> - Resource type for the mapping layer
+ * @param <E> - Entity type for the mapping layer
+ */
 public class DinaMappingLayer<D, E> {
 
   private final Class<D> resourceClass;
