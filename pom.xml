@@ -44,7 +44,7 @@
     <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
     <checkstyle.version>8.36.2</checkstyle.version>
     <spotbugs.version>4.1.4</spotbugs.version>
-    <maven-spotbugs.version>4.0.0</maven-spotbugs.version>
+    <maven-spotbugs.version>4.1.4</maven-spotbugs.version>
     <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.5</asciidoctorj.diagram.version>
     <dependency.check.version>6.0.1</dependency.check.version>

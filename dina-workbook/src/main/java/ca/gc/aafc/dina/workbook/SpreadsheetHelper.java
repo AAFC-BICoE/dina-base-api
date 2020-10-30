@@ -238,7 +238,8 @@ public final class SpreadsheetHelper {
           value = String.valueOf(n);
         }
         break;
-      default: //noop, continue
+      default:
+        break; //noop, continue
     }
 
     if (value != null) {
