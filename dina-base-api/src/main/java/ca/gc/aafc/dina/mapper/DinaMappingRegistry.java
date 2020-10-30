@@ -18,7 +18,6 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,7 +33,7 @@ public class DinaMappingRegistry {
   @Getter
   private final ImmutableMap<Class<?>, ImmutableSet<String>> attributesPerClass;
   // Tracks the mappable relations per class
-  private final Map<Class<?>, Set<InternalRelation>> mappableRelationsPerClass;
+  private final ImmutableMap<Class<?>, ImmutableSet<InternalRelation>> mappableRelationsPerClass;
   // Tracks external relation types per field name for external relations mapping
   private final Map<String, String> externalNameToTypeMap;
   // Track Json Id field names for mapping
@@ -50,9 +49,8 @@ public class DinaMappingRegistry {
     Set<Class<?>> resources = parseGraph(resourceClass, new HashSet<>());
     this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
     this.attributesPerClass = parseAttributesPerClass(resources);
-    this.mappableRelationsPerClass = new HashMap<>();
+    this.mappableRelationsPerClass = parseMappableRelations(resources);
     this.jsonIdFieldNamePerClass = parseJsonIds(resources);
-    initTrackingMaps(resourceClass, new HashSet<>());
   }
 
   /**
@@ -136,31 +134,6 @@ public class DinaMappingRegistry {
     return visited;
   }
 
-  private void initTrackingMaps(Class<?> dtoClass, Set<Class<?>> visited) {
-    if (visited.contains(dtoClass)) {
-      return;
-    }
-    visited.add(dtoClass);
-
-    List<Field> relationFields = FieldUtils.getFieldsListWithAnnotation(
-      dtoClass, JsonApiRelation.class);
-
-    RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
-    if (relatedEntity != null) {
-      Class<?> entityType = relatedEntity.value();
-      trackMappableRelations(dtoClass, entityType, relationFields);
-    }
-
-    for (Field field : relationFields) {
-      if (isCollection(field.getType())) {
-        Class<?> genericType = getGenericType(field.getDeclaringClass(), field.getName());
-        initTrackingMaps(genericType, visited);
-      } else {
-        initTrackingMaps(field.getType(), visited);
-      }
-    }
-  }
-
   private ImmutableMap<Class<?>, String> parseJsonIds(Set<Class<?>> resources) {
     Map<Class<?>, String> map = new HashMap<>();
     resources.forEach(dtoClass -> {
@@ -190,17 +163,25 @@ public class DinaMappingRegistry {
     return ImmutableMap.copyOf(map);
   }
 
-  private void trackMappableRelations(Class<?> dto, Class<?> entity, List<Field> relations) {
-    Set<InternalRelation> mappableRelations = relations.stream()
-      .filter(field -> isRelationMappable(dto, entity, field))
-      .map(DinaMappingRegistry::mapToInternalRelation)
-      .collect(Collectors.toSet());
-    this.mappableRelationsPerClass.put(dto, mappableRelations);
-
-    this.mappableRelationsPerClass.put(entity, mappableRelations.stream().map(
-      ir -> InternalRelation.builder().name(ir.getName()).isCollection(ir.isCollection())
-        .elementType(ir.getElementType().getAnnotation(RelatedEntity.class).value()).build()
-    ).collect(Collectors.toSet()));
+  private ImmutableMap<Class<?>, ImmutableSet<InternalRelation>> parseMappableRelations(Set<Class<?>> resources) {
+    Map<Class<?>, ImmutableSet<InternalRelation>> map = new HashMap<>();
+    resources.forEach(dtoClass -> {
+      RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
+      if (relatedEntity != null) {
+        Set<InternalRelation> mappableRelations = FieldUtils
+          .getFieldsListWithAnnotation(dtoClass, JsonApiRelation.class).stream()
+          .filter(field -> isRelationMappable(dtoClass, relatedEntity.value(), field))
+          .map(DinaMappingRegistry::mapToInternalRelation)
+          .collect(Collectors.toSet());
+        Set<InternalRelation> entityRelations = mappableRelations.stream().map(
+          ir -> InternalRelation.builder().name(ir.getName()).isCollection(ir.isCollection())
+            .elementType(ir.getElementType().getAnnotation(RelatedEntity.class).value()).build()
+        ).collect(Collectors.toSet());
+        map.put(dtoClass, ImmutableSet.copyOf(mappableRelations));
+        map.put(relatedEntity.value(), ImmutableSet.copyOf(entityRelations));
+      }
+    });
+    return ImmutableMap.copyOf(map);
   }
 
   private static InternalRelation mapToInternalRelation(Field field) {
