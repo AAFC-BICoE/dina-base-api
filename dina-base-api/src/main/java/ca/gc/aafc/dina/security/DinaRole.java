@@ -9,7 +9,8 @@ import java.util.regex.Pattern;
 public enum DinaRole {
 
   COLLECTION_MANAGER,
-  STAFF;
+  STAFF,
+  STUDENT;
 
   private static final Pattern NON_ALPHA = Pattern.compile("[^A-Za-z]");
 
