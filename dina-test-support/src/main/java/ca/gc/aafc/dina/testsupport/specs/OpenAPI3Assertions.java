@@ -120,11 +120,14 @@ public final class OpenAPI3Assertions {
    */
   private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName)
       throws EncodeException, ResolutionException {
-    Schema schema = openApi.getComponents().getSchema(schemaName);
-    if (!openApi.getComponents().hasSchema(schemaName)) {
-      throw new ResolutionException("Can't locate schema " + schemaName);
+    Schema schema = null;
+    if(openApi.getComponents()!=null) {       
+      schema = openApi.getComponents().getSchema(schemaName);
+      return schema.toNode();
     }
-    return schema.toNode();
+    else {
+      return openApi.getContext().getReferenceRegistry().getRef("metadata.yml#/components/schemas/"+ schemaName).getContent();
+    }
   }
 
   /**
