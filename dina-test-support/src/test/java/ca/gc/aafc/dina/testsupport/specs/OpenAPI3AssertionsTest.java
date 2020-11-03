@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.testsupport.specs;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
@@ -34,7 +33,7 @@ public class OpenAPI3AssertionsTest {
 
     System.setProperty(OpenAPI3Assertions.SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY, "true");
     String responseJson = TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json");
-    OpenAPI3Assertions.assertRemoteSchema(specsUrl, "ManagedAttribute", responseJson);
+    OpenAPI3Assertions.assertRemoteSchema(specsUrl, null, "ManagedAttribute", responseJson);
     System.clearProperty(OpenAPI3Assertions.SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY);
   }
 
@@ -42,7 +41,7 @@ public class OpenAPI3AssertionsTest {
   public void assertSchemaTest() throws IOException {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     String responseJson = TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json");
-    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson);
+    OpenAPI3Assertions.assertSchema(specsUrl, null, "ManagedAttribute", responseJson);
   }
 
   @Test

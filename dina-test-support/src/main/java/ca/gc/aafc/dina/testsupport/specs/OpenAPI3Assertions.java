@@ -49,9 +49,9 @@ public final class OpenAPI3Assertions {
    * @param schemaName
    * @param apiResponse
    */
-  public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse) {
+  public static void assertRemoteSchema(URL specsUrl, String schemaFileName, String schemaName, String apiResponse) {
     if (!Boolean.valueOf(System.getProperty(SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY))) {
-      assertSchema(specsUrl, schemaName, apiResponse);
+      assertSchema(specsUrl, schemaFileName, schemaName, apiResponse);
     } else {
       log.warn("Skipping schema validation." + "System property testing.skip-remote-schema-validation set to true.");
     }
@@ -65,13 +65,13 @@ public final class OpenAPI3Assertions {
    * @param schemaName
    * @param apiResponse
    */
-  public static void assertSchema(URL specsUrl, String schemaName, String apiResponse) {
+  public static void assertSchema(URL specsUrl, String schemaFileName, String schemaName, String apiResponse) {
     Objects.requireNonNull(specsUrl, "specsUrl shall be provided");
     Objects.requireNonNull(schemaName, "schemaName shall be provided");
     Objects.requireNonNull(apiResponse, "apiResponse shall be provided");
     
     OpenApi3 openApi3 = innerParseAndValidateOpenAPI3Specs(specsUrl) ;
-    assertSchema(openApi3, schemaName, apiResponse);  
+    assertSchema(openApi3, schemaFileName, schemaName, apiResponse);  
   }
 
   /**
@@ -81,14 +81,14 @@ public final class OpenAPI3Assertions {
    * @param schemaName
    * @param apiResponse
    */
-  public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse) {
+  public static void assertSchema(OpenApi3 openApi, String schemaFileName, String schemaName, String apiResponse) {
 
     SchemaValidator schemaValidator;
     try {
       ValidationContext<OAI3> context = new ValidationContext<>(openApi.getContext());
-      JsonNode schemaNode = loadSchemaAsJsonNode(openApi, schemaName);
+      JsonNode schemaNode = loadSchemaAsJsonNode(openApi, schemaFileName, schemaName);
       schemaValidator = new SchemaValidator(context, null, schemaNode);
-    } catch (ResolutionException | EncodeException rEx) {
+    } catch (EncodeException rEx) {
       fail(rEx);
       return;
     }
@@ -118,16 +118,19 @@ public final class OpenAPI3Assertions {
    * @throws EncodeException
    * @throws ResolutionException
    */
-  private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName)
-      throws EncodeException, ResolutionException {
+  private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, 
+      String schemaFileName, String schemaName)
+      throws EncodeException {
     Schema schema = null;
     if(openApi.getComponents()!=null) {       
       schema = openApi.getComponents().getSchema(schemaName);
       return schema.toNode();
     }
-    else {
-      return openApi.getContext().getReferenceRegistry().getRef("metadata.yml#/components/schemas/"+ schemaName).getContent();
+    else if (schemaFileName != null) {
+      return openApi.getContext().getReferenceRegistry().getRef(schemaFileName + "#/components/schemas/" + schemaName)
+          .getContent();
     }
+    return null;
   }
 
   /**
