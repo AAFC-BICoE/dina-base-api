@@ -122,11 +122,10 @@ public final class OpenAPI3Assertions {
       String schemaFileName, String schemaName)
       throws EncodeException {
     Schema schema = null;
-    if(openApi.getComponents()!=null) {       
+    if (openApi.getComponents() != null) {       
       schema = openApi.getComponents().getSchema(schemaName);
       return schema.toNode();
-    }
-    else if (schemaFileName != null) {
+    } else if (schemaFileName != null) {
       return openApi.getContext().getReferenceRegistry().getRef(schemaFileName + "#/components/schemas/" + schemaName)
           .getContent();
     }
