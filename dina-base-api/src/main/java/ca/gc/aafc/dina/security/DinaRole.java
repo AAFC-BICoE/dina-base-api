@@ -10,7 +10,8 @@ public enum DinaRole {
 
   COLLECTION_MANAGER,
   STAFF,
-  STUDENT;
+  STUDENT,
+  DINA_ADMIN;
 
   private static final Pattern NON_ALPHA = Pattern.compile("[^A-Za-z]");
 
