@@ -33,7 +33,7 @@ public class OpenAPI3AssertionsTest {
 
     System.setProperty(OpenAPI3Assertions.SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY, "true");
     String responseJson = TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json");
-    OpenAPI3Assertions.assertRemoteSchema(specsUrl, null, "ManagedAttribute", responseJson);
+    OpenAPI3Assertions.assertRemoteSchema(specsUrl, "ManagedAttribute", responseJson);
     System.clearProperty(OpenAPI3Assertions.SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY);
   }
 
@@ -41,8 +41,17 @@ public class OpenAPI3AssertionsTest {
   public void assertSchemaTest() throws IOException {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     String responseJson = TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json");
-    OpenAPI3Assertions.assertSchema(specsUrl, null, "ManagedAttribute", responseJson);
+    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson);
   }
+
+  @Test
+  public void assertRealRemoteSchemaTest() throws IOException {
+    String responseJson = TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json");
+    OpenAPI3Assertions.assertRemoteSchema(
+        new URL("https://raw.githubusercontent.com/DINA-Web/object-store-specs/master/schema/object-store-api.yml"),
+         "ManagedAttribute", responseJson);
+  }
+
 
   @Test
   public void assertEndPointTest() throws IOException {
