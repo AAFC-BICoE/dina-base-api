@@ -1,7 +1,10 @@
 package ca.gc.aafc.dina.service;
 
-import java.util.List;
-import java.util.function.BiFunction;
+import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.jpa.BaseDAO;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -9,13 +12,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
-import org.springframework.stereotype.Component;
-
-import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.jpa.BaseDAO;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.function.BiFunction;
 
 /**
  * Service class for database interactions with a {@link DinaEntity}.
@@ -24,7 +22,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-public class DefaultDinaService<E extends DinaEntity> {
+public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> {
 
   @NonNull
   private final BaseDAO baseDAO;
@@ -35,6 +33,7 @@ public class DefaultDinaService<E extends DinaEntity> {
    * @param entity entity to persist
    * @return returns the original entity.
    */
+  @Override
   public E create(E entity) {
     preCreate(entity);
     baseDAO.create(entity);
@@ -47,6 +46,7 @@ public class DefaultDinaService<E extends DinaEntity> {
    * @param entity entity to update
    * @return returns the managed instance the state was merged to.
    */
+  @Override
   public E update(E entity) {
     preUpdate(entity);
     return baseDAO.update(entity);
@@ -57,27 +57,24 @@ public class DefaultDinaService<E extends DinaEntity> {
    *
    * @param entity entity to delete
    */
+  @Override
   public void delete(E entity) {
     preDelete(entity);
     baseDAO.delete(entity);
   }
 
   /**
-   * Returns a list of Entities of a given class restricted by the predicates
-   * returned by a given function.
+   * Returns a list of Entities of a given class restricted by the predicates returned by a given
+   * function.
    *
-   * @param entityClass
-   *                      - entity class to query cannot be null
-   * @param where
-   *                      - function to return the predicates cannot be null
-   * @param orderBy
-   *                      - function to return the sorting criteria can be null
-   * @param startIndex
-   *                      - position of first result to retrieve
-   * @param maxResult
-   *                      - maximun number of results to return
+   * @param entityClass - entity class to query cannot be null
+   * @param where       - function to return the predicates cannot be null
+   * @param orderBy     - function to return the sorting criteria can be null
+   * @param startIndex  - position of first result to retrieve
+   * @param maxResult   - maximun number of results to return
    * @return list of entities
    */
+  @Override
   public <T> List<T> findAll(
     @NonNull Class<T> entityClass,
     @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> where,
@@ -98,13 +95,12 @@ public class DefaultDinaService<E extends DinaEntity> {
 
   /**
    * Returns the resource count from a given predicate supplier.
-   * 
-   * @param entityClass
-   *                            - entity class to query cannot be null
-   * @param predicateSupplier
-   *                            - function to return the predicates cannot be null
+   *
+   * @param entityClass       - entity class to query cannot be null
+   * @param predicateSupplier - function to return the predicates cannot be null
    * @return resource count
    */
+  @Override
   public <T> Long getResourceCount(
     @NonNull Class<T> entityClass,
     @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
@@ -113,30 +109,34 @@ public class DefaultDinaService<E extends DinaEntity> {
   }
 
   /**
-   * Find an entity by it's NaturalId. The method assumes that the naturalId is
-   * unique.
-   * 
+   * Find an entity by it's NaturalId. The method assumes that the naturalId is unique.
+   *
    * @param naturalId   - id of entity
    * @param entityClass - class of entity
    * @return the matched entity
    */
+  @Override
   public <T> T findOne(Object naturalId, Class<T> entityClass) {
     return baseDAO.findOneByNaturalId(naturalId, entityClass);
   }
 
   /**
-   * Returns a reference to an entity that should exist without actually loading
-   * it. Useful to set relationships without loading the entity instead of findOne.
-   * 
+   * Returns a reference to an entity that should exist without actually loading it. Useful to set
+   * relationships without loading the entity instead of findOne.
+   *
    * @param naturalId   - natural id of entity
    * @param entityClass - class of entity
    * @return the matched reference
    */
+  @Override
   public <T> T findOneReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
     return baseDAO.getReferenceByNaturalId(entityClass, naturalId);
   }
 
-  /** Check for the existence of a record by natural id. */
+  /**
+   * Check for the existence of a record by natural id.
+   */
+  @Override
   public boolean exists(Class<?> entityClass, Object naturalId) {
     return baseDAO.existsByNaturalId(naturalId, entityClass);
   }
