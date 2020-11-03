@@ -8,7 +8,7 @@ import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
-import ca.gc.aafc.dina.service.DinaService;
+import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
@@ -152,7 +152,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       DinaFilterResolver filterResolver
     ) {
       return new DinaRepository<>(
-        new DinaService<>(baseDAO) {
+        new DefaultDinaService<>(baseDAO) {
           @Override
           protected void preCreate(Chain entity) {
             entity.setUuid(UUID.randomUUID());
@@ -174,7 +174,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       DinaFilterResolver filterResolver
     ) {
       return new DinaRepository<>(
-        new DinaService<>(baseDAO) {
+        new DefaultDinaService<>(baseDAO) {
           @Override
           protected void preCreate(ChainTemplate entity) {
             entity.setUuid(UUID.randomUUID());

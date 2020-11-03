@@ -3,7 +3,7 @@ package ca.gc.aafc.dina.repository;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DinaMapper;
-import ca.gc.aafc.dina.service.DinaService;
+import ca.gc.aafc.dina.service.DefaultDinaService;
 import io.crnk.core.exception.MethodNotAllowedException;
 
 import java.io.Serializable;
@@ -18,7 +18,7 @@ import java.util.Optional;
  */
 public class ReadOnlyDinaRepository<D, E extends DinaEntity> extends DinaRepository<D, E> {
   public ReadOnlyDinaRepository(
-    DinaService<E> dinaService,
+    DefaultDinaService<E> dinaService,
     DinaMapper<D, E> dinaMapper,
     Class<D> resourceClass,
     Class<E> entityClass,

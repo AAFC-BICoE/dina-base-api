@@ -24,8 +24,8 @@ import ca.gc.aafc.dina.repository.JpaResourceRepository;
 import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
 import ca.gc.aafc.dina.repository.meta.JpaTotalMetaInformationProvider;
 import ca.gc.aafc.dina.service.AuditService;
-import ca.gc.aafc.dina.service.DinaService;
-import ca.gc.aafc.dina.service.DinaServiceTest.DinaServiceTestImplementation;
+import ca.gc.aafc.dina.service.DefaultDinaService;
+import ca.gc.aafc.dina.service.DefaultDinaServiceTest.DinaServiceTestImplementation;
 import ca.gc.aafc.dina.service.GroupAuthorizationService;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -177,7 +177,7 @@ public class TestDinaBaseApp {
   public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(BaseDAO baseDAO) {
     DinaMapper<VocabularyDto, Vocabulary> dinaMapper = new DinaMapper<>(VocabularyDto.class);
     return new ReadOnlyDinaRepository<VocabularyDto, Vocabulary>(
-      new DinaService<>(baseDAO),
+      new DefaultDinaService<>(baseDAO),
       dinaMapper,
       VocabularyDto.class,
       Vocabulary.class,

@@ -9,7 +9,7 @@ import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
-import ca.gc.aafc.dina.service.DinaService;
+import ca.gc.aafc.dina.service.DefaultDinaService;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.engine.registry.ResourceRegistryAware;
@@ -56,7 +56,7 @@ public class DinaRepository<D, E extends DinaEntity>
   private final Class<D> resourceClass;
   private final Class<E> entityClass;
 
-  private final DinaService<E> dinaService;
+  private final DefaultDinaService<E> dinaService;
   private final Optional<DinaAuthorizationService> authorizationService;
   private final Optional<AuditService> auditService;
 
@@ -73,7 +73,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @Inject
   public DinaRepository(
-    @NonNull DinaService<E> dinaService,
+    @NonNull DefaultDinaService<E> dinaService,
     @NonNull Optional<DinaAuthorizationService> authorizationService,
     @NonNull Optional<AuditService> auditService,
     @NonNull DinaMapper<D, E> dinaMapper,

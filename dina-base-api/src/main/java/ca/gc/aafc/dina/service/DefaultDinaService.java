@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-public class DinaService<E extends DinaEntity> {
+public class DefaultDinaService<E extends DinaEntity> {
 
   @NonNull
   private final BaseDAO baseDAO;
@@ -142,27 +142,27 @@ public class DinaService<E extends DinaEntity> {
   }
 
   /**
-   * Run before the {@link DinaService#create(DinaEntity)} method.
+   * Run before the {@link DefaultDinaService#create(DinaEntity)} method.
    *
-   * @param entity entity being created by {@link DinaService#create(DinaEntity)}
+   * @param entity entity being created by {@link DefaultDinaService#create(DinaEntity)}
    */
   protected void preCreate(E entity) {
     // Defaults to do nothing
   }
 
   /**
-   * Run before the {@link DinaService#update(DinaEntity)} method.
+   * Run before the {@link DefaultDinaService#update(DinaEntity)} method.
    *
-   * @param entity entity being updated by {@link DinaService#update(DinaEntity)}
+   * @param entity entity being updated by {@link DefaultDinaService#update(DinaEntity)}
    */
   protected void preUpdate(E entity) {
     // Defaults to do nothing
   }
 
   /**
-   * Run before the {@link DinaService#delete(DinaEntity)} method.
+   * Run before the {@link DefaultDinaService#delete(DinaEntity)} method.
    *
-   * @param entity entity being deleted by {@link DinaService#delete(DinaEntity)}
+   * @param entity entity being deleted by {@link DefaultDinaService#delete(DinaEntity)}
    */
   protected void preDelete(E entity) {
     // Defaults to do nothing
