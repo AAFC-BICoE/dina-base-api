@@ -2,8 +2,6 @@ package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import lombok.Builder;
@@ -31,13 +29,13 @@ public class DinaMappingRegistry {
 
   // Tracks Attributes per class for bean mapping
   @Getter
-  private final ImmutableMap<Class<?>, ImmutableSet<String>> attributesPerClass;
+  private final Map<Class<?>, Set<String>> attributesPerClass;
   // Tracks the mappable relations per class
-  private final ImmutableMap<Class<?>, ImmutableSet<InternalRelation>> mappableRelationsPerClass;
+  private final Map<Class<?>, Set<InternalRelation>> mappableRelationsPerClass;
   // Tracks external relation types per field name for external relations mapping
-  private final ImmutableMap<String, String> externalNameToTypeMap;
+  private final Map<String, String> externalNameToTypeMap;
   // Track Json Id field names for mapping
-  private final ImmutableMap<Class<?>, String> jsonIdFieldNamePerClass;
+  private final Map<Class<?>, String> jsonIdFieldNamePerClass;
 
   /**
    * Parsing a given resource graph requires the use of reflection. A DinaMappingRegistry should not
@@ -134,7 +132,7 @@ public class DinaMappingRegistry {
     return visited;
   }
 
-  private ImmutableMap<Class<?>, String> parseJsonIds(Set<Class<?>> resources) {
+  private Map<Class<?>, String> parseJsonIds(Set<Class<?>> resources) {
     Map<Class<?>, String> map = new HashMap<>();
     resources.forEach(dtoClass -> {
       for (Field field : FieldUtils.getAllFieldsList(dtoClass)) {
@@ -144,11 +142,11 @@ public class DinaMappingRegistry {
         }
       }
     });
-    return ImmutableMap.copyOf(map);
+    return Map.copyOf(map);
   }
 
-  private ImmutableMap<Class<?>, ImmutableSet<String>> parseAttributesPerClass(Set<Class<?>> resources) {
-    Map<Class<?>, ImmutableSet<String>> map = new HashMap<>();
+  private Map<Class<?>, Set<String>> parseAttributesPerClass(Set<Class<?>> resources) {
+    Map<Class<?>, Set<String>> map = new HashMap<>();
     resources.forEach(dtoClass -> {
       RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
       if (relatedEntity != null) {
@@ -156,15 +154,15 @@ public class DinaMappingRegistry {
           .filter(DinaMappingRegistry::isFieldMappable)
           .map(Field::getName)
           .collect(Collectors.toSet());
-        map.put(dtoClass, ImmutableSet.copyOf(fieldsToInclude));
-        map.put(relatedEntity.value(), ImmutableSet.copyOf(fieldsToInclude));
+        map.put(dtoClass, Set.copyOf(fieldsToInclude));
+        map.put(relatedEntity.value(), Set.copyOf(fieldsToInclude));
       }
     });
-    return ImmutableMap.copyOf(map);
+    return Map.copyOf(map);
   }
 
-  private ImmutableMap<Class<?>, ImmutableSet<InternalRelation>> parseMappableRelations(Set<Class<?>> resources) {
-    Map<Class<?>, ImmutableSet<InternalRelation>> map = new HashMap<>();
+  private Map<Class<?>, Set<InternalRelation>> parseMappableRelations(Set<Class<?>> resources) {
+    Map<Class<?>, Set<InternalRelation>> map = new HashMap<>();
     resources.forEach(dtoClass -> {
       RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
       if (relatedEntity != null) {
@@ -177,11 +175,11 @@ public class DinaMappingRegistry {
           ir -> InternalRelation.builder().name(ir.getName()).isCollection(ir.isCollection())
             .elementType(ir.getElementType().getAnnotation(RelatedEntity.class).value()).build()
         ).collect(Collectors.toSet());
-        map.put(dtoClass, ImmutableSet.copyOf(mappableRelations));
-        map.put(relatedEntity.value(), ImmutableSet.copyOf(entityRelations));
+        map.put(dtoClass, Set.copyOf(mappableRelations));
+        map.put(relatedEntity.value(), Set.copyOf(entityRelations));
       }
     });
-    return ImmutableMap.copyOf(map);
+    return Map.copyOf(map);
   }
 
   private static InternalRelation mapToInternalRelation(Field field) {
@@ -202,8 +200,8 @@ public class DinaMappingRegistry {
    * @param resourceClass - a given class with external relations.
    * @return a map of external relation field names to their JsonApiExternalRelation.type
    */
-  private static ImmutableMap<String, String> parseExternalRelationNamesToType(Class<?> resourceClass) {
-    return ImmutableMap.copyOf(
+  private static Map<String, String> parseExternalRelationNamesToType(Class<?> resourceClass) {
+    return Map.copyOf(
       FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
         .stream().collect(Collectors.toMap(
         Field::getName,
