@@ -132,13 +132,13 @@ public final class OpenAPI3Assertions {
     // try to locate the schema in the main OpenAPI3 file
     if (openApi.getComponents() != null) {
       Schema schema = openApi.getComponents().getSchema(schemaName);
-      if(schema != null) {
+      if (schema != null) {
         return schema.toNode();
       }
     }
 
     // then, try to reach it be refs from the paths
-    Set<String>  filenamesFromPathRefs = getFilenamesFromPathRefs(openApi);
+    Set<String> filenamesFromPathRefs = getFilenamesFromPathRefs(openApi);
     return loadFirstFoundSchema(openApi, filenamesFromPathRefs, schemaName);
   }
 
@@ -148,11 +148,10 @@ public final class OpenAPI3Assertions {
    * @return set of paths or empty set if no paths
    */
   private static Set<String> getFilenamesFromPathRefs(OpenApi3 openApi) {
-    if(openApi.getPaths() == null) {
+    if (openApi.getPaths() == null) {
       return Collections.emptySet();
     }
-    return openApi.getPaths().values()
-        .stream()
+    return openApi.getPaths().values().stream()
         .map(path -> StringUtils.substringBefore(path.getRef(), "#"))
         .collect(Collectors.toSet());
   }
@@ -164,11 +163,13 @@ public final class OpenAPI3Assertions {
    * @param schemaName
    * @return content as JsonNode or null if not found.
    */
-  private static JsonNode loadFirstFoundSchema(OpenApi3 openApi, Set<String> filenames, String schemaName) {
+  private static JsonNode loadFirstFoundSchema(OpenApi3 openApi, Set<String> filenames,
+      String schemaName) {
     Reference ref;
-    for(String filename: filenames) {
-      ref = openApi.getContext().getReferenceRegistry().getRef(filename + "#/components/schemas/" + schemaName);
-      if( ref != null) {
+    for (String filename : filenames) {
+      ref = openApi.getContext().getReferenceRegistry()
+          .getRef(filename + "#/components/schemas/" + schemaName);
+      if (ref != null) {
         return ref.getContent();
       }
     }
