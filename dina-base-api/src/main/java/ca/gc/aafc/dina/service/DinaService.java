@@ -1,171 +1,99 @@
 package ca.gc.aafc.dina.service;
 
-import java.util.List;
-import java.util.function.BiFunction;
+import ca.gc.aafc.dina.entity.DinaEntity;
+import lombok.NonNull;
 
-import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
-import org.springframework.stereotype.Component;
-
-import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.jpa.BaseDAO;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.function.BiFunction;
 
 /**
- * Service class for database interactions with a {@link DinaEntity}.
+ * Service class to provide a interface to a datasource.
  *
  * @param <E> - Type of {@link DinaEntity}
  */
-@Component
-@RequiredArgsConstructor(onConstructor_ = @Inject)
-public class DinaService<E extends DinaEntity> {
-
-  @NonNull
-  private final BaseDAO baseDAO;
+public interface DinaService<E extends DinaEntity> {
 
   /**
-   * Persist an instance of the provided entity in the database.
+   * Creates and returns a given entity with is newly assigned id. the returned Entity should be
+   * returned in the state it was persisted.
    *
-   * @param entity entity to persist
-   * @return returns the original entity.
+   * @param entity entity to create.
+   * @return a given entity with is newly assigned id.
    */
-  public E create(E entity) {
-    preCreate(entity);
-    baseDAO.create(entity);
-    return entity;
-  }
+  E create(E entity);
 
   /**
-   * Merge the state of a given entity into the current persistence context.
+   * Updates and returns a given entity as it was persisted.
    *
-   * @param entity entity to update
-   * @return returns the managed instance the state was merged to.
+   * @param entity entity to update.
+   * @return a given entity as it was persisted.
    */
-  public E update(E entity) {
-    preUpdate(entity);
-    return baseDAO.update(entity);
-  }
+  E update(E entity);
 
   /**
-   * Remove the given entity from the database.
+   * Deletes a given entity from the data source
    *
-   * @param entity entity to delete
+   * @param entity entity to delete.
    */
-  public void delete(E entity) {
-    preDelete(entity);
-    baseDAO.delete(entity);
-  }
+  void delete(E entity);
 
   /**
-   * Returns a list of Entities of a given class restricted by the predicates
-   * returned by a given function.
+   * Find an entity by it's NaturalId. The method assumes that the naturalId is unique.
    *
-   * @param entityClass
-   *                      - entity class to query cannot be null
-   * @param where
-   *                      - function to return the predicates cannot be null
-   * @param orderBy
-   *                      - function to return the sorting criteria can be null
-   * @param startIndex
-   *                      - position of first result to retrieve
-   * @param maxResult
-   *                      - maximun number of results to return
+   * @param naturalId   - id of entity
+   * @param entityClass - class of entity
+   * @return the matched entity
+   */
+  <T> T findOne(Object naturalId, Class<T> entityClass);
+
+  /**
+   * Returns a reference to an entity that should exist without actually loading it. Useful to set
+   * relationships without loading the entity instead of findOne.
+   *
+   * @param naturalId   - natural id of entity
+   * @param entityClass - class of entity
+   * @return the matched reference
+   */
+  <T> T findOneReferenceByNaturalId(Class<T> entityClass, Object naturalId);
+
+  /**
+   * Returns a list of Entities of a given class restricted by the predicates returned by a given
+   * function.
+   *
+   * @param entityClass - entity class to query cannot be null
+   * @param where       - function to return the predicates cannot be null
+   * @param orderBy     - function to return the sorting criteria can be null
+   * @param startIndex  - position of first result to retrieve
+   * @param maxResult   - maximun number of results to return
    * @return list of entities
    */
-  public <T> List<T> findAll(
+  <T> List<T> findAll(
     @NonNull Class<T> entityClass,
     @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> where,
     BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
     int startIndex,
     int maxResult
-  ) {
-    CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
-    CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
-    Root<T> root = criteria.from(entityClass);
-
-    criteria.where(where.apply(criteriaBuilder, root)).select(root);
-    if (orderBy != null) {
-      criteria.orderBy(orderBy.apply(criteriaBuilder, root));
-    }
-    return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult);
-  }
+  );
 
   /**
    * Returns the resource count from a given predicate supplier.
-   * 
-   * @param entityClass
-   *                            - entity class to query cannot be null
-   * @param predicateSupplier
-   *                            - function to return the predicates cannot be null
+   *
+   * @param entityClass       - entity class to query cannot be null
+   * @param predicateSupplier - function to return the predicates cannot be null
    * @return resource count
    */
-  public <T> Long getResourceCount(
+  <T> Long getResourceCount(
     @NonNull Class<T> entityClass,
     @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
-  ) {
-    return baseDAO.getResourceCount(entityClass, predicateSupplier);
-  }
+  );
 
   /**
-   * Find an entity by it's NaturalId. The method assumes that the naturalId is
-   * unique.
-   * 
-   * @param naturalId   - id of entity
-   * @param entityClass - class of entity
-   * @return the matched entity
+   * Check for the existence of a record by natural id.
    */
-  public <T> T findOne(Object naturalId, Class<T> entityClass) {
-    return baseDAO.findOneByNaturalId(naturalId, entityClass);
-  }
-
-  /**
-   * Returns a reference to an entity that should exist without actually loading
-   * it. Useful to set relationships without loading the entity instead of findOne.
-   * 
-   * @param naturalId   - natural id of entity
-   * @param entityClass - class of entity
-   * @return the matched reference
-   */
-  public <T> T findOneReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
-    return baseDAO.getReferenceByNaturalId(entityClass, naturalId);
-  }
-
-  /** Check for the existence of a record by natural id. */
-  public boolean exists(Class<?> entityClass, Object naturalId) {
-    return baseDAO.existsByNaturalId(naturalId, entityClass);
-  }
-
-  /**
-   * Run before the {@link DinaService#create(DinaEntity)} method.
-   *
-   * @param entity entity being created by {@link DinaService#create(DinaEntity)}
-   */
-  protected void preCreate(E entity) {
-    // Defaults to do nothing
-  }
-
-  /**
-   * Run before the {@link DinaService#update(DinaEntity)} method.
-   *
-   * @param entity entity being updated by {@link DinaService#update(DinaEntity)}
-   */
-  protected void preUpdate(E entity) {
-    // Defaults to do nothing
-  }
-
-  /**
-   * Run before the {@link DinaService#delete(DinaEntity)} method.
-   *
-   * @param entity entity being deleted by {@link DinaService#delete(DinaEntity)}
-   */
-  protected void preDelete(E entity) {
-    // Defaults to do nothing
-  }
+  boolean exists(Class<?> entityClass, Object naturalId);
 
 }

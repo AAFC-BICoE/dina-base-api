@@ -225,7 +225,8 @@ public class DinaRepository<D, E extends DinaEntity>
     authorizationService.ifPresent(auth -> auth.authorizeDelete(entity));
     dinaService.delete(entity);
 
-    auditService.ifPresent(service -> service.auditDeleteEvent(mappingLayer.toDtoSimpleMapping(entity)));
+    auditService.ifPresent(service -> service.auditDeleteEvent(mappingLayer.toDtoSimpleMapping(
+      entity)));
   }
 
   @Override

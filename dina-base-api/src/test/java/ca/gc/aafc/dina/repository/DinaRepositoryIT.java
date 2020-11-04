@@ -29,13 +29,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
-import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
-import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.service.DinaService;
+import ca.gc.aafc.dina.service.DefaultDinaService;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.FilterOperator;
@@ -471,7 +469,7 @@ public class DinaRepositoryIT {
       .collect(Collectors.toList());
   }
 
-  public static class DinaPersonService extends DinaService<Person> {
+  public static class DinaPersonService extends DefaultDinaService<Person> {
 
     public DinaPersonService(@NonNull BaseDAO baseDAO) {
       super(baseDAO);

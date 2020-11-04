@@ -36,7 +36,7 @@ import lombok.NonNull;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class)
-public class DinaServiceTest {
+public class DefaultDinaServiceTest {
 
   @Inject
   private DinaServiceTestImplementation serviceUnderTest;
@@ -237,7 +237,7 @@ public class DinaServiceTest {
     assertFalse(serviceUnderTest.exists(Department.class, UUID.randomUUID()));
   }
 
-  public static class DinaServiceTestImplementation extends DinaService<Department> {
+  public static class DinaServiceTestImplementation extends DefaultDinaService<Department> {
 
     @Inject
     private BaseDAO baseDAO;

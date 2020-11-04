@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
+import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.queryspec.QuerySpec;
@@ -35,12 +36,12 @@ public class DinaMappingLayer<D, E> {
 
   private final Class<D> resourceClass;
   private final DinaMapper<D, E> dinaMapper;
-  private final DinaService<?> dinaService;
+  private final DinaService<? extends DinaEntity> dinaService;
   private final DinaMappingRegistry registry;
 
   public DinaMappingLayer(
     @NonNull Class<D> resourceClass,
-    @NonNull DinaService<?> dinaService,
+    @NonNull DinaService<? extends DinaEntity> dinaService,
     @NonNull DinaMapper<D, E> dinaMapper
   ) {
     this.resourceClass = resourceClass;
