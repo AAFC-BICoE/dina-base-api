@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.testsupport.jsonapi;
 
-import com.google.common.collect.ImmutableMap;
 import io.crnk.core.engine.http.HttpMethod;
 
 import java.util.ArrayList;
@@ -30,14 +29,14 @@ public final class JsonAPIOperationBuilder {
    * @return
    */
   public JsonAPIOperationBuilder addOperation(HttpMethod method, String path, Map<String, Object> values) {
+    Map<String, Object> operationsMap = Map.of(
+      "op", method.name(),
+      "path", path,
+      // since toJsonAPIMap returns the value under "data" we remove it if present
+      "value", values.getOrDefault("data", values)
+    );
 
-    ImmutableMap.Builder<String, Object> operationsMap = new ImmutableMap.Builder<>();
-    operationsMap.put("op", method.name());
-    operationsMap.put("path", path);
-    // since toJsonAPIMap returns the value under "data" we remove it if present
-    operationsMap.put("value", values.getOrDefault("data", values));
-
-    operations.add(operationsMap.build());
+    operations.add(operationsMap);
 
     return this;
   }

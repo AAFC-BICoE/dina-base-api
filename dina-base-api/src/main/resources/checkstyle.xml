@@ -269,6 +269,12 @@ limitations under the License.
       <!-- Defaults to sun.* packages -->
       <module name="IllegalImport">
         <property name="severity" value="error"/>
+        <property name="illegalClasses" value="
+        com.google.common.collect.ImmutableList,
+        com.google.common.collect.ImmutableMap,
+        com.google.common.collect.ImmutableSet,
+        com.google.common.base.Optional
+        "/>
       </module>
       <module name="RedundantImport">
         <property name="severity" value="error"/>
