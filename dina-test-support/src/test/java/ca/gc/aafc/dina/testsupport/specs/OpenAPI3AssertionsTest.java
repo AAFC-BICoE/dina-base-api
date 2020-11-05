@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.testsupport.specs;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
@@ -44,6 +43,15 @@ public class OpenAPI3AssertionsTest {
     String responseJson = TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json");
     OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson);
   }
+
+  @Test
+  public void assertRealRemoteSchemaTest() throws IOException {
+    String responseJson = TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json");
+    OpenAPI3Assertions.assertRemoteSchema(
+        new URL("https://raw.githubusercontent.com/DINA-Web/object-store-specs/master/schema/object-store-api.yml"),
+         "ManagedAttribute", responseJson);
+  }
+
 
   @Test
   public void assertEndPointTest() throws IOException {

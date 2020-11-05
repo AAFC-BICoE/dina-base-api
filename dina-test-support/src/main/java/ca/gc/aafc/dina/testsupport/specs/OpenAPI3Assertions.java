@@ -5,10 +5,15 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.openapi4j.core.exception.EncodeException;
 import org.openapi4j.core.exception.ResolutionException;
+import org.openapi4j.core.model.reference.Reference;
 import org.openapi4j.core.model.v3.OAI3;
 import org.openapi4j.core.validation.ValidationException;
 import org.openapi4j.parser.OpenApi3Parser;
@@ -71,7 +76,7 @@ public final class OpenAPI3Assertions {
     Objects.requireNonNull(apiResponse, "apiResponse shall be provided");
     
     OpenApi3 openApi3 = innerParseAndValidateOpenAPI3Specs(specsUrl) ;
-    assertSchema(openApi3, schemaName, apiResponse);  
+    assertSchema(openApi3, schemaName, apiResponse);
   }
 
   /**
@@ -87,8 +92,11 @@ public final class OpenAPI3Assertions {
     try {
       ValidationContext<OAI3> context = new ValidationContext<>(openApi.getContext());
       JsonNode schemaNode = loadSchemaAsJsonNode(openApi, schemaName);
+      if (schemaNode == null ) {
+        fail("can't find schema " + schemaName);
+      }
       schemaValidator = new SchemaValidator(context, null, schemaNode);
-    } catch (ResolutionException | EncodeException rEx) {
+    } catch (EncodeException rEx) {
       fail(rEx);
       return;
     }
@@ -119,12 +127,53 @@ public final class OpenAPI3Assertions {
    * @throws ResolutionException
    */
   private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName)
-      throws EncodeException, ResolutionException {
-    Schema schema = openApi.getComponents().getSchema(schemaName);
-    if (!openApi.getComponents().hasSchema(schemaName)) {
-      throw new ResolutionException("Can't locate schema " + schemaName);
+      throws EncodeException {
+
+    // try to locate the schema in the main OpenAPI3 file
+    if (openApi.getComponents() != null) {
+      Schema schema = openApi.getComponents().getSchema(schemaName);
+      if (schema != null) {
+        return schema.toNode();
+      }
     }
-    return schema.toNode();
+
+    // then, try to reach it be refs from the paths
+    Set<String> filenamesFromPathRefs = getFilenamesFromPathRefs(openApi);
+    return loadFirstFoundSchema(openApi, filenamesFromPathRefs, schemaName);
+  }
+
+  /**
+   * Extract a set of filenames from the list of Paths declared in the OpenApi3 file
+   * @param openApi
+   * @return set of paths or empty set if no paths
+   */
+  private static Set<String> getFilenamesFromPathRefs(OpenApi3 openApi) {
+    if (openApi.getPaths() == null) {
+      return Collections.emptySet();
+    }
+    return openApi.getPaths().values().stream()
+        .map(path -> StringUtils.substringBefore(path.getRef(), "#"))
+        .collect(Collectors.toSet());
+  }
+
+  /**
+   * From a set of filenames, return the first content that can be located.
+   * @param openApi
+   * @param filenames
+   * @param schemaName
+   * @return content as JsonNode or null if not found.
+   */
+  private static JsonNode loadFirstFoundSchema(OpenApi3 openApi, Set<String> filenames,
+      String schemaName) {
+    Reference ref;
+    for (String filename : filenames) {
+      ref = openApi.getContext().getReferenceRegistry()
+          .getRef(filename + "#/components/schemas/" + schemaName);
+      if (ref != null) {
+        return ref.getContent();
+      }
+    }
+    return null;
   }
 
   /**
@@ -136,10 +185,8 @@ public final class OpenAPI3Assertions {
    * @throws ResolutionException
    */
   public static OpenApi3 parseAndValidateOpenAPI3Specs(URL specsURL) throws ResolutionException, ValidationException {
-
     OpenApi3 api = new OpenApi3Parser().parse(specsURL, new ArrayList<>(), false);
     OpenApi3Validator.instance().validate(api);
-
     return api;
   }
   
