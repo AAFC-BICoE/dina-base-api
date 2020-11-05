@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.testsupport.jsonapi;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -8,7 +9,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.google.common.collect.ImmutableMap;
 import io.restassured.response.ValidatableResponse;
 
 /**
@@ -78,17 +78,17 @@ public final class JsonAPITestHelper {
    */
   public static Map<String, Object> toJsonAPIMap(String typeName,
       Map<String, Object> attributeMap, Map<String, Object> relationshipMap, String id) {
-    ImmutableMap.Builder<String, Object> bldr = new ImmutableMap.Builder<>();
-    bldr.put("type", typeName);
+    Map<String, Object> jsonApiMap = new HashMap<>();
+    jsonApiMap.put("type", typeName);
     if (id != null) {
-      bldr.put("id", id);
+      jsonApiMap.put("id", id);
     }
 
-    bldr.put("attributes", attributeMap);
+    jsonApiMap.put("attributes", attributeMap);
     if (relationshipMap != null) {
-      bldr.put("relationships", relationshipMap);
+      jsonApiMap.put("relationships", relationshipMap);
     }
-    return ImmutableMap.of("data", bldr.build());
+    return Map.of("data", jsonApiMap);
   }
   
   public static Map<String, Object> toRelationshipMap(List<JsonAPIRelationship> relationship) {
@@ -96,24 +96,23 @@ public final class JsonAPITestHelper {
       return null;
     }
     
-    ImmutableMap.Builder<String, Object> relationships = new ImmutableMap.Builder<>();
+    Map<String, Object> relationships = new HashMap<>();
     for (JsonAPIRelationship rel : relationship) {
       relationships.putAll(toRelationshipMap(rel));
     }
-    return relationships.build();
+    return relationships;
   }
     
   public static Map<String, Object> toRelationshipMap(JsonAPIRelationship relationship) {
-    ImmutableMap.Builder<String, Object> relationships = new ImmutableMap.Builder<>();
-    relationships.put("type", relationship.getType()).put("id", relationship.getId()).build();
-    
-    ImmutableMap.Builder<String, Object> bldr = new ImmutableMap.Builder<>();
-    bldr.put("data", relationships.build());
-    
-    ImmutableMap.Builder<String, Object> relBuilder = new ImmutableMap.Builder<>();
-    relBuilder.put(relationship.getName(), bldr.build());
-    
-    return relBuilder.build();
+    return Map.of(
+      relationship.getName(),
+      Map.of(
+        "data", Map.of(
+          "type", relationship.getType(),
+          "id", relationship.getId()
+        )
+      )
+    );
   }
 
   /**

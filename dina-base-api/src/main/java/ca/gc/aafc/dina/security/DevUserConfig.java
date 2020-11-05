@@ -1,7 +1,7 @@
 package ca.gc.aafc.dina.security;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
+import java.util.Map;
+import java.util.Set;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +22,7 @@ public class DevUserConfig {
     return DinaAuthenticatedUser.builder()
       .agentIdentifer("c628fc6f-c9ad-4bb6-a187-81eb7884bdd7")
       .username("dev")
-      .rolesPerGroup(ImmutableMap.of("dev-group", Sets.newHashSet(DinaRole.STAFF)))
+      .rolesPerGroup(Map.of("dev-group", Set.of(DinaRole.STAFF)))
       .build();
   }
 

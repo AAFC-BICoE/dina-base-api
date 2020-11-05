@@ -158,7 +158,7 @@
           </dependency>
         </dependencies>
         <configuration>
-          <configLocation>checkstyle.xml</configLocation>
+          <configLocation>dina-base-api/src/main/resources/checkstyle.xml</configLocation>
           <failOnViolation>true</failOnViolation>
           <logViolationsToConsole>true</logViolationsToConsole>
         </configuration>
