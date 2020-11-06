@@ -20,7 +20,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
@@ -49,7 +48,7 @@ public class BaseDAO {
   /**
    * This method can be used to inject the EntityManager into an external object.
    * 
-   * @param emConsumer
+   * @param creator
    */
   public <T> T createWithEntityManager(Function<EntityManager, T> creator) {
     Objects.requireNonNull(creator);
