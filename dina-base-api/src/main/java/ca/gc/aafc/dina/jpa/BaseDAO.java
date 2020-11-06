@@ -39,6 +39,8 @@ import lombok.NonNull;
 @Component
 public class BaseDAO {
 
+  public static final int DEFAULT_LIMIT = 100;
+
   @PersistenceContext
   private EntityManager entityManager;
 
@@ -120,6 +122,28 @@ public class BaseDAO {
     } catch (NoResultException nrEx) {
       return null;
     }
+  }
+
+  /**
+   * Find one or more entity by a specific property. The number of records returned is limited
+   * to {@link #DEFAULT_LIMIT}.
+   *
+   * @param clazz
+   * @param property
+   * @param value
+   * @return list of entities or empty list if nothing is found
+   */
+  public <T> List<T> findByProperty(Class<T> clazz, String property, Object value) {
+    // Create a criteria to retrieve the specific property.
+    CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<T> criteria = criteriaBuilder.createQuery(clazz);
+    Root<T> root = criteria.from(clazz);
+
+    criteria.where(criteriaBuilder.equal(root.get(property), value));
+    criteria.select(root);
+
+    TypedQuery<T> query = entityManager.createQuery(criteria);
+    return query.setMaxResults(DEFAULT_LIMIT).getResultList();
   }
 
   /**

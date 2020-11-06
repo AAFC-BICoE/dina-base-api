@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 
+import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -65,6 +66,18 @@ public class BaseDAOIT {
   }
 
   @Test
+  public void findByProperty_onValidProperty_returnsEntities() {
+    String departmentRandomName = TestableEntityFactory.generateRandomNameLettersOnly(7);
+    baseDAO.create(Department.builder().name(departmentRandomName)
+        .location("dep location").build());
+    baseDAO.create(Department.builder().name(departmentRandomName)
+        .location("dep2 location").build());
+
+    assertEquals(2, baseDAO.findByProperty(Department.class, "name", departmentRandomName).size());
+    assertEquals(0, baseDAO.findByProperty(Department.class, "name", TestableEntityFactory.generateRandomNameLettersOnly(7)).size());
+  }
+
+  @Test
   public void existsByProperty_onValidProperty_existsReturnCorrectValue() {
     Department dep = Department.builder().name("dep1").location("dep location").build();
     baseDAO.create(dep);
@@ -90,7 +103,7 @@ public class BaseDAOIT {
     UUID depTypeUUID = depType.getUuid();
     
     baseDAO.setRelationshipByNaturalIdReference(DepartmentType.class, depTypeUUID,
-        (x) -> dep.setDepartmentType(x));
+        dep::setDepartmentType);
     
     Department reloadedDep = baseDAO.findOneByDatabaseId(dep.getId(), Department.class);
     assertNotNull(reloadedDep.getDepartmentType());
