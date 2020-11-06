@@ -124,32 +124,42 @@ public class BaseDAO {
   }
 
   /**
+   * Check for the existence of a record based on a property and a value
+   *
+   * @param clazz
+   * @param property
+   * @param value
+   * @param <T>
+   * @return
+   */
+  public <T> boolean existsByProperty(Class<T> clazz, String property, Object value) {
+    CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Integer> cq = cb.createQuery(Integer.class);
+    Root<T> from = cq.from(clazz);
+
+    cq.select(cb.literal(1))
+      .where(
+        cb.equal(
+          from.get(property),
+            value))
+        .from(clazz);
+
+    TypedQuery<Integer> tq = entityManager.createQuery(cq);
+    return !tq.getResultList().isEmpty();
+  }
+
+  /**
    * Check for the existence of a record by natural id.
-   * 
+   *
    * @param naturalId
    * @param entityClass
    * @return
    */
   public <T> boolean existsByNaturalId(
-    @NonNull Object naturalId,
-    @NonNull Class<T> entityClass
+      @NonNull Object naturalId,
+      @NonNull Class<T> entityClass
   ) {
-    CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-    CriteriaQuery<Boolean> cq = cb.createQuery(Boolean.class);
-    Root<T> from = cq.from(entityClass);
-
-    Subquery<Integer> existsSubquery = cq.subquery(Integer.class);
-    existsSubquery.select(cb.literal(1))
-      .where(
-        cb.equal(
-          from.get(getNaturalIdFieldName(entityClass)),
-          naturalId))
-        .from(entityClass);
-
-    cq.select(cb.exists(existsSubquery));
-
-    TypedQuery<Boolean> tq = entityManager.createQuery(cq);
-    return tq.getResultList().size() > 0 ? tq.getResultList().get(0) : false;
+    return existsByProperty(entityClass, getNaturalIdFieldName(entityClass), naturalId);
   }
 
   /**
@@ -177,7 +187,7 @@ public class BaseDAO {
         (x) -> dep.setDepartmentType(x));
    * 
    * @param entityClass entity to link to that will be loaded with a reference entity
-   * @param naturalKey value 
+   * @param naturalId value
    * @param objConsumer
    */
   public <T> void setRelationshipByNaturalIdReference(Class<T> entityClass, Object naturalId, Consumer<T> objConsumer) {

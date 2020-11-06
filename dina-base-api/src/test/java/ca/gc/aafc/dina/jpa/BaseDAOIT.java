@@ -2,9 +2,11 @@ package ca.gc.aafc.dina.jpa;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.UUID;
 
@@ -55,12 +57,26 @@ public class BaseDAOIT {
     
     Department dep2 = Department.builder().name("dep2").location("dep2 location").build();
     baseDAO.create(dep2);
-    
+
     Integer generatedId = dep2.getId();
     
     assertEquals(generatedId, baseDAO.findOneByProperty(Department.class, "name", "dep2").getId());
     assertNotEquals(generatedId, baseDAO.findOneByProperty(Department.class, "name", "dep1").getId());
-    
+  }
+
+  @Test
+  public void existsByProperty_onValidProperty_existsReturnCorrectValue() {
+    Department dep = Department.builder().name("dep1").location("dep location").build();
+    baseDAO.create(dep);
+
+    Department dep3 = Department.builder().name("dep3").location("dep location3").build();
+    baseDAO.create(dep3);
+
+    Department dep2 = Department.builder().name("dep9999").location("dep location2").build();
+    baseDAO.create(dep2);
+
+    assertTrue(baseDAO.existsByProperty(Department.class, "name", "dep9999"));
+    assertFalse(baseDAO.existsByProperty(Department.class, "name", "dep8888"));
   }
   
   @Test
