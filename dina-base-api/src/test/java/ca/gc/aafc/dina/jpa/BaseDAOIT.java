@@ -2,9 +2,11 @@ package ca.gc.aafc.dina.jpa;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.UUID;
 
@@ -12,6 +14,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 
+import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -55,12 +58,38 @@ public class BaseDAOIT {
     
     Department dep2 = Department.builder().name("dep2").location("dep2 location").build();
     baseDAO.create(dep2);
-    
+
     Integer generatedId = dep2.getId();
     
     assertEquals(generatedId, baseDAO.findOneByProperty(Department.class, "name", "dep2").getId());
     assertNotEquals(generatedId, baseDAO.findOneByProperty(Department.class, "name", "dep1").getId());
-    
+  }
+
+  @Test
+  public void findByProperty_onValidProperty_returnsEntities() {
+    String departmentRandomName = TestableEntityFactory.generateRandomNameLettersOnly(7);
+    baseDAO.create(Department.builder().name(departmentRandomName)
+        .location("dep location").build());
+    baseDAO.create(Department.builder().name(departmentRandomName)
+        .location("dep2 location").build());
+
+    assertEquals(2, baseDAO.findByProperty(Department.class, "name", departmentRandomName).size());
+    assertEquals(0, baseDAO.findByProperty(Department.class, "name", TestableEntityFactory.generateRandomNameLettersOnly(7)).size());
+  }
+
+  @Test
+  public void existsByProperty_onValidProperty_existsReturnCorrectValue() {
+    Department dep = Department.builder().name("dep1").location("dep location").build();
+    baseDAO.create(dep);
+
+    Department dep3 = Department.builder().name("dep3").location("dep location3").build();
+    baseDAO.create(dep3);
+
+    Department dep2 = Department.builder().name("dep9999").location("dep location2").build();
+    baseDAO.create(dep2);
+
+    assertTrue(baseDAO.existsByProperty(Department.class, "name", "dep9999"));
+    assertFalse(baseDAO.existsByProperty(Department.class, "name", "dep8888"));
   }
   
   @Test
@@ -74,7 +103,7 @@ public class BaseDAOIT {
     UUID depTypeUUID = depType.getUuid();
     
     baseDAO.setRelationshipByNaturalIdReference(DepartmentType.class, depTypeUUID,
-        (x) -> dep.setDepartmentType(x));
+        dep::setDepartmentType);
     
     Department reloadedDep = baseDAO.findOneByDatabaseId(dep.getId(), Department.class);
     assertNotNull(reloadedDep.getDepartmentType());
