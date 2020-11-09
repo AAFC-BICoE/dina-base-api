@@ -45,23 +45,31 @@ public class CustomFieldHandler<D, E> {
   ) {
     this.dtoClass = dtoClass;
     this.entityClass = entityClass;
-    this.dtoResolvers = initResolvers(dtoClass , entityClass);
+    this.dtoResolvers = initResolvers(dtoClass, entityClass);
     this.entityResolvers = initResolvers(entityClass, dtoClass);
   }
 
-  private Map<String, Method> initResolvers(Class<?> targetClass,  Class<?> source) {
+  private Map<String, Method> initResolvers(Class<?> targetClass, Class<?> source) {
     return Arrays
       .stream(FieldUtils.getFieldsWithAnnotation(targetClass, CustomFieldResolver.class))
-      .collect(Collectors.toMap(Field::getName, f -> getDeclaredMethod(f,source)));
+      .collect(Collectors.toMap(Field::getName, f -> getCustomFieldResolver(f, source)));
   }
 
-  @SneakyThrows
-  private Method getDeclaredMethod(Field field, Class<?> source) {
-    return field.getDeclaringClass()
-      .getDeclaredMethod(
-        field.getAnnotation(CustomFieldResolver.class).setterMethod(),
-        source
-        );
+  private Method getCustomFieldResolver(Field field, Class<?> paramType) {
+    CustomFieldResolver cfr = field.getAnnotation(CustomFieldResolver.class);
+    if (cfr == null) {
+      throw new IllegalArgumentException("The given field does not contain a custom field resolver");
+    }
+
+    try {
+      return field.getDeclaringClass().getDeclaredMethod(cfr.setterMethod(), paramType);
+    } catch (NoSuchMethodException e) {
+      throw new IllegalArgumentException(
+        "Expected a method with name: " + cfr.setterMethod()
+        + " paramType: " + paramType.getSimpleName()
+        + " return type: " + field.getType()
+        + " but none was found");
+    }
   }
 
   /**
