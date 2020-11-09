@@ -89,12 +89,14 @@ public class DinaMapperTest {
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
       Student.class,
-      Set.of("customField"));
+      Set.of("customField", "oneSidedDto"));
 
     StudentDto dto = mapper.toDto(entity, selectedFieldPerClass, new HashSet<>());
 
     // Entity (ComplexObject.name) DTOs complex object (String)
     assertEquals(entity.getCustomField().getName(), dto.getCustomField());
+    // One sided custom resolver mapping
+    assertEquals(entity.iq, dto.getOneSidedDto());
   }
 
   @Test
@@ -257,12 +259,14 @@ public class DinaMapperTest {
     StudentDto dtoToMap = createDTO();
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
-      StudentDto.class, Set.of("customField"));
+      StudentDto.class, Set.of("customField", "oneSided"));
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, new HashSet<>());
 
     // DTOs complex object (String) -> Entity (ComplexObject.name)
     assertEquals(dtoToMap.getCustomField(), result.getCustomField().getName());
+    // One sided custom resolver mapping
+    assertEquals(dtoToMap.getName(), result.getOneSided());
   }
 
   @Test
@@ -423,6 +427,10 @@ public class DinaMapperTest {
     @CustomFieldResolver(setterMethod = "customFieldToDto")
     private String customField;
 
+    // Custom resolved field on one side only
+    @CustomFieldResolver(setterMethod = "oneSidedSetter")
+    private int oneSidedDto;
+
     // Relation with Custom Resolved Field to test
     @JsonApiRelation
     private NestedResolverRelationDTO relationWithResolver;
@@ -437,6 +445,10 @@ public class DinaMapperTest {
 
     public String customFieldToDto(Student entity) {
       return entity.getCustomField() == null ? "" : entity.getCustomField().getName();
+    }
+
+    public int oneSidedSetter(Student entity) {
+      return entity.iq;
     }
 
   }
@@ -460,6 +472,10 @@ public class DinaMapperTest {
     @CustomFieldResolver(setterMethod = "customFieldToEntity")
     private ComplexObject customField;
 
+    // Custom resolved field on one side only
+    @CustomFieldResolver(setterMethod = "oneSidedSetter")
+    private String oneSided;
+
     // Relation with Custom Resolved Field to test
     private NestedResolverRelation relationWithResolver;
 
@@ -469,6 +485,10 @@ public class DinaMapperTest {
     public ComplexObject customFieldToEntity(StudentDto dto) {
       return dto.getCustomField() == null ? null
         : ComplexObject.builder().name(dto.getCustomField()).build();
+    }
+
+    public String oneSidedSetter(StudentDto dto) {
+      return dto.getName();
     }
 
   }
