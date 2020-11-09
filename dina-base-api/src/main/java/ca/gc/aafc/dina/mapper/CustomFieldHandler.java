@@ -16,12 +16,11 @@ import java.util.stream.Collectors;
 
 /**
  * <p>
- * Handles Custom field resolvers for mapping values between DTOs and Entities. Custom field
- * resolvers are assumed to be declared inside the DTO class.
+ * Handles Custom field resolvers for mapping values between DTOs and Entities. Resolvers are
+ * declared on the class which needs the field resolved.
  * <p>
  * <p>
- * Field resolvers must have at least one parameter of type entity or Dto. A Field Resolver which
- * accepts a parameter of Entity type would map to the associated field in the DTO and vise versa.
+ * A field resolver should always have a parameter type that matches the source class of the mapping.
  * <p>
  *
  * <p>
@@ -52,23 +51,32 @@ public class CustomFieldHandler<D, E> {
   private Map<String, Method> initResolvers(Class<?> targetClass, Class<?> source) {
     return Arrays
       .stream(FieldUtils.getFieldsWithAnnotation(targetClass, CustomFieldResolver.class))
-      .collect(Collectors.toMap(Field::getName, f -> getCustomFieldResolver(f, source)));
+      .collect(Collectors.toMap(Field::getName, f -> parseCustomFieldResolver(f, source)));
   }
 
-  private Method getCustomFieldResolver(Field field, Class<?> paramType) {
+  private Method parseCustomFieldResolver(Field field, Class<?> paramType) {
     CustomFieldResolver cfr = field.getAnnotation(CustomFieldResolver.class);
     if (cfr == null) {
       throw new IllegalArgumentException("The given field does not contain a custom field resolver");
     }
 
     try {
-      return field.getDeclaringClass().getDeclaredMethod(cfr.setterMethod(), paramType);
+      Method method = field.getDeclaringClass().getDeclaredMethod(cfr.setterMethod(), paramType);
+      validateResolverReturnType(cfr.setterMethod(), field.getType(), method.getReturnType());
+      return method;
     } catch (NoSuchMethodException e) {
       throw new IllegalArgumentException(
         "Expected a method with name: " + cfr.setterMethod()
         + " paramType: " + paramType.getSimpleName()
         + " return type: " + field.getType()
         + " but none was found");
+    }
+  }
+
+  private void validateResolverReturnType(String name, Class<?> expected, Class<?> actual) {
+    if (actual != expected) {
+      throw new IllegalArgumentException(
+        "Custom field resolver " + name + " should return a type of: " + expected.getSimpleName());
     }
   }
 
