@@ -342,27 +342,6 @@ public class DinaMapperTest {
     assertEquals(dtoToMap.getName(), resultClassmate.getFriend().getName());
   }
 
-  @Test
-  public void mapperInit_IncorrectResolverReturnTypes_ThrowsIllegalState() {
-    assertThrows(
-      IllegalStateException.class,
-      () -> new DinaMapper<>(IncorrectFieldResolversReturnType.class));
-  }
-
-  @Test
-  public void mapperInit_IncorrectResolverParaMeterCount_ThrowsIllegalState() {
-    assertThrows(
-      IllegalStateException.class,
-      () -> new DinaMapper<>(IncorrectFieldResolversParaCount.class));
-  }
-
-  @Test
-  public void mapperInit_IncorrectResolverParaMeterType_ThrowsIllegalState() {
-    assertThrows(
-      IllegalStateException.class,
-      () -> new DinaMapper<>(IncorrectResolversParaType.class));
-  }
-
   private static StudentDto createDTO() {
     NestedResolverRelationDTO relationWithResolver = NestedResolverRelationDTO.builder()
       .name(RandomStringUtils.random(5, true, false))
@@ -441,6 +420,7 @@ public class DinaMapperTest {
     private StudentDto friend;
 
     // Custom Resolved Field to test
+    @CustomFieldResolver(setterMethod = "customFieldToDto")
     private String customField;
 
     // Relation with Custom Resolved Field to test
@@ -455,15 +435,8 @@ public class DinaMapperTest {
     @JsonApiRelation
     private NoRelatedEntityDTO noRelatedEntityDTO;
 
-    @CustomFieldResolver(fieldName = "customField")
     public String customFieldToDto(Student entity) {
       return entity.getCustomField() == null ? "" : entity.getCustomField().getName();
-    }
-
-    @CustomFieldResolver(fieldName = "customField")
-    public ComplexObject customFieldToEntity(StudentDto dto) {
-      return dto.getCustomField() == null ? null
-        : ComplexObject.builder().name(dto.getCustomField()).build();
     }
 
   }
@@ -484,6 +457,7 @@ public class DinaMapperTest {
     private Student friend;
 
     // Custom Resolved Field to test
+    @CustomFieldResolver(setterMethod = "customFieldToEntity")
     private ComplexObject customField;
 
     // Relation with Custom Resolved Field to test
@@ -492,6 +466,11 @@ public class DinaMapperTest {
     // Many to - Relation to test
     private List<Student> classMates;
 
+    public ComplexObject customFieldToEntity(StudentDto dto) {
+      return dto.getCustomField() == null ? null
+        : ComplexObject.builder().name(dto.getCustomField()).build();
+    }
+
   }
 
   @Data
@@ -499,13 +478,20 @@ public class DinaMapperTest {
   @NoArgsConstructor
   @AllArgsConstructor
   public static final class NestedResolverRelation {
+
     // Custom Resolved Field to test
     private ComplexObject name;
 
     /**
      * Regular field but with the a name matching a custom resolved field on the parent
      */
+    @CustomFieldResolver(setterMethod = "nameToEntity")
     private int customField;
+
+    public ComplexObject nameToEntity(NestedResolverRelationDTO dto) {
+      return dto.getName() == null ? null
+        : ComplexObject.builder().name(dto.getName()).build();
+    }
   }
 
   @Data
@@ -514,7 +500,9 @@ public class DinaMapperTest {
   @AllArgsConstructor
   @RelatedEntity(NestedResolverRelation.class)
   public static final class NestedResolverRelationDTO {
+
     // Custom Resolved Field to test
+    @CustomFieldResolver(setterMethod = "nameToDto")
     private String name;
 
     /**
@@ -522,70 +510,10 @@ public class DinaMapperTest {
      */
     private int customField;
 
-    @CustomFieldResolver(fieldName = "name")
     public String nameToDto(NestedResolverRelation entity) {
       return entity.getName() == null ? "" : entity.getName().getName();
     }
 
-    @CustomFieldResolver(fieldName = "name")
-    public ComplexObject nameToEntity(NestedResolverRelationDTO dto) {
-      return dto.getName() == null ? null
-        : ComplexObject.builder().name(dto.getName()).build();
-    }
-  }
-
-  /**
-   * Class used to test invalid custom resolvers.
-   */
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @RelatedEntity(NestedResolverRelation.class)
-  public static final class IncorrectFieldResolversReturnType {
-
-    private String customField;
-
-    @CustomFieldResolver(fieldName = "customField")
-    public ComplexObject customFieldToDto(Student entity) {
-      return null;
-    }
-  }
-
-  /**
-   * Class used to test invalid custom resolvers.
-   */
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @RelatedEntity(NestedResolverRelation.class)
-  public static final class IncorrectFieldResolversParaCount {
-
-    private String customField;
-
-    @CustomFieldResolver(fieldName = "customField")
-    public String customFieldToDto(Student entity, StudentDto dto) {
-      return null;
-    }
-  }
-
-  /**
-   * Class used to test invalid custom resolvers.
-   */
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @RelatedEntity(NestedResolverRelation.class)
-  public static final class IncorrectResolversParaType {
-
-    private String customField;
-
-    @CustomFieldResolver(fieldName = "customField")
-    public String customFieldToDto(String entity) {
-      return null;
-    }
   }
 
   /**
