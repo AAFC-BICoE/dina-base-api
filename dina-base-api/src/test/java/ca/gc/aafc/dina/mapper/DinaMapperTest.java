@@ -480,12 +480,12 @@ public class DinaMapperTest {
   public static final class NestedResolverRelation {
 
     // Custom Resolved Field to test
+    @CustomFieldResolver(setterMethod = "nameToEntity")
     private ComplexObject name;
 
     /**
      * Regular field but with the a name matching a custom resolved field on the parent
      */
-    @CustomFieldResolver(setterMethod = "nameToEntity")
     private int customField;
 
     public ComplexObject nameToEntity(NestedResolverRelationDTO dto) {
