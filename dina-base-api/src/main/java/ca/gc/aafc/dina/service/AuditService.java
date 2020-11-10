@@ -57,6 +57,11 @@ public class AuditService {
     return AuditService.getResouceCount(this.jdbcTemplate, author, instance);
   }
 
+  /**
+   * Removes the snapshots for a given instance.
+   *
+   * @param instance - instance to remove
+   */
   public void removeSnapshots(@NonNull AuditInstance instance) {
     AuditService.removeSnapshots(this.jdbcTemplate, instance, this.javers);
   }
@@ -150,6 +155,13 @@ public class AuditService {
     return jdbc.queryForObject(sql, parameters, Long.class);
   }
 
+  /**
+   * Removes the snapshots for a given instance.
+   *
+   * @param jdbc     - NamedParameterJdbcTemplate for the query
+   * @param instance - instance to remove
+   * @param javers   - Facade to query
+   */
   public static void removeSnapshots(
     @NonNull NamedParameterJdbcTemplate jdbc,
     @NonNull AuditInstance instance,
