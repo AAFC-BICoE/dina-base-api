@@ -169,7 +169,7 @@ public class AuditService {
       String commitDelete = "delete from jv_commit where commit_id = :id";
       jdbc.update(commitDelete, idMap);
 
-      String commitPropertiesDelete = "delete from jv_commit_property where commit_fk = :id;";
+      String commitPropertiesDelete = "delete from jv_commit_property where commit_fk = (select commit_pk from jv_commit where commit_id = :id)";
       jdbc.update(commitPropertiesDelete, idMap);
     }
 
