@@ -12,6 +12,7 @@ import org.apache.commons.lang3.RandomUtils;
 import org.javers.core.Javers;
 import org.javers.core.metamodel.object.CdoSnapshot;
 import org.javers.core.metamodel.object.SnapshotType;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -147,6 +148,23 @@ public class AuditServiceIT {
     assertNotNull(result);
     assertEquals(SnapshotType.TERMINAL, result.getType());
     assertEquals(DinaUserConfig.AUTH_USER_NAME, result.getCommitMetadata().getAuthor());
+  }
+
+  @Test
+  void removeSnapshots() {
+    EmployeeDto dto = createDto();
+    serviceUnderTest.audit(dto);
+
+    CdoSnapshot result = javers.getLatestSnapshot(dto.getId(), EmployeeDto.class).orElse(null);
+    assertNotNull(result);
+
+    serviceUnderTest.removeSnapshots(AuditInstance.builder()
+      .type(TYPE)
+      .id(Integer.toString(dto.getId()))
+      .build());
+
+    Assertions.assertTrue(javers.getLatestSnapshot(dto.getId(), EmployeeDto.class).isEmpty(),
+      "There should be no more snapshots for this object");
   }
 
   private static EmployeeDto createDto() {

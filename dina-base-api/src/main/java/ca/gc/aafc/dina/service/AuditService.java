@@ -1,8 +1,10 @@
 package ca.gc.aafc.dina.service;
 
-import java.util.List;
-import java.util.Optional;
-
+import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.javers.core.Javers;
 import org.javers.core.metamodel.object.CdoSnapshot;
@@ -13,11 +15,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
 
-import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +54,11 @@ public class AuditService {
   public Long getResouceCount(String author, AuditInstance instance) {
     return AuditService.getResouceCount(this.jdbcTemplate, author, instance);
   }
+
+  public void removeSnapshots(@NonNull AuditInstance instance) {
+    AuditService.removeSnapshots(this.jdbcTemplate, instance, this.javers);
+  }
+
 
   /**
    * Commit a snapshot for a given object, A dina authenticated user will be set
@@ -144,6 +148,14 @@ public class AuditService {
     return jdbc.queryForObject(sql, parameters, Long.class);
   }
 
+  public static void removeSnapshots(
+    @NonNull NamedParameterJdbcTemplate jdbc,
+    @NonNull AuditInstance instance,
+    @NonNull Javers javers
+  ) {
+
+  }
+
   /**
    * Returns the needed SQL String to return a resouce count for a specific author
    * and id. Author and id can be null for un-filtered counts.
@@ -154,13 +166,12 @@ public class AuditService {
    */
   private static String getResouceCountSql(String author, String id) {
     String baseSql = "select count(*) from jv_snapshot s join jv_commit c on s.commit_fk = c.commit_pk where 1=1 %s %s ;";
-    String sql = String.format(
+    return String.format(
       baseSql,
       StringUtils.isNotBlank(author) ? "and c.author = :author" : "",
       StringUtils.isNotBlank(id)
         ? "and global_id_fk = (select global_id_pk from jv_global_id where local_id = :id and type_name = :type)"
         : "");
-    return sql;
   }
 
   @Builder
