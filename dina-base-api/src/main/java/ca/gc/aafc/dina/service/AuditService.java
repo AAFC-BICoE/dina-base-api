@@ -16,7 +16,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -160,14 +159,12 @@ public class AuditService {
       QueryBuilder.byInstanceId(instance.getId(), instance.getType()).build());
     for (CdoSnapshot snap : snapshots) {
       CommitId commitId = snap.getCommitId();
-      MapSqlParameterSource idMap = new MapSqlParameterSource(Map.of("id", commitId.valueAsNumber()));
+      MapSqlParameterSource idMap = new MapSqlParameterSource(Map.of(
+        "id",
+        commitId.valueAsNumber()));
 
       String snapShotDelete = "delete from jv_snapshot where commit_fk = (select commit_pk from jv_commit where commit_id = :id)";
       jdbc.update(snapShotDelete, idMap);
-
-      String globalDelete = "delete from jv_global_id where local_id = :id and type_name = :type";
-      jdbc.update(globalDelete, new MapSqlParameterSource(
-        Map.of("id", instance.getId(), "type", instance.getType())));
 
       String commitDelete = "delete from jv_commit where commit_id = :id";
       jdbc.update(commitDelete, idMap);
@@ -175,6 +172,10 @@ public class AuditService {
       String commitPropertiesDelete = "delete from jv_commit_property where commit_fk = :id;";
       jdbc.update(commitPropertiesDelete, idMap);
     }
+
+    String globalDelete = "delete from jv_global_id where local_id = :id and type_name = :type";
+    jdbc.update(globalDelete, new MapSqlParameterSource(
+      Map.of("id", instance.getId(), "type", instance.getType())));
   }
 
   /**

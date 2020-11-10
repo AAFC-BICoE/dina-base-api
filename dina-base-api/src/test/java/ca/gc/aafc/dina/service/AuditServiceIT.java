@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.javers.core.Javers;
 import org.javers.core.metamodel.object.CdoSnapshot;
@@ -154,7 +155,8 @@ public class AuditServiceIT {
   void removeSnapshots() {
     EmployeeDto dto = createDto();
     serviceUnderTest.audit(dto);
-
+    dto.setName(RandomStringUtils.randomAlphabetic(4));
+    serviceUnderTest.audit(dto);
     CdoSnapshot result = javers.getLatestSnapshot(dto.getId(), EmployeeDto.class).orElse(null);
     assertNotNull(result);
 
