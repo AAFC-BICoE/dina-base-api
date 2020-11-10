@@ -14,7 +14,7 @@ public class BaseDtoTest {
     @Test
     public void when_inherited_childrenDtos_hasAll_expected_sections(){
         assertNotNull(inheritedDtoObject.getMeta());
-        assertEquals(WARNINGS, inheritedDtoObject.getWARNINGS());
+        assertEquals(WARNINGS, BaseDto.WARNINGS);
         assertNotNull(inheritedDtoObject.getMeta().get(WARNINGS));
     }
 }
