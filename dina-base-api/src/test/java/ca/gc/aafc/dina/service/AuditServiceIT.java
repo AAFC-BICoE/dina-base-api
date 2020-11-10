@@ -1,13 +1,9 @@
 package ca.gc.aafc.dina.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import java.util.Collections;
-import java.util.List;
-
-import javax.inject.Inject;
-
+import ca.gc.aafc.dina.DinaUserConfig;
+import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.dto.EmployeeDto;
+import ca.gc.aafc.dina.service.AuditService.AuditInstance;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.javers.core.Javers;
@@ -19,10 +15,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import ca.gc.aafc.dina.DinaUserConfig;
-import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.dto.EmployeeDto;
-import ca.gc.aafc.dina.service.AuditService.AuditInstance;
+import javax.inject.Inject;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(classes = TestDinaBaseApp.class, properties = "dina.auditing.enabled = true")
 public class AuditServiceIT {
@@ -152,20 +150,23 @@ public class AuditServiceIT {
   }
 
   @Test
-  void removeSnapshots() {
+  void removeSnapshots_SnapShotsRemoved() {
     EmployeeDto dto = createDto();
     serviceUnderTest.audit(dto);
     dto.setName(RandomStringUtils.randomAlphabetic(4));
     serviceUnderTest.audit(dto);
-    CdoSnapshot result = javers.getLatestSnapshot(dto.getId(), EmployeeDto.class).orElse(null);
-    assertNotNull(result);
-
-    serviceUnderTest.removeSnapshots(AuditInstance.builder()
+    AuditInstance instance = AuditInstance.builder()
       .type(TYPE)
       .id(Integer.toString(dto.getId()))
-      .build());
+      .build();
 
-    Assertions.assertTrue(javers.getLatestSnapshot(dto.getId(), EmployeeDto.class).isEmpty(),
+    Assertions.assertEquals(2, serviceUnderTest.findAll(instance, null, 100, 0).size());
+
+    serviceUnderTest.removeSnapshots(instance);
+
+    Assertions.assertEquals(0, serviceUnderTest.findAll(instance, null, 100, 0).size());
+    Assertions.assertTrue(
+      javers.getLatestSnapshot(dto.getId(), EmployeeDto.class).isEmpty(),
       "There should be no more snapshots for this object");
   }
 
