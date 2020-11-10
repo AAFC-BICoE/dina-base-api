@@ -89,12 +89,14 @@ public class DinaMapperTest {
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
       Student.class,
-      Set.of("customField"));
+      Set.of("customField", "oneSidedDto"));
 
     StudentDto dto = mapper.toDto(entity, selectedFieldPerClass, new HashSet<>());
 
     // Entity (ComplexObject.name) DTOs complex object (String)
     assertEquals(entity.getCustomField().getName(), dto.getCustomField());
+    // One sided custom resolver mapping
+    assertEquals(entity.iq, dto.getOneSidedDto());
   }
 
   @Test
@@ -257,12 +259,14 @@ public class DinaMapperTest {
     StudentDto dtoToMap = createDTO();
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
-      StudentDto.class, Set.of("customField"));
+      StudentDto.class, Set.of("customField", "oneSided"));
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, new HashSet<>());
 
     // DTOs complex object (String) -> Entity (ComplexObject.name)
     assertEquals(dtoToMap.getCustomField(), result.getCustomField().getName());
+    // One sided custom resolver mapping
+    assertEquals(dtoToMap.getName(), result.getOneSided());
   }
 
   @Test
@@ -343,24 +347,24 @@ public class DinaMapperTest {
   }
 
   @Test
-  public void mapperInit_IncorrectResolverReturnTypes_ThrowsIllegalState() {
+  public void mapperInit_IncorrectResolverReturnTypes_ThrowsIllegalArgumentException() {
     assertThrows(
-      IllegalStateException.class,
-      () -> new DinaMapper<>(IncorrectFieldResolversReturnType.class));
+      IllegalArgumentException.class,
+      () -> new DinaMapper<>(ResolverWithBadReturnType.class));
   }
 
   @Test
-  public void mapperInit_IncorrectResolverParaMeterCount_ThrowsIllegalState() {
+  public void mapperInit_IncorrectResolverParaMeterType_ThrowsIllegalArgumentException() {
     assertThrows(
-      IllegalStateException.class,
-      () -> new DinaMapper<>(IncorrectFieldResolversParaCount.class));
+      IllegalArgumentException.class,
+      () -> new DinaMapper<>(ResolverWithBadParameter.class));
   }
 
   @Test
-  public void mapperInit_IncorrectResolverParaMeterType_ThrowsIllegalState() {
+  public void mapperInit_IncorrectResolverParaMeterCount_ThrowsIllegalArgumentException() {
     assertThrows(
-      IllegalStateException.class,
-      () -> new DinaMapper<>(IncorrectResolversParaType.class));
+      IllegalArgumentException.class,
+      () -> new DinaMapper<>(ResolverWithBadParameterCount.class));
   }
 
   private static StudentDto createDTO() {
@@ -441,7 +445,12 @@ public class DinaMapperTest {
     private StudentDto friend;
 
     // Custom Resolved Field to test
+    @CustomFieldResolver(setterMethod = "customFieldToDto")
     private String customField;
+
+    // Custom resolved field on one side only
+    @CustomFieldResolver(setterMethod = "oneSidedSetter")
+    private int oneSidedDto;
 
     // Relation with Custom Resolved Field to test
     @JsonApiRelation
@@ -455,15 +464,12 @@ public class DinaMapperTest {
     @JsonApiRelation
     private NoRelatedEntityDTO noRelatedEntityDTO;
 
-    @CustomFieldResolver(fieldName = "customField")
     public String customFieldToDto(Student entity) {
       return entity.getCustomField() == null ? "" : entity.getCustomField().getName();
     }
 
-    @CustomFieldResolver(fieldName = "customField")
-    public ComplexObject customFieldToEntity(StudentDto dto) {
-      return dto.getCustomField() == null ? null
-        : ComplexObject.builder().name(dto.getCustomField()).build();
+    public int oneSidedSetter(Student entity) {
+      return entity.iq;
     }
 
   }
@@ -484,13 +490,27 @@ public class DinaMapperTest {
     private Student friend;
 
     // Custom Resolved Field to test
+    @CustomFieldResolver(setterMethod = "customFieldToEntity")
     private ComplexObject customField;
+
+    // Custom resolved field on one side only
+    @CustomFieldResolver(setterMethod = "oneSidedSetter")
+    private String oneSided;
 
     // Relation with Custom Resolved Field to test
     private NestedResolverRelation relationWithResolver;
 
     // Many to - Relation to test
     private List<Student> classMates;
+
+    public ComplexObject customFieldToEntity(StudentDto dto) {
+      return dto.getCustomField() == null ? null
+        : ComplexObject.builder().name(dto.getCustomField()).build();
+    }
+
+    public String oneSidedSetter(StudentDto dto) {
+      return dto.getName();
+    }
 
   }
 
@@ -499,13 +519,20 @@ public class DinaMapperTest {
   @NoArgsConstructor
   @AllArgsConstructor
   public static final class NestedResolverRelation {
+
     // Custom Resolved Field to test
+    @CustomFieldResolver(setterMethod = "nameToEntity")
     private ComplexObject name;
 
     /**
      * Regular field but with the a name matching a custom resolved field on the parent
      */
     private int customField;
+
+    public ComplexObject nameToEntity(NestedResolverRelationDTO dto) {
+      return dto.getName() == null ? null
+        : ComplexObject.builder().name(dto.getName()).build();
+    }
   }
 
   @Data
@@ -514,7 +541,9 @@ public class DinaMapperTest {
   @AllArgsConstructor
   @RelatedEntity(NestedResolverRelation.class)
   public static final class NestedResolverRelationDTO {
+
     // Custom Resolved Field to test
+    @CustomFieldResolver(setterMethod = "nameToDto")
     private String name;
 
     /**
@@ -522,70 +551,10 @@ public class DinaMapperTest {
      */
     private int customField;
 
-    @CustomFieldResolver(fieldName = "name")
     public String nameToDto(NestedResolverRelation entity) {
       return entity.getName() == null ? "" : entity.getName().getName();
     }
 
-    @CustomFieldResolver(fieldName = "name")
-    public ComplexObject nameToEntity(NestedResolverRelationDTO dto) {
-      return dto.getName() == null ? null
-        : ComplexObject.builder().name(dto.getName()).build();
-    }
-  }
-
-  /**
-   * Class used to test invalid custom resolvers.
-   */
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @RelatedEntity(NestedResolverRelation.class)
-  public static final class IncorrectFieldResolversReturnType {
-
-    private String customField;
-
-    @CustomFieldResolver(fieldName = "customField")
-    public ComplexObject customFieldToDto(Student entity) {
-      return null;
-    }
-  }
-
-  /**
-   * Class used to test invalid custom resolvers.
-   */
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @RelatedEntity(NestedResolverRelation.class)
-  public static final class IncorrectFieldResolversParaCount {
-
-    private String customField;
-
-    @CustomFieldResolver(fieldName = "customField")
-    public String customFieldToDto(Student entity, StudentDto dto) {
-      return null;
-    }
-  }
-
-  /**
-   * Class used to test invalid custom resolvers.
-   */
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @RelatedEntity(NestedResolverRelation.class)
-  public static final class IncorrectResolversParaType {
-
-    private String customField;
-
-    @CustomFieldResolver(fieldName = "customField")
-    public String customFieldToDto(String entity) {
-      return null;
-    }
   }
 
   /**
@@ -598,6 +567,54 @@ public class DinaMapperTest {
   public static final class NoRelatedEntityDTO {
 
     private String customField;
+
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @RelatedEntity(NestedResolverRelation.class)
+  public static final class ResolverWithBadReturnType {
+
+    @CustomFieldResolver(setterMethod = "nameToDto")
+    private String name;
+
+    public int nameToDto(NestedResolverRelation entity) {
+      return 0;
+    }
+
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @RelatedEntity(NestedResolverRelation.class)
+  public static final class ResolverWithBadParameter {
+
+    @CustomFieldResolver(setterMethod = "nameToDto")
+    private String name;
+
+    public String nameToDto(int entity) {
+      return "0";
+    }
+
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @RelatedEntity(NestedResolverRelation.class)
+  public static final class ResolverWithBadParameterCount {
+
+    @CustomFieldResolver(setterMethod = "nameToDto")
+    private String name;
+
+    public String nameToDto(NestedResolverRelation entity, NestedResolverRelation dto) {
+      return "0";
+    }
 
   }
 }
