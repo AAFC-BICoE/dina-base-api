@@ -54,7 +54,7 @@ public class CustomFieldHandler<D, E> {
       .collect(Collectors.toMap(Field::getName, f -> parseCustomFieldResolver(f, source)));
   }
 
-  private Method parseCustomFieldResolver(Field field, Class<?> paramType) {
+  private static Method parseCustomFieldResolver(Field field, Class<?> paramType) {
     CustomFieldResolver cfr = field.getAnnotation(CustomFieldResolver.class);
     if (cfr == null) {
       throw new IllegalArgumentException("The given field does not contain a custom field resolver");
@@ -73,7 +73,7 @@ public class CustomFieldHandler<D, E> {
     }
   }
 
-  private void validateResolverReturnType(String name, Class<?> expected, Class<?> actual) {
+  private static void validateResolverReturnType(String name, Class<?> expected, Class<?> actual) {
     if (actual != expected) {
       throw new IllegalArgumentException(
         "Custom field resolver " + name + " should return a type of: " + expected.getSimpleName());
@@ -123,7 +123,7 @@ public class CustomFieldHandler<D, E> {
    * @param resolvers - custom resolvers to apply
    */
   @SneakyThrows
-  private <T, S> void mapCustomFieldsToTarget(S source, T target, Map<String, Method> resolvers) {
+  private static <T, S> void mapCustomFieldsToTarget(S source, T target, Map<String, Method> resolvers) {
     for (Entry<String, Method> entry : resolvers.entrySet()) {
       Object mappedValue = entry.getValue().invoke(target, source);
       PropertyUtils.setProperty(target, entry.getKey(), mappedValue);
