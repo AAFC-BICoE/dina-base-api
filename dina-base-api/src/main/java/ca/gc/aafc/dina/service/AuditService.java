@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,6 +63,7 @@ public class AuditService {
    *
    * @param instance - instance to remove
    */
+  @Transactional
   public void removeSnapshots(@NonNull AuditInstance instance) {
     AuditService.removeSnapshots(this.jdbcTemplate, instance, this.javers);
   }
