@@ -8,9 +8,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -20,7 +18,8 @@ import java.util.stream.Collectors;
  * declared on the class which needs the field resolved.
  * <p>
  * <p>
- * A field resolver should always have a parameter type that matches the source class of the mapping.
+ * A field resolver should always have a parameter type that matches the source class of the
+ * mapping.
  * <p>
  *
  * <p>
@@ -90,43 +89,41 @@ public class CustomFieldHandler<D, E> {
    * @param target         - target bean
    */
   public <T, S> void resolveFields(Set<String> selectedFields, T source, S target) {
-    Map<String, Method> selectedResolvers = getSelectedResolvers(source);
-    selectedResolvers.entrySet().removeIf(e -> !selectedFields.contains(e.getKey()));
-    mapCustomFieldsToTarget(source, target, selectedResolvers);
+    validateClassIsSupported(target.getClass());
+    if (entityClass == target.getClass()) {
+      resolveFields(source, target, entityResolvers, selectedFields);
+    } else if (dtoClass == target.getClass()) {
+      resolveFields(source, target, dtoResolvers, selectedFields);
+    }
   }
 
-  /**
-   * Returns a copy of the appropriate custom field resolvers for the given source.
-   *
-   * @param <T>    - source object type
-   * @param source - source object for the mapping
-   * @return - a copy of the appropriate custom field resolvers
-   */
-  private <T> Map<String, Method> getSelectedResolvers(T source) {
-    if (dtoClass == source.getClass()) {
-      return new HashMap<>(entityResolvers);
-    } else if (entityClass == source.getClass()) {
-      return new HashMap<>(dtoResolvers);
-    } else {
-      throw new IllegalArgumentException("Expected source type of " + dtoClass.getSimpleName()
-          + " or " + entityClass.getSimpleName() + " but was " + source.getClass());
+  @SneakyThrows
+  private <T, S> void resolveFields(
+    T source,
+    S target,
+    Map<String, Method> resolvers,
+    Set<String> selectedFields
+  ) {
+    for (Map.Entry<String, Method> entry : resolvers.entrySet()) {
+      String fieldName = entry.getKey();
+      Method method = entry.getValue();
+      if (selectedFields.contains(fieldName)) {
+        Object mappedValue = method.invoke(target, source);
+        PropertyUtils.setProperty(target, fieldName, mappedValue);
+      }
     }
   }
 
   /**
-   * Maps the custom field resolvers of a given source to a given target.
+   * Validates a given class is supported by this handler or an IllegalArgumentException is thrown.
    *
-   * @param <T>       - Type of target
-   * @param <S>       - Type of source
-   * @param source    - source of the mapping
-   * @param target    - target of the mapping
-   * @param resolvers - custom resolvers to apply
+   * @param clazz - class to validate
    */
-  @SneakyThrows
-  private static <T, S> void mapCustomFieldsToTarget(S source, T target, Map<String, Method> resolvers) {
-    for (Entry<String, Method> entry : resolvers.entrySet()) {
-      Object mappedValue = entry.getValue().invoke(target, source);
-      PropertyUtils.setProperty(target, entry.getKey(), mappedValue);
+  private void validateClassIsSupported(Class<?> clazz) {
+    if (clazz != dtoClass && clazz != entityClass) {
+      throw new IllegalArgumentException(
+        "Expected clazz type of " + dtoClass.getSimpleName() + " or "
+        + entityClass.getSimpleName() + " but was " + clazz.getSimpleName());
     }
   }
 
