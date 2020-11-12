@@ -98,7 +98,7 @@ public class CustomFieldHandler<D, E> {
   }
 
   @SneakyThrows
-  private <T, S> void resolveFields(
+  private static <T, S> void resolveFields(
     T source,
     S target,
     Map<String, Method> resolvers,
