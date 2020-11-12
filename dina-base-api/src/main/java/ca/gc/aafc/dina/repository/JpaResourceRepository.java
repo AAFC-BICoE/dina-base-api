@@ -29,10 +29,12 @@ import lombok.Setter;
  * JSONAPI repository that interfaces using DTOs, and uses JPA entities internally.
  *
  * @param <D> the JsonApi DTO class.
+ * @deprecated Use {@link DinaRepository}
  */
 @Transactional
 @RequiredArgsConstructor
 //CHECKSTYLE:OFF AnnotationUseStyle
+@Deprecated(forRemoval = true, since = "0.42")
 public class JpaResourceRepository<D>
     implements ResourceRepository<D, Serializable>, ResourceRegistryAware {
 

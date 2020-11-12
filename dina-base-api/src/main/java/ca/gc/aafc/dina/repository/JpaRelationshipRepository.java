@@ -31,10 +31,12 @@ import lombok.Setter;
  *
  * @param <S> the source resource
  * @param <T> the target resource
+ * @deprecated Use {@link DinaRepository}
  */
 @Transactional
 @RequiredArgsConstructor
 //CHECKSTYLE:OFF AnnotationUseStyle
+@Deprecated(forRemoval = true, since = "0.42")
 public class JpaRelationshipRepository<S, T>
     implements RelationshipRepository<S, Serializable, T, Serializable>, ResourceRegistryAware {
 

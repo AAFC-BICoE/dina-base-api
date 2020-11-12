@@ -44,6 +44,7 @@ import lombok.SneakyThrows;
 @Transactional
 //CHECKSTYLE:OFF AnnotationUseStyle
 @RequiredArgsConstructor(onConstructor_ = @Inject)
+@Deprecated(forRemoval = true, since = "0.42")
 public class JpaDtoRepository {
 
   @NonNull
