@@ -65,9 +65,28 @@ public class AuditService {
    */
   @Transactional
   public void removeSnapshots(@NonNull AuditInstance instance) {
-    AuditService.removeSnapshots(this.jdbcTemplate, instance, this.javers);
-  }
+    List<CdoSnapshot> snapshots = javers.findSnapshots(
+      QueryBuilder.byInstanceId(instance.getId(), instance.getType()).build());
+    for (CdoSnapshot snap : snapshots) {
+      CommitId commitId = snap.getCommitId();
+      MapSqlParameterSource idMap = new MapSqlParameterSource(Map.of(
+        "id",
+        commitId.valueAsNumber()));
 
+      String snapShotDelete = "delete from jv_snapshot where commit_fk = (select commit_pk from jv_commit where commit_id = :id)";
+      jdbcTemplate.update(snapShotDelete, idMap);
+
+      String commitDelete = "delete from jv_commit where commit_id = :id";
+      jdbcTemplate.update(commitDelete, idMap);
+
+      String commitPropertiesDelete = "delete from jv_commit_property where commit_fk = (select commit_pk from jv_commit where commit_id = :id)";
+      jdbcTemplate.update(commitPropertiesDelete, idMap);
+    }
+
+    String globalDelete = "delete from jv_global_id where local_id = :id and type_name = :type";
+    jdbcTemplate.update(globalDelete, new MapSqlParameterSource(
+      Map.of("id", instance.getId(), "type", instance.getType())));
+  }
 
   /**
    * Commit a snapshot for a given object, A dina authenticated user will be set
@@ -155,41 +174,6 @@ public class AuditService {
 
     String sql = getResouceCountSql(author, id);
     return jdbc.queryForObject(sql, parameters, Long.class);
-  }
-
-  /**
-   * Removes the snapshots for a given instance.
-   *
-   * @param jdbc     - NamedParameterJdbcTemplate for the query
-   * @param instance - instance to remove
-   * @param javers   - Facade to query
-   */
-  public static void removeSnapshots(
-    @NonNull NamedParameterJdbcTemplate jdbc,
-    @NonNull AuditInstance instance,
-    @NonNull Javers javers
-  ) {
-    List<CdoSnapshot> snapshots = javers.findSnapshots(
-      QueryBuilder.byInstanceId(instance.getId(), instance.getType()).build());
-    for (CdoSnapshot snap : snapshots) {
-      CommitId commitId = snap.getCommitId();
-      MapSqlParameterSource idMap = new MapSqlParameterSource(Map.of(
-        "id",
-        commitId.valueAsNumber()));
-
-      String snapShotDelete = "delete from jv_snapshot where commit_fk = (select commit_pk from jv_commit where commit_id = :id)";
-      jdbc.update(snapShotDelete, idMap);
-
-      String commitDelete = "delete from jv_commit where commit_id = :id";
-      jdbc.update(commitDelete, idMap);
-
-      String commitPropertiesDelete = "delete from jv_commit_property where commit_fk = (select commit_pk from jv_commit where commit_id = :id)";
-      jdbc.update(commitPropertiesDelete, idMap);
-    }
-
-    String globalDelete = "delete from jv_global_id where local_id = :id and type_name = :type";
-    jdbc.update(globalDelete, new MapSqlParameterSource(
-      Map.of("id", instance.getId(), "type", instance.getType())));
   }
 
   /**
