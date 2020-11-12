@@ -35,6 +35,7 @@ import lombok.Setter;
 @Transactional
 @RequiredArgsConstructor
 //CHECKSTYLE:OFF AnnotationUseStyle
+@Deprecated(forRemoval = true, since = "0.42")
 public class JpaRelationshipRepository<S, T>
     implements RelationshipRepository<S, Serializable, T, Serializable>, ResourceRegistryAware {
 

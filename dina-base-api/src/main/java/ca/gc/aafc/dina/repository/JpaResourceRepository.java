@@ -33,6 +33,7 @@ import lombok.Setter;
 @Transactional
 @RequiredArgsConstructor
 //CHECKSTYLE:OFF AnnotationUseStyle
+@Deprecated(forRemoval = true, since = "0.42")
 public class JpaResourceRepository<D>
     implements ResourceRepository<D, Serializable>, ResourceRegistryAware {
 
