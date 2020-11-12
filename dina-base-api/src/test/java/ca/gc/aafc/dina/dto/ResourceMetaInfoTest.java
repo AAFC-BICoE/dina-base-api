@@ -5,16 +5,16 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.jupiter.api.Test;
 
-public class BaseDtoTest {
+public class ResourceMetaInfoTest {
 
     private static String WARNINGS = "warnings";
 
-    BaseDto inheritedDtoObject = new BaseDto (){};    
+    ResourceMetaInfo inheritedDtoObject = new ResourceMetaInfo (){};    
 
     @Test
     public void when_inherited_childrenDtos_hasAll_expected_sections(){
         assertNotNull(inheritedDtoObject.getMeta());
-        assertEquals(WARNINGS, BaseDto.WARNINGS);
+        assertEquals(WARNINGS, ResourceMetaInfo.WARNINGS);
         assertNotNull(inheritedDtoObject.getMeta().get(WARNINGS));
     }
 }

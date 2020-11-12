@@ -10,11 +10,11 @@ import lombok.Data;
 import lombok.Getter;
 
 @Getter
-public class BaseDto {
+public class ResourceMetaInfo {
     protected Map<String, List<Warning>> meta = new HashMap<String, List<Warning>>();
     protected static final String WARNINGS = "warnings";
 
-    public BaseDto() {
+    public ResourceMetaInfo() {
         meta.put(WARNINGS, new ArrayList<Warning>());
     }
 
