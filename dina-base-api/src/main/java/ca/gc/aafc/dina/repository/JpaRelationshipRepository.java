@@ -31,6 +31,7 @@ import lombok.Setter;
  *
  * @param <S> the source resource
  * @param <T> the target resource
+ * @deprecated Use {@link DinaRepository}
  */
 @Transactional
 @RequiredArgsConstructor

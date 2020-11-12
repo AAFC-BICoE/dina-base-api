@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * Uses an existing JPA criteria query to provide a DefaultPagedMetaInformation containing the total
  * count of resources that match the existing query's restrictions.
+ * @deprecated will be removed with JPA repository classes
  */
 @RequiredArgsConstructor
 @Deprecated(forRemoval = true, since = "0.42")

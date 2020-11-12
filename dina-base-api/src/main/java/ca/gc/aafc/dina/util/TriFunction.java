@@ -7,6 +7,7 @@ package ca.gc.aafc.dina.util;
  * @param <B> second argument type
  * @param <C> third argument type
  * @param <R> return type
+ * @deprecated will be removed with JPA repository classes
  */
 @Deprecated(forRemoval = true, since = "0.42")
 public interface TriFunction<A, B, C, R> {

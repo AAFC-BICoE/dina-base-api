@@ -39,6 +39,7 @@ import lombok.SneakyThrows;
 
 /**
  * Maps DTOs to JPA entities.
+ * @deprecated will be removed with JPA repository classes
  */
 @Deprecated(forRemoval = true, since = "0.42")
 public class JpaDtoMapper {

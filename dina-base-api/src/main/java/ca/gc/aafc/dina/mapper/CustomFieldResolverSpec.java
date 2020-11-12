@@ -8,6 +8,7 @@ import lombok.NonNull;
 
 /**
  * @param <E> Entity type
+ * @deprecated will be removed with JPA repository classes
  */
 @Builder
 @Getter

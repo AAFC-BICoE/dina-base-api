@@ -16,6 +16,7 @@ import lombok.NonNull;
 
 /**
  * Interface for providing JSONAPI response meta information given a JPA Criteria Query.
+ * @deprecated will be removed with JPA repository classes
  */
 @Deprecated(forRemoval = true, since = "0.42")
 public interface JpaMetaInformationProvider {

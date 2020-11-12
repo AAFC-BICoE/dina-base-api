@@ -9,6 +9,7 @@ package ca.gc.aafc.dina.util;
  *          second argument type
  * @param <S>
  *          third argument type
+ * @deprecated will be removed with JPA repository classes
  */
 @Deprecated(forRemoval = true, since = "0.42")
 public interface TriConsumer<A, B, C> {
