@@ -8,6 +8,7 @@ package ca.gc.aafc.dina.util;
  * @param <C> third argument type
  * @param <R> return type
  */
+@Deprecated(forRemoval = true, since = "0.42")
 public interface TriFunction<A, B, C, R> {
   R apply(A a, B b, C c);
 }

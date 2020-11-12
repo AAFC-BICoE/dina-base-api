@@ -11,6 +11,7 @@ import lombok.NonNull;
  */
 @Builder
 @Getter
+@Deprecated(forRemoval = true, since = "0.42")
 public class CustomFieldResolverSpec<E> {
   @NonNull
   private String field;

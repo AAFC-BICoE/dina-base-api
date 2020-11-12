@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
  * count of resources that match the existing query's restrictions.
  */
 @RequiredArgsConstructor
+@Deprecated(forRemoval = true, since = "0.42")
 public class JpaTotalMetaInformationProvider implements JpaMetaInformationProvider {
 
   private final EntityManager entityManager;
