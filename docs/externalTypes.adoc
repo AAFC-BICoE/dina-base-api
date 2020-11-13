@@ -11,8 +11,6 @@ Your entity needs to hold the identifier of the resource in a field.
 
 == Set up your DTO
 
-=== 1) Field declaration
-
 Your Dto needs to declare the type of the field as a `ExternalRelationDto` and provide the needed annotations. The `JsonApiExternalRelation` type is the name of the resource type.
 
 [source,java]
@@ -22,27 +20,6 @@ Your Dto needs to declare the type of the field as a `ExternalRelationDto` and p
   private ExternalRelationDto acMetaDataCreator;
 ----
 
-=== 2) Custom field resolvers
-
-Your Dto needs to provide the functions to map the External Types of the entity to the External Types of the Dto and vice versa.
-
-An example of such functions for this example would look like the following.
-
-[source,java]
-----
-  @CustomFieldResolver(fieldName = "acMetaDataCreator")
-  public static ExternalRelationDto acMetaDataCreatorToDTO(@NonNull Project entity) {
-    return entity.getAcMetaDataCreator() == null ? null : ExternalRelationDto.builder()
-      .type("agent").id(entity.getAcMetaDataCreator().toString())
-      .build();
-  }
-
-  @CustomFieldResolver(fieldName = "acMetaDataCreator")
-  public static UUID acMetaDataCreatorToEntity(@NonNull ProjectDTO dto) {
-    return dto.getAcMetaDataCreator() == null ? null : UUID.fromString(dto.getAcMetaDataCreator()
-      .getId());
-  }
-----
 
 == Set up your External Resource Provider Component
 
