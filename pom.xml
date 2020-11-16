@@ -24,15 +24,7 @@
     <module>dina-workbook</module>
     <module>dina-test-support</module>
   </modules>
-
-  <repositories>
-    <!-- Required for Crnk 3.0 -->
-    <repository>
-      <id>spring-libs-release</id>
-      <url>https://repo.spring.io/libs-release</url>
-    </repository>
-  </repositories>
-
+  
   <properties>
     <!-- Compile properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
