@@ -346,27 +346,6 @@ public class DinaMapperTest {
     assertEquals(dtoToMap.getName(), resultClassmate.getFriend().getName());
   }
 
-  @Test
-  public void mapperInit_IncorrectResolverReturnTypes_ThrowsIllegalArgumentException() {
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> new DinaMapper<>(ResolverWithBadReturnType.class));
-  }
-
-  @Test
-  public void mapperInit_IncorrectResolverParaMeterType_ThrowsIllegalArgumentException() {
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> new DinaMapper<>(ResolverWithBadParameter.class));
-  }
-
-  @Test
-  public void mapperInit_IncorrectResolverParaMeterCount_ThrowsIllegalArgumentException() {
-    assertThrows(
-      IllegalArgumentException.class,
-      () -> new DinaMapper<>(ResolverWithBadParameterCount.class));
-  }
-
   private static StudentDto createDTO() {
     NestedResolverRelationDTO relationWithResolver = NestedResolverRelationDTO.builder()
       .name(RandomStringUtils.random(5, true, false))
@@ -570,51 +549,4 @@ public class DinaMapperTest {
 
   }
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @RelatedEntity(NestedResolverRelation.class)
-  public static final class ResolverWithBadReturnType {
-
-    @CustomFieldResolver(setterMethod = "nameToDto")
-    private String name;
-
-    public int nameToDto(NestedResolverRelation entity) {
-      return 0;
-    }
-
-  }
-
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @RelatedEntity(NestedResolverRelation.class)
-  public static final class ResolverWithBadParameter {
-
-    @CustomFieldResolver(setterMethod = "nameToDto")
-    private String name;
-
-    public String nameToDto(int entity) {
-      return "0";
-    }
-
-  }
-
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @RelatedEntity(NestedResolverRelation.class)
-  public static final class ResolverWithBadParameterCount {
-
-    @CustomFieldResolver(setterMethod = "nameToDto")
-    private String name;
-
-    public String nameToDto(NestedResolverRelation entity, NestedResolverRelation dto) {
-      return "0";
-    }
-
-  }
 }
