@@ -1080,8 +1080,6 @@ public class PersonDTO {
 </div>
 <div class="sect2">
 <h3 id="_set_up_your_dto">8.2. Set up your DTO</h3>
-<div class="sect3">
-<h4 id="_1_field_declaration">8.2.1. 1) Field declaration</h4>
 <div class="paragraph">
 <p>Your Dto needs to declare the type of the field as a <code>ExternalRelationDto</code> and provide the needed annotations. The <code>JsonApiExternalRelation</code> type is the name of the resource type.</p>
 </div>
@@ -1090,32 +1088,6 @@ public class PersonDTO {
 <pre class="highlight"><code class="language-java" data-lang="java">  @JsonApiExternalRelation(type = "agent")
   @JsonApiRelation
   private ExternalRelationDto acMetaDataCreator;</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_2_custom_field_resolvers">8.2.2. 2) Custom field resolvers</h4>
-<div class="paragraph">
-<p>Your Dto needs to provide the functions to map the External Types of the entity to the External Types of the Dto and vice versa.</p>
-</div>
-<div class="paragraph">
-<p>An example of such functions for this example would look like the following.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-java" data-lang="java">  @CustomFieldResolver(fieldName = "acMetaDataCreator")
-  public static ExternalRelationDto acMetaDataCreatorToDTO(@NonNull Project entity) {
-    return entity.getAcMetaDataCreator() == null ? null : ExternalRelationDto.builder()
-      .type("agent").id(entity.getAcMetaDataCreator().toString())
-      .build();
-  }
-
-  @CustomFieldResolver(fieldName = "acMetaDataCreator")
-  public static UUID acMetaDataCreatorToEntity(@NonNull ProjectDTO dto) {
-    return dto.getAcMetaDataCreator() == null ? null : UUID.fromString(dto.getAcMetaDataCreator()
-      .getId());
-  }</code></pre>
-</div>
 </div>
 </div>
 </div>
@@ -1236,7 +1208,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-11-06 17:03:43 UTC
+Last updated 2020-11-17 15:07:33 UTC
 </div>
 </div>
 </body>
