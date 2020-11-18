@@ -32,6 +32,15 @@ public final class JsonAPITestHelper {
   }  
   
   /**
+   * Create a meta map for the provided object. 
+   * @param obj
+   * @return
+   */
+  public static Map<String, Object> toMetaMap(Object obj) {
+    return IT_OBJECT_MAPPER.convertValue(obj, IT_OM_TYPE_REF);
+  }
+
+  /**
    * Create an attribute map for the provided object. Attributes with nulls will be skipped.
    * 
    * @param obj
@@ -50,7 +59,7 @@ public final class JsonAPITestHelper {
    * @return
    */
   public static Map<String, Object> toJsonAPIMap(String typeName, Object obj) {
-    return toJsonAPIMap(typeName, toAttributeMap(obj), null, null);
+    return toJsonAPIMap(typeName, toAttributeMap(obj), null, null, null);
   }
 
   /**
@@ -62,7 +71,7 @@ public final class JsonAPITestHelper {
    */
   public static Map<String, Object> toJsonAPIMap(String typeName,
       String id, Object obj) {
-    return toJsonAPIMap(typeName, toAttributeMap(obj), null, id);
+    return toJsonAPIMap(typeName, toAttributeMap(obj), null, null, id);
   }
 
   /**
@@ -77,7 +86,7 @@ public final class JsonAPITestHelper {
    * @return
    */
   public static Map<String, Object> toJsonAPIMap(String typeName,
-      Map<String, Object> attributeMap, Map<String, Object> relationshipMap, String id) {
+      Map<String, Object> attributeMap, Map<String, Object> relationshipMap, Map<String, Object> metaMap ,  String id) {
     Map<String, Object> jsonApiMap = new HashMap<>();
     jsonApiMap.put("type", typeName);
     if (id != null) {
@@ -88,6 +97,8 @@ public final class JsonAPITestHelper {
     if (relationshipMap != null) {
       jsonApiMap.put("relationships", relationshipMap);
     }
+
+    jsonApiMap.put("meta", metaMap);
     return Map.of("data", jsonApiMap);
   }
   

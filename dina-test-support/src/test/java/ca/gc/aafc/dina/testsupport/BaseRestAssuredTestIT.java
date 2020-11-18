@@ -38,7 +38,7 @@ public class BaseRestAssuredTestIT extends BaseRestAssuredTest {
     CrnkTestData updatedTestData = CrnkTestData.builder().note("updated note").build();
     sendPatch(id,
       JsonAPITestHelper.toJsonAPIMap(RESOURCE_PATH, 
-      JsonAPITestHelper.toAttributeMap(updatedTestData), null, null));
+      JsonAPITestHelper.toAttributeMap(updatedTestData), null, null, null));
 
     // re-get and make sure the note is updated
     sendGet(id)

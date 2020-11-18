@@ -30,7 +30,7 @@ public class JsonAPIOperationBuilderTest {
   public void operationBuilder_onValidArgument_ValidOperationJSONCreated() {
 
     Map<String, Object> values = JsonAPITestHelper.toJsonAPIMap("metadata",
-        JsonAPITestHelper.toAttributeMap(createTestObject()), null, null);
+        JsonAPITestHelper.toAttributeMap(createTestObject()), null, null, null);
 
     List<Map<String, Object>> operationJsonMap = JsonAPIOperationBuilder.newBuilder()
         .addOperation(HttpMethod.POST, "agent", values)

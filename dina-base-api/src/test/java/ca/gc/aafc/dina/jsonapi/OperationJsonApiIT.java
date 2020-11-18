@@ -46,10 +46,10 @@ public class OperationJsonApiIT extends BaseRestAssuredTest {
 
     List<Map<String, Object>> operationMap = JsonAPIOperationBuilder.newBuilder()
         .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
-            .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person1), null,
+            .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person1), null, null,
                 person1Uuid)) // Crnk requires an identifier even if it's a POST
         .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
-            .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person2), null,
+            .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person2), null, null,
                 "1234")) //the id can even be a non-uuid value
         .buildOperation();
 

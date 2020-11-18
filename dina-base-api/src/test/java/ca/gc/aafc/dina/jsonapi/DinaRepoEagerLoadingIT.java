@@ -117,6 +117,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       CHAIN_PATH,
       JsonAPITestHelper.toAttributeMap(chainDto),
       JsonAPITestHelper.toRelationshipMap(relationship),
+      null,
       null);
   }
 
@@ -124,6 +125,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     return JsonAPITestHelper.toJsonAPIMap(
       CHAIN_TEMPLATE_PATH,
       JsonAPITestHelper.toAttributeMap(template),
+      null,
       null,
       null);
   }
