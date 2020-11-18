@@ -6,21 +6,28 @@ import java.util.List;
 import java.util.Map;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+
 
 @Getter
+@SuperBuilder
 public class ResourceMetaInfo {
+    public static final String WARNINGS = "warnings";
     protected Map<String, List<Warning>> meta = new HashMap<String, List<Warning>>();
-    protected static final String WARNINGS = "warnings";
 
     public ResourceMetaInfo() {
         meta.put(WARNINGS, new ArrayList<Warning>());
     }
 
-    @Data
+    @Getter
     @SuppressFBWarnings("UUF_UNUSED_FIELD")
-    static class Warning {
+    @SuperBuilder
+	public static
+    class Warning {
         private String key;
         private String message;
     }

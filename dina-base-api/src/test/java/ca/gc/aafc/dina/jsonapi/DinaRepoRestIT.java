@@ -2,9 +2,13 @@ package ca.gc.aafc.dina.jsonapi;
 
 import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
+import ca.gc.aafc.dina.dto.ObjectUploadDto;
 import ca.gc.aafc.dina.dto.ProjectDTO;
+import ca.gc.aafc.dina.dto.ResourceMetaInfo;
 import ca.gc.aafc.dina.dto.TaskDTO;
+import ca.gc.aafc.dina.dto.ResourceMetaInfo.Warning;
 import ca.gc.aafc.dina.entity.ComplexObject;
+import ca.gc.aafc.dina.entity.ObjectUpload;
 import ca.gc.aafc.dina.entity.Project;
 import ca.gc.aafc.dina.entity.Task;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
@@ -37,14 +41,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
 import javax.inject.Inject;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
@@ -52,12 +60,14 @@ import static io.restassured.RestAssured.given;
 @Import(DinaRepoRestIT.DinaRepoBulkOperationITConfig.class)
 public class DinaRepoRestIT extends BaseRestAssuredTest {
 
+
   private static final Header CRNK_HEADER = new Header("crnk-compact", "true");
 
   @Inject
   private DinaRepository<ProjectDTO, Project> projectRepo;
   @Inject
   private DinaRepository<TaskDTO, Task> taskRepo;
+  
 
   public DinaRepoRestIT() {
     super("");
@@ -197,6 +207,21 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     findAll.body("data[0].attributes.nameTranslations", Matchers.notNullValue());
   }
 
+  @Test
+  void metaInfo_WhenSetInDTO_returnedInJsonApiResponse(){
+    List<Warning> warns = new ArrayList<Warning>();
+    warns.add(ResourceMetaInfo.Warning.builder().key("Hey").message("World").build());
+    Map<String, List<Warning>> me = new HashMap<String, List<Warning>>();
+    me.put(ResourceMetaInfo.WARNINGS, warns);
+    ObjectUploadDto dto = ObjectUploadDto.builder().originalFilename("test.txt").sha1Hex("51EAC6B471A284D3341D8C0C63D0F1A286262A18")    
+    .meta(me).build();
+    Assertions.assertNotNull(dto.getMeta());
+    Assertions.assertEquals(dto.getMeta().get(ResourceMetaInfo.WARNINGS).size(),1);
+    Assertions.assertEquals(dto.getMeta().get(ResourceMetaInfo.WARNINGS).get(0).getKey(),"Hey");
+    Assertions.assertEquals(dto.getMeta().get(ResourceMetaInfo.WARNINGS).get(0).getMessage(),"World");
+    //next will send this to repo and assert response dto has the right meta section
+  }
+
   private TaskDTO sendTask() {
     TaskDTO task = TaskDTO.builder().powerLevel(RandomUtils.nextInt()).build();
     UUID uuid = UUID.randomUUID();
@@ -316,6 +341,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         externalResourceProvider
       );
     }
+
   }
 
 }
