@@ -67,7 +67,7 @@ public class JsonAPITestHelperTest {
     relationshipMap.put("uploadedBy", myTestObj);
 
     Map<String, Object> jsonAPIMap = JsonAPITestHelper.toJsonAPIMap("metadata", attributeMap, 
-        relationshipMap, null,  "30ef7300-baf4-4ab0-b3e0-7f841c3d211e");
+        relationshipMap, "30ef7300-baf4-4ab0-b3e0-7f841c3d211e");
     assertTrue(jsonAPIMap.containsKey("data"));
     
     Map<String, Object> dataMap = (Map<String, Object>) jsonAPIMap.get("data");
