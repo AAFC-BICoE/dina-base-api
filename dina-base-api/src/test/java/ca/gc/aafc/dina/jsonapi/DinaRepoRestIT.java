@@ -213,11 +213,13 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     warns.add(ResourceMetaInfo.Warning.builder().key("Hey").message("World").build());
     Map<String, List<Warning>> me = new HashMap<String, List<Warning>>();
     me.put(ResourceMetaInfo.WARNINGS, warns);
-    ObjectUploadDto dto = ObjectUploadDto.builder().originalFilename("test.txt").sha1Hex("51EAC6B471A284D3341D8C0C63D0F1A286262A18")    
-    .meta(me).build();
     UUID uuid = UUID.randomUUID();
+    ObjectUploadDto dto = ObjectUploadDto.builder().originalFilename("test.txt").sha1Hex("51EAC6B471A284D3341D8C0C63D0F1A286262A18") 
+    .bucket("testBucket")
+    .meta(me).build();
+  
     ValidatableResponse response = sendPost(ObjectUploadDto.TYPENAME, JsonAPITestHelper.toJsonAPIMap(
-      ObjectUploadDto.TYPENAME, JsonAPITestHelper.toAttributeMap(dto), null, JsonAPITestHelper.toMetaMap(dto.getMeta()), uuid.toString()));
+      ObjectUploadDto.TYPENAME, JsonAPITestHelper.toAttributeMap(dto), null, null, uuid.toString()));
 
     response.body("data.meta.Warnings[0].key", Matchers.equalTo("Hey"));
     response.body("data.meta.Warnings[0].message", Matchers.equalTo("World"));
@@ -343,6 +345,24 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         externalResourceProvider
       );
     }
+
+    @Bean
+    public DinaRepository<ObjectUploadDto, ObjectUpload> objectUploadRepo(
+      BaseDAO baseDAO,
+      DinaFilterResolver filterResolver,
+      ExternalResourceProvider externalResourceProvider
+    ) {
+      return new DinaRepository<>(
+        new DefaultDinaService<>(baseDAO),
+        Optional.empty(),
+        Optional.empty(),
+        new DinaMapper<>(ObjectUploadDto.class),
+        ObjectUploadDto.class,
+        ObjectUpload.class,
+        filterResolver,
+        externalResourceProvider
+      );
+    }    
 
   }
 

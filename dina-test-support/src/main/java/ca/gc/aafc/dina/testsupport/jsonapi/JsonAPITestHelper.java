@@ -94,11 +94,14 @@ public final class JsonAPITestHelper {
     }
 
     jsonApiMap.put("attributes", attributeMap);
+    attributeMap.remove("meta");
+
     if (relationshipMap != null) {
       jsonApiMap.put("relationships", relationshipMap);
     }
-
-    jsonApiMap.put("meta", metaMap);
+    if (metaMap != null) {
+      jsonApiMap.put("meta", metaMap);
+    }
     return Map.of("data", jsonApiMap);
   }
   
