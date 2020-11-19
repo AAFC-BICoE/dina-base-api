@@ -216,11 +216,10 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     UUID uuid = UUID.randomUUID();
     ObjectUploadDto dto = ObjectUploadDto.builder().originalFilename("test.txt").sha1Hex("51EAC6B471A284D3341D8C0C63D0F1A286262A18") 
     .bucket("testBucket")
-    .meta(me).build();
+    .metaInfo(me).build();
   
     ValidatableResponse response = sendPost(ObjectUploadDto.TYPENAME, JsonAPITestHelper.toJsonAPIMap(
-      ObjectUploadDto.TYPENAME, JsonAPITestHelper.toAttributeMap(dto), null, JsonAPITestHelper.toMetaMap(dto.getMeta()), uuid.toString()));
-
+      ObjectUploadDto.TYPENAME, JsonAPITestHelper.toAttributeMap(dto), null, uuid.toString()));
     response.body("data.meta.Warnings[0].key", Matchers.equalTo("Hey"));
     response.body("data.meta.Warnings[0].message", Matchers.equalTo("World"));
   }

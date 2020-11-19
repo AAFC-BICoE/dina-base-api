@@ -100,41 +100,6 @@ public final class JsonAPITestHelper {
     }
     return Map.of("data", jsonApiMap);
   }
-  
-    /**
-   * Creates a JSON API Map from the provided type name, attributes, relationship, meta and id.
-   * 
-   * @param typeName
-   *          "type" in JSON API
-   * @param attributeMap
-   *          key/value representing the "attributes" in JSON API
-   * @param relationshipMap
-   *          key/value representing the "relationship" in JSON API
-   * @param metaMap
-   *          key/value representing the "meta" in JSON API
-   * @param id
-   *          id of the resource or null if there is none
-   * @return
-   */
-  public static Map<String, Object> toJsonAPIMap(String typeName,
-      Map<String, Object> attributeMap, Map<String, Object> relationshipMap, Map<String, Object> metaMap ,  String id) {
-    Map<String, Object> jsonApiMap = new HashMap<>();
-    jsonApiMap.put("type", typeName);
-    if (id != null) {
-      jsonApiMap.put("id", id);
-    }
-
-    jsonApiMap.put("attributes", attributeMap);
-    attributeMap.remove("meta");
-
-    if (relationshipMap != null) {
-      jsonApiMap.put("relationships", relationshipMap);
-    }
-    if (metaMap != null) {
-      jsonApiMap.put("meta", metaMap);
-    }
-    return Map.of("data", jsonApiMap);
-  }
 
   public static Map<String, Object> toRelationshipMap(List<JsonAPIRelationship> relationship) {
     if (relationship == null) {
