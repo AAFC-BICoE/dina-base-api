@@ -96,7 +96,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     Assertions.assertEquals(1, projectRepo.findAll(createProjectQuerySpec()).size());
 
     Map<String, Object> map = JsonAPITestHelper.toJsonAPIMap(
-      ProjectDTO.RESOURCE_TYPE, Collections.emptyMap(), null, null, expected.getUuid().toString());
+      ProjectDTO.RESOURCE_TYPE, Collections.emptyMap(), null, expected.getUuid().toString());
     String path = ProjectDTO.RESOURCE_TYPE + "/" + expected.getUuid().toString();
     List<Map<String, Object>> operationMap = JsonAPIOperationBuilder.newBuilder()
       .addOperation(HttpMethod.DELETE, path, map).buildOperation();
@@ -117,7 +117,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     Map<String, Object> map = JsonAPITestHelper.toJsonAPIMap(
       ProjectDTO.RESOURCE_TYPE,
       JsonAPITestHelper.toAttributeMap(ProjectDTO.builder().name(expectedName).build()),
-      JsonAPITestHelper.toRelationshipMap(relationship), null,
+      JsonAPITestHelper.toRelationshipMap(relationship), 
       persisted.getUuid().toString());
     String path = ProjectDTO.RESOURCE_TYPE + "/" + persisted.getUuid().toString();
     List<Map<String, Object>> operationMap = JsonAPIOperationBuilder.newBuilder()
@@ -219,7 +219,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     .meta(me).build();
   
     ValidatableResponse response = sendPost(ObjectUploadDto.TYPENAME, JsonAPITestHelper.toJsonAPIMap(
-      ObjectUploadDto.TYPENAME, JsonAPITestHelper.toAttributeMap(dto), null, null, uuid.toString()));
+      ObjectUploadDto.TYPENAME, JsonAPITestHelper.toAttributeMap(dto), null, JsonAPITestHelper.toMetaMap(dto.getMeta()), uuid.toString()));
 
     response.body("data.meta.Warnings[0].key", Matchers.equalTo("Hey"));
     response.body("data.meta.Warnings[0].message", Matchers.equalTo("World"));
@@ -229,7 +229,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     TaskDTO task = TaskDTO.builder().powerLevel(RandomUtils.nextInt()).build();
     UUID uuid = UUID.randomUUID();
     String id = sendPost(TaskDTO.RESOURCE_TYPE, JsonAPITestHelper.toJsonAPIMap(
-      TaskDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(task), null, null, uuid.toString()))
+      TaskDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(task), null, uuid.toString()))
       .extract().body().jsonPath().getString("data.id");
     task.setUuid(UUID.fromString(id));
     return task;
@@ -271,7 +271,6 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
           JsonAPIRelationship.of("acMetaDataCreator", "agent", agentID),
           JsonAPIRelationship.of("originalAuthor", "author", authorID),
           JsonAPIRelationship.of("task", TaskDTO.RESOURCE_TYPE, taskID))),
-      null,
       UUID.randomUUID().toString()
     );
   }
