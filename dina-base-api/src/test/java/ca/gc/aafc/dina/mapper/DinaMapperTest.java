@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hibernate.proxy.HibernateProxy;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -26,6 +28,51 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 public class DinaMapperTest {
 
   private static final DinaMapper<StudentDto, Student> mapper = new DinaMapper<>(StudentDto.class);
+
+  @Test
+  public void simpleToDto_BaseAttributesTest_SelectedFieldsMapped() {
+    Student friend = createEntity();
+    Student entity = createEntity();
+    entity.setFriend(friend);
+    entity.getClassMates().addAll(Arrays.asList(createEntity(), createEntity(), createEntity()));
+
+    StudentDto dto = mapper.toDto(entity);
+
+    assertEquals(entity.getName(), dto.getName());
+    assertEquals(entity.getIq(), dto.getIq());
+    assertEquals(entity.getCustomField().getName(), dto.getCustomField());
+    assertEquals(entity.getIq(), dto.getOneSidedDto());
+    MatcherAssert.assertThat(
+      dto.getClassMates(),
+      Matchers.containsInAnyOrder(entity.getClassMates()));
+  }
+
+  @Test
+  public void simpleToDto_RelationShipTest_RelationsMapped() {
+    Student friend = createEntity();
+    Student entity = createEntity();
+    entity.setFriend(friend);
+    entity.getClassMates().addAll(Arrays.asList(createEntity(), createEntity(), createEntity()));
+
+    StudentDto dto = mapper.toDto(entity);
+
+    // Assert non collection relation mapped
+    assertEquals(friend.getName(), dto.getFriend().getName());
+    assertEquals(friend.getIq(), dto.getFriend().getIq());
+    assertEquals(friend.getCustomField().getName(), dto.getFriend().getCustomField());
+    assertEquals(friend.getIq(), dto.getFriend().getOneSidedDto());
+
+    for (int i = 0; i < entity.getClassMates().size(); i++) {
+      assertEquals(
+        entity.getClassMates().get(i).getName(),
+        dto.getClassMates().get(i).getName());
+      assertEquals(
+        entity.getClassMates().get(i).getIq(),
+        dto.getClassMates().get(i).getIq());
+    }
+
+    assertStudentCustomFields(entity, dto);
+  }
 
   @Test
   public void toDto_BaseAttributesTest_SelectedFieldsMapped() {
