@@ -8,7 +8,8 @@ cache:
     - $HOME/.m2/repository #Cache one level down from .m2/ to avoid caching the GITHUB_TOKEN
 
 script:
-  - mvn verify checkstyle:check com.github.spotbugs:spotbugs-maven-plugin:check jacoco:check
+  - mvn verify checkstyle:check com.github.spotbugs:spotbugs-maven-plugin:check
+  - mvn -pl dina-base-api jacoco:check
   - if [ "$TRAVIS_BRANCH" == "dev" ]; then mvn org.owasp:dependency-check-maven:check; fi
   - echo "<settings><servers><server><id>bintray-aafc-bice-BICoE</id><username>"$BINTRAY_USER"</username><password>"$BINTRAY_API"</password></server></servers></settings>" > ~/.m2/settings.xml
 
