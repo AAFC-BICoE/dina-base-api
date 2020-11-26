@@ -58,4 +58,8 @@ public class DinaFieldAdapterHandler<D> {
     }
   }
 
+  public boolean hasFieldAdapter(String fieldName) {
+    return this.adaptersPerField.keySet().stream().anyMatch(fieldName::equalsIgnoreCase);
+  }
+
 }

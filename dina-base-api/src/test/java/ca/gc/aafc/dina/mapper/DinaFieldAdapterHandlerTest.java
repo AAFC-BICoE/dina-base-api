@@ -32,6 +32,13 @@ class DinaFieldAdapterHandlerTest {
     Assertions.assertEquals(Integer.toString(dto.getCustomField()), entity.getCustomField());
   }
 
+  @Test
+  void hasFieldAdapter() {
+    Assertions.assertTrue(handler.hasFieldAdapter("CuStomField"));
+    Assertions.assertFalse(handler.hasFieldAdapter("name"));
+    Assertions.assertFalse(handler.hasFieldAdapter("powerLevel"));
+  }
+
   @Builder
   @Data
   public static class Car {
