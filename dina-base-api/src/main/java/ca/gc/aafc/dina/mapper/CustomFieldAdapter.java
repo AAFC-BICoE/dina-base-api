@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CustomFieldAdapter {
 
-  Class<DinaFieldAdapter<?, ?, ?, ?>> adapter();
+  Class<? extends DinaFieldAdapter<?, ?, ?, ?>> adapter();
 
 }

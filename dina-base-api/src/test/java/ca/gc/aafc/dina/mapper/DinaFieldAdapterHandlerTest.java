@@ -49,6 +49,8 @@ class DinaFieldAdapterHandlerTest {
   static class CarDto {
     String name;
     int powerLevel;
+
+    @CustomFieldAdapter(adapter = CustomFieldAdapterImpl.class)
     int customField;
 
     public void applyCustomField(Integer value) {
@@ -57,7 +59,7 @@ class DinaFieldAdapterHandlerTest {
 
   }
 
-  static class CustomFieldAdapter implements DinaFieldAdapter<CarDto, Car, Integer, String> {
+  static class CustomFieldAdapterImpl implements DinaFieldAdapter<CarDto, Car, Integer, String> {
 
     @Override
     public Integer toDTO(String s) {
