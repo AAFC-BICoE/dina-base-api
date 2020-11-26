@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 
 class DinaFieldAdapterHandlerTest {
 
-  private static final DinaFieldAdapterHandler handler = new DinaFieldAdapterHandler();
+  private static final DinaFieldAdapterHandler<CarDto> handler = new DinaFieldAdapterHandler<>(CarDto.class);
 
   @Test
   void resolveFields_ToDto_FieldsResolved() {
@@ -34,7 +34,7 @@ class DinaFieldAdapterHandlerTest {
 
   @Builder
   @Data
-  static class Car {
+  public static class Car {
     String name;
     int powerLevel;
     String customField;
@@ -46,7 +46,7 @@ class DinaFieldAdapterHandlerTest {
 
   @Builder
   @Data
-  static class CarDto {
+  public static class CarDto {
     String name;
     int powerLevel;
 
@@ -60,6 +60,10 @@ class DinaFieldAdapterHandlerTest {
   }
 
   static class CustomFieldAdapterImpl implements DinaFieldAdapter<CarDto, Car, Integer, String> {
+
+    //No args constructor required
+    public CustomFieldAdapterImpl() {
+    }
 
     @Override
     public Integer toDTO(String s) {
