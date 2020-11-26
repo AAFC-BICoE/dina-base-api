@@ -10,6 +10,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Handles the mapping of fields between entities and Dto's using {@link DinaFieldAdapter}.
+ *
+ * @param <D> - Dto class
+ */
 public class DinaFieldAdapterHandler<D> {
 
   private final Map<String, DinaFieldAdapter<Object, Object, Object, Object>> adaptersPerField;
@@ -17,11 +22,8 @@ public class DinaFieldAdapterHandler<D> {
 
   public DinaFieldAdapterHandler(Class<? extends D> dtoClass) {
     this.dtoClass = dtoClass;
-    adaptersPerField = initResolvers(dtoClass);
-  }
-
-  private Map<String, DinaFieldAdapter<Object, Object, Object, Object>> initResolvers(Class<? extends D> dtoClass) {
-    return Arrays.stream(FieldUtils.getFieldsWithAnnotation(dtoClass, CustomFieldAdapter.class))
+    adaptersPerField = Arrays
+      .stream(FieldUtils.getFieldsWithAnnotation(dtoClass, CustomFieldAdapter.class))
       .collect(Collectors.toMap(Field::getName, this::makeFieldAdapter));
   }
 
@@ -32,10 +34,23 @@ public class DinaFieldAdapterHandler<D> {
       .getAnnotation(CustomFieldAdapter.class).adapter().getConstructor().newInstance();
   }
 
+  /**
+   * Maps all fields from a source to a target that are tracked by the handler.
+   *
+   * @param source - source of the mapping.
+   * @param target - target of the mapping
+   */
   public void resolveFields(Object source, Object target) {
     this.resolveFields(this.adaptersPerField.keySet(), source, target);
   }
 
+  /**
+   * Maps the selected fields from a source to a target that are tracked by the handler.
+   *
+   * @param selectedFields - fields to map.
+   * @param source         - source of the mapping.
+   * @param target         - target of the mapping
+   */
   @SneakyThrows
   public void resolveFields(Set<String> selectedFields, Object source, Object target) {
     for (Map.Entry<String, DinaFieldAdapter<Object, Object, Object, Object>> entry :
@@ -58,6 +73,12 @@ public class DinaFieldAdapterHandler<D> {
     }
   }
 
+  /**
+   * Returns true if this handler is tracking a given field name.
+   *
+   * @param fieldName - field name to check.
+   * @return true if this field adapter is tracking a given field name.
+   */
   public boolean hasFieldAdapter(String fieldName) {
     return this.adaptersPerField.keySet().stream().anyMatch(fieldName::equalsIgnoreCase);
   }
