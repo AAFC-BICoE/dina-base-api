@@ -4,9 +4,9 @@ import lombok.Builder;
 import lombok.Data;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 class DinaFieldAdapterHandlerTest {
 
@@ -15,23 +15,21 @@ class DinaFieldAdapterHandlerTest {
   @Test
   void resolveFields_ToDto_FieldsResolved() {
     Car entity = Car.builder()
-      .name(RandomStringUtils.randomAlphabetic(5))
-      .powerLevel(9000)
+      .customField("1")
       .build();
     CarDto dto = CarDto.builder().build();
     handler.resolveFields(Set.of("customField"), entity, dto);
-    Assertions.assertEquals(entity.getPowerLevel(), dto.getCustomField());
+    Assertions.assertEquals(Integer.valueOf(entity.getCustomField()), dto.getCustomField());
   }
 
   @Test
   void resolveFields_ToEntity_FieldsResolved() {
     CarDto dto = CarDto.builder()
-      .name(RandomStringUtils.randomAlphabetic(5))
-      .powerLevel(9000)
+      .customField(1)
       .build();
     Car entity = Car.builder().build();
     handler.resolveFields(Set.of("customField"), dto, entity);
-    Assertions.assertEquals(dto.getName(), entity.getCustomField());
+    Assertions.assertEquals(Integer.toString(dto.getCustomField()), entity.getCustomField());
   }
 
   @Builder
@@ -39,8 +37,11 @@ class DinaFieldAdapterHandlerTest {
   static class Car {
     String name;
     int powerLevel;
-    // uses dto name
     String customField;
+
+    public void applyCustomField(String value) {
+      this.customField = value;
+    }
   }
 
   @Builder
@@ -48,8 +49,35 @@ class DinaFieldAdapterHandlerTest {
   static class CarDto {
     String name;
     int powerLevel;
-    // uses entity power level
     int customField;
+
+    public void applyCustomField(Integer value) {
+      this.customField = value;
+    }
+
+  }
+
+  static class CustomFieldAdapter implements DinaFieldAdapter<CarDto, Car, Integer, String> {
+
+    @Override
+    public Integer toDTO(String s) {
+      return Integer.valueOf(s);
+    }
+
+    @Override
+    public String toEntity(Integer integer) {
+      return Integer.toString(integer);
+    }
+
+    @Override
+    public Consumer<String> entityApplyMethod(Car dtoRef) {
+      return dtoRef::applyCustomField;
+    }
+
+    @Override
+    public Consumer<Integer> dtoApplyMethod(CarDto entityRef) {
+      return entityRef::applyCustomField;
+    }
   }
 
 }

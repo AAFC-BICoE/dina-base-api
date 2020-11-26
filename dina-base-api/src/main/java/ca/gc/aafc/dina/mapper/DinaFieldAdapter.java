@@ -8,8 +8,8 @@ public interface DinaFieldAdapter<DTO, ENTITY, DTO_FIELD, ENTITY_FIELD> {
 
   ENTITY_FIELD toEntity(DTO_FIELD dtoField);
 
-  Consumer<ENTITY_FIELD> entityApplyMethod(DTO dtoRef);
+  Consumer<ENTITY_FIELD> entityApplyMethod(ENTITY entityRef);
 
-  Consumer<DTO_FIELD> dtoApplyMethod(ENTITY entityRef);
+  Consumer<DTO_FIELD> dtoApplyMethod(DTO dtoRef);
 
 }
