@@ -5,12 +5,12 @@ import lombok.Data;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
 import java.util.function.Consumer;
 
 class DinaFieldAdapterHandlerTest {
 
-  private static final DinaFieldAdapterHandler<CarDto> handler = new DinaFieldAdapterHandler<>(CarDto.class);
+  private static final DinaFieldAdapterHandler<CarDto> handler =
+    new DinaFieldAdapterHandler<>(CarDto.class);
 
   @Test
   void resolveFields_ToDto_FieldsResolved() {
@@ -18,7 +18,7 @@ class DinaFieldAdapterHandlerTest {
       .customField("1")
       .build();
     CarDto dto = CarDto.builder().build();
-    handler.resolveFields(Set.of("customField"), entity, dto);
+    handler.resolveFields(entity, dto);
     Assertions.assertEquals(Integer.valueOf(entity.getCustomField()), dto.getCustomField());
   }
 
@@ -28,7 +28,7 @@ class DinaFieldAdapterHandlerTest {
       .customField(1)
       .build();
     Car entity = Car.builder().build();
-    handler.resolveFields(Set.of("customField"), dto, entity);
+    handler.resolveFields(dto, entity);
     Assertions.assertEquals(Integer.toString(dto.getCustomField()), entity.getCustomField());
   }
 

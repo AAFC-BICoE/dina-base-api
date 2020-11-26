@@ -32,6 +32,10 @@ public class DinaFieldAdapterHandler<D> {
       .getAnnotation(CustomFieldAdapter.class).adapter().getConstructor().newInstance();
   }
 
+  public void resolveFields(Object source, Object target) {
+    this.resolveFields(this.adaptersPerField.keySet(), source, target);
+  }
+
   @SneakyThrows
   public void resolveFields(Set<String> selectedFields, Object source, Object target) {
     for (Map.Entry<String, DinaFieldAdapter<Object, Object, Object, Object>> entry :
