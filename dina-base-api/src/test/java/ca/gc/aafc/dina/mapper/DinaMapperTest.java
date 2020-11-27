@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.ComplexObject;
+import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -532,6 +533,11 @@ public class DinaMapperTest {
     public Consumer<String> dtoApplyMethod(StudentDto dtoRef) {
       return dtoRef::setCustomField;
     }
+
+    @Override
+    public FilterSpec[] toFilterSpec() {
+      return new FilterSpec[0];
+    }
   }
 
   static class NestedCustomFieldAdapterImp
@@ -558,6 +564,11 @@ public class DinaMapperTest {
     @Override
     public Consumer<String> dtoApplyMethod(NestedResolverRelationDTO dtoRef) {
       return dtoRef::setName;
+    }
+
+    @Override
+    public FilterSpec[] toFilterSpec() {
+      return new FilterSpec[0];
     }
   }
 

@@ -2,8 +2,10 @@ package ca.gc.aafc.dina.repository;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
+import ca.gc.aafc.dina.mapper.DinaFieldAdapter;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
+import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
@@ -14,7 +16,9 @@ import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.engine.registry.ResourceRegistryAware;
 import io.crnk.core.exception.ResourceNotFoundException;
+import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.IncludeRelationSpec;
+import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.MetaRepository;
 import io.crnk.core.repository.ResourceRepository;
@@ -31,11 +35,14 @@ import lombok.SneakyThrows;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -70,6 +77,8 @@ public class DinaRepository<D, E extends DinaEntity>
   @Getter
   @Setter(onMethod_ = @Override)
   private ResourceRegistry resourceRegistry;
+  private final DinaMappingRegistry registry;
+
 
   @Inject
   public DinaRepository(
@@ -95,6 +104,7 @@ public class DinaRepository<D, E extends DinaEntity>
       this.externalMetaMap = null;
     }
     this.mappingLayer = new DinaMappingLayer<>(resourceClass, dinaService, dinaMapper);
+    this.registry = new DinaMappingRegistry(resourceClass);
   }
 
   /**
@@ -141,17 +151,55 @@ public class DinaRepository<D, E extends DinaEntity>
    */
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
+    QuerySpec adjustedSpec = resolveFieldAdapterSpecs(querySpec);
     String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
 
-    List<D> dList = mappingLayer.mapEntitiesToDto(querySpec, fetchEntities(ids, querySpec, idName));
+    List<D> dList = mappingLayer.mapEntitiesToDto(adjustedSpec, fetchEntities(ids, adjustedSpec, idName));
 
     Long resourceCount = dinaService.getResourceCount(
       entityClass,
-      (cb, root) -> filterResolver.buildPredicates(querySpec, cb, root, ids, idName));
+      (cb, root) -> filterResolver.buildPredicates(adjustedSpec, cb, root, ids, idName));
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
     return new DefaultResourceList<>(dList, metaInformation, NO_LINK_INFORMATION);
+  }
+
+  private QuerySpec resolveFieldAdapterSpecs(QuerySpec querySpec) {
+    QuerySpec newQuery = querySpec.clone();
+    List<FilterSpec> newFilters = new ArrayList<>();
+
+    for (FilterSpec filterSpec : querySpec.getFilters()) {
+      List<String> attributePath = filterSpec.getAttributePath();
+      Class<?> dtoClass = querySpec.getResourceClass();
+
+      for(String attribute: attributePath){
+        Optional<DinaMappingRegistry.InternalRelation> relation = registry
+          .findMappableRelationsForClass(dtoClass).stream()
+          .filter(internalRelation -> internalRelation.getName().equalsIgnoreCase(attribute))
+          .findAny();
+        if(relation.isPresent()){
+          dtoClass = relation.get().getElementType();
+        } else {
+          break;
+        }
+      }
+
+      String attr = attributePath.stream().reduce((s, s2) -> s2).orElse("");
+      Map<String, DinaFieldAdapter<?, ?, ?, ?>> fieldAdapters = registry.findFieldAdapters(dtoClass);
+      if (fieldAdapters.containsKey(attr)) {
+        for (FilterSpec spec : fieldAdapters.get(attr).toFilterSpec()) {
+          List<String> path = attributePath.subList(0, attributePath.size());
+          path.addAll(spec.getAttributePath());
+          newFilters.add(PathSpec.of(path).filter(spec.getOperator(), spec.getValue()));
+        }
+      } else {
+        newFilters.add(filterSpec);
+      }
+    }
+
+    newQuery.setFilters(newFilters);
+    return newQuery;
   }
 
   private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName) {

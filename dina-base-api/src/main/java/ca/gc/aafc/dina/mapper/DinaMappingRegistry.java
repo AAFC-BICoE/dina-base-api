@@ -36,6 +36,8 @@ public class DinaMappingRegistry {
   private final Map<String, String> externalNameToTypeMap;
   // Track Json Id field names for mapping
   private final Map<Class<?>, String> jsonIdFieldNamePerClass;
+  // Track Field adapters per class
+  private final Map<Class<?>, Map<String, DinaFieldAdapter<?, ?, ?, ?>>> fieldAdaptersPerClass;
 
   /**
    * Parsing a given resource graph requires the use of reflection. A DinaMappingRegistry should not
@@ -49,6 +51,7 @@ public class DinaMappingRegistry {
     this.attributesPerClass = parseAttributesPerClass(resources);
     this.mappableRelationsPerClass = parseMappableRelations(resources);
     this.jsonIdFieldNamePerClass = parseJsonIds(resources);
+    this.fieldAdaptersPerClass = parseFieldAdapters(resources);
   }
 
   /**
@@ -113,6 +116,13 @@ public class DinaMappingRegistry {
       throw new IllegalArgumentException(cls.getSimpleName() + " is not tracked by the registry");
     }
     return this.jsonIdFieldNamePerClass.get(cls);
+  }
+
+  public Map<String, DinaFieldAdapter<?, ?, ?, ?>> findFieldAdapters(Class<?> cls) {
+    if (!this.fieldAdaptersPerClass.containsKey(cls)) {
+      throw new IllegalArgumentException(cls.getSimpleName() + " is not tracked by the registry");
+    }
+    return this.fieldAdaptersPerClass.get(cls);
   }
 
   private Set<Class<?>> parseGraph(Class<?> dto, Set<Class<?>> visited) {
@@ -180,6 +190,21 @@ public class DinaMappingRegistry {
       }
     });
     return Map.copyOf(map);
+  }
+
+  @SneakyThrows
+  private Map<Class<?>, Map<String, DinaFieldAdapter<?, ?, ?, ?>>> parseFieldAdapters(Set<Class<?>> resources) {
+    Map<Class<?>, Map<String, DinaFieldAdapter<?, ?, ?, ?>>> adapterPerClass = new HashMap<>();
+    for (Class<?> dto : resources) {
+      Map<String, DinaFieldAdapter<?, ?, ?, ?>> adaptersPerField = new HashMap<>();
+      for (Field field : FieldUtils.getFieldsWithAnnotation(dto, CustomFieldAdapter.class)) {
+        adaptersPerField.put(
+          field.getName(),
+          field.getAnnotation(CustomFieldAdapter.class).adapter().getConstructor().newInstance());
+      }
+      adapterPerClass.put(dto, adaptersPerField);
+    }
+    return adapterPerClass;
   }
 
   private static InternalRelation mapToInternalRelation(Field field) {
