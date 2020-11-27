@@ -1,12 +1,12 @@
 = Field adapters
 
-> Field adapters allow you to provide custom mappings for fields
+Field adapters allow you to provide custom mappings between fields.
 
 We have a field in a DTO that is of type Integer that we want to map between an entity where the field is of type string.
 
 We will need to provide a custom mapping.
 
-. Implement a Dina Field Adapter for the field.
+== Implement a Dina Field Adapter for the field.
 
 Example Implementation:
 
@@ -41,7 +41,9 @@ class CustomFieldAdapterImpl implements DinaFieldAdapter<CarDto, Car, Integer, S
 ----
 
 
-. Mark your field in your DTO with the `CustomFieldAdapter` annotation and give it the adapter you created in step one.
+== Annotate your field
+
+- Mark your field in your DTO with the `CustomFieldAdapter` annotation and give it the adapter you created in step one.
 
 [source,java]
 ----
