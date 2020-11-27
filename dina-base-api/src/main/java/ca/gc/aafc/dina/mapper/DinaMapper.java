@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 public class DinaMapper<D, E> {
 
   private final Class<D> dtoClass;
-  private final Map<Class<?>, CustomFieldHandler<?, ?>> handlers;
+  private final Map<Class<?>, DinaFieldAdapterHandler<?>> handlers;
   private final DinaMappingRegistry registry;
 
   /**
@@ -58,7 +58,7 @@ public class DinaMapper<D, E> {
 
       if (annotation != null) {
         Class<?> relatedEntity = annotation.value();
-        CustomFieldHandler<?, ?> handler = new CustomFieldHandler<>(dto, relatedEntity);
+        DinaFieldAdapterHandler<?> handler = new DinaFieldAdapterHandler<>(dto);
         handlers.put(dto, handler);
         handlers.put(relatedEntity, handler);
       }
@@ -311,7 +311,7 @@ public class DinaMapper<D, E> {
    * @return rue if the given class and field have custom field resolvers tracked by the mapper.
    */
   private boolean hasResolvers(String field, Class<?> aClass) {
-    return handlers.containsKey(aClass) && handlers.get(aClass).hasCustomFieldResolver(field);
+    return handlers.containsKey(aClass) && handlers.get(aClass).hasFieldAdapter(field);
   }
 
   private <T> DinaMappingRegistry.InternalRelation findInternalRelation(

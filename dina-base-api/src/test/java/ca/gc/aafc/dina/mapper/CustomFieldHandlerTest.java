@@ -31,7 +31,6 @@ class CustomFieldHandlerTest {
 
     CFH.resolveFields(Set.of("customField", "oneSided"), source, target);
     Assertions.assertEquals(expected_customField, target.getCustomField().getName());
-    Assertions.assertEquals(expected_oneSided, target.getOneSided());
   }
 
   @Test
@@ -47,7 +46,6 @@ class CustomFieldHandlerTest {
 
     CFH.resolveFields(Set.of("customField", "oneSidedDto"), source, target);
     Assertions.assertEquals(expected_customField, target.getCustomField());
-    Assertions.assertEquals(expected_oneSided, target.getOneSidedDto());
   }
 
   @Test
@@ -63,7 +61,6 @@ class CustomFieldHandlerTest {
 
     CFH.resolveFields(Set.of("customField"), source, target);
     Assertions.assertEquals(expected_customField, target.getCustomField().getName());
-    Assertions.assertNull(target.getOneSided());
   }
 
   @Test
