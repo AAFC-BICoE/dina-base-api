@@ -73,13 +73,13 @@ class DinaFieldAdapterHandlerTest {
     }
 
     @Override
-    public Integer toDTO(String s) {
-      return Integer.valueOf(s);
+    public Integer toDTO(Car entity) {
+      return entity.getCustomField() == null ? null : Integer.valueOf(entity.getCustomField());
     }
 
     @Override
-    public String toEntity(Integer integer) {
-      return Integer.toString(integer);
+    public String toEntity(CarDto dto) {
+      return Integer.toString(dto.getCustomField());
     }
 
     @Override

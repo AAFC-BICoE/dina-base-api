@@ -514,13 +514,13 @@ public class DinaMapperTest {
     }
 
     @Override
-    public String toDTO(ComplexObject complexObject) {
-      return complexObject == null ? "" : complexObject.getName();
+    public String toDTO(Student ent) {
+      return ent.getCustomField() == null ? "" : ent.getCustomField().getName();
     }
 
     @Override
-    public ComplexObject toEntity(String s) {
-      return s == null ? null : ComplexObject.builder().name(s).build();
+    public ComplexObject toEntity(StudentDto dto) {
+      return dto.getCustomField() == null ? null : ComplexObject.builder().name(dto.getCustomField()).build();
     }
 
     @Override
@@ -541,13 +541,13 @@ public class DinaMapperTest {
     }
 
     @Override
-    public String toDTO(ComplexObject complexObject) {
-      return complexObject == null ? "" : complexObject.getName();
+    public String toDTO(NestedResolverRelation ent) {
+      return ent.getName() == null? "" : ent.getName().getName();
     }
 
     @Override
-    public ComplexObject toEntity(String s) {
-      return s == null ? null : ComplexObject.builder().name(s).build();
+    public ComplexObject toEntity(NestedResolverRelationDTO dto) {
+      return dto.getName() == null ? null : ComplexObject.builder().name(dto.getName()).build();
     }
 
     @Override

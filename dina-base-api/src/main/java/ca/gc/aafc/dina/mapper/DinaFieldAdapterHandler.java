@@ -1,7 +1,6 @@
 package ca.gc.aafc.dina.mapper;
 
 import lombok.SneakyThrows;
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.lang.reflect.Field;
@@ -61,13 +60,9 @@ public class DinaFieldAdapterHandler<D> {
 
       if (selectedFields.contains(field)) {
         if (target.getClass() == dtoClass) {
-          dinaFieldAdapter
-            .dtoApplyMethod(target)
-            .accept(dinaFieldAdapter.toDTO(PropertyUtils.getProperty(source, field)));
+          dinaFieldAdapter.dtoApplyMethod(target).accept(dinaFieldAdapter.toDTO(source));
         } else {
-          dinaFieldAdapter
-            .entityApplyMethod(target)
-            .accept(dinaFieldAdapter.toEntity(PropertyUtils.getProperty(source, field)));
+          dinaFieldAdapter.entityApplyMethod(target).accept(dinaFieldAdapter.toEntity(source));
         }
       }
     }
