@@ -40,6 +40,7 @@ class CustomFieldAdapterImpl implements DinaFieldAdapter<CarDto, Car, Integer, S
   }
 ----
 
+The `toDTO` and `toEntity` methods provide the logic to convert the field value from DTO to Entity and vice versa. The `entityApplyMethod` and `dtoApplyMethod` methods allow you to supply the method that will apply the converted values to the appropriate field. In this example we use the base Setters as the methods that will apply the converted values.
 
 == Annotate your field
 
