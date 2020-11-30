@@ -36,13 +36,11 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -188,8 +186,8 @@ public class DinaRepository<D, E extends DinaEntity>
       String attr = attributePath.stream().reduce((s, s2) -> s2).orElse("");
       Map<String, DinaFieldAdapter<?, ?, ?, ?>> fieldAdapters = registry.findFieldAdapters(dtoClass);
       if (fieldAdapters.containsKey(attr)) {
-        for (FilterSpec spec : fieldAdapters.get(attr).toFilterSpec()) {
-          List<String> path = attributePath.subList(0, attributePath.size());
+        for (FilterSpec spec : fieldAdapters.get(attr).toFilterSpec(filterSpec.getValue())) {
+          List<String> path = new ArrayList<>(attributePath.subList(0, attributePath.size() - 1));
           path.addAll(spec.getAttributePath());
           newFilters.add(PathSpec.of(path).filter(spec.getOperator(), spec.getValue()));
         }
