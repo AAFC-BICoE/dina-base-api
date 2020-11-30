@@ -499,6 +499,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </li>
 <li><a href="#_releasing_dina_base_api">9. Releasing dina-base-api</a></li>
+<li><a href="#_field_adapters">10. Field adapters</a>
+<ul class="sectlevel2">
+<li><a href="#_implement_a_dina_field_adapter_for_the_field">10.1. Implement a Dina Field Adapter for the field.</a></li>
+<li><a href="#_annotate_your_field">10.2. Annotate your field</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -1205,10 +1211,79 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_field_adapters">10. Field adapters</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Field adapters allow you to provide custom mappings between fields.</p>
+</div>
+<div class="paragraph">
+<p>We have a field in a DTO that is of type Integer that we want to map between an entity where the field is of type string.</p>
+</div>
+<div class="paragraph">
+<p>We will need to provide a custom mapping.</p>
+</div>
+<div class="sect2">
+<h3 id="_implement_a_dina_field_adapter_for_the_field">10.1. Implement a Dina Field Adapter for the field.</h3>
+<div class="paragraph">
+<p>Example Implementation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">class CustomFieldAdapterImpl implements DinaFieldAdapter&lt;CarDto, Car, Integer, String&gt; {
+
+    //No args constructor required
+    public CustomFieldAdapterImpl() {
+    }
+
+    @Override
+    public Integer toDTO(String s) {
+      return Integer.valueOf(s);
+    }
+
+    @Override
+    public String toEntity(Integer integer) {
+      return Integer.toString(integer);
+    }
+
+    @Override
+    public Consumer&lt;String&gt; entityApplyMethod(Car dtoRef) {
+      return dtoRef::setCustomField;
+    }
+
+    @Override
+    public Consumer&lt;Integer&gt; dtoApplyMethod(CarDto entityRef) {
+      return entityRef::setCustomField;
+    }
+  }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>toDTO</code> and <code>toEntity</code> methods provide the logic to convert the field value from DTO to Entity and vice versa. The <code>entityApplyMethod</code> and <code>dtoApplyMethod</code> methods allow you to supply the method that will apply the converted values to the appropriate field. In this example we use the base Setters as the methods that will apply the converted values.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_annotate_your_field">10.2. Annotate your field</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Mark your field in your DTO with the <code>CustomFieldAdapter</code> annotation and give it the adapter you created in step one.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">    @CustomFieldAdapter(adapter = CustomFieldAdapterImpl.class)
+    int customField;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-11-17 15:07:33 UTC
+Last updated 2020-11-30 14:16:20 UTC
 </div>
 </div>
 </body>
