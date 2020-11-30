@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.dto;
 
-import ca.gc.aafc.dina.entity.ComplexObject;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.mapper.CustomFieldAdapter;
 import ca.gc.aafc.dina.mapper.DinaFieldAdapter;
@@ -53,30 +52,30 @@ public class PersonDTO {
   private List<DepartmentDto> departments;
 
   @CustomFieldAdapter(adapter = CustomFieldAdapterImp.class)
-  private String customField;
+  private Integer customField;
 
-  public static class CustomFieldAdapterImp implements DinaFieldAdapter<PersonDTO, Person, String, ComplexObject> {
+  public static class CustomFieldAdapterImp implements DinaFieldAdapter<PersonDTO, Person, Integer, String> {
 
     public CustomFieldAdapterImp() {
     }
 
     @Override
-    public String toDTO(ComplexObject complexObject) {
-      return complexObject == null ? "" : complexObject.getName();
+    public Integer toDTO(String s) {
+      return s == null ? null : Integer.valueOf(s);
     }
 
     @Override
-    public ComplexObject toEntity(String s) {
-      return s == null ? null : ComplexObject.builder().name(s).build();
+    public String toEntity(Integer integer) {
+      return integer == null ? null : Integer.toString(integer);
     }
 
     @Override
-    public Consumer<ComplexObject> entityApplyMethod(Person entityRef) {
+    public Consumer<String> entityApplyMethod(Person entityRef) {
       return entityRef::setCustomField;
     }
 
     @Override
-    public Consumer<String> dtoApplyMethod(PersonDTO dtoRef) {
+    public Consumer<Integer> dtoApplyMethod(PersonDTO dtoRef) {
       return dtoRef::setCustomField;
     }
 

@@ -13,6 +13,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import ca.gc.aafc.dina.dto.PersonDTO;
+import ca.gc.aafc.dina.mapper.CustomFieldAdapter;
 import org.hibernate.annotations.NaturalId;
 
 import lombok.AllArgsConstructor;
@@ -53,4 +55,5 @@ public class Person implements DinaEntity {
   @JoinColumn(name = "department_list_fk")
   private List<Department> departments;
 
+  private String customField;
 }
