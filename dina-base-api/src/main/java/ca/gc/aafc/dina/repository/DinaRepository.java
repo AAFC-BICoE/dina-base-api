@@ -77,7 +77,6 @@ public class DinaRepository<D, E extends DinaEntity>
   private ResourceRegistry resourceRegistry;
   private final DinaMappingRegistry registry;
 
-
   @Inject
   public DinaRepository(
     @NonNull DinaService<E> dinaService,
@@ -149,34 +148,37 @@ public class DinaRepository<D, E extends DinaEntity>
    */
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
-    QuerySpec adjustedSpec = resolveFieldAdapterSpecs(querySpec);
+    QuerySpec newQuery = querySpec.clone();
+    querySpec.setFilters(resolveFilterSpecs(resourceClass, querySpec.getFilters(), registry));
     String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
 
-    List<D> dList = mappingLayer.mapEntitiesToDto(adjustedSpec, fetchEntities(ids, adjustedSpec, idName));
+    List<D> dList = mappingLayer.mapEntitiesToDto(newQuery, fetchEntities(ids, newQuery, idName));
 
     Long resourceCount = dinaService.getResourceCount(
       entityClass,
-      (cb, root) -> filterResolver.buildPredicates(adjustedSpec, cb, root, ids, idName));
+      (cb, root) -> filterResolver.buildPredicates(newQuery, cb, root, ids, idName));
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
     return new DefaultResourceList<>(dList, metaInformation, NO_LINK_INFORMATION);
   }
 
-  private QuerySpec resolveFieldAdapterSpecs(QuerySpec querySpec) {
-    QuerySpec newQuery = querySpec.clone();
+  private static List<FilterSpec> resolveFilterSpecs(
+    Class<?> resource,
+    List<FilterSpec> filters,
+    DinaMappingRegistry registry
+  ) {
     List<FilterSpec> newFilters = new ArrayList<>();
-
-    for (FilterSpec filterSpec : querySpec.getFilters()) {
+    for (FilterSpec filterSpec : filters) {
       List<String> attributePath = filterSpec.getAttributePath();
-      Class<?> dtoClass = querySpec.getResourceClass();
+      Class<?> dtoClass = resource;
 
-      for(String attribute: attributePath){
+      for (String attribute : attributePath) {
         Optional<DinaMappingRegistry.InternalRelation> relation = registry
           .findMappableRelationsForClass(dtoClass).stream()
           .filter(internalRelation -> internalRelation.getName().equalsIgnoreCase(attribute))
           .findAny();
-        if(relation.isPresent()){
+        if (relation.isPresent()) {
           dtoClass = relation.get().getElementType();
         } else {
           break;
@@ -196,8 +198,7 @@ public class DinaRepository<D, E extends DinaEntity>
       }
     }
 
-    newQuery.setFilters(newFilters);
-    return newQuery;
+    return newFilters;
   }
 
   private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName) {
