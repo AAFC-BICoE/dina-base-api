@@ -14,6 +14,6 @@ public interface DinaFieldAdapter<DTO, ENTITY, DTO_FIELD, ENTITY_FIELD> {
 
   Consumer<DTO_FIELD> dtoApplyMethod(DTO dtoRef);
 
-  FilterSpec[] toFilterSpec();
+  FilterSpec[] toFilterSpec(Object value);
 
 }

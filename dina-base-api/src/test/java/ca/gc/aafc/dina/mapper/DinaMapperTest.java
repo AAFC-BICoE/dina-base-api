@@ -535,7 +535,7 @@ public class DinaMapperTest {
     }
 
     @Override
-    public FilterSpec[] toFilterSpec() {
+    public FilterSpec[] toFilterSpec(Object value) {
       return new FilterSpec[0];
     }
   }
@@ -567,7 +567,7 @@ public class DinaMapperTest {
     }
 
     @Override
-    public FilterSpec[] toFilterSpec() {
+    public FilterSpec[] toFilterSpec(Object value) {
       return new FilterSpec[0];
     }
   }

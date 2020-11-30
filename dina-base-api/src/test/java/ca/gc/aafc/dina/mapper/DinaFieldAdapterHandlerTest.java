@@ -94,7 +94,7 @@ class DinaFieldAdapterHandlerTest {
     }
 
     @Override
-    public FilterSpec[] toFilterSpec() {
+    public FilterSpec[] toFilterSpec(Object value) {
       return new FilterSpec[0];
     }
   }

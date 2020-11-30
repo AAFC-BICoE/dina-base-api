@@ -3,7 +3,9 @@ package ca.gc.aafc.dina.dto;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.mapper.CustomFieldAdapter;
 import ca.gc.aafc.dina.mapper.DinaFieldAdapter;
+import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
+import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
@@ -19,6 +21,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 @Data
 @JsonApiResource(type = PersonDTO.TYPE_NAME)
@@ -80,8 +83,14 @@ public class PersonDTO {
     }
 
     @Override
-    public FilterSpec[] toFilterSpec() {
-      return new FilterSpec[0];
+    public FilterSpec[] toFilterSpec(Object value) {
+      if (value instanceof Integer) {
+        return Stream.of(
+          PathSpec.of("customField").filter(FilterOperator.EQ, Integer.toString((Integer) value))
+        ).toArray(FilterSpec[]::new);
+      } else {
+        throw new IllegalArgumentException("value must be a Integer");
+      }
     }
   }
 }
