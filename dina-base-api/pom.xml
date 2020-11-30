@@ -22,7 +22,7 @@
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
-    <javers.version>5.11.2</javers.version>
+    <javers.version>5.13.2</javers.version>
   </properties>
 
   <dependencies>
