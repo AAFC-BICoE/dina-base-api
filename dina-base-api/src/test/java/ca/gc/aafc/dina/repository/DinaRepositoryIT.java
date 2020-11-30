@@ -201,8 +201,8 @@ public class DinaRepositoryIT {
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     PersonDTO expected = persited.get(0);
-    querySpec.addFilter(PathSpec.of("customField")
-      .filter(FilterOperator.EQ, Integer.toString(expected.getCustomField())));
+    querySpec.addFilter(
+      PathSpec.of("customField").filter(FilterOperator.EQ, expected.getCustomField()));
 
     List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
     assertEquals(1, resultList.size());
