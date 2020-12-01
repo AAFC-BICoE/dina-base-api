@@ -6,17 +6,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a field to be mapped using a {@link DinaFieldAdapter}
+ * Marks a class to map fields with a given set of adapters.
  */
-@Target(ElementType.FIELD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CustomFieldAdapter {
 
   /**
-   * Returns the adapter used to map this field.
+   * Returns the adapters used to map this class.
    *
-   * @return the adapter used to map this field.
+   * @return Returns the adapters used to map this class.
    */
-  Class<? extends DinaFieldAdapter<?, ?, ?, ?>> adapter();
+  Class<? extends DinaFieldAdapter<?, ?, ?, ?>>[] adapters();
 
 }
