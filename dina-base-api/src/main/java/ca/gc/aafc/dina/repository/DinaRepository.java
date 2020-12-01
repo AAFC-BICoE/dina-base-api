@@ -252,7 +252,7 @@ public class DinaRepository<D, E extends DinaEntity>
     } else {
       metaInfo.setTotalResourceCount((long) collection.size());
     }
-    metaInfo.setApiVersion(buildProperties.getVersion());
+    metaInfo.setModuleVersion(buildProperties.getVersion());
     return metaInfo;
   }
 

@@ -401,7 +401,7 @@ public class DinaRepositoryIT {
       new DinaMetaInfo()
     );
 
-    assertEquals("test-api-version" , meta.getApiVersion());
+    assertEquals("test-api-version" , meta.getModuleVersion());
   }
 
   private void assertEqualsPersonDtos(PersonDTO dto, PersonDTO result, boolean testRelations) {
