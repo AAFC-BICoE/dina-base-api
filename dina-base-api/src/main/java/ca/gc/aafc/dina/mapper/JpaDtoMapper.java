@@ -303,7 +303,7 @@ public class JpaDtoMapper {
   /** Whether a dto field is generated and read-only. */
   @SneakyThrows(NoSuchFieldException.class)
   private boolean isGenerated(Class<?> dtoClass, String field) {
-    return dtoClass.getDeclaredField(field).isAnnotationPresent(DerivedDtoField.class);
+    return dtoClass.getDeclaredField(field).isAnnotationPresent(IgnoreDinaMapping.class);
   }
 
   /**

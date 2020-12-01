@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import ca.gc.aafc.dina.entity.Department;
-import ca.gc.aafc.dina.mapper.DerivedDtoField;
+import ca.gc.aafc.dina.mapper.IgnoreDinaMapping;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
@@ -34,7 +34,7 @@ public class DepartmentDto {
 
   private String location;
 
-  @DerivedDtoField
+  @IgnoreDinaMapping
   private Integer employeeCount;
 
   @JsonApiRelation(mappedBy = "department")
