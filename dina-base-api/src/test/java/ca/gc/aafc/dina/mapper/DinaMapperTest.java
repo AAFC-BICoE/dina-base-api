@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -255,7 +256,9 @@ public class DinaMapperTest {
     Student result = new Student();
     StudentDto dtoToMap = createDTO();
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(StudentDto.class, Set.of("customField"));
+    Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
+      StudentDto.class,
+      Set.of("customField"));
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, new HashSet<>());
 
@@ -532,6 +535,16 @@ public class DinaMapperTest {
     public Consumer<String> dtoApplyMethod(StudentDto dtoRef) {
       return dtoRef::setCustomField;
     }
+
+    @Override
+    public Supplier<ComplexObject> entitySupplyMethod(Student entityRef) {
+      return entityRef::getCustomField;
+    }
+
+    @Override
+    public Supplier<String> dtoSupplMethod(StudentDto dtoRef) {
+      return dtoRef::getCustomField;
+    }
   }
 
   static class NestedCustomFieldAdapterImp
@@ -558,6 +571,16 @@ public class DinaMapperTest {
     @Override
     public Consumer<String> dtoApplyMethod(NestedResolverRelationDTO dtoRef) {
       return dtoRef::setName;
+    }
+
+    @Override
+    public Supplier<ComplexObject> entitySupplyMethod(NestedResolverRelation entityRef) {
+      return entityRef::getName;
+    }
+
+    @Override
+    public Supplier<String> dtoSupplMethod(NestedResolverRelationDTO dtoRef) {
+      return dtoRef::getName;
     }
   }
 

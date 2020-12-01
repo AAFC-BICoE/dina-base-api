@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 class DinaFieldAdapterHandlerTest {
 
@@ -90,6 +91,16 @@ class DinaFieldAdapterHandlerTest {
     @Override
     public Consumer<Integer> dtoApplyMethod(CarDto entityRef) {
       return entityRef::applyCustomField;
+    }
+
+    @Override
+    public Supplier<String> entitySupplyMethod(Car entityRef) {
+      return entityRef::getCustomField;
+    }
+
+    @Override
+    public Supplier<Integer> dtoSupplMethod(CarDto dtoRef) {
+      return dtoRef::getCustomField;
     }
   }
 
