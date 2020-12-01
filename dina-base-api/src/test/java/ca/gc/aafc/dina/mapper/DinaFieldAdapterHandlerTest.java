@@ -99,7 +99,7 @@ class DinaFieldAdapterHandlerTest {
     }
 
     @Override
-    public Supplier<Integer> dtoSupplMethod(CarDto dtoRef) {
+    public Supplier<Integer> dtoSupplyMethod(CarDto dtoRef) {
       return dtoRef::getCustomField;
     }
   }

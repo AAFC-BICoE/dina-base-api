@@ -15,6 +15,6 @@ public interface DinaFieldAdapter<DTO, ENTITY, DTO_FIELD, ENTITY_FIELD> {
 
   Supplier<ENTITY_FIELD> entitySupplyMethod(ENTITY entityRef);
 
-  Supplier<DTO_FIELD> dtoSupplMethod(DTO dtoRef);
+  Supplier<DTO_FIELD> dtoSupplyMethod(DTO dtoRef);
 
 }

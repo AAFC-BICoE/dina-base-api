@@ -542,7 +542,7 @@ public class DinaMapperTest {
     }
 
     @Override
-    public Supplier<String> dtoSupplMethod(StudentDto dtoRef) {
+    public Supplier<String> dtoSupplyMethod(StudentDto dtoRef) {
       return dtoRef::getCustomField;
     }
   }
@@ -579,7 +579,7 @@ public class DinaMapperTest {
     }
 
     @Override
-    public Supplier<String> dtoSupplMethod(NestedResolverRelationDTO dtoRef) {
+    public Supplier<String> dtoSupplyMethod(NestedResolverRelationDTO dtoRef) {
       return dtoRef::getName;
     }
   }

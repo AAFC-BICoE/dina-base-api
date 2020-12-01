@@ -64,7 +64,7 @@ public class DinaFieldAdapterHandler<D> {
             .accept(dinaFieldAdapter.toDTO(dinaFieldAdapter.entitySupplyMethod(source).get()));
         } else {
           dinaFieldAdapter.entityApplyMethod(target)
-            .accept(dinaFieldAdapter.toEntity(dinaFieldAdapter.dtoSupplMethod(source).get()));
+            .accept(dinaFieldAdapter.toEntity(dinaFieldAdapter.dtoSupplyMethod(source).get()));
         }
       }
     }
