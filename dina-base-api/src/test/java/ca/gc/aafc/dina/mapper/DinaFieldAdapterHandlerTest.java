@@ -33,13 +33,6 @@ class DinaFieldAdapterHandlerTest {
     Assertions.assertEquals(Integer.toString(dto.getCustomField()), entity.getCustomField());
   }
 
-  @Test
-  void hasFieldAdapter() {
-    Assertions.assertTrue(handler.hasFieldAdapter("CuStomField"));
-    Assertions.assertFalse(handler.hasFieldAdapter("name"));
-    Assertions.assertFalse(handler.hasFieldAdapter("powerLevel"));
-  }
-
   @Builder
   @Data
   public static class Car {
@@ -54,17 +47,15 @@ class DinaFieldAdapterHandlerTest {
 
   @Builder
   @Data
+  @CustomFieldAdapter(adapters = CustomFieldAdapterImpl.class)
   public static class CarDto {
     String name;
     int powerLevel;
-
-    @CustomFieldAdapter(adapter = CustomFieldAdapterImpl.class)
     int customField;
 
     public void applyCustomField(Integer value) {
       this.customField = value;
     }
-
   }
 
   static class CustomFieldAdapterImpl implements DinaFieldAdapter<CarDto, Car, Integer, String> {

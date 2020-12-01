@@ -42,7 +42,6 @@ public class DinaMapperTest {
     assertEquals(entity.getNickNames(), dto.getNickNames());
     // Assert value not mapped - not included in selected fields
     assertEquals(0, dto.getIq());
-    assertNull(dto.getCustomField());
   }
 
   @Test
@@ -89,7 +88,7 @@ public class DinaMapperTest {
   public void toDto_ResolversTest_FieldResolversMapping() {
     Student entity = createEntity();
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(Student.class, Set.of("customField"));
+    Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(Student.class, Set.of());
 
     StudentDto dto = mapper.toDto(entity, selectedFieldPerClass, new HashSet<>());
 
@@ -105,10 +104,8 @@ public class DinaMapperTest {
       .addAll(Arrays.asList(createEntity(), createEntity(), createEntity()));
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
-      Student.class,
-      Set.of("name", "customField"),
-      NestedResolverRelation.class,
-      Set.of("name", "customField"));
+      Student.class, Set.of("name"),
+      NestedResolverRelation.class, Set.of("customField"));
     Set<String> relations = Set.of("relationWithResolver", "friend", "classMates");
 
     StudentDto result = mapper.toDto(entityToMap, selectedFieldPerClass, relations);
@@ -122,7 +119,6 @@ public class DinaMapperTest {
     StudentDto dto = mapper.toDto(entity, Map.of(), Set.of());
 
     assertNull(dto.getName());
-    assertNull(dto.getCustomField());
     assertNull(dto.getFriend());
     assertNull(dto.getNickNames());
     assertEquals(0, dto.getIq());
@@ -211,7 +207,6 @@ public class DinaMapperTest {
     assertEquals(dtoToMap.getNickNames(), result.getNickNames());
     // Assert value not mapped - not included in selected fields
     assertEquals(0, result.getIq());
-    assertNull(result.getCustomField());
   }
 
   @Test
@@ -256,9 +251,7 @@ public class DinaMapperTest {
     Student result = new Student();
     StudentDto dtoToMap = createDTO();
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
-      StudentDto.class,
-      Set.of("customField"));
+    Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(StudentDto.class, Set.of());
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, new HashSet<>());
 
@@ -273,8 +266,8 @@ public class DinaMapperTest {
     dtoToMap.getClassMates().addAll(Arrays.asList(createDTO(), createDTO(), createDTO()));
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
-      StudentDto.class, Set.of("name", "customField"),
-      NestedResolverRelationDTO.class, Set.of("name", "customField"));
+      StudentDto.class, Set.of("name"),
+      NestedResolverRelationDTO.class, Set.of("customField"));
     Set<String> relations = Set.of("relationWithResolver", "friend", "classMates");
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, relations);
@@ -290,7 +283,6 @@ public class DinaMapperTest {
     mapper.applyDtoToEntity(dtoToMap, result, Map.of(), new HashSet<>());
 
     assertNull(result.getName());
-    assertNull(result.getCustomField());
     assertNull(result.getFriend());
     assertNull(result.getNickNames());
     assertEquals(0, result.getIq());
@@ -408,6 +400,7 @@ public class DinaMapperTest {
   @NoArgsConstructor
   @AllArgsConstructor
   @RelatedEntity(Student.class)
+  @CustomFieldAdapter(adapters = CustomFieldAdapterImp.class)
   public static final class StudentDto {
 
     private String name;
@@ -420,8 +413,7 @@ public class DinaMapperTest {
     @JsonApiRelation
     private StudentDto friend;
 
-    // Custom Resolved Field to test
-    @CustomFieldAdapter(adapter = CustomFieldAdapterImp.class)
+    @IgnoreDinaMapping(reason = "Custom resolved field to test")
     private String customField;
 
     // Relation with Custom Resolved Field to test
@@ -485,10 +477,10 @@ public class DinaMapperTest {
   @NoArgsConstructor
   @AllArgsConstructor
   @RelatedEntity(NestedResolverRelation.class)
+  @CustomFieldAdapter(adapters = NestedCustomFieldAdapterImp.class)
   public static final class NestedResolverRelationDTO {
 
     // Custom Resolved Field to test
-    @CustomFieldAdapter(adapter = NestedCustomFieldAdapterImp.class)
     private String name;
 
     /**
