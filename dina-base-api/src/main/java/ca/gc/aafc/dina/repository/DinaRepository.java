@@ -30,6 +30,9 @@ import lombok.SneakyThrows;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+
+import org.springframework.boot.info.BuildProperties;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
@@ -65,6 +68,8 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private final List<Map<String, String>> externalMetaMap;
 
+  private final BuildProperties buildProperties;
+
   private static final long DEFAULT_LIMIT = 100;
 
   @Getter
@@ -80,7 +85,8 @@ public class DinaRepository<D, E extends DinaEntity>
     @NonNull Class<D> resourceClass,
     @NonNull Class<E> entityClass,
     @NonNull DinaFilterResolver filterResolver,
-    ExternalResourceProvider externalResourceProvider
+    ExternalResourceProvider externalResourceProvider,
+    @NonNull BuildProperties buildProperties
   ) {
     this.dinaService = dinaService;
     this.authorizationService = authorizationService;
@@ -88,6 +94,7 @@ public class DinaRepository<D, E extends DinaEntity>
     this.resourceClass = resourceClass;
     this.entityClass = entityClass;
     this.filterResolver = filterResolver;
+    this.buildProperties = buildProperties;
     if (externalResourceProvider != null) {
       this.externalMetaMap =
         DinaMetaInfo.parseExternalTypes(resourceClass, externalResourceProvider);
@@ -230,7 +237,7 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   @Override
-  public MetaInformation getMetaInformation(
+  public DinaMetaInfo getMetaInformation(
     Collection<D> collection, QuerySpec querySpec, MetaInformation metaInformation
   ) {
     DinaMetaInfo metaInfo = new DinaMetaInfo();
@@ -245,6 +252,7 @@ public class DinaRepository<D, E extends DinaEntity>
     } else {
       metaInfo.setTotalResourceCount((long) collection.size());
     }
+    metaInfo.setApiVersion(buildProperties.getVersion());
     return metaInfo;
   }
 

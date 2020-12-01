@@ -32,6 +32,7 @@ import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 
 import javax.inject.Inject;
@@ -40,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 
 /**
  * Small test application running on dina-base-api
@@ -170,7 +172,8 @@ public class TestDinaBaseApp {
       PersonDTO.class,
       Person.class,
       filterResolver,
-      null);
+      null,
+      buildProperties());
   }
 
   @Bean
@@ -181,7 +184,15 @@ public class TestDinaBaseApp {
       dinaMapper,
       VocabularyDto.class,
       Vocabulary.class,
-      filterResolver);
+      filterResolver,
+      buildProperties());
+  }
+
+  @Bean
+  public BuildProperties buildProperties() {
+    Properties props = new Properties();
+    props.setProperty("version", "test-api-version");
+    return new BuildProperties(props);
   }
 
   /**
