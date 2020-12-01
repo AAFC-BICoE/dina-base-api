@@ -24,7 +24,7 @@ jobs:
       - name: Run Checkstyle
         run: mvn checkstyle:check
       - name: Run SpotBugs
-        run: mvn com.github.spotbugs:spotbugs-maven-plugin:check
+        run: mvn spotbugs:check
       - name: Check Test Coverage (JaCoCo)
         run: mvn -pl dina-base-api jacoco:check
       - name: Run OWASP dependency-check (only on dev)
