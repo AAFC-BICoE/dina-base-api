@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.repository;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
-import ca.gc.aafc.dina.mapper.DinaFieldAdapter;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
@@ -40,7 +39,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -149,7 +147,7 @@ public class DinaRepository<D, E extends DinaEntity>
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     QuerySpec newQuery = querySpec.clone();
-    querySpec.setFilters(resolveFilterSpecs(resourceClass, querySpec.getFilters(), registry));
+    newQuery.setFilters(resolveFilterSpecs(resourceClass, querySpec.getFilters(), registry));
     String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
 
     List<D> dList = mappingLayer.mapEntitiesToDto(newQuery, fetchEntities(ids, newQuery, idName));
@@ -185,15 +183,14 @@ public class DinaRepository<D, E extends DinaEntity>
         }
       }
 
-      String attr = attributePath.stream().reduce((s, s2) -> s2).orElse("");
-      Set<DinaFieldAdapter<?, ?, ?, ?>> fieldAdapters = registry.findFieldAdapters(dtoClass);
+      String attr = attributePath.stream().reduce((s, s2) -> s2).orElse(null);
+
       registry.findFieldAdapters(dtoClass).stream()
         .map(dinaFieldAdapter -> dinaFieldAdapter.toFilterSpec(""))
         .filter(specs -> specs.containsKey(attr))
         .findAny()
         .ifPresentOrElse(
-          stringFunctionMap -> newFilters.addAll(
-            List.of(stringFunctionMap.get(attr).apply(filterSpec.getValue()))),
+          specs -> newFilters.addAll(List.of(specs.get(attr).apply(filterSpec.getValue()))),
           () -> newFilters.add(filterSpec)
         );
 
