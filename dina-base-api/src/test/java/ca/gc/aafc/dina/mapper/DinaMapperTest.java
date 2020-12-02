@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -530,8 +531,8 @@ public class DinaMapperTest {
     }
 
     @Override
-    public FilterSpec[] toFilterSpec(Object value) {
-      return new FilterSpec[0];
+    public Map<String, Function<Object, FilterSpec[]>> toFilterSpec(Object value) {
+      return Map.of();
     }
 
     @Override
@@ -572,8 +573,8 @@ public class DinaMapperTest {
     }
 
     @Override
-    public FilterSpec[] toFilterSpec(Object value) {
-      return new FilterSpec[0];
+    public Map<String, Function<Object, FilterSpec[]>> toFilterSpec(Object value) {
+      return Map.of();
     }
 
     @Override

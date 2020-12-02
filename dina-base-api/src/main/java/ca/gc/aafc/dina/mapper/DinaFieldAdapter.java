@@ -2,7 +2,9 @@ package ca.gc.aafc.dina.mapper;
 
 import io.crnk.core.queryspec.FilterSpec;
 
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface DinaFieldAdapter<DTO, ENTITY, DTO_FIELD, ENTITY_FIELD> {
@@ -19,6 +21,6 @@ public interface DinaFieldAdapter<DTO, ENTITY, DTO_FIELD, ENTITY_FIELD> {
 
   Supplier<DTO_FIELD> dtoSupplyMethod(DTO dtoRef);
 
-  FilterSpec[] toFilterSpec(Object value);
+  Map<String, Function<Object, FilterSpec[]>> toFilterSpec(Object value);
 
 }

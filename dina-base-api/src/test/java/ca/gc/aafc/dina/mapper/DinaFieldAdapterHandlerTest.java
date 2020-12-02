@@ -6,7 +6,9 @@ import lombok.Data;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 class DinaFieldAdapterHandlerTest {
@@ -86,8 +88,8 @@ class DinaFieldAdapterHandlerTest {
     }
 
     @Override
-    public FilterSpec[] toFilterSpec(Object value) {
-      return new FilterSpec[0];
+    public Map<String, Function<Object, FilterSpec[]>> toFilterSpec(Object value) {
+      return Map.of();
     }
 
     @Override

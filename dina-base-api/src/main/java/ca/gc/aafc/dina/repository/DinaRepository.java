@@ -18,7 +18,6 @@ import io.crnk.core.engine.registry.ResourceRegistryAware;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.IncludeRelationSpec;
-import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.MetaRepository;
 import io.crnk.core.repository.ResourceRepository;
@@ -41,6 +40,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -186,16 +186,17 @@ public class DinaRepository<D, E extends DinaEntity>
       }
 
       String attr = attributePath.stream().reduce((s, s2) -> s2).orElse("");
-      Map<String, DinaFieldAdapter<?, ?, ?, ?>> fieldAdapters = registry.findFieldAdapters(dtoClass);
-      if (fieldAdapters.containsKey(attr)) {
-        for (FilterSpec spec : fieldAdapters.get(attr).toFilterSpec(filterSpec.getValue())) {
-          List<String> path = new ArrayList<>(attributePath.subList(0, attributePath.size() - 1));
-          path.addAll(spec.getAttributePath());
-          newFilters.add(PathSpec.of(path).filter(spec.getOperator(), spec.getValue()));
-        }
-      } else {
-        newFilters.add(filterSpec);
-      }
+      Set<DinaFieldAdapter<?, ?, ?, ?>> fieldAdapters = registry.findFieldAdapters(dtoClass);
+      registry.findFieldAdapters(dtoClass).stream()
+        .map(dinaFieldAdapter -> dinaFieldAdapter.toFilterSpec(""))
+        .filter(specs -> specs.containsKey(attr))
+        .findAny()
+        .ifPresentOrElse(
+          stringFunctionMap -> newFilters.addAll(
+            List.of(stringFunctionMap.get(attr).apply(filterSpec.getValue()))),
+          () -> newFilters.add(filterSpec)
+        );
+
     }
 
     return newFilters;

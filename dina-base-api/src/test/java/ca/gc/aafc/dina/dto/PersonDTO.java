@@ -20,10 +20,11 @@ import org.javers.core.metamodel.annotation.TypeName;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 @Data
 @JsonApiResource(type = PersonDTO.TYPE_NAME)
@@ -57,7 +58,7 @@ public class PersonDTO {
   @JsonApiRelation
   private List<DepartmentDto> departments;
 
-  @IgnoreDinaMapping(reason = "derived from name + group")
+  @IgnoreDinaMapping(reason = "derived from name + / + group")
   private String customField;
 
   public static class CustomFieldAdapterImp implements DinaFieldAdapter<PersonDTO, Person, String, String> {
@@ -72,12 +73,13 @@ public class PersonDTO {
 
     @Override
     public String toEntity(String dtoValue) {
-      return null;
+      return null; // not mapping to anything
     }
 
     @Override
     public Consumer<String> entityApplyMethod(Person entityRef) {
-      return s -> {};
+      return s -> {
+      }; // not mapping to anything
     }
 
     @Override
@@ -96,14 +98,18 @@ public class PersonDTO {
     }
 
     @Override
-    public FilterSpec[] toFilterSpec(Object value) {
-      if (value instanceof Integer) {
-        return Stream.of(
-          PathSpec.of("customField").filter(FilterOperator.EQ, Integer.toString((Integer) value))
-        ).toArray(FilterSpec[]::new);
-      } else {
-        throw new IllegalArgumentException("value must be a Integer");
-      }
+    public Map<String, Function<Object, FilterSpec[]>> toFilterSpec(Object value) {
+      return Map.of("customField", obj -> {
+        if (obj instanceof String) {
+          String s = (String) obj;
+          String[] split = s.split("/");
+          return new FilterSpec[]{
+            PathSpec.of("name").filter(FilterOperator.EQ, split[0]),
+            PathSpec.of("group").filter(FilterOperator.EQ, split[1])};
+        } else {
+          throw new IllegalArgumentException("value must be a String");
+        }
+      });
     }
   }
 }
