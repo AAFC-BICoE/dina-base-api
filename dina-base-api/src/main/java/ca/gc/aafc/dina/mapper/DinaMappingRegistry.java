@@ -37,7 +37,7 @@ public class DinaMappingRegistry {
   // Track Json Id field names for mapping
   private final Map<Class<?>, String> jsonIdFieldNamePerClass;
   // Track Field adapters per class
-  private final Map<Class<?>, Map<String, DinaFieldAdapter<?, ?, ?, ?>>> fieldAdaptersPerClass;
+  private final Map<Class<?>, Set<DinaFieldAdapter<?, ?, ?, ?>>> fieldAdaptersPerClass;
 
   /**
    * Parsing a given resource graph requires the use of reflection. A DinaMappingRegistry should not
@@ -118,7 +118,7 @@ public class DinaMappingRegistry {
     return this.jsonIdFieldNamePerClass.get(cls);
   }
 
-  public Map<String, DinaFieldAdapter<?, ?, ?, ?>> findFieldAdapters(Class<?> cls) {
+  public Set<DinaFieldAdapter<?, ?, ?, ?>> findFieldAdapters(Class<?> cls) {
     if (!this.fieldAdaptersPerClass.containsKey(cls)) {
       throw new IllegalArgumentException(cls.getSimpleName() + " is not tracked by the registry");
     }
@@ -193,16 +193,17 @@ public class DinaMappingRegistry {
   }
 
   @SneakyThrows
-  private Map<Class<?>, Map<String, DinaFieldAdapter<?, ?, ?, ?>>> parseFieldAdapters(Set<Class<?>> resources) {
-    Map<Class<?>, Map<String, DinaFieldAdapter<?, ?, ?, ?>>> adapterPerClass = new HashMap<>();
+  private Map<Class<?>, Set<DinaFieldAdapter<?, ?, ?, ?>>> parseFieldAdapters(Set<Class<?>> resources) {
+    Map<Class<?>, Set<DinaFieldAdapter<?, ?, ?, ?>>> adapterPerClass = new HashMap<>();
     for (Class<?> dto : resources) {
-      Map<String, DinaFieldAdapter<?, ?, ?, ?>> adaptersPerField = new HashMap<>();
-      for (Field field : FieldUtils.getFieldsWithAnnotation(dto, CustomFieldAdapter.class)) {
-        adaptersPerField.put(
-          field.getName(),
-          field.getAnnotation(CustomFieldAdapter.class).adapter().getConstructor().newInstance());
+      Set<DinaFieldAdapter<?, ?, ?, ?>> adapters = new HashSet<>();
+      if (dto.isAnnotationPresent(CustomFieldAdapter.class)) {
+        for (Class<? extends DinaFieldAdapter<?, ?, ?, ?>> adp :
+          dto.getAnnotation(CustomFieldAdapter.class).adapters()) {
+          adapters.add(adp.getConstructor().newInstance());
+        }
       }
-      adapterPerClass.put(dto, adaptersPerField);
+      adapterPerClass.put(dto, adapters);
     }
     return adapterPerClass;
   }
