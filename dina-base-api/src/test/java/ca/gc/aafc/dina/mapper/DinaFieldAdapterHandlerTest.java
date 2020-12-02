@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 class DinaFieldAdapterHandlerTest {
 
@@ -33,13 +34,6 @@ class DinaFieldAdapterHandlerTest {
     Assertions.assertEquals(Integer.toString(dto.getCustomField()), entity.getCustomField());
   }
 
-  @Test
-  void hasFieldAdapter() {
-    Assertions.assertTrue(handler.hasFieldAdapter("CuStomField"));
-    Assertions.assertFalse(handler.hasFieldAdapter("name"));
-    Assertions.assertFalse(handler.hasFieldAdapter("powerLevel"));
-  }
-
   @Builder
   @Data
   public static class Car {
@@ -54,17 +48,15 @@ class DinaFieldAdapterHandlerTest {
 
   @Builder
   @Data
+  @CustomFieldAdapter(adapters = CustomFieldAdapterImpl.class)
   public static class CarDto {
     String name;
     int powerLevel;
-
-    @CustomFieldAdapter(adapter = CustomFieldAdapterImpl.class)
     int customField;
 
     public void applyCustomField(Integer value) {
       this.customField = value;
     }
-
   }
 
   static class CustomFieldAdapterImpl implements DinaFieldAdapter<CarDto, Car, Integer, String> {
@@ -96,6 +88,16 @@ class DinaFieldAdapterHandlerTest {
     @Override
     public FilterSpec[] toFilterSpec(Object value) {
       return new FilterSpec[0];
+    }
+
+    @Override
+    public Supplier<String> entitySupplyMethod(Car entityRef) {
+      return entityRef::getCustomField;
+    }
+
+    @Override
+    public Supplier<Integer> dtoSupplyMethod(CarDto dtoRef) {
+      return dtoRef::getCustomField;
     }
   }
 

@@ -16,9 +16,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * DTO to Entity Bean mapper (and vice-versa). Used to map fields between DTO's and Entities.
@@ -171,14 +169,11 @@ public class DinaMapper<D, E> {
     S unproxied = (S) Hibernate.unproxy(source);
     Class<?> sourceType = unproxied.getClass();
     Set<String> selectedFields = selectedFieldPerClass.getOrDefault(sourceType, Set.of());
-    Predicate<String> ignoreIf = field -> hasResolvers(field, sourceType);
 
-    mapFieldsToTarget(unproxied, target, selectedFields, ignoreIf);
+    mapFieldsToTarget(unproxied, target, selectedFields);
     mapRelationsToTarget(unproxied, target, selectedFieldPerClass, relations, visited);
     if (handlers.containsKey(sourceType)) {
-      Set<String> allFields = Stream.concat(selectedFields.stream(), relations.stream())
-        .collect(Collectors.toSet());
-      handlers.get(sourceType).resolveFields(allFields, unproxied, target);
+      handlers.get(sourceType).resolveFields(unproxied, target);
     }
   }
 
@@ -205,7 +200,7 @@ public class DinaMapper<D, E> {
       DinaMappingRegistry.InternalRelation internalRelation = findInternalRelation(
         target, relationFieldName);
 
-      if (!hasResolvers(relationFieldName, source.getClass()) && internalRelation != null) {
+      if (internalRelation != null) {
 
         // Each relation requires a separate tracking set
         Map<Object, Object> currentVisited = new IdentityHashMap<>(visited);
@@ -293,25 +288,11 @@ public class DinaMapper<D, E> {
   private static <T, S> void mapFieldsToTarget(
     S source,
     T target,
-    Set<String> selectedFields,
-    Predicate<String> ignoreIf
+    Set<String> selectedFields
   ) {
     for (String attribute : selectedFields) {
-      if (!ignoreIf.test(attribute)) {
-        PropertyUtils.setProperty(target, attribute, PropertyUtils.getProperty(source, attribute));
-      }
+      PropertyUtils.setProperty(target, attribute, PropertyUtils.getProperty(source, attribute));
     }
-  }
-
-  /**
-   * Returns true if the given class and field have custom field resolvers tracked by the mapper
-   *
-   * @param field  field to check
-   * @param aClass class to check
-   * @return rue if the given class and field have custom field resolvers tracked by the mapper.
-   */
-  private boolean hasResolvers(String field, Class<?> aClass) {
-    return handlers.containsKey(aClass) && handlers.get(aClass).hasFieldAdapter(field);
   }
 
   private <T> DinaMappingRegistry.InternalRelation findInternalRelation(

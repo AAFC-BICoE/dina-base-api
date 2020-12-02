@@ -235,13 +235,13 @@ public class DinaMappingRegistry {
 
   /**
    * Returns true if the dina repo should map the given field. currently that means if the field is
-   * not generated (Marked with {@link DerivedDtoField}), final, or is a {@link JsonApiRelation}.
+   * not generated (Marked with {@link IgnoreDinaMapping}), final, or is a {@link JsonApiRelation}.
    *
    * @param field - field to evaluate
    * @return - true if the dina repo should not map the given field
    */
   private static boolean isFieldMappable(Field field) {
-    return !field.isAnnotationPresent(DerivedDtoField.class) &&
+    return !field.isAnnotationPresent(IgnoreDinaMapping.class) &&
            !field.isAnnotationPresent(JsonApiRelation.class)
            && !Modifier.isFinal(field.getModifiers())
            && !field.isSynthetic();
@@ -257,7 +257,8 @@ public class DinaMappingRegistry {
    * @return true if the dina repo should map the given relation.
    */
   private static boolean isRelationMappable(Class<?> dto, Class<?> entity, Field dtoRelationField) {
-    return !dtoRelationField.isAnnotationPresent(JsonApiExternalRelation.class) &&
+    return !dtoRelationField.isAnnotationPresent(IgnoreDinaMapping.class) &&
+           !dtoRelationField.isAnnotationPresent(JsonApiExternalRelation.class) &&
            Stream.of(entity.getDeclaredFields())
              .map(Field::getName)
              .anyMatch(dtoRelationField.getName()::equalsIgnoreCase) &&
