@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.dto;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.mapper.CustomFieldAdapter;
 import ca.gc.aafc.dina.mapper.DinaFieldAdapter;
+import ca.gc.aafc.dina.mapper.IgnoreDinaMapping;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.PathSpec;
@@ -21,6 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 @Data
@@ -30,6 +32,7 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 @RelatedEntity(Person.class)
 @TypeName(PersonDTO.TYPE_NAME)
+@CustomFieldAdapter(adapters = PersonDTO.CustomFieldAdapterImp.class)
 public class PersonDTO {
 
   public static final String TYPE_NAME = "person";
@@ -54,32 +57,42 @@ public class PersonDTO {
   @JsonApiRelation
   private List<DepartmentDto> departments;
 
-  @CustomFieldAdapter(adapter = CustomFieldAdapterImp.class)
-  private Integer customField;
+  @IgnoreDinaMapping(reason = "derived from name + group")
+  private String customField;
 
-  public static class CustomFieldAdapterImp implements DinaFieldAdapter<PersonDTO, Person, Integer, String> {
+  public static class CustomFieldAdapterImp implements DinaFieldAdapter<PersonDTO, Person, String, String> {
 
     public CustomFieldAdapterImp() {
     }
 
     @Override
-    public Integer toDTO(String s) {
-      return s == null ? null : Integer.valueOf(s);
+    public String toDTO(String entValue) {
+      return entValue;
     }
 
     @Override
-    public String toEntity(Integer integer) {
-      return integer == null ? null : Integer.toString(integer);
+    public String toEntity(String dtoValue) {
+      return null;
     }
 
     @Override
     public Consumer<String> entityApplyMethod(Person entityRef) {
-      return entityRef::setCustomField;
+      return s -> {};
     }
 
     @Override
-    public Consumer<Integer> dtoApplyMethod(PersonDTO dtoRef) {
+    public Consumer<String> dtoApplyMethod(PersonDTO dtoRef) {
       return dtoRef::setCustomField;
+    }
+
+    @Override
+    public Supplier<String> entitySupplyMethod(Person entityRef) {
+      return () -> entityRef.getName() + "/" + entityRef.getGroup();
+    }
+
+    @Override
+    public Supplier<String> dtoSupplyMethod(PersonDTO dtoRef) {
+      return dtoRef::getCustomField;
     }
 
     @Override

@@ -55,5 +55,4 @@ public class Person implements DinaEntity {
   @JoinColumn(name = "department_list_fk")
   private List<Department> departments;
 
-  private String customField;
 }
