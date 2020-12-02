@@ -9,6 +9,8 @@ import io.crnk.core.exception.MethodNotAllowedException;
 import java.io.Serializable;
 import java.util.Optional;
 
+import org.springframework.boot.info.BuildProperties;
+
 /**
  * Read-only version of {@link DinaRepository}.
  * create, save and delete will throw a {@link MethodNotAllowedException}.
@@ -22,7 +24,8 @@ public class ReadOnlyDinaRepository<D, E extends DinaEntity> extends DinaReposit
     DinaMapper<D, E> dinaMapper,
     Class<D> resourceClass,
     Class<E> entityClass,
-    DinaFilterResolver filterResolver
+    DinaFilterResolver filterResolver,
+    BuildProperties buildProperties
   ) {
     super(
       dinaService,
@@ -32,7 +35,8 @@ public class ReadOnlyDinaRepository<D, E extends DinaEntity> extends DinaReposit
       resourceClass,
       entityClass,
       filterResolver,
-      null);
+      null,
+      buildProperties);
   }
 
   /**
