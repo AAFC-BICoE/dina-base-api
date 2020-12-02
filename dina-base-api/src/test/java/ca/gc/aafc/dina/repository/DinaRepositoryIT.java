@@ -454,8 +454,9 @@ public class DinaRepositoryIT {
       .department(singleRelationDto)
       .departments(collectionRelationDtos)
       .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
-      .customField(RandomUtils.nextInt())
-      .name(RandomStringUtils.random(4)).build();
+      .name(RandomStringUtils.randomAlphabetic(4))
+      .group(RandomStringUtils.randomAlphabetic(4))
+      .build();
   }
 
   private static Department createDepartment(String name, String Location) {
