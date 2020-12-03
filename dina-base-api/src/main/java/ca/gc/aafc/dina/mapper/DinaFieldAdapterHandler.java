@@ -1,9 +1,12 @@
 package ca.gc.aafc.dina.mapper;
 
+import io.crnk.core.queryspec.FilterSpec;
 import lombok.SneakyThrows;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * Handles the mapping of fields between entities and Dto's using {@link DinaFieldAdapter}.
@@ -49,6 +52,15 @@ public class DinaFieldAdapterHandler<D> {
         adapt.entityApplyMethod(target).accept(adapt.toEntity(adapt.dtoSupplyMethod(source).get()));
       }
     }
+  }
+
+  public Optional<Function<Object, FilterSpec[]>> findFilterSpec(String field) {
+    return this.adapters.stream()
+      .map(DinaFieldAdapter::toFilterSpec)
+      .filter(specs -> specs.containsKey(field))
+      .findAny()
+      .map(spec -> spec.get(field));
+
   }
 
 }

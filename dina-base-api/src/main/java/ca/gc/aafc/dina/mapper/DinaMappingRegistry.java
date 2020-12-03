@@ -38,7 +38,7 @@ public class DinaMappingRegistry {
   private final Map<Class<?>, String> jsonIdFieldNamePerClass;
   // Track Field adapters per class
   @Getter
-  private final Map<Class<?>, Set<DinaFieldAdapter<?, ?, ?, ?>>> fieldAdaptersPerClass;
+  private final Map<Class<?>, DinaFieldAdapterHandler<?>> fieldAdaptersPerClass;
 
   /**
    * Parsing a given resource graph requires the use of reflection. A DinaMappingRegistry should not
@@ -187,17 +187,16 @@ public class DinaMappingRegistry {
   }
 
   @SneakyThrows
-  private Map<Class<?>, Set<DinaFieldAdapter<?, ?, ?, ?>>> parseFieldAdapters(Set<Class<?>> resources) {
-    Map<Class<?>, Set<DinaFieldAdapter<?, ?, ?, ?>>> adapterPerClass = new HashMap<>();
+  private Map<Class<?>, DinaFieldAdapterHandler<?>> parseFieldAdapters(Set<Class<?>> resources) {
+    Map<Class<?>, DinaFieldAdapterHandler<?>> adapterPerClass = new HashMap<>();
     for (Class<?> dto : resources) {
-      Set<DinaFieldAdapter<?, ?, ?, ?>> adapters = new HashSet<>();
-      if (dto.isAnnotationPresent(CustomFieldAdapter.class)) {
-        for (Class<? extends DinaFieldAdapter<?, ?, ?, ?>> adp :
-          dto.getAnnotation(CustomFieldAdapter.class).adapters()) {
-          adapters.add(adp.getConstructor().newInstance());
-        }
+      RelatedEntity annotation = dto.getAnnotation(RelatedEntity.class);
+      if (annotation != null) {
+        Class<?> relatedEntity = annotation.value();
+        DinaFieldAdapterHandler<?> handler = new DinaFieldAdapterHandler<>(dto);
+        adapterPerClass.put(dto, handler);
+        adapterPerClass.put(relatedEntity, handler);
       }
-      adapterPerClass.put(dto, adapters);
     }
     return adapterPerClass;
   }

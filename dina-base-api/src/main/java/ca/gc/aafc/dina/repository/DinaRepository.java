@@ -2,7 +2,7 @@ package ca.gc.aafc.dina.repository;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
-import ca.gc.aafc.dina.mapper.DinaFieldAdapter;
+import ca.gc.aafc.dina.mapper.DinaFieldAdapterHandler;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
@@ -177,6 +177,10 @@ public class DinaRepository<D, E extends DinaEntity>
       List<String> attributePath = filterSpec.getAttributePath();
       Class<?> dtoClass = resource;
 
+      // find last attribute in path
+      String attr = attributePath.stream().reduce((s, s2) -> s2)
+        .orElseThrow(() -> new IllegalArgumentException("Query spec must provide an attribute path"));
+
       // Find nested dto class
       for (String attribute : attributePath) {
         Optional<DinaMappingRegistry.InternalRelation> relation = registry
@@ -190,19 +194,12 @@ public class DinaRepository<D, E extends DinaEntity>
         }
       }
 
-      // find last attribute in path
-      String attr = attributePath.stream().reduce((s, s2) -> s2)
-        .orElseThrow(() -> new IllegalArgumentException("Query spec must provide an attribute path"));
-
-      registry.getFieldAdaptersPerClass().getOrDefault(dtoClass, Collections.emptySet())
-        .stream()
-        .map(DinaFieldAdapter::toFilterSpec)
-        .filter(specs -> specs.containsKey(attr))
-        .findAny()
-        .ifPresentOrElse(
-          specs -> newFilters.addAll(List.of(specs.get(attr).apply(filterSpec.getValue()))),
-          () -> newFilters.add(filterSpec)
-        );
+      DinaFieldAdapterHandler<?> handler = registry.getFieldAdaptersPerClass().get(resource);
+      if (handler != null) {
+        handler.findFilterSpec(attr).ifPresentOrElse(
+          specs -> newFilters.addAll(List.of(specs.apply(filterSpec.getValue()))),
+          () -> newFilters.add(filterSpec));
+      }
     }
 
     return newFilters;
