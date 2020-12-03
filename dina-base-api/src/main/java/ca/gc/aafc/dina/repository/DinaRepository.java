@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.repository;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
+import ca.gc.aafc.dina.mapper.DinaFieldAdapter;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
@@ -29,12 +30,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import org.springframework.boot.info.BuildProperties;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-
-import org.springframework.boot.info.BuildProperties;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -192,8 +191,9 @@ public class DinaRepository<D, E extends DinaEntity>
 
       String attr = attributePath.stream().reduce((s, s2) -> s2).orElse(null);
 
-      registry.findFieldAdapters(dtoClass).stream()
-        .map(dinaFieldAdapter -> dinaFieldAdapter.toFilterSpec(""))
+      registry.findFieldAdapters(dtoClass)
+        .stream()
+        .map(DinaFieldAdapter::toFilterSpec)
         .filter(specs -> specs.containsKey(attr))
         .findAny()
         .ifPresentOrElse(

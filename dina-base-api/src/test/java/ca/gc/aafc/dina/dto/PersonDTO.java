@@ -98,7 +98,7 @@ public class PersonDTO {
     }
 
     @Override
-    public Map<String, Function<Object, FilterSpec[]>> toFilterSpec(Object value) {
+    public Map<String, Function<Object, FilterSpec[]>> toFilterSpec() {
       return Map.of("customField", obj -> {
         if (obj instanceof String) {
           String s = (String) obj;

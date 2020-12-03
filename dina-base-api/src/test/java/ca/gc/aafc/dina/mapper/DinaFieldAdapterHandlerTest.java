@@ -88,7 +88,7 @@ class DinaFieldAdapterHandlerTest {
     }
 
     @Override
-    public Map<String, Function<Object, FilterSpec[]>> toFilterSpec(Object value) {
+    public Map<String, Function<Object, FilterSpec[]>> toFilterSpec() {
       return Map.of();
     }
 
