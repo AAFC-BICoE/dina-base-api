@@ -6,6 +6,7 @@ import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.Direction;
@@ -408,6 +409,17 @@ public class DinaRepositoryIT {
   @Test
   public void delete_NoResourceFound_ThrowsResourceNotFoundException() {
     assertThrows(ResourceNotFoundException.class, () -> dinaRepository.delete(UUID.randomUUID()));
+  }
+
+  @Test
+  public void getMetaInformation_whenBuildVersionIsSet_buildVersionIncludedInMeta() {
+    DinaMetaInfo meta = dinaRepository.getMetaInformation(
+      List.of(),
+      new QuerySpec(PersonDTO.class),
+      new DinaMetaInfo()
+    );
+
+    assertEquals("test-api-version" , meta.getModuleVersion());
   }
 
   private void assertEqualsPersonDtos(PersonDTO dto, PersonDTO result, boolean testRelations) {

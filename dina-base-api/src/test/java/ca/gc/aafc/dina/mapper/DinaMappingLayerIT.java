@@ -19,6 +19,7 @@ import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -211,7 +212,8 @@ public class DinaMappingLayerIT {
     public DinaRepository<ProjectDTO, Project> projectRepo(
       BaseDAO baseDAO,
       DinaFilterResolver filterResolver,
-      ExternalResourceProvider externalResourceProvider
+      ExternalResourceProvider externalResourceProvider,
+      BuildProperties buildProperties
     ) {
       return new DinaRepository<>(
         new DefaultDinaService<>(baseDAO),
@@ -221,7 +223,8 @@ public class DinaMappingLayerIT {
         ProjectDTO.class,
         Project.class,
         filterResolver,
-        externalResourceProvider
+        externalResourceProvider,
+        buildProperties
       );
     }
 
@@ -229,7 +232,8 @@ public class DinaMappingLayerIT {
     public DinaRepository<TaskDTO, Task> taskRepo(
       BaseDAO baseDAO,
       DinaFilterResolver filterResolver,
-      ExternalResourceProvider externalResourceProvider
+      ExternalResourceProvider externalResourceProvider,
+      BuildProperties buildProperties
     ) {
       return new DinaRepository<>(
         new DefaultDinaService<>(baseDAO),
@@ -239,7 +243,8 @@ public class DinaMappingLayerIT {
         TaskDTO.class,
         Task.class,
         filterResolver,
-        externalResourceProvider
+        externalResourceProvider,
+        buildProperties
       );
     }
   }

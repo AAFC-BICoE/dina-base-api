@@ -16,6 +16,7 @@ import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,7 @@ import javax.inject.Inject;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.UUID;
 
 @SpringBootTest(
@@ -164,7 +166,8 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
         ChainDto.class,
         Chain.class,
         filterResolver,
-        null
+        null,
+        new BuildProperties(new Properties())
       );
     }
 
@@ -187,7 +190,8 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
         ChainTemplateDto.class,
         ChainTemplate.class,
         filterResolver,
-        null
+        null,
+        new BuildProperties(new Properties())
       );
     }
   }
