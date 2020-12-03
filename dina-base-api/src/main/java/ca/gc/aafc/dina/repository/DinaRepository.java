@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.repository;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
-import ca.gc.aafc.dina.mapper.DinaFieldAdapterHandler;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
@@ -185,11 +184,11 @@ public class DinaRepository<D, E extends DinaEntity>
       String attr = attributePath.stream().reduce((s, s2) -> s2)
         .orElseThrow(() -> new IllegalArgumentException("Query spec must provide an attribute path"));
 
-      DinaFieldAdapterHandler<?> handler = registry.getFieldAdaptersPerClass().get(dtoClass);
-      if (handler != null) {
-        handler.findFilterSpec(attr).ifPresentOrElse(
-          specs -> newFilters.addAll(List.of(specs.apply(filterSpec.getValue()))),
-          () -> newFilters.add(filterSpec));
+      if (registry.getFieldAdaptersPerClass().containsKey(dtoClass)) {
+        registry.getFieldAdaptersPerClass().get(dtoClass).findFilterSpec(attr)
+          .ifPresentOrElse(
+            specs -> newFilters.addAll(List.of(specs.apply(filterSpec.getValue()))),
+            () -> newFilters.add(filterSpec));
       }
     }
 
