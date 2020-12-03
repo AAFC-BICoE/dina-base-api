@@ -104,8 +104,8 @@ public class DinaRepository<D, E extends DinaEntity>
     } else {
       this.externalMetaMap = null;
     }
-    this.mappingLayer = new DinaMappingLayer<>(resourceClass, dinaService, dinaMapper);
     this.registry = new DinaMappingRegistry(resourceClass);
+    this.mappingLayer = new DinaMappingLayer<>(resourceClass, dinaMapper, dinaService, this.registry);
   }
 
   /**

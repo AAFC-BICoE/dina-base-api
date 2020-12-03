@@ -5,6 +5,7 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.queryspec.QuerySpec;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
  * @param <D> - Resource type for the mapping layer
  * @param <E> - Entity type for the mapping layer
  */
+@AllArgsConstructor
 public class DinaMappingLayer<D, E> {
 
   private final Class<D> resourceClass;
@@ -44,10 +46,7 @@ public class DinaMappingLayer<D, E> {
     @NonNull DinaService<? extends DinaEntity> dinaService,
     @NonNull DinaMapper<D, E> dinaMapper
   ) {
-    this.resourceClass = resourceClass;
-    this.dinaService = dinaService;
-    this.dinaMapper = dinaMapper;
-    this.registry = new DinaMappingRegistry(resourceClass);
+    this(resourceClass, dinaMapper, dinaService, new DinaMappingRegistry(resourceClass));
   }
 
   /**
