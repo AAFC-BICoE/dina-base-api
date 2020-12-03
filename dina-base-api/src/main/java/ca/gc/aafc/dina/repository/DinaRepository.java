@@ -177,6 +177,7 @@ public class DinaRepository<D, E extends DinaEntity>
       List<String> attributePath = filterSpec.getAttributePath();
       Class<?> dtoClass = resource;
 
+      // Find nested dto class
       for (String attribute : attributePath) {
         Optional<DinaMappingRegistry.InternalRelation> relation = registry
           .findMappableRelationsForClass(dtoClass).stream()
@@ -189,9 +190,11 @@ public class DinaRepository<D, E extends DinaEntity>
         }
       }
 
-      String attr = attributePath.stream().reduce((s, s2) -> s2).orElse(null);
+      // find last attribute in path
+      String attr = attributePath.stream().reduce((s, s2) -> s2)
+        .orElseThrow(() -> new IllegalArgumentException("Query spec must provide an attribute path"));
 
-      registry.findFieldAdapters(dtoClass)
+      registry.getFieldAdaptersPerClass().getOrDefault(dtoClass, Collections.emptySet())
         .stream()
         .map(DinaFieldAdapter::toFilterSpec)
         .filter(specs -> specs.containsKey(attr))
@@ -200,7 +203,6 @@ public class DinaRepository<D, E extends DinaEntity>
           specs -> newFilters.addAll(List.of(specs.get(attr).apply(filterSpec.getValue()))),
           () -> newFilters.add(filterSpec)
         );
-
     }
 
     return newFilters;

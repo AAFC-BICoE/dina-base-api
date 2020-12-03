@@ -37,6 +37,7 @@ public class DinaMappingRegistry {
   // Track Json Id field names for mapping
   private final Map<Class<?>, String> jsonIdFieldNamePerClass;
   // Track Field adapters per class
+  @Getter
   private final Map<Class<?>, Set<DinaFieldAdapter<?, ?, ?, ?>>> fieldAdaptersPerClass;
 
   /**
@@ -116,13 +117,6 @@ public class DinaMappingRegistry {
       throw new IllegalArgumentException(cls.getSimpleName() + " is not tracked by the registry");
     }
     return this.jsonIdFieldNamePerClass.get(cls);
-  }
-
-  public Set<DinaFieldAdapter<?, ?, ?, ?>> findFieldAdapters(Class<?> cls) {
-    if (!this.fieldAdaptersPerClass.containsKey(cls)) {
-      throw new IllegalArgumentException(cls.getSimpleName() + " is not tracked by the registry");
-    }
-    return this.fieldAdaptersPerClass.get(cls);
   }
 
   private Set<Class<?>> parseGraph(Class<?> dto, Set<Class<?>> visited) {
