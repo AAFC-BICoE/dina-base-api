@@ -16,7 +16,9 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -117,6 +119,24 @@ public class DinaMappingRegistry {
       throw new IllegalArgumentException(cls.getSimpleName() + " is not tracked by the registry");
     }
     return this.jsonIdFieldNamePerClass.get(cls);
+  }
+
+  public Class<?> parseNestedResource(
+    @NonNull Class<?> resource,
+    @NonNull List<String> attributePath
+  ) {
+    Class<?> nested = resource;
+    for (String attribute : attributePath) {
+      Optional<InternalRelation> relation = this.findMappableRelationsForClass(nested).stream()
+        .filter(internalRelation -> internalRelation.getName().equalsIgnoreCase(attribute))
+        .findAny();
+      if (relation.isPresent()) {
+        nested = relation.get().getElementType();
+      } else {
+        break;
+      }
+    }
+    return nested;
   }
 
   private Set<Class<?>> parseGraph(Class<?> dto, Set<Class<?>> visited) {

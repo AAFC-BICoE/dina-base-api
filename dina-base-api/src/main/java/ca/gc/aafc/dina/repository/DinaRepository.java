@@ -105,7 +105,11 @@ public class DinaRepository<D, E extends DinaEntity>
       this.externalMetaMap = null;
     }
     this.registry = new DinaMappingRegistry(resourceClass);
-    this.mappingLayer = new DinaMappingLayer<>(resourceClass, dinaMapper, dinaService, this.registry);
+    this.mappingLayer = new DinaMappingLayer<>(
+      resourceClass,
+      dinaMapper,
+      dinaService,
+      this.registry);
   }
 
   /**
@@ -175,26 +179,13 @@ public class DinaRepository<D, E extends DinaEntity>
     List<FilterSpec> newFilters = new ArrayList<>();
     for (FilterSpec filterSpec : filters) {
       List<String> attributePath = filterSpec.getAttributePath();
-      Class<?> dtoClass = resource;
+      Class<?> dtoClass = registry.parseNestedResource(resource, attributePath);
 
       // find last attribute in path
       String attr = attributePath.stream().reduce((s, s2) -> s2)
         .orElseThrow(() -> new IllegalArgumentException("Query spec must provide an attribute path"));
 
-      // Find nested dto class
-      for (String attribute : attributePath) {
-        Optional<DinaMappingRegistry.InternalRelation> relation = registry
-          .findMappableRelationsForClass(dtoClass).stream()
-          .filter(internalRelation -> internalRelation.getName().equalsIgnoreCase(attribute))
-          .findAny();
-        if (relation.isPresent()) {
-          dtoClass = relation.get().getElementType();
-        } else {
-          break;
-        }
-      }
-
-      DinaFieldAdapterHandler<?> handler = registry.getFieldAdaptersPerClass().get(resource);
+      DinaFieldAdapterHandler<?> handler = registry.getFieldAdaptersPerClass().get(dtoClass);
       if (handler != null) {
         handler.findFilterSpec(attr).ifPresentOrElse(
           specs -> newFilters.addAll(List.of(specs.apply(filterSpec.getValue()))),
