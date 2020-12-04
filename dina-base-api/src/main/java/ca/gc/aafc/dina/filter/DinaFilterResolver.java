@@ -74,8 +74,8 @@ public class DinaFilterResolver {
   }
 
   /**
-   * Convenience method to return a list of filter specs resolved from an array of Filter Specs
-   * mapping functions.
+   * Convenience method to return a list of filter specs resolved from a given Filter Spec mapping
+   * function.
    *
    * @param applyValue - filter spec to apply
    * @param specs      - Functions to invoke apply.
@@ -116,6 +116,7 @@ public class DinaFilterResolver {
     @NonNull Root<E> root,
     Collection<Serializable> ids,
     String idFieldName
+
   ) {
     List<Predicate> restrictions = new ArrayList<>();
     restrictions.add(simpleFilterHandler.getRestriction(querySpec, root, cb));
