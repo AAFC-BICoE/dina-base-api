@@ -249,7 +249,7 @@ public class DinaMappingLayer<D, E> {
    */
   private Object returnPersistedObject(String idFieldName, Object object) {
     Object relationID = PropertyUtils.getProperty(object, idFieldName);
-    return dinaService.findOneReferenceByNaturalId(object.getClass(), relationID);
+    return dinaService.getReferenceByNaturalId(object.getClass(), relationID);
   }
 
 }
