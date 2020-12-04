@@ -61,7 +61,7 @@ public class DinaFieldAdapterHandler<D> {
    * @param field - field with custom filter specs
    * @return the Filter spec apply function for a given field, or Optional empty
    */
-  public Optional<Function<Object, FilterSpec[]>> findFilterSpec(String field) {
+  public Optional<Function<FilterSpec, FilterSpec[]>> findFilterSpec(String field) {
     return this.adapters.stream()
       .map(DinaFieldAdapter::toFilterSpec)
       .filter(specs -> specs.containsKey(field))

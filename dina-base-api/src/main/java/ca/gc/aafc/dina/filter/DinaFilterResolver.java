@@ -63,7 +63,7 @@ public class DinaFilterResolver {
       if (registry.getFieldAdaptersPerClass().containsKey(dtoClass)) {
         registry.getFieldAdaptersPerClass().get(dtoClass).findFilterSpec(attr)
           .ifPresentOrElse(
-            specs -> newFilters.addAll(List.of(specs.apply(filterSpec.getValue()))),
+            specs -> newFilters.addAll(List.of(specs.apply(filterSpec))),
             () -> newFilters.add(filterSpec));
       }
     }

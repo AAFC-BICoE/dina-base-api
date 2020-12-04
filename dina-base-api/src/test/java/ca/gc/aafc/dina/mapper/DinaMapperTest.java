@@ -531,7 +531,7 @@ public class DinaMapperTest {
     }
 
     @Override
-    public Map<String, Function<Object, FilterSpec[]>> toFilterSpec() {
+    public Map<String, Function<FilterSpec, FilterSpec[]>> toFilterSpec() {
       return Map.of();
     }
 
@@ -573,7 +573,7 @@ public class DinaMapperTest {
     }
 
     @Override
-    public Map<String, Function<Object, FilterSpec[]>> toFilterSpec() {
+    public Map<String, Function<FilterSpec, FilterSpec[]>> toFilterSpec() {
       return Map.of();
     }
 

@@ -4,7 +4,6 @@ import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.mapper.CustomFieldAdapter;
 import ca.gc.aafc.dina.mapper.DinaFieldAdapter;
 import ca.gc.aafc.dina.mapper.IgnoreDinaMapping;
-import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.resource.annotations.JsonApiId;
@@ -98,14 +97,14 @@ public class PersonDTO {
     }
 
     @Override
-    public Map<String, Function<Object, FilterSpec[]>> toFilterSpec() {
-      return Map.of("customField", obj -> {
-        if (obj instanceof String) {
-          String s = (String) obj;
-          String[] split = s.split("/");
+    public Map<String, Function<FilterSpec, FilterSpec[]>> toFilterSpec() {
+      return Map.of("customField", spec -> {
+        Object value = spec.getValue();
+        if (value instanceof String) {
+          String[] split = ((String) value).split("/");
           return new FilterSpec[]{
-            PathSpec.of("name").filter(FilterOperator.EQ, split[0]),
-            PathSpec.of("group").filter(FilterOperator.EQ, split[1])};
+            PathSpec.of("name").filter(spec.getOperator(), split[0]),
+            PathSpec.of("group").filter(spec.getOperator(), split[1])};
         } else {
           throw new IllegalArgumentException("value must be a String");
         }
