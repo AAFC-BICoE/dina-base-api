@@ -1,14 +1,11 @@
 package ca.gc.aafc.dina.mapper;
 
-import io.crnk.core.queryspec.FilterSpec;
 import lombok.Builder;
 import lombok.Data;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 class DinaFieldAdapterHandlerTest {
@@ -85,11 +82,6 @@ class DinaFieldAdapterHandlerTest {
     @Override
     public Consumer<Integer> dtoApplyMethod(CarDto entityRef) {
       return entityRef::applyCustomField;
-    }
-
-    @Override
-    public Map<String, Function<FilterSpec, FilterSpec[]>> toFilterSpec() {
-      return Map.of();
     }
 
     @Override

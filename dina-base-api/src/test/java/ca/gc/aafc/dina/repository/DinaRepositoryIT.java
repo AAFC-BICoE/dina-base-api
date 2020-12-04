@@ -19,7 +19,6 @@ import io.crnk.core.resource.list.ResourceList;
 import io.crnk.core.resource.meta.PagedMetaInformation;
 import lombok.NonNull;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.hamcrest.core.Is;
 import org.junit.jupiter.api.BeforeEach;

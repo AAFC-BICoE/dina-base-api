@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.ComplexObject;
-import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -531,11 +529,6 @@ public class DinaMapperTest {
     }
 
     @Override
-    public Map<String, Function<FilterSpec, FilterSpec[]>> toFilterSpec() {
-      return Map.of();
-    }
-
-    @Override
     public Supplier<ComplexObject> entitySupplyMethod(Student entityRef) {
       return entityRef::getCustomField;
     }
@@ -570,11 +563,6 @@ public class DinaMapperTest {
     @Override
     public Consumer<String> dtoApplyMethod(NestedResolverRelationDTO dtoRef) {
       return dtoRef::setName;
-    }
-
-    @Override
-    public Map<String, Function<FilterSpec, FilterSpec[]>> toFilterSpec() {
-      return Map.of();
     }
 
     @Override

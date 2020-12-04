@@ -21,6 +21,8 @@ public interface DinaFieldAdapter<DTO, ENTITY, DTO_FIELD, ENTITY_FIELD> {
 
   Supplier<DTO_FIELD> dtoSupplyMethod(DTO dtoRef);
 
-  Map<String, Function<FilterSpec, FilterSpec[]>> toFilterSpec();
+  default Map<String, Function<FilterSpec, FilterSpec[]>> toFilterSpec() {
+    return Map.of();
+  }
 
 }
