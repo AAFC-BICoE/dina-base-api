@@ -218,7 +218,7 @@ public class DinaMappingRegistry {
         adapterPerClass.put(relatedEntity, handler);
       }
     }
-    return adapterPerClass;
+    return Map.copyOf(adapterPerClass);
   }
 
   private static InternalRelation mapToInternalRelation(Field field) {
