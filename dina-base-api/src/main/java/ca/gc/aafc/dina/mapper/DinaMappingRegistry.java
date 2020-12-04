@@ -130,7 +130,7 @@ public class DinaMappingRegistry {
    * @param attributePath - attribute path to follow
    * @return - the nested resource type from a given path.
    */
-  public Class<?> findNestedResource(
+  public Class<?> findDeeplyNestedResource(
     @NonNull Class<?> resource,
     @NonNull List<String> attributePath
   ) {
