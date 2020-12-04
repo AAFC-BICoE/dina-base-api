@@ -121,7 +121,16 @@ public class DinaMappingRegistry {
     return this.jsonIdFieldNamePerClass.get(cls);
   }
 
-  public Class<?> parseNestedResource(
+  /**
+   * Returns the nested resource type from a given base resource type and attribute path. The
+   * original resource is returned if a nested resource is not present, or the resources are not
+   * tracked by the registry.
+   *
+   * @param resource      - base resource to traverse
+   * @param attributePath - attribute path to follow
+   * @return - the nested resource type from a given path.
+   */
+  public Class<?> findNestedResource(
     @NonNull Class<?> resource,
     @NonNull List<String> attributePath
   ) {

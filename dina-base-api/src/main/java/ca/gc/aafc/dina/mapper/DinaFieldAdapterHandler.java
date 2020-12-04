@@ -54,6 +54,13 @@ public class DinaFieldAdapterHandler<D> {
     }
   }
 
+  /**
+   * Returns the Filter spec apply function for a given field tracked by the handler adapters, or
+   * Optional Empty if the field is not tracked.
+   *
+   * @param field - field with custom filter specs
+   * @return the Filter spec apply function for a given field, or Optional empty
+   */
   public Optional<Function<Object, FilterSpec[]>> findFilterSpec(String field) {
     return this.adapters.stream()
       .map(DinaFieldAdapter::toFilterSpec)
