@@ -50,6 +50,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
+  private static final long DEFAULT_LIMIT = 100;
 
   @Getter
   private final Class<D> resourceClass;
@@ -65,9 +66,6 @@ public class DinaRepository<D, E extends DinaEntity>
   private final List<Map<String, String>> externalMetaMap;
 
   private final BuildProperties buildProperties;
-
-  private static final long DEFAULT_LIMIT = 100;
-
   private final DinaMappingRegistry registry;
 
   @Inject
