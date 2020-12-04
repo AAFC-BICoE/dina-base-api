@@ -42,9 +42,9 @@ public class DinaMappingLayer<D, E> {
   private final DinaMappingRegistry registry;
 
   public DinaMappingLayer(
-    @NonNull Class<D> resourceClass,
-    @NonNull DinaService<? extends DinaEntity> dinaService,
-    @NonNull DinaMapper<D, E> dinaMapper
+    Class<D> resourceClass,
+    DinaService<? extends DinaEntity> dinaService,
+    DinaMapper<D, E> dinaMapper
   ) {
     this(resourceClass, dinaMapper, dinaService, new DinaMappingRegistry(resourceClass));
   }
