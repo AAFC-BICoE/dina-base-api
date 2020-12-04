@@ -12,8 +12,6 @@ import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
-import io.crnk.core.engine.registry.ResourceRegistry;
-import io.crnk.core.engine.registry.ResourceRegistryAware;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.QuerySpec;
@@ -26,7 +24,6 @@ import io.crnk.core.resource.meta.MetaInformation;
 import io.crnk.core.resource.meta.PagedMetaInformation;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.SneakyThrows;
 import org.springframework.boot.info.BuildProperties;
 
@@ -49,7 +46,7 @@ import java.util.stream.Collectors;
  */
 @Transactional
 public class DinaRepository<D, E extends DinaEntity>
-  implements ResourceRepository<D, Serializable>, ResourceRegistryAware, MetaRepository<D> {
+  implements ResourceRepository<D, Serializable>, MetaRepository<D> {
 
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
@@ -71,9 +68,6 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private static final long DEFAULT_LIMIT = 100;
 
-  @Getter
-  @Setter(onMethod_ = @Override)
-  private ResourceRegistry resourceRegistry;
   private final DinaMappingRegistry registry;
 
   @Inject
@@ -102,11 +96,7 @@ public class DinaRepository<D, E extends DinaEntity>
       this.externalMetaMap = null;
     }
     this.registry = new DinaMappingRegistry(resourceClass);
-    this.mappingLayer = new DinaMappingLayer<>(
-      resourceClass,
-      dinaMapper,
-      dinaService,
-      this.registry);
+    this.mappingLayer = new DinaMappingLayer<>(resourceClass, dinaMapper, dinaService, this.registry);
   }
 
   /**
@@ -156,7 +146,7 @@ public class DinaRepository<D, E extends DinaEntity>
     QuerySpec newQuery = querySpec.clone();
     newQuery.setFilters(
       DinaFilterResolver.resolveFilterSpecs(resourceClass, querySpec.getFilters(), registry));
-    String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
+    String idName = findIdFieldName(resourceClass);
 
     List<D> dList = mappingLayer.mapEntitiesToDto(newQuery, fetchEntities(ids, newQuery, idName));
 
@@ -284,9 +274,6 @@ public class DinaRepository<D, E extends DinaEntity>
    * @return - id field name for a given class.
    */
   private String findIdFieldName(Class<?> clazz) {
-    return this.resourceRegistry.findEntry(clazz)
-      .getResourceInformation()
-      .getIdField()
-      .getUnderlyingName();
+    return this.registry.findJsonIdFieldName(clazz);
   }
 }
