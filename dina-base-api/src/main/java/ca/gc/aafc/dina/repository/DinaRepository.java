@@ -15,7 +15,6 @@ import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.engine.registry.ResourceRegistry;
 import io.crnk.core.engine.registry.ResourceRegistryAware;
 import io.crnk.core.exception.ResourceNotFoundException;
-import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.MetaRepository;
@@ -34,7 +33,6 @@ import org.springframework.boot.info.BuildProperties;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -156,7 +154,8 @@ public class DinaRepository<D, E extends DinaEntity>
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     QuerySpec newQuery = querySpec.clone();
-    newQuery.setFilters(resolveFilterSpecs(resourceClass, querySpec.getFilters(), registry));
+    newQuery.setFilters(
+      DinaFilterResolver.resolveFilterSpecs(resourceClass, querySpec.getFilters(), registry));
     String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
 
     List<D> dList = mappingLayer.mapEntitiesToDto(newQuery, fetchEntities(ids, newQuery, idName));
@@ -168,31 +167,6 @@ public class DinaRepository<D, E extends DinaEntity>
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
     return new DefaultResourceList<>(dList, metaInformation, NO_LINK_INFORMATION);
-  }
-
-  private static List<FilterSpec> resolveFilterSpecs(
-    Class<?> resource,
-    List<FilterSpec> filters,
-    DinaMappingRegistry registry
-  ) {
-    List<FilterSpec> newFilters = new ArrayList<>();
-    for (FilterSpec filterSpec : filters) {
-      List<String> attributePath = filterSpec.getAttributePath();
-      Class<?> dtoClass = registry.parseNestedResource(resource, attributePath);
-
-      // find last attribute in path
-      String attr = attributePath.stream().reduce((s, s2) -> s2)
-        .orElseThrow(() -> new IllegalArgumentException("Query spec must provide an attribute path"));
-
-      if (registry.getFieldAdaptersPerClass().containsKey(dtoClass)) {
-        registry.getFieldAdaptersPerClass().get(dtoClass).findFilterSpec(attr)
-          .ifPresentOrElse(
-            specs -> newFilters.addAll(List.of(specs.apply(filterSpec.getValue()))),
-            () -> newFilters.add(filterSpec));
-      }
-    }
-
-    return newFilters;
   }
 
   private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName) {
