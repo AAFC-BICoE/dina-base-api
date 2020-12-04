@@ -210,6 +210,30 @@ public class DinaRepositoryIT {
   }
 
   @Test
+  public void findAll_FilterOnNestedCustomField() {
+    Department depart = persistDepartment();
+    PersonDTO expected = createPersonDto();
+    expected.setDepartment(DepartmentDto.builder().uuid(depart.getUuid()).build());
+    expected = dinaRepository.create(expected);
+
+    // Persist extra people with no department
+    for (int i = 0; i < 10; i++) {
+      PersonDTO toPersist = createPersonDto();
+      toPersist.setDepartment(null);
+      dinaRepository.create(toPersist);
+    }
+
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+
+    querySpec.addFilter(PathSpec.of("department", "derivedFromLocation")
+      .filter(FilterOperator.EQ, depart.getLocation()));
+
+    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    assertEquals(1, resultList.size());
+    assertEquals(expected.getUuid(), resultList.get(0).getUuid());
+  }
+
+  @Test
   public void findAll_SortingByName_ReturnsSorted() {
     List<String> names = Arrays.asList("a", "b", "c", "d");
     List<String> shuffledNames = Arrays.asList("b", "a", "d", "c");
@@ -418,7 +442,7 @@ public class DinaRepositoryIT {
       new DinaMetaInfo()
     );
 
-    assertEquals("test-api-version" , meta.getModuleVersion());
+    assertEquals("test-api-version", meta.getModuleVersion());
   }
 
   private void assertEqualsPersonDtos(PersonDTO dto, PersonDTO result, boolean testRelations) {

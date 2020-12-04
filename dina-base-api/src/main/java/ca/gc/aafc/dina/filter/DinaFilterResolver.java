@@ -4,6 +4,7 @@ import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.IncludeRelationSpec;
+import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Component used to map crnk filters into valid JPA objects.
@@ -53,21 +56,45 @@ public class DinaFilterResolver {
   ) {
     List<FilterSpec> newFilters = new ArrayList<>();
     for (FilterSpec filterSpec : filters) {
-      List<String> attributePath = filterSpec.getAttributePath();
-      Class<?> dtoClass = registry.findDeeplyNestedResource(resource, attributePath);
+      List<String> path = filterSpec.getAttributePath();
+      Class<?> dtoClass = registry.findDeeplyNestedResource(resource, path);
 
       // find last attribute in path
-      String attr = attributePath.stream().reduce((s, s2) -> s2)
+      String attr = path.stream().reduce((s, s2) -> s2)
         .orElseThrow(() -> new IllegalArgumentException("Query spec must provide an attribute path"));
 
       if (registry.getFieldAdaptersPerClass().containsKey(dtoClass)) {
         registry.getFieldAdaptersPerClass().get(dtoClass).findFilterSpec(attr)
           .ifPresentOrElse(
-            specs -> newFilters.addAll(List.of(specs.apply(filterSpec))),
+            specs -> newFilters.addAll(resolveSpecs(filterSpec, specs)),
             () -> newFilters.add(filterSpec));
       }
     }
     return newFilters;
+  }
+
+  /**
+   * Convenience method to return a list of filter specs resolved from an array of Filter Specs
+   * mapping functions.
+   *
+   * @param applyValue - filter spec to apply
+   * @param specs      - Functions to invoke apply.
+   * @return a list of resolved filter specs.
+   */
+  private static List<FilterSpec> resolveSpecs(
+    @NonNull FilterSpec applyValue,
+    @NonNull Function<FilterSpec, FilterSpec[]> specs
+  ) {
+    List<String> path = applyValue.getAttributePath();
+    List<String> pathPrefix = new ArrayList<>(path.subList(0, path.size() - 1));
+    return List.of(specs.apply(applyValue)).stream()
+      .map(fs -> {
+        List<String> newPath = Stream
+          .concat(pathPrefix.stream(), fs.getAttributePath().stream())
+          .collect(Collectors.toList());
+        return PathSpec.of(newPath).filter(fs.getOperator(), fs.getValue());
+      })
+      .collect(Collectors.toList());
   }
 
   /**
