@@ -123,8 +123,8 @@ public class DinaMappingRegistry {
 
   /**
    * Returns the nested resource type from a given base resource type and attribute path. The
-   * original resource is returned if a nested resource is not present, or the resources are not
-   * tracked by the registry.
+   * original resource is returned if a nested resource is not present in the attribute path, or the
+   * resources are not tracked by the registry.
    *
    * @param resource      - base resource to traverse
    * @param attributePath - attribute path to follow
