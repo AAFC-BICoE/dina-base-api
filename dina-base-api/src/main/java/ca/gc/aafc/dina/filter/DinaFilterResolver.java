@@ -47,9 +47,9 @@ public class DinaFilterResolver {
    * @return a new List of filter specs resolved from the given filters
    */
   public static List<FilterSpec> resolveFilterSpecs(
-    Class<?> resource,
-    List<FilterSpec> filters,
-    DinaMappingRegistry registry
+    @NonNull Class<?> resource,
+    @NonNull List<FilterSpec> filters,
+    @NonNull DinaMappingRegistry registry
   ) {
     List<FilterSpec> newFilters = new ArrayList<>();
     for (FilterSpec filterSpec : filters) {
