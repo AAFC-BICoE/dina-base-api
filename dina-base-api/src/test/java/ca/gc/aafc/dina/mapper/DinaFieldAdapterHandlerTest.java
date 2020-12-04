@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.mapper;
 
+import ca.gc.aafc.dina.dto.PersonDTO;
 import lombok.Builder;
 import lombok.Data;
 import org.junit.jupiter.api.Assertions;
@@ -31,6 +32,13 @@ class DinaFieldAdapterHandlerTest {
     Car entity = Car.builder().build();
     handler.resolveFields(dto, entity);
     Assertions.assertEquals(Integer.toString(dto.getCustomField()), entity.getCustomField());
+  }
+
+  @Test
+  void findFilterSpec() {
+    DinaFieldAdapterHandler<PersonDTO> handler = new DinaFieldAdapterHandler<>(PersonDTO.class);
+    Assertions.assertTrue(handler.findFilterSpec("customField").isPresent());
+    Assertions.assertTrue(handler.findFilterSpec("name").isEmpty());
   }
 
   @Builder
