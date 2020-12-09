@@ -21,6 +21,11 @@ public interface DinaFieldAdapter<DTO, ENTITY, DTO_FIELD, ENTITY_FIELD> {
 
   Supplier<DTO_FIELD> dtoSupplyMethod(DTO dtoRef);
 
+  /**
+   * Returns a map of supported field names to their supporting filter spec mapping function.
+   *
+   * @return a map of supported field names to their supporting filter spec mapping function.
+   */
   default Map<String, Function<FilterSpec, FilterSpec[]>> toFilterSpec() {
     return Map.of();
   }
