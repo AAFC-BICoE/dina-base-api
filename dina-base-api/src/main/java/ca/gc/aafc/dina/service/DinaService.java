@@ -58,7 +58,7 @@ public interface DinaService<E extends DinaEntity> {
    * @param entityClass - class of entity
    * @return the matched reference
    */
-  <T> T findOneReferenceByNaturalId(Class<T> entityClass, Object naturalId);
+  <T> T getReferenceByNaturalId(Class<T> entityClass, Object naturalId);
 
   /**
    * Returns a list of Entities of a given class restricted by the predicates returned by a given

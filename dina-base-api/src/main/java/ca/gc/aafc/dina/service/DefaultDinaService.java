@@ -129,7 +129,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    * @return the matched reference
    */
   @Override
-  public <T> T findOneReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
+  public <T> T getReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
     return baseDAO.getReferenceByNaturalId(entityClass, naturalId);
   }
 
