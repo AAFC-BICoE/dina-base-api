@@ -143,7 +143,7 @@ public class DinaRepository<D, E extends DinaEntity>
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     QuerySpec newQuery = querySpec.clone();
     newQuery.setFilters(
-      DinaFilterResolver.resolveFilterSpecs(resourceClass, querySpec.getFilters(), registry));
+      DinaFilterResolver.resolveFilterAdapters(resourceClass, querySpec.getFilters(), registry));
     String idName = findIdFieldName(resourceClass);
 
     List<D> dList = mappingLayer.mapEntitiesToDto(newQuery, fetchEntities(ids, newQuery, idName));

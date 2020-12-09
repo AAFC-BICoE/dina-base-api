@@ -49,7 +49,7 @@ public class DinaFilterResolver {
    * @param registry - Registry used for resolution.
    * @return a new List of filter specs resolved from the given filters
    */
-  public static List<FilterSpec> resolveFilterSpecs(
+  public static List<FilterSpec> resolveFilterAdapters(
     @NonNull Class<?> resource,
     @NonNull List<FilterSpec> filters,
     @NonNull DinaMappingRegistry registry
@@ -57,6 +57,7 @@ public class DinaFilterResolver {
     List<FilterSpec> newFilters = new ArrayList<>();
     for (FilterSpec filterSpec : filters) {
       List<String> path = filterSpec.getAttributePath();
+      // find nested resource class
       Class<?> dtoClass = registry.findDeeplyNestedResource(resource, path);
 
       // find last attribute in path
@@ -89,6 +90,7 @@ public class DinaFilterResolver {
     List<String> pathPrefix = new ArrayList<>(path.subList(0, path.size() - 1));
     return List.of(specs.apply(applyValue)).stream()
       .map(fs -> {
+        // Resolve filter spec path with generated spec paths
         List<String> newPath = Stream
           .concat(pathPrefix.stream(), fs.getAttributePath().stream())
           .collect(Collectors.toList());
