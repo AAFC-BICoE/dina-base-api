@@ -61,7 +61,7 @@ public class DinaFilterResolver {
 
       // find last attribute in path
       String attr = path.stream().reduce((s, s2) -> s2)
-        .orElseThrow(() -> new IllegalArgumentException("Query spec must provide an attribute path"));
+        .orElseThrow(() -> new IllegalArgumentException("FilterSpec must provide an attribute path"));
 
       if (registry.getFieldAdaptersPerClass().containsKey(dtoClass)) {
         registry.getFieldAdaptersPerClass().get(dtoClass).findFilterSpec(attr)
