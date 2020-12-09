@@ -215,7 +215,6 @@ public class DinaMappingRegistry {
     return Map.copyOf(map);
   }
 
-  @SneakyThrows
   private Map<Class<?>, DinaFieldAdapterHandler<?>> parseFieldAdapters(Set<Class<?>> resources) {
     Map<Class<?>, DinaFieldAdapterHandler<?>> adapterPerClass = new HashMap<>();
     for (Class<?> dto : resources) {
