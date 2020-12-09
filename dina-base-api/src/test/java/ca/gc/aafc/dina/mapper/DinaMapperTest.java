@@ -9,8 +9,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.hibernate.proxy.HibernateProxy;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -42,11 +40,7 @@ public class DinaMapperTest {
 
     assertEquals(entity.getName(), dto.getName());
     assertEquals(entity.getIq(), dto.getIq());
-    assertEquals(entity.getCustomField().getName(), dto.getCustomField());
-    assertEquals(entity.getIq(), dto.getOneSidedDto());
-    MatcherAssert.assertThat(
-      dto.getClassMates(),
-      Matchers.containsInAnyOrder(entity.getClassMates()));
+    assertEquals(entity.getNickNames(), dto.getNickNames());
   }
 
   @Test
@@ -61,18 +55,17 @@ public class DinaMapperTest {
     // Assert non collection relation mapped
     assertEquals(friend.getName(), dto.getFriend().getName());
     assertEquals(friend.getIq(), dto.getFriend().getIq());
-    assertEquals(friend.getCustomField().getName(), dto.getFriend().getCustomField());
-    assertEquals(friend.getIq(), dto.getFriend().getOneSidedDto());
+    assertEquals(friend.getNickNames(), dto.getFriend().getNickNames());
 
+    // Assert collection relation mapped
     for (int i = 0; i < entity.getClassMates().size(); i++) {
-      assertEquals(
-        entity.getClassMates().get(i).getName(),
-        dto.getClassMates().get(i).getName());
-      assertEquals(
-        entity.getClassMates().get(i).getIq(),
-        dto.getClassMates().get(i).getIq());
+      Student expectedClassMate = entity.getClassMates().get(i);
+      StudentDto resultClassMate = dto.getClassMates().get(i);
+      assertEquals(expectedClassMate.getName(), resultClassMate.getName());
+      assertEquals(expectedClassMate.getIq(), resultClassMate.getIq());
+      assertEquals(expectedClassMate.getNickNames(), resultClassMate.getNickNames());
     }
-
+    // Assert custom fields mapped
     assertStudentCustomFields(entity, dto);
   }
 
@@ -528,6 +521,7 @@ public class DinaMapperTest {
   public static final class NestedResolverRelationDTO {
 
     // Custom Resolved Field to test
+    @IgnoreDinaMapping(reason = "Custom resolved field to test")
     private String name;
 
     /**
