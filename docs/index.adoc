@@ -21,3 +21,5 @@ include::auditing.adoc[]
 include::externalTypes.adoc[]
 
 include::release.adoc[]
+
+include::fieldAdapters.adoc[]

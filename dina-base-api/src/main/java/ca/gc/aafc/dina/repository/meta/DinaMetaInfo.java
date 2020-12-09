@@ -22,6 +22,9 @@ public class DinaMetaInfo extends DefaultPagedMetaInformation {
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<Map<String, String>> external;
 
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private String moduleVersion;
+
   /**
    * Returns a map of a given classes {@link JsonApiExternalRelation} types mapped to their current
    * reference as provided by the given {@link ExternalResourceProvider}

@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -87,7 +89,6 @@ public class DinaMapperTest {
     assertEquals(entity.getNickNames(), dto.getNickNames());
     // Assert value not mapped - not included in selected fields
     assertEquals(0, dto.getIq());
-    assertNull(dto.getCustomField());
   }
 
   @Test
@@ -134,16 +135,12 @@ public class DinaMapperTest {
   public void toDto_ResolversTest_FieldResolversMapping() {
     Student entity = createEntity();
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
-      Student.class,
-      Set.of("customField", "oneSidedDto"));
+    Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(Student.class, Set.of());
 
     StudentDto dto = mapper.toDto(entity, selectedFieldPerClass, new HashSet<>());
 
     // Entity (ComplexObject.name) DTOs complex object (String)
     assertEquals(entity.getCustomField().getName(), dto.getCustomField());
-    // One sided custom resolver mapping
-    assertEquals(entity.iq, dto.getOneSidedDto());
   }
 
   @Test
@@ -154,10 +151,8 @@ public class DinaMapperTest {
       .addAll(Arrays.asList(createEntity(), createEntity(), createEntity()));
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
-      Student.class,
-      Set.of("name", "customField"),
-      NestedResolverRelation.class,
-      Set.of("name", "customField"));
+      Student.class, Set.of("name"),
+      NestedResolverRelation.class, Set.of("customField"));
     Set<String> relations = Set.of("relationWithResolver", "friend", "classMates");
 
     StudentDto result = mapper.toDto(entityToMap, selectedFieldPerClass, relations);
@@ -171,7 +166,6 @@ public class DinaMapperTest {
     StudentDto dto = mapper.toDto(entity, Map.of(), Set.of());
 
     assertNull(dto.getName());
-    assertNull(dto.getCustomField());
     assertNull(dto.getFriend());
     assertNull(dto.getNickNames());
     assertEquals(0, dto.getIq());
@@ -260,7 +254,6 @@ public class DinaMapperTest {
     assertEquals(dtoToMap.getNickNames(), result.getNickNames());
     // Assert value not mapped - not included in selected fields
     assertEquals(0, result.getIq());
-    assertNull(result.getCustomField());
   }
 
   @Test
@@ -305,15 +298,12 @@ public class DinaMapperTest {
     Student result = new Student();
     StudentDto dtoToMap = createDTO();
 
-    Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
-      StudentDto.class, Set.of("customField", "oneSided"));
+    Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(StudentDto.class, Set.of());
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, new HashSet<>());
 
     // DTOs complex object (String) -> Entity (ComplexObject.name)
     assertEquals(dtoToMap.getCustomField(), result.getCustomField().getName());
-    // One sided custom resolver mapping
-    assertEquals(dtoToMap.getName(), result.getOneSided());
   }
 
   @Test
@@ -323,8 +313,8 @@ public class DinaMapperTest {
     dtoToMap.getClassMates().addAll(Arrays.asList(createDTO(), createDTO(), createDTO()));
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
-      StudentDto.class, Set.of("name", "customField"),
-      NestedResolverRelationDTO.class, Set.of("name", "customField"));
+      StudentDto.class, Set.of("name"),
+      NestedResolverRelationDTO.class, Set.of("customField"));
     Set<String> relations = Set.of("relationWithResolver", "friend", "classMates");
 
     mapper.applyDtoToEntity(dtoToMap, result, selectedFieldPerClass, relations);
@@ -340,7 +330,6 @@ public class DinaMapperTest {
     mapper.applyDtoToEntity(dtoToMap, result, Map.of(), new HashSet<>());
 
     assertNull(result.getName());
-    assertNull(result.getCustomField());
     assertNull(result.getFriend());
     assertNull(result.getNickNames());
     assertEquals(0, result.getIq());
@@ -458,6 +447,7 @@ public class DinaMapperTest {
   @NoArgsConstructor
   @AllArgsConstructor
   @RelatedEntity(Student.class)
+  @CustomFieldAdapter(adapters = CustomFieldAdapterImp.class)
   public static final class StudentDto {
 
     private String name;
@@ -470,13 +460,8 @@ public class DinaMapperTest {
     @JsonApiRelation
     private StudentDto friend;
 
-    // Custom Resolved Field to test
-    @CustomFieldResolver(setterMethod = "customFieldToDto")
+    @IgnoreDinaMapping(reason = "Custom resolved field to test")
     private String customField;
-
-    // Custom resolved field on one side only
-    @CustomFieldResolver(setterMethod = "oneSidedSetter")
-    private int oneSidedDto;
 
     // Relation with Custom Resolved Field to test
     @JsonApiRelation
@@ -489,14 +474,6 @@ public class DinaMapperTest {
     // Relation with no related entity
     @JsonApiRelation
     private NoRelatedEntityDTO noRelatedEntityDTO;
-
-    public String customFieldToDto(Student entity) {
-      return entity.getCustomField() == null ? "" : entity.getCustomField().getName();
-    }
-
-    public int oneSidedSetter(Student entity) {
-      return entity.iq;
-    }
 
   }
 
@@ -516,27 +493,13 @@ public class DinaMapperTest {
     private Student friend;
 
     // Custom Resolved Field to test
-    @CustomFieldResolver(setterMethod = "customFieldToEntity")
     private ComplexObject customField;
-
-    // Custom resolved field on one side only
-    @CustomFieldResolver(setterMethod = "oneSidedSetter")
-    private String oneSided;
 
     // Relation with Custom Resolved Field to test
     private NestedResolverRelation relationWithResolver;
 
     // Many to - Relation to test
     private List<Student> classMates;
-
-    public ComplexObject customFieldToEntity(StudentDto dto) {
-      return dto.getCustomField() == null ? null
-        : ComplexObject.builder().name(dto.getCustomField()).build();
-    }
-
-    public String oneSidedSetter(StudentDto dto) {
-      return dto.getName();
-    }
 
   }
 
@@ -547,7 +510,6 @@ public class DinaMapperTest {
   public static final class NestedResolverRelation {
 
     // Custom Resolved Field to test
-    @CustomFieldResolver(setterMethod = "nameToEntity")
     private ComplexObject name;
 
     /**
@@ -555,10 +517,6 @@ public class DinaMapperTest {
      */
     private int customField;
 
-    public ComplexObject nameToEntity(NestedResolverRelationDTO dto) {
-      return dto.getName() == null ? null
-        : ComplexObject.builder().name(dto.getName()).build();
-    }
   }
 
   @Data
@@ -566,20 +524,16 @@ public class DinaMapperTest {
   @NoArgsConstructor
   @AllArgsConstructor
   @RelatedEntity(NestedResolverRelation.class)
+  @CustomFieldAdapter(adapters = NestedCustomFieldAdapterImp.class)
   public static final class NestedResolverRelationDTO {
 
     // Custom Resolved Field to test
-    @CustomFieldResolver(setterMethod = "nameToDto")
     private String name;
 
     /**
      * Regular field but with the a name matching a custom resolved field on the parent
      */
     private int customField;
-
-    public String nameToDto(NestedResolverRelation entity) {
-      return entity.getName() == null ? "" : entity.getName().getName();
-    }
 
   }
 
@@ -594,6 +548,79 @@ public class DinaMapperTest {
 
     private String customField;
 
+  }
+
+  static class CustomFieldAdapterImp implements DinaFieldAdapter<StudentDto, Student, String, ComplexObject> {
+
+    public CustomFieldAdapterImp() {
+    }
+
+    @Override
+    public String toDTO(ComplexObject complexObject) {
+      return complexObject == null ? "" : complexObject.getName();
+    }
+
+    @Override
+    public ComplexObject toEntity(String s) {
+      return s == null ? null : ComplexObject.builder().name(s).build();
+    }
+
+    @Override
+    public Consumer<ComplexObject> entityApplyMethod(Student entityRef) {
+      return entityRef::setCustomField;
+    }
+
+    @Override
+    public Consumer<String> dtoApplyMethod(StudentDto dtoRef) {
+      return dtoRef::setCustomField;
+    }
+
+    @Override
+    public Supplier<ComplexObject> entitySupplyMethod(Student entityRef) {
+      return entityRef::getCustomField;
+    }
+
+    @Override
+    public Supplier<String> dtoSupplyMethod(StudentDto dtoRef) {
+      return dtoRef::getCustomField;
+    }
+  }
+
+  static class NestedCustomFieldAdapterImp
+    implements DinaFieldAdapter<NestedResolverRelationDTO, NestedResolverRelation, String, ComplexObject> {
+
+    public NestedCustomFieldAdapterImp() {
+    }
+
+    @Override
+    public String toDTO(ComplexObject complexObject) {
+      return complexObject == null ? "" : complexObject.getName();
+    }
+
+    @Override
+    public ComplexObject toEntity(String s) {
+      return s == null ? null : ComplexObject.builder().name(s).build();
+    }
+
+    @Override
+    public Consumer<ComplexObject> entityApplyMethod(NestedResolverRelation entityRef) {
+      return entityRef::setName;
+    }
+
+    @Override
+    public Consumer<String> dtoApplyMethod(NestedResolverRelationDTO dtoRef) {
+      return dtoRef::setName;
+    }
+
+    @Override
+    public Supplier<ComplexObject> entitySupplyMethod(NestedResolverRelation entityRef) {
+      return entityRef::getName;
+    }
+
+    @Override
+    public Supplier<String> dtoSupplyMethod(NestedResolverRelationDTO dtoRef) {
+      return dtoRef::getName;
+    }
   }
 
 }

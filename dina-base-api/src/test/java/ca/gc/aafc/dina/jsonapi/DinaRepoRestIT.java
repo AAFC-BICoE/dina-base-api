@@ -1,5 +1,33 @@
 package ca.gc.aafc.dina.jsonapi;
 
+import static io.restassured.RestAssured.given;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.UUID;
+
+import javax.inject.Inject;
+
+import com.google.common.collect.ImmutableMap;
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
+import org.hamcrest.Matchers;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.info.BuildProperties;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+
 import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.ProjectDTO;
@@ -17,34 +45,11 @@ import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIOperationBuilder;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
-import com.google.common.collect.ImmutableMap;
 import io.crnk.core.engine.http.HttpMethod;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.restassured.http.Header;
 import io.restassured.response.ValidatableResponse;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.RandomUtils;
-import org.hamcrest.Matchers;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-
-import javax.inject.Inject;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
-import static io.restassured.RestAssured.given;
 
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
@@ -295,7 +300,8 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         ProjectDTO.class,
         Project.class,
         filterResolver,
-        externalResourceProvider
+        externalResourceProvider,
+        new BuildProperties(new Properties())
       );
     }
 
@@ -313,7 +319,8 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         TaskDTO.class,
         Task.class,
         filterResolver,
-        externalResourceProvider
+        externalResourceProvider,
+        new BuildProperties(new Properties())
       );
     }
   }
