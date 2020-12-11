@@ -30,6 +30,46 @@ public class DinaMapperTest {
   private static final DinaMapper<StudentDto, Student> mapper = new DinaMapper<>(StudentDto.class);
 
   @Test
+  public void simpleToDto_BaseAttributesTest_SelectedFieldsMapped() {
+    Student friend = createEntity();
+    Student entity = createEntity();
+    entity.setFriend(friend);
+    entity.getClassMates().addAll(Arrays.asList(createEntity(), createEntity(), createEntity()));
+
+    StudentDto dto = mapper.toDto(entity);
+
+    assertEquals(entity.getName(), dto.getName());
+    assertEquals(entity.getIq(), dto.getIq());
+    assertEquals(entity.getNickNames(), dto.getNickNames());
+  }
+
+  @Test
+  public void simpleToDto_RelationShipTest_RelationsMapped() {
+    Student friend = createEntity();
+    Student entity = createEntity();
+    entity.setFriend(friend);
+    entity.getClassMates().addAll(Arrays.asList(createEntity(), createEntity(), createEntity()));
+
+    StudentDto dto = mapper.toDto(entity);
+
+    // Assert non collection relation mapped
+    assertEquals(friend.getName(), dto.getFriend().getName());
+    assertEquals(friend.getIq(), dto.getFriend().getIq());
+    assertEquals(friend.getNickNames(), dto.getFriend().getNickNames());
+
+    // Assert collection relation mapped
+    for (int i = 0; i < entity.getClassMates().size(); i++) {
+      Student expectedClassMate = entity.getClassMates().get(i);
+      StudentDto resultClassMate = dto.getClassMates().get(i);
+      assertEquals(expectedClassMate.getName(), resultClassMate.getName());
+      assertEquals(expectedClassMate.getIq(), resultClassMate.getIq());
+      assertEquals(expectedClassMate.getNickNames(), resultClassMate.getNickNames());
+    }
+    // Assert custom fields mapped
+    assertStudentCustomFields(entity, dto);
+  }
+
+  @Test
   public void toDto_BaseAttributesTest_SelectedFieldsMapped() {
     Student entity = createEntity();
 
@@ -481,6 +521,7 @@ public class DinaMapperTest {
   public static final class NestedResolverRelationDTO {
 
     // Custom Resolved Field to test
+    @IgnoreDinaMapping(reason = "Custom resolved field to test")
     private String name;
 
     /**

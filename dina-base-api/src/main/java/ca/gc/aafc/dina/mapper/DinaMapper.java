@@ -81,6 +81,20 @@ public class DinaMapper<D, E> {
   }
 
   /**
+   * Returns a new dto mapped from the given entity. All attributes and relationships will be mapped
+   * by default. If you want to select which attributes or relations to map use method signature
+   * {@link DinaMapper#toDto(Object, Map, Set)}
+   *
+   * @param entity - source of the mapping
+   * @return a new dto mapped from the given entity.
+   */
+  public D toDto(E entity) {
+    Set<String> relations = registry.findMappableRelationsForClass(dtoClass).stream()
+      .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());
+    return toDto(entity, registry.getAttributesPerClass(), relations);
+  }
+
+  /**
    * <p>
    * Returns a new dto mapped with the fields of a given entity. The given selected fields per class
    * map which fields to apply from a source class to a target. A set of given relation field names
