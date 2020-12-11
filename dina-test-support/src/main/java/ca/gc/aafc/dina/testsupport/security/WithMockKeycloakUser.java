@@ -16,10 +16,13 @@ public @interface WithMockKeycloakUser {
 
   /**
    * Format {"group:role", "group2:role2"}
+   *
    * @return
    */
   String[] groupRole() default "";
 
   String agentIdentifier() default "";
+
+  String internalIdentifier() default "";
 
 }
