@@ -81,7 +81,9 @@ public class DinaMapper<D, E> {
   }
 
   /**
-   * Returns a new dto mapped from the given entity.
+   * Returns a new dto mapped from the given entity. All attributes and relationships will be mapped
+   * by default. If you want to select which attributes or relations to map use method signature
+   * {@link DinaMapper#toDto(Object, Map, Set)}
    *
    * @param entity - source of the mapping
    * @return a new dto mapped from the given entity.
