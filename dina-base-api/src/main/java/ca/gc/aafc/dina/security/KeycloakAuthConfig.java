@@ -6,6 +6,7 @@ import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
+import org.keycloak.representations.AccessToken;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -88,13 +89,13 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
 
     String username = token.getName();
 
-    Map<String, Object> otherClaims = token.getAccount()
+    AccessToken accessToken = token.getAccount()
       .getKeycloakSecurityContext()
-      .getToken()
-      .getOtherClaims();
+      .getToken();
+    Map<String, Object> otherClaims = accessToken.getOtherClaims();
 
     String agentId = (String) otherClaims.get(AGENT_IDENTIFIER_CLAIM_KEY);
-    String internalID = (String) otherClaims.getOrDefault(INTERNAL_IDENTIFIER_CLAIM_KEY, "");
+    String internalID = accessToken.getSubject();
 
     Map<String, Set<DinaRole>> rolesPerGroup = null;
     if (otherClaims.get(GROUPS_CLAIM_KEY) instanceof Collection) {
