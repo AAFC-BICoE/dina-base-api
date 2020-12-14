@@ -26,7 +26,6 @@ public class WithMockKeycloakSecurityContextFactory
   // In production, keys (and claims) are set by Keycloak
   private static final String GROUPS_CLAIM_KEY = "groups";
   private static final String AGENT_IDENTIFIER_CLAIM_KEY = "agent-identifier";
-  private static final String INTERNAL_IDENTIFIER_CLAIM_KEY = "internal-identifier";
 
   @Override
   public SecurityContext createSecurityContext(WithMockKeycloakUser mockKeycloakUser) {
@@ -44,7 +43,7 @@ public class WithMockKeycloakSecurityContextFactory
       accessToken.setOtherClaims(AGENT_IDENTIFIER_CLAIM_KEY, mockKeycloakUser.agentIdentifier());
     }
     if (StringUtils.isNotBlank(mockKeycloakUser.internalIdentifier())) {
-      accessToken.setOtherClaims(INTERNAL_IDENTIFIER_CLAIM_KEY, mockKeycloakUser.internalIdentifier());
+      accessToken.setSubject(mockKeycloakUser.internalIdentifier());
     }
 
     RefreshableKeycloakSecurityContext ctx = new RefreshableKeycloakSecurityContext(null, null,

@@ -32,7 +32,6 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
 
   private static final String AGENT_IDENTIFIER_CLAIM_KEY = "agent-identifier";
   private static final String GROUPS_CLAIM_KEY = "groups";
-  private static final String INTERNAL_IDENTIFIER_CLAIM_KEY = "internal-identifier";
 
   public KeycloakAuthConfig() {
     super();
