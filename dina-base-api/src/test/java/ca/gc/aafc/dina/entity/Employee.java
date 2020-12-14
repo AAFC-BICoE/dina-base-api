@@ -1,5 +1,10 @@
 package ca.gc.aafc.dina.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,18 +14,14 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.time.OffsetDateTime;
 
 @Data
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Employee {
+public class Employee implements DinaEntity {
 
   @Id
   @GeneratedValue
@@ -31,15 +32,20 @@ public class Employee {
 
   private String job;
 
-  @OneToOne(cascade = CascadeType.ALL )
+  @OneToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "custom_field_id")
   private ComplexObject customField;
 
   @ManyToOne(fetch = FetchType.LAZY)
   private Department department;
 
-  public String toString() {
-    return super.toString();
+  @Override
+  public String getCreatedBy() {
+    return null;
   }
 
+  @Override
+  public OffsetDateTime getCreatedOn() {
+    return null;
+  }
 }
