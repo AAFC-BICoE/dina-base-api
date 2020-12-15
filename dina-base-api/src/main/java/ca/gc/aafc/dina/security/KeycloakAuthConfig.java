@@ -1,16 +1,12 @@
 package ca.gc.aafc.dina.security;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-
-import javax.inject.Inject;
-
+import lombok.extern.log4j.Log4j2;
 import org.keycloak.adapters.KeycloakConfigResolver;
 import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
+import org.keycloak.representations.AccessToken;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +20,10 @@ import org.springframework.security.web.authentication.session.RegisterSessionAu
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.web.context.annotation.RequestScope;
 
-import lombok.extern.log4j.Log4j2;
+import javax.inject.Inject;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 @Configuration
 @ConditionalOnProperty(value = "keycloak.enabled", matchIfMissing = true)
@@ -81,7 +80,7 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
   @RequestScope
   public DinaAuthenticatedUser currentUser() {
     KeycloakAuthenticationToken token = (KeycloakAuthenticationToken) SecurityContextHolder.getContext()
-        .getAuthentication();
+      .getAuthentication();
 
     if (token == null) {
       return null;
@@ -89,12 +88,13 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
 
     String username = token.getName();
 
-    Map<String, Object> otherClaims = token.getAccount()
+    AccessToken accessToken = token.getAccount()
       .getKeycloakSecurityContext()
-      .getToken()
-      .getOtherClaims();
+      .getToken();
+    Map<String, Object> otherClaims = accessToken.getOtherClaims();
 
     String agentId = (String) otherClaims.get(AGENT_IDENTIFIER_CLAIM_KEY);
+    String internalID = accessToken.getSubject();
 
     Map<String, Set<DinaRole>> rolesPerGroup = null;
     if (otherClaims.get(GROUPS_CLAIM_KEY) instanceof Collection) {
@@ -105,11 +105,10 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
 
     return DinaAuthenticatedUser.builder()
       .agentIdentifer(agentId)
+      .internalIdentifer(internalID)
       .username(username)
       .rolesPerGroup(rolesPerGroup)
       .build();
   }
-
-
 
 }

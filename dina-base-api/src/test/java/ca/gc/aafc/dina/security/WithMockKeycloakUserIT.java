@@ -5,6 +5,7 @@ import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -14,8 +15,8 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(
-    classes = TestDinaBaseApp.class,
-    properties = "keycloak.enabled: true"
+  classes = TestDinaBaseApp.class,
+  properties = "keycloak.enabled: true"
 )
 public class WithMockKeycloakUserIT {
 
@@ -23,6 +24,8 @@ public class WithMockKeycloakUserIT {
 
   @Inject
   private DinaRepository<PersonDTO, Person> dinaRepository;
+  @Inject
+  private DinaAuthenticatedUser currentUser;
 
   @WithMockKeycloakUser(groupRole = {"group 1:staff", "group 3:staff"})
   @Test
@@ -30,6 +33,16 @@ public class WithMockKeycloakUserIT {
     PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
     PersonDTO result = dinaRepository.create(dto);
     assertNotNull(result.getUuid());
+  }
+
+  @WithMockKeycloakUser(
+    agentIdentifier = "agent one",
+    internalIdentifier = "internal",
+    groupRole = {"group 1:staff", "group 3:staff"})
+  @Test
+  public void withMockedUser_UserMocked() {
+    Assertions.assertEquals("internal", currentUser.getInternalIdentifer());
+    Assertions.assertEquals("agent one", currentUser.getAgentIdentifer());
   }
 
 }
