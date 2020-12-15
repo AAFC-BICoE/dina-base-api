@@ -42,6 +42,9 @@ public class WithMockKeycloakSecurityContextFactory
     if (StringUtils.isNotBlank(mockKeycloakUser.agentIdentifier())) {
       accessToken.setOtherClaims(AGENT_IDENTIFIER_CLAIM_KEY, mockKeycloakUser.agentIdentifier());
     }
+    if (StringUtils.isNotBlank(mockKeycloakUser.internalIdentifier())) {
+      accessToken.setSubject(mockKeycloakUser.internalIdentifier());
+    }
 
     RefreshableKeycloakSecurityContext ctx = new RefreshableKeycloakSecurityContext(null, null,
         null, accessToken, null, null, null);
