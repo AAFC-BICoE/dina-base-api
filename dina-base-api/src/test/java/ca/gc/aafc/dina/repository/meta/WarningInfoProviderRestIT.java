@@ -40,7 +40,7 @@ import java.util.Properties;
 @Import(WarningInfoProviderRestIT.TestConfig.class)
 public class WarningInfoProviderRestIT extends BaseRestAssuredTest {
 
-  public static final String NAME_TO_LONG = "name_to_long";
+  public static final String KEY = "name_to_long";
   public static final String VALUE = "name to long";
 
   protected WarningInfoProviderRestIT() {
@@ -52,8 +52,7 @@ public class WarningInfoProviderRestIT extends BaseRestAssuredTest {
     ThingDTO dto = ThingDTO.builder().name("new name").build();
     ValidatableResponse response = sendPost(JsonAPITestHelper.toJsonAPIMap(
       "thing", JsonAPITestHelper.toAttributeMap(dto), null, null));
-    response.body("data.meta.key", Matchers.equalTo(NAME_TO_LONG));
-    response.body("data.meta.value", Matchers.equalTo(VALUE));
+    response.body("data.meta." + KEY, Matchers.equalTo(VALUE));
   }
 
   @TestConfiguration
@@ -64,9 +63,12 @@ public class WarningInfoProviderRestIT extends BaseRestAssuredTest {
       BaseDAO baseDAO,
       DinaFilterResolver filterResolver
     ) {
-      return new WarningRepo(baseDAO, filterResolver, resource -> resource.setMeta(
-        WarningInfoProvider.WarningMetaInfo.builder().key(NAME_TO_LONG).value(VALUE).build()
-      ));
+      return new WarningRepo(baseDAO, filterResolver, resource -> {
+        WarningInfoProvider.DinaJsonMetaInfo meta = WarningInfoProvider.DinaJsonMetaInfo.builder()
+          .build();
+        meta.setProperties(KEY, VALUE);
+        resource.setMeta(meta);
+      });
     }
   }
 
