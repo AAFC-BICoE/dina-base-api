@@ -31,6 +31,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.time.OffsetDateTime;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -63,12 +64,14 @@ public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
       BaseDAO baseDAO,
       DinaFilterResolver filterResolver
     ) {
-      return new CustomMetaRepo(baseDAO, filterResolver, resource -> {
-        DinaJsonMetaInfoProvider.DinaJsonMetaInfo meta = DinaJsonMetaInfoProvider.DinaJsonMetaInfo.builder()
-          .build();
-        meta.setProperties(KEY, VALUE);
-        resource.setMeta(meta);
-      });
+      return new DinaMetaInfoRepo<>(
+        baseDAO,
+        ThingDTO.class,
+        Thing.class,
+        filterResolver,
+        dto -> dto.setMeta(DinaJsonMetaInfoProvider.DinaJsonMetaInfo.builder()
+          .properties(Map.of(KEY, VALUE))
+          .build()));
     }
   }
 
@@ -109,22 +112,25 @@ public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
   }
 
   @Repository
-  public static class CustomMetaRepo extends DinaRepository<ThingDTO, Thing> {
+  public static class DinaMetaInfoRepo<D extends DinaJsonMetaInfoProvider, E extends DinaEntity>
+    extends DinaRepository<D, E> {
 
-    private final DinaJsonMetaInfoHandler<ThingDTO> handler;
+    private final DinaJsonMetaInfoHandler<D> handler;
 
-    public CustomMetaRepo(
+    public DinaMetaInfoRepo(
       BaseDAO baseDAO,
+      Class<D> resourceClass,
+      Class<E> entityClass,
       DinaFilterResolver filterResolver,
-      DinaJsonMetaInfoHandler<ThingDTO> handler
+      DinaJsonMetaInfoHandler<D> handler
     ) {
       super(
         new DefaultDinaService<>(baseDAO),
         Optional.empty(),
         Optional.empty(),
-        new DinaMapper<>(ThingDTO.class),
-        ThingDTO.class,
-        Thing.class,
+        new DinaMapper<>(resourceClass),
+        resourceClass,
+        entityClass,
         filterResolver,
         null,
         new BuildProperties(new Properties()));
@@ -132,14 +138,14 @@ public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
     }
 
     @Override
-    public <S extends ThingDTO> S create(S resource) {
+    public <S extends D> S create(S resource) {
       S persisted = super.create(resource);
       handler.loadWarnings(persisted);
       return persisted;
     }
 
     @Override
-    public <S extends ThingDTO> S save(S resource) {
+    public <S extends D> S save(S resource) {
       S persisted = super.save(resource);
       handler.loadWarnings(persisted);
       return persisted;
