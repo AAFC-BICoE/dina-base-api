@@ -31,6 +31,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -42,8 +43,9 @@ import java.util.function.Function;
 @Import(DinaJsonMetaInfoProviderRestIT.TestConfig.class)
 public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
 
-  public static final String KEY = "Warning";
-  public static final String VALUE = "name to long";
+  public static final String KEY = "Warnings";
+  public static final String VALUE_1 = "name to long";
+  public static final String VALUE_2 = "duplicate name detected";
 
   protected DinaJsonMetaInfoProviderRestIT() {
     super("thing");
@@ -54,7 +56,7 @@ public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
     ThingDTO dto = ThingDTO.builder().name("new name").build();
     ValidatableResponse response = sendPost(JsonAPITestHelper.toJsonAPIMap(
       "thing", JsonAPITestHelper.toAttributeMap(dto), null, null));
-    response.body("data.meta." + KEY, Matchers.equalTo(VALUE));
+    response.body("data.meta." + KEY, Matchers.contains(VALUE_1, VALUE_2));
   }
 
   @TestConfiguration
@@ -71,7 +73,7 @@ public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
         Thing.class,
         filterResolver,
         thingDTO -> DinaJsonMetaInfoProvider.DinaJsonMetaInfo.builder()
-          .properties(Map.of(KEY, VALUE))
+          .properties(Map.of(KEY, List.of(VALUE_1, VALUE_2).toArray()))
           .build());
     }
   }

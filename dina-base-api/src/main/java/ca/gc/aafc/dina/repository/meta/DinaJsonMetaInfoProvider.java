@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import io.crnk.core.resource.annotations.JsonApiMetaInformation;
 import io.crnk.core.resource.meta.MetaInformation;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,22 +20,21 @@ public abstract class DinaJsonMetaInfoProvider {
   @Setter
   private DinaJsonMetaInfo meta;
 
-  @Data
   @Builder
   public static class DinaJsonMetaInfo implements MetaInformation {
-    private Map<String, String> properties;
+    private Map<String, Object> properties;
 
-    public void setProperties(Map<String, String> properties) {
+    public void setProperties(Map<String, Object> properties) {
       this.properties = properties;
     }
 
     @JsonAnyGetter
-    public Map<String, String> getProperties() {
+    public Map<String, Object> getProperties() {
       return properties;
     }
 
     @JsonAnySetter
-    public void setProperties(String propertyName, String propertyValue) {
+    public void setProperties(String propertyName, Object propertyValue) {
       if (properties == null) {
         properties = new HashMap<>();
       }
