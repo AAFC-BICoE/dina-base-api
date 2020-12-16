@@ -54,7 +54,6 @@ public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
     ValidatableResponse response = sendPost(JsonAPITestHelper.toJsonAPIMap(
       "thing", JsonAPITestHelper.toAttributeMap(dto), null, null));
     response.body("data.meta." + KEY, Matchers.equalTo(VALUE));
-    response.log().all(true);
   }
 
   @TestConfiguration
