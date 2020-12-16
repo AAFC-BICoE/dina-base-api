@@ -1,6 +1,6 @@
 package ca.gc.aafc.dina.repository.meta;
 
-public interface WarningInfoHandler<T extends WarningInfoProvider> {
+public interface DinaJsonMetaInfoHandler<T extends DinaJsonMetaInfoProvider> {
 
   void loadWarnings(T resource);
 

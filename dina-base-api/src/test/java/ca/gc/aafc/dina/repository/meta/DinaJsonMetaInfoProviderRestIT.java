@@ -37,13 +37,13 @@ import java.util.Properties;
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(WarningInfoProviderRestIT.TestConfig.class)
-public class WarningInfoProviderRestIT extends BaseRestAssuredTest {
+@Import(DinaJsonMetaInfoProviderRestIT.TestConfig.class)
+public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
 
   public static final String KEY = "name_to_long";
   public static final String VALUE = "name to long";
 
-  protected WarningInfoProviderRestIT() {
+  protected DinaJsonMetaInfoProviderRestIT() {
     super("thing");
   }
 
@@ -56,15 +56,15 @@ public class WarningInfoProviderRestIT extends BaseRestAssuredTest {
   }
 
   @TestConfiguration
-  @EntityScan(basePackageClasses = WarningInfoProviderRestIT.class)
+  @EntityScan(basePackageClasses = DinaJsonMetaInfoProviderRestIT.class)
   static class TestConfig {
     @Bean
     public DinaRepository<ThingDTO, Thing> projectRepo(
       BaseDAO baseDAO,
       DinaFilterResolver filterResolver
     ) {
-      return new WarningRepo(baseDAO, filterResolver, resource -> {
-        WarningInfoProvider.DinaJsonMetaInfo meta = WarningInfoProvider.DinaJsonMetaInfo.builder()
+      return new CustomMetaRepo(baseDAO, filterResolver, resource -> {
+        DinaJsonMetaInfoProvider.DinaJsonMetaInfo meta = DinaJsonMetaInfoProvider.DinaJsonMetaInfo.builder()
           .build();
         meta.setProperties(KEY, VALUE);
         resource.setMeta(meta);
@@ -79,7 +79,7 @@ public class WarningInfoProviderRestIT extends BaseRestAssuredTest {
   @NoArgsConstructor
   @AllArgsConstructor
   @RelatedEntity(Thing.class)
-  public static class ThingDTO extends WarningInfoProvider {
+  public static class ThingDTO extends DinaJsonMetaInfoProvider {
     @JsonApiId
     private Integer id;
     private String name;
@@ -109,14 +109,14 @@ public class WarningInfoProviderRestIT extends BaseRestAssuredTest {
   }
 
   @Repository
-  public static class WarningRepo extends DinaRepository<ThingDTO, Thing> {
+  public static class CustomMetaRepo extends DinaRepository<ThingDTO, Thing> {
 
-    private final WarningInfoHandler<ThingDTO> handler;
+    private final DinaJsonMetaInfoHandler<ThingDTO> handler;
 
-    public WarningRepo(
+    public CustomMetaRepo(
       BaseDAO baseDAO,
       DinaFilterResolver filterResolver,
-      WarningInfoHandler<ThingDTO> handler
+      DinaJsonMetaInfoHandler<ThingDTO> handler
     ) {
       super(
         new DefaultDinaService<>(baseDAO),

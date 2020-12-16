@@ -13,7 +13,7 @@ import lombok.Setter;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class WarningInfoProvider {
+public abstract class DinaJsonMetaInfoProvider {
 
   @JsonApiMetaInformation
   @IgnoreDinaMapping
