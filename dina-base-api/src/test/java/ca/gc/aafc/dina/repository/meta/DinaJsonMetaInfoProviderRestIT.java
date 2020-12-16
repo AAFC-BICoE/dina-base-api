@@ -54,6 +54,7 @@ public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
     ValidatableResponse response = sendPost(JsonAPITestHelper.toJsonAPIMap(
       "thing", JsonAPITestHelper.toAttributeMap(dto), null, null));
     response.body("data.meta." + KEY, Matchers.equalTo(VALUE));
+    response.log().all(true);
   }
 
   @TestConfiguration
@@ -140,14 +141,14 @@ public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
     @Override
     public <S extends D> S create(S resource) {
       S persisted = super.create(resource);
-      handler.loadWarnings(persisted);
+      handler.loadMeta(persisted);
       return persisted;
     }
 
     @Override
     public <S extends D> S save(S resource) {
       S persisted = super.save(resource);
-      handler.loadWarnings(persisted);
+      handler.loadMeta(persisted);
       return persisted;
     }
   }
