@@ -41,7 +41,7 @@ import java.util.Properties;
 @Import(DinaJsonMetaInfoProviderRestIT.TestConfig.class)
 public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
 
-  public static final String KEY = "name_to_long";
+  public static final String KEY = "Warning";
   public static final String VALUE = "name to long";
 
   protected DinaJsonMetaInfoProviderRestIT() {
