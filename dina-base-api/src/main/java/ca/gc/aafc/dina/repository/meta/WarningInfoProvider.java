@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.dto;
+package ca.gc.aafc.dina.repository.meta;
 
 import ca.gc.aafc.dina.mapper.IgnoreDinaMapping;
 import io.crnk.core.resource.annotations.JsonApiMetaInformation;

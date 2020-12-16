@@ -1,7 +1,6 @@
 package ca.gc.aafc.dina.repository.meta;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
-import ca.gc.aafc.dina.dto.WarningInfoProvider;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
