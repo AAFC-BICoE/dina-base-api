@@ -34,6 +34,7 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
@@ -69,9 +70,9 @@ public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
         ThingDTO.class,
         Thing.class,
         filterResolver,
-        dto -> dto.setMeta(DinaJsonMetaInfoProvider.DinaJsonMetaInfo.builder()
+        thingDTO -> DinaJsonMetaInfoProvider.DinaJsonMetaInfo.builder()
           .properties(Map.of(KEY, VALUE))
-          .build()));
+          .build());
     }
   }
 
@@ -115,14 +116,14 @@ public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
   public static class DinaMetaInfoRepo<D extends DinaJsonMetaInfoProvider, E extends DinaEntity>
     extends DinaRepository<D, E> {
 
-    private final DinaJsonMetaInfoHandler<D> handler;
+    private final Function<D, DinaJsonMetaInfoProvider.DinaJsonMetaInfo> handler;
 
     public DinaMetaInfoRepo(
       BaseDAO baseDAO,
       Class<D> resourceClass,
       Class<E> entityClass,
       DinaFilterResolver filterResolver,
-      DinaJsonMetaInfoHandler<D> handler
+      Function<D, DinaJsonMetaInfoProvider.DinaJsonMetaInfo> handler
     ) {
       super(
         new DefaultDinaService<>(baseDAO),
@@ -140,14 +141,14 @@ public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
     @Override
     public <S extends D> S create(S resource) {
       S persisted = super.create(resource);
-      handler.loadMeta(persisted);
+      persisted.setMeta(handler.apply(persisted));
       return persisted;
     }
 
     @Override
     public <S extends D> S save(S resource) {
       S persisted = super.save(resource);
-      handler.loadMeta(persisted);
+      persisted.setMeta(handler.apply(persisted));
       return persisted;
     }
   }
