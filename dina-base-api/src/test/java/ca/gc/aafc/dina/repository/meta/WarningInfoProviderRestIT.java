@@ -11,11 +11,13 @@ import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiResource;
+import io.restassured.response.ValidatableResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.info.BuildProperties;
@@ -38,16 +40,20 @@ import java.util.Properties;
 @Import(WarningInfoProviderRestIT.TestConfig.class)
 public class WarningInfoProviderRestIT extends BaseRestAssuredTest {
 
+  public static final String NAME_TO_LONG = "name_to_long";
+  public static final String VALUE = "name to long";
+
   protected WarningInfoProviderRestIT() {
     super("thing");
   }
 
   @Test
-  void test() {
+  void metaInfo_ReturnedInResponse() {
     ThingDTO dto = ThingDTO.builder().name("new name").build();
-    sendPost(JsonAPITestHelper.toJsonAPIMap(
-      "thing", JsonAPITestHelper.toAttributeMap(dto), null, null))
-      .log().all(true);
+    ValidatableResponse response = sendPost(JsonAPITestHelper.toJsonAPIMap(
+      "thing", JsonAPITestHelper.toAttributeMap(dto), null, null));
+    response.body("data.meta.key", Matchers.equalTo(NAME_TO_LONG));
+    response.body("data.meta.value", Matchers.equalTo(VALUE));
   }
 
   @TestConfiguration
@@ -58,7 +64,9 @@ public class WarningInfoProviderRestIT extends BaseRestAssuredTest {
       BaseDAO baseDAO,
       DinaFilterResolver filterResolver
     ) {
-      return new MockRepo(baseDAO, filterResolver);
+      return new WarningRepo(baseDAO, filterResolver, resource -> resource.setMeta(
+        WarningInfoProvider.WarningMetaInfo.builder().key(NAME_TO_LONG).value(VALUE).build()
+      ));
     }
   }
 
@@ -99,9 +107,15 @@ public class WarningInfoProviderRestIT extends BaseRestAssuredTest {
   }
 
   @Repository
-  public static class MockRepo extends DinaRepository<ThingDTO, Thing> {
+  public static class WarningRepo extends DinaRepository<ThingDTO, Thing> {
 
-    public MockRepo(BaseDAO baseDAO, DinaFilterResolver filterResolver) {
+    private final WarningInfoHandler<ThingDTO> handler;
+
+    public WarningRepo(
+      BaseDAO baseDAO,
+      DinaFilterResolver filterResolver,
+      WarningInfoHandler<ThingDTO> handler
+    ) {
       super(
         new DefaultDinaService<>(baseDAO),
         Optional.empty(),
@@ -112,15 +126,21 @@ public class WarningInfoProviderRestIT extends BaseRestAssuredTest {
         filterResolver,
         null,
         new BuildProperties(new Properties()));
+      this.handler = handler;
     }
 
     @Override
     public <S extends ThingDTO> S create(S resource) {
-      S s = super.create(resource);
-      s.setMeta(WarningInfoProvider.WarningMetaInfo.builder()
-        .key("name_to_long")
-        .value("name is to long").build());
-      return s;
+      S persisted = super.create(resource);
+      handler.loadWarnings(persisted);
+      return persisted;
+    }
+
+    @Override
+    public <S extends ThingDTO> S save(S resource) {
+      S persisted = super.save(resource);
+      handler.loadWarnings(persisted);
+      return persisted;
     }
   }
 
