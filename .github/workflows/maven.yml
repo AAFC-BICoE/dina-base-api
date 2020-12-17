@@ -54,7 +54,8 @@ jobs:
           BINTRAY_USERNAME: aafc-bice
           BINTRAY_TOKEN: ${{ secrets.BINTRAY_API_KEY }}
 
-      - name: Deploy GitHub Pages (testing)
+      - name: Deploy GitHub Pages (only on master branch)
+        if: ${{ github.ref == 'refs/heads/master' }}
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
