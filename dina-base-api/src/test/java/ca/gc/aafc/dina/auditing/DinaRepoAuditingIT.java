@@ -4,9 +4,9 @@ import ca.gc.aafc.dina.DinaUserConfig;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
+import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.repository.DinaRepository;
-import ca.gc.aafc.dina.repository.JpaResourceRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.javers.core.Javers;
 import org.javers.core.metamodel.object.CdoSnapshot;
@@ -35,7 +35,7 @@ public class DinaRepoAuditingIT {
   private DinaRepository<PersonDTO, Person> dinaRepository;
 
   @Inject
-  private JpaResourceRepository<DepartmentDto> departmentRepository;
+  private DinaRepository<DepartmentDto, Department> departmentRepository;
 
   @Inject
   private NamedParameterJdbcTemplate jdbcTemplate;

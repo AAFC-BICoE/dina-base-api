@@ -4,30 +4,20 @@ import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.dto.VocabularyDto;
-import ca.gc.aafc.dina.entity.ComplexObject;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.entity.Vocabulary;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
-import ca.gc.aafc.dina.filter.RsqlFilterHandler;
-import ca.gc.aafc.dina.filter.SimpleFilterHandler;
 import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.mapper.CustomFieldResolverSpec;
 import ca.gc.aafc.dina.mapper.DinaMapper;
-import ca.gc.aafc.dina.mapper.JpaDtoMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
-import ca.gc.aafc.dina.repository.JpaDtoRepository;
-import ca.gc.aafc.dina.repository.JpaRelationshipRepository;
-import ca.gc.aafc.dina.repository.JpaResourceRepository;
 import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
-import ca.gc.aafc.dina.repository.meta.JpaTotalMetaInformationProvider;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.service.DefaultDinaServiceTest.DinaServiceTestImplementation;
 import ca.gc.aafc.dina.service.GroupAuthorizationService;
-import org.apache.commons.lang3.StringUtils;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -36,10 +26,7 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 
 import javax.inject.Inject;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -51,104 +38,37 @@ import java.util.Properties;
 public class TestDinaBaseApp {
 
   @Inject
-  private JpaTotalMetaInformationProvider metaInformationProvider;
-
-  @Inject
-  private SimpleFilterHandler simpleFilterHandler;
-
-  @Inject
-  private RsqlFilterHandler rsqlFilterHandler;
-
-  @Inject
   private DinaFilterResolver filterResolver;
 
   @Inject
   private Optional<GroupAuthorizationService> groupAuthService;
 
   @Bean
-  public JpaDtoMapper jpaDtoMapper() {
-    Map<Class<?>, Class<?>> jpaEntities = new HashMap<>();
-
-    jpaEntities.put(DepartmentDto.class, Department.class);
-    jpaEntities.put(EmployeeDto.class, Employee.class);
-
-    Map<Class<?>, List<CustomFieldResolverSpec<?>>> customFieldResolvers = new HashMap<>();
-
-    // EmployeeDto custom resolvers go here:
-    customFieldResolvers.put(EmployeeDto.class, Arrays.asList(
-      CustomFieldResolverSpec.<Employee>builder()
-        .field("nameUppercase")
-        .resolver(employee -> StringUtils.upperCase(employee.getName()))
-        .build(),
-      CustomFieldResolverSpec.<Employee>builder()
-        .field("customField")
-        .resolver(employee ->  
-            employee.getCustomField() == null ? "" : employee.getCustomField().getName())
-        .build()
-    ));
-
-    customFieldResolvers.put(Employee.class, Arrays.asList(
-      CustomFieldResolverSpec.<EmployeeDto>builder()
-        .field("customField")
-        .resolver(employeeDto -> ComplexObject.builder().name(employeeDto.getCustomField()).build())
-        .build()));
-
-    customFieldResolvers.put(DepartmentDto.class, Arrays.asList(
-      CustomFieldResolverSpec.<Department>builder()
-        .field("employeeCount")
-        .resolver(dept -> dept.getEmployees().size())
-        .build()
-    ));
-
-    return new JpaDtoMapper(jpaEntities, customFieldResolvers);
-  }
-
-  @Bean
-  public JpaResourceRepository<DepartmentDto> departmentRepository(JpaDtoRepository dtoRepository) {
-    return new JpaResourceRepository<DepartmentDto>(
+  public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO) {
+    return new DinaRepository<>(
+      new DefaultDinaService<>(baseDAO),
+      Optional.empty(),
+      Optional.empty(),
+      new DinaMapper<>(DepartmentDto.class),
       DepartmentDto.class,
-      dtoRepository,
-      Arrays.asList(simpleFilterHandler, rsqlFilterHandler),
-      metaInformationProvider
-    );
+      Department.class,
+      filterResolver,
+      null,
+      buildProperties());
   }
 
   @Bean
-  public JpaResourceRepository<EmployeeDto> employeeRepository(JpaDtoRepository dtoRepository) {
-    return new JpaResourceRepository<EmployeeDto>(
+  public DinaRepository<EmployeeDto, Employee> employeeRepository(BaseDAO baseDAO) {
+    return new DinaRepository<>(
+      new DefaultDinaService<>(baseDAO),
+      Optional.empty(),
+      Optional.empty(),
+      new DinaMapper<>(EmployeeDto.class),
       EmployeeDto.class,
-      dtoRepository,
-      Arrays.asList(simpleFilterHandler, rsqlFilterHandler),
-      metaInformationProvider
-    );
-  }
-
-  @Bean
-  public JpaRelationshipRepository<DepartmentDto, EmployeeDto> departmentToEmployeeRepository(JpaDtoRepository dtoRepository) {
-    return new JpaRelationshipRepository<>(
-      DepartmentDto.class,
-      EmployeeDto.class,
-      dtoRepository,
-      Arrays.asList(
-        simpleFilterHandler, 
-        rsqlFilterHandler
-      ),
-      metaInformationProvider
-    );
-  }
-
-  @Bean
-  public JpaRelationshipRepository<EmployeeDto, DepartmentDto> employeeToDepartmentRepository(JpaDtoRepository dtoRepository) {
-    return new JpaRelationshipRepository<>(
-      EmployeeDto.class,
-      DepartmentDto.class,
-      dtoRepository,
-      Arrays.asList(
-        simpleFilterHandler, 
-        rsqlFilterHandler
-      ),
-      metaInformationProvider
-    );
+      Employee.class,
+      filterResolver,
+      null,
+      buildProperties());
   }
 
   @Bean
@@ -162,9 +82,12 @@ public class TestDinaBaseApp {
   }
 
   @Bean
-  public DinaRepository<PersonDTO, Person> dinaRepository(DinaPersonService service, Optional<AuditService> auditService) {
+  public DinaRepository<PersonDTO, Person> dinaRepository(
+    DinaPersonService service,
+    Optional<AuditService> auditService
+  ) {
     DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(PersonDTO.class);
-    return new DinaRepository<PersonDTO,Person>(
+    return new DinaRepository<>(
       service,
       Optional.ofNullable(groupAuthService.orElse(null)),
       auditService,
@@ -179,7 +102,7 @@ public class TestDinaBaseApp {
   @Bean
   public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(BaseDAO baseDAO) {
     DinaMapper<VocabularyDto, Vocabulary> dinaMapper = new DinaMapper<>(VocabularyDto.class);
-    return new ReadOnlyDinaRepository<VocabularyDto, Vocabulary>(
+    return new ReadOnlyDinaRepository<>(
       new DefaultDinaService<>(baseDAO),
       dinaMapper,
       VocabularyDto.class,
@@ -201,7 +124,10 @@ public class TestDinaBaseApp {
    * @param keycloakGroupClaim - groups to return in claim
    * @param mockToken          - token to mock
    */
-  public static void mockToken(List<String> keycloakGroupClaim, KeycloakAuthenticationToken mockToken) {
+  public static void mockToken(
+    List<String> keycloakGroupClaim,
+    KeycloakAuthenticationToken mockToken
+  ) {
     // Mock the needed fields on the keycloak token:
     Mockito.when(mockToken.getName()).thenReturn("test-user");
     mockClaim(mockToken, "agent-identifier", "a2cef694-10f1-42ec-b403-e0f8ae9d2ae6");
@@ -209,8 +135,7 @@ public class TestDinaBaseApp {
   }
 
   /**
-   * Mock a given tokens claims by returning a given value for the given claim
-   * key.
+   * Mock a given tokens claims by returning a given value for the given claim key.
    *
    * @param token - token holding claims
    * @param key   - key of claim to mock
@@ -218,11 +143,11 @@ public class TestDinaBaseApp {
    */
   public static void mockClaim(KeycloakAuthenticationToken token, String key, Object value) {
     Mockito.when(
-        token.getAccount()
-          .getKeycloakSecurityContext()
-          .getToken()
-          .getOtherClaims()
-          .get(key))
+      token.getAccount()
+        .getKeycloakSecurityContext()
+        .getToken()
+        .getOtherClaims()
+        .get(key))
       .thenReturn(value);
   }
 
