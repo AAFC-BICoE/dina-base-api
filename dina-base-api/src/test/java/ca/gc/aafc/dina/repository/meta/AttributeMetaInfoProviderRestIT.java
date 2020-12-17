@@ -40,14 +40,14 @@ import java.util.function.Function;
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(DinaJsonMetaInfoProviderRestIT.TestConfig.class)
-public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
+@Import(AttributeMetaInfoProviderRestIT.TestConfig.class)
+public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
 
   public static final String KEY = "Warnings";
   public static final String VALUE_1 = "name to long";
   public static final String VALUE_2 = "duplicate name detected";
 
-  protected DinaJsonMetaInfoProviderRestIT() {
+  protected AttributeMetaInfoProviderRestIT() {
     super("thing");
   }
 
@@ -60,7 +60,7 @@ public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
   }
 
   @TestConfiguration
-  @EntityScan(basePackageClasses = DinaJsonMetaInfoProviderRestIT.class)
+  @EntityScan(basePackageClasses = AttributeMetaInfoProviderRestIT.class)
   static class TestConfig {
     @Bean
     public DinaRepository<ThingDTO, Thing> projectRepo(
@@ -72,7 +72,7 @@ public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
         ThingDTO.class,
         Thing.class,
         filterResolver,
-        thingDTO -> DinaJsonMetaInfoProvider.DinaJsonMetaInfo.builder()
+        thingDTO -> AttributeMetaInfoProvider.DinaJsonMetaInfo.builder()
           .properties(Map.of(KEY, List.of(VALUE_1, VALUE_2).toArray()))
           .build());
     }
@@ -85,7 +85,7 @@ public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
   @NoArgsConstructor
   @AllArgsConstructor
   @RelatedEntity(Thing.class)
-  public static class ThingDTO extends DinaJsonMetaInfoProvider {
+  public static class ThingDTO extends AttributeMetaInfoProvider {
     @JsonApiId
     private Integer id;
     private String name;
@@ -115,17 +115,17 @@ public class DinaJsonMetaInfoProviderRestIT extends BaseRestAssuredTest {
   }
 
   @Repository
-  public static class DinaMetaInfoRepo<D extends DinaJsonMetaInfoProvider, E extends DinaEntity>
+  public static class DinaMetaInfoRepo<D extends AttributeMetaInfoProvider, E extends DinaEntity>
     extends DinaRepository<D, E> {
 
-    private final Function<D, DinaJsonMetaInfoProvider.DinaJsonMetaInfo> handler;
+    private final Function<D, AttributeMetaInfoProvider.DinaJsonMetaInfo> handler;
 
     public DinaMetaInfoRepo(
       BaseDAO baseDAO,
       Class<D> resourceClass,
       Class<E> entityClass,
       DinaFilterResolver filterResolver,
-      Function<D, DinaJsonMetaInfoProvider.DinaJsonMetaInfo> handler
+      Function<D, AttributeMetaInfoProvider.DinaJsonMetaInfo> handler
     ) {
       super(
         new DefaultDinaService<>(baseDAO),

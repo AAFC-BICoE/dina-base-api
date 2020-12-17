@@ -12,7 +12,11 @@ import lombok.Setter;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class DinaJsonMetaInfoProvider {
+/**
+ * Abstract class which can be extended by a resource to add meta information to a resource's JSON
+ * response through Crnk.
+ */
+public abstract class AttributeMetaInfoProvider {
 
   @JsonApiMetaInformation
   @IgnoreDinaMapping
