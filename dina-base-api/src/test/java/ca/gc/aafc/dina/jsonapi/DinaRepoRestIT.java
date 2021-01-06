@@ -12,12 +12,9 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
-import com.google.common.collect.ImmutableMap;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.hamcrest.Matchers;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -135,9 +132,9 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
 
     //Send empty patch
     super.sendPatch(ProjectDTO.RESOURCE_TYPE, expected.getUuid().toString(),
-      ImmutableMap.of(
+      Map.of(
         "data",
-        ImmutableMap.of(
+        Map.of(
           "type", ProjectDTO.RESOURCE_TYPE,
           "attributes", Collections.emptyMap()
         )));
@@ -178,7 +175,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
 
     ValidatableResponse response = given()
       .header(CRNK_HEADER).port(testPort).basePath(basePath)
-      .queryParams(ImmutableMap.of("include", "acMetaDataCreator,originalAuthor"))
+      .queryParams(Map.of("include", "acMetaDataCreator,originalAuthor"))
       .get(ProjectDTO.RESOURCE_TYPE + "/" + expected.getUuid().toString())
       .then();
 
@@ -233,7 +230,6 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     return project;
   }
 
-  @NotNull
   private Map<String, Object> mapProject(
     ProjectDTO project,
     String agentID,
