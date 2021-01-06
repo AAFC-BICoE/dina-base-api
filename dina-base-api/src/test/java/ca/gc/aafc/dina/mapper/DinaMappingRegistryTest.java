@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.DepartmentDto;
+import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.dto.ProjectDTO;
@@ -14,6 +15,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Set;
 
 public class DinaMappingRegistryTest {
@@ -109,6 +111,23 @@ public class DinaMappingRegistryTest {
     MatcherAssert.assertThat(
       registry.getExternalRelations(),
       Matchers.containsInAnyOrder("acMetaDataCreator", "originalAuthor"));
+  }
+
+  @Test
+  void findNestedResource() {
+    DinaMappingRegistry registry = new DinaMappingRegistry(PersonDTO.class);
+    Assertions.assertEquals(
+      PersonDTO.class,
+      registry.findDeeplyNestedResource(PersonDTO.class, List.of("name")));
+    Assertions.assertEquals(
+      DepartmentDto.class,
+      registry.findDeeplyNestedResource(PersonDTO.class, List.of("department")));
+    Assertions.assertEquals(
+      EmployeeDto.class,
+      registry.findDeeplyNestedResource(PersonDTO.class, List.of("department", "employees")));
+    Assertions.assertEquals(
+      EmployeeDto.class,
+      registry.findDeeplyNestedResource(PersonDTO.class, List.of("department", "employees", "job")));
   }
 
 }

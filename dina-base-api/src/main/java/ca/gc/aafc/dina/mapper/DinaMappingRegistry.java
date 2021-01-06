@@ -16,7 +16,9 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,6 +38,9 @@ public class DinaMappingRegistry {
   private final Map<String, String> externalNameToTypeMap;
   // Track Json Id field names for mapping
   private final Map<Class<?>, String> jsonIdFieldNamePerClass;
+  // Track Field adapters per class
+  @Getter
+  private final Map<Class<?>, DinaFieldAdapterHandler<?>> fieldAdaptersPerClass;
 
   /**
    * Parsing a given resource graph requires the use of reflection. A DinaMappingRegistry should not
@@ -49,6 +54,7 @@ public class DinaMappingRegistry {
     this.attributesPerClass = parseAttributesPerClass(resources);
     this.mappableRelationsPerClass = parseMappableRelations(resources);
     this.jsonIdFieldNamePerClass = parseJsonIds(resources);
+    this.fieldAdaptersPerClass = parseFieldAdapters(resources);
   }
 
   /**
@@ -113,6 +119,33 @@ public class DinaMappingRegistry {
       throw new IllegalArgumentException(cls.getSimpleName() + " is not tracked by the registry");
     }
     return this.jsonIdFieldNamePerClass.get(cls);
+  }
+
+  /**
+   * Returns the nested resource type from a given base resource type and attribute path. The
+   * original resource is returned if a nested resource is not present in the attribute path, or the
+   * resources are not tracked by the registry.
+   *
+   * @param resource      - base resource to traverse
+   * @param attributePath - attribute path to follow
+   * @return - the nested resource type from a given path.
+   */
+  public Class<?> findDeeplyNestedResource(
+    @NonNull Class<?> resource,
+    @NonNull List<String> attributePath
+  ) {
+    Class<?> nested = resource;
+    for (String attribute : attributePath) {
+      Optional<InternalRelation> relation = this.findMappableRelationsForClass(nested).stream()
+        .filter(internalRelation -> internalRelation.getName().equalsIgnoreCase(attribute))
+        .findAny();
+      if (relation.isPresent()) {
+        nested = relation.get().getElementType();
+      } else {
+        break;
+      }
+    }
+    return nested;
   }
 
   private Set<Class<?>> parseGraph(Class<?> dto, Set<Class<?>> visited) {
@@ -206,6 +239,20 @@ public class DinaMappingRegistry {
         .stream().collect(Collectors.toMap(
         Field::getName,
         field -> field.getAnnotation(JsonApiExternalRelation.class).type())));
+  }
+
+  private Map<Class<?>, DinaFieldAdapterHandler<?>> parseFieldAdapters(Set<Class<?>> resources) {
+    Map<Class<?>, DinaFieldAdapterHandler<?>> adapterPerClass = new HashMap<>();
+    for (Class<?> dto : resources) {
+      RelatedEntity annotation = dto.getAnnotation(RelatedEntity.class);
+      if (annotation != null) {
+        Class<?> relatedEntity = annotation.value();
+        DinaFieldAdapterHandler<?> handler = new DinaFieldAdapterHandler<>(dto);
+        adapterPerClass.put(dto, handler);
+        adapterPerClass.put(relatedEntity, handler);
+      }
+    }
+    return Map.copyOf(adapterPerClass);
   }
 
   /**

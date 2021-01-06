@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.mapper;
 
-import ca.gc.aafc.dina.dto.RelatedEntity;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -11,8 +10,6 @@ import org.hibernate.Hibernate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -28,7 +25,6 @@ import java.util.stream.Collectors;
 public class DinaMapper<D, E> {
 
   private final Class<D> dtoClass;
-  private final Map<Class<?>, DinaFieldAdapterHandler<?>> handlers;
   private final DinaMappingRegistry registry;
 
   /**
@@ -45,39 +41,7 @@ public class DinaMapper<D, E> {
    * @param dtoClass - class to map
    */
   public DinaMapper(Class<D> dtoClass) {
-    this(dtoClass, new HashMap<>(), new DinaMappingRegistry(dtoClass));
-    initMaps(dtoClass);
-  }
-
-  private void initMaps(Class<D> dtoClass) {
-    Set<Class<?>> dtoClasses = parseGraph(dtoClass);
-    for (Class<?> dto : dtoClasses) {
-      RelatedEntity annotation = dto.getAnnotation(RelatedEntity.class);
-
-      if (annotation != null) {
-        Class<?> relatedEntity = annotation.value();
-        DinaFieldAdapterHandler<?> handler = new DinaFieldAdapterHandler<>(dto);
-        handlers.put(dto, handler);
-        handlers.put(relatedEntity, handler);
-      }
-    }
-  }
-
-  private Set<Class<?>> parseGraph(Class<D> dto) {
-    return parseGraph(dto, new HashSet<>());
-  }
-
-  @SneakyThrows
-  private Set<Class<?>> parseGraph(Class<?> dto, Set<Class<?>> visited) {
-    if (visited.contains(dto)) {
-      return visited;
-    }
-    visited.add(dto);
-
-    for (DinaMappingRegistry.InternalRelation rel : this.registry.findMappableRelationsForClass(dto)) {
-      parseGraph(rel.getElementType(), visited);
-    }
-    return visited;
+    this(dtoClass, new DinaMappingRegistry(dtoClass));
   }
 
   /**
@@ -186,8 +150,8 @@ public class DinaMapper<D, E> {
 
     mapFieldsToTarget(unproxied, target, selectedFields);
     mapRelationsToTarget(unproxied, target, selectedFieldPerClass, relations, visited);
-    if (handlers.containsKey(sourceType)) {
-      handlers.get(sourceType).resolveFields(unproxied, target);
+    if (registry.getFieldAdaptersPerClass().containsKey(sourceType)) {
+      registry.getFieldAdaptersPerClass().get(sourceType).resolveFields(unproxied, target);
     }
   }
 
