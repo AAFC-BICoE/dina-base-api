@@ -215,20 +215,6 @@ public class DinaMappingRegistry {
     return Map.copyOf(map);
   }
 
-  private Map<Class<?>, DinaFieldAdapterHandler<?>> parseFieldAdapters(Set<Class<?>> resources) {
-    Map<Class<?>, DinaFieldAdapterHandler<?>> adapterPerClass = new HashMap<>();
-    for (Class<?> dto : resources) {
-      RelatedEntity annotation = dto.getAnnotation(RelatedEntity.class);
-      if (annotation != null) {
-        Class<?> relatedEntity = annotation.value();
-        DinaFieldAdapterHandler<?> handler = new DinaFieldAdapterHandler<>(dto);
-        adapterPerClass.put(dto, handler);
-        adapterPerClass.put(relatedEntity, handler);
-      }
-    }
-    return Map.copyOf(adapterPerClass);
-  }
-
   private static InternalRelation mapToInternalRelation(Field field) {
     if (isCollection(field.getType())) {
       Class<?> genericType = getGenericType(field.getDeclaringClass(), field.getName());
@@ -252,6 +238,20 @@ public class DinaMappingRegistry {
         .stream().collect(Collectors.toMap(
         Field::getName,
         field -> field.getAnnotation(JsonApiExternalRelation.class).type())));
+  }
+
+  private Map<Class<?>, DinaFieldAdapterHandler<?>> parseFieldAdapters(Set<Class<?>> resources) {
+    Map<Class<?>, DinaFieldAdapterHandler<?>> adapterPerClass = new HashMap<>();
+    for (Class<?> dto : resources) {
+      RelatedEntity annotation = dto.getAnnotation(RelatedEntity.class);
+      if (annotation != null) {
+        Class<?> relatedEntity = annotation.value();
+        DinaFieldAdapterHandler<?> handler = new DinaFieldAdapterHandler<>(dto);
+        adapterPerClass.put(dto, handler);
+        adapterPerClass.put(relatedEntity, handler);
+      }
+    }
+    return Map.copyOf(adapterPerClass);
   }
 
   /**
