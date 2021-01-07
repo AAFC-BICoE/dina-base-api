@@ -12,7 +12,7 @@
   <parent>
     <groupId>ca.gc.aafc</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.45-SNAPSHOT</version>
+    <version>0.47-SNAPSHOT</version>
   </parent>
 
   <properties>
@@ -22,7 +22,7 @@
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
-    <javers.version>5.13.2</javers.version>
+    <javers.version>5.14.0</javers.version>
   </properties>
 
   <dependencies>
@@ -99,7 +99,7 @@
     <dependency>
       <groupId>ca.gc.aafc</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.45-SNAPSHOT</version>
+      <version>0.47-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

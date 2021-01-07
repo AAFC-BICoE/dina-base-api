@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Registry to track information regarding a given resource class. Useful to obtain certain meta
- * information regarding the domain of resource.
+ * Registry to track information regarding a given resource class. Useful to obtain certain meta information
+ * regarding the domain of resource.
  */
 public class DinaMappingRegistry {
 
@@ -43,8 +43,8 @@ public class DinaMappingRegistry {
   private final Map<Class<?>, DinaFieldAdapterHandler<?>> fieldAdaptersPerClass;
 
   /**
-   * Parsing a given resource graph requires the use of reflection. A DinaMappingRegistry should not
-   * be constructed in a repetitive manner where performance is needed.
+   * Parsing a given resource graph requires the use of reflection. A DinaMappingRegistry should not be
+   * constructed in a repetitive manner where performance is needed.
    *
    * @param resourceClass - resource class to track
    */
@@ -81,8 +81,8 @@ public class DinaMappingRegistry {
   }
 
   /**
-   * Returns the {@link JsonApiExternalRelation} type of the given external relation field name if
-   * tracked by the registry.
+   * Returns the {@link JsonApiExternalRelation} type of the given external relation field name if tracked by
+   * the registry.
    *
    * @param relationFieldName - field name of the external relation.
    * @return type of the given external relation.
@@ -122,15 +122,15 @@ public class DinaMappingRegistry {
   }
 
   /**
-   * Returns the nested resource type from a given base resource type and attribute path. The
-   * original resource is returned if a nested resource is not present in the attribute path, or the
-   * resources are not tracked by the registry.
+   * Returns the nested resource type from a given base resource type and attribute path. The deepest nested
+   * resource that can be resolved will be returned. The original resource is returned if a nested resource is
+   * not present in the attribute path, or the resources are not tracked by the registry.
    *
    * @param resource      - base resource to traverse
    * @param attributePath - attribute path to follow
    * @return - the nested resource type from a given path.
    */
-  public Class<?> findDeeplyNestedResource(
+  public Class<?> resolveNestedResourceFromPath(
     @NonNull Class<?> resource,
     @NonNull List<String> attributePath
   ) {
@@ -241,8 +241,7 @@ public class DinaMappingRegistry {
   }
 
   /**
-   * Returns a map of external relation field names to their JsonApiExternalRelation.type for a
-   * given class.
+   * Returns a map of external relation field names to their JsonApiExternalRelation.type for a given class.
    *
    * @param resourceClass - a given class with external relations.
    * @return a map of external relation field names to their JsonApiExternalRelation.type
@@ -255,23 +254,37 @@ public class DinaMappingRegistry {
         field -> field.getAnnotation(JsonApiExternalRelation.class).type())));
   }
 
+  private Map<Class<?>, DinaFieldAdapterHandler<?>> parseFieldAdapters(Set<Class<?>> resources) {
+    Map<Class<?>, DinaFieldAdapterHandler<?>> adapterPerClass = new HashMap<>();
+    for (Class<?> dto : resources) {
+      RelatedEntity annotation = dto.getAnnotation(RelatedEntity.class);
+      if (annotation != null) {
+        Class<?> relatedEntity = annotation.value();
+        DinaFieldAdapterHandler<?> handler = new DinaFieldAdapterHandler<>(dto);
+        adapterPerClass.put(dto, handler);
+        adapterPerClass.put(relatedEntity, handler);
+      }
+    }
+    return Map.copyOf(adapterPerClass);
+  }
+
   /**
-   * Returns true if the dina repo should map the given field. currently that means if the field is
-   * not generated (Marked with {@link IgnoreDinaMapping}), final, or is a {@link JsonApiRelation}.
+   * Returns true if the dina repo should map the given field. currently that means if the field is not
+   * generated (Marked with {@link IgnoreDinaMapping}), final, or is a {@link JsonApiRelation}.
    *
    * @param field - field to evaluate
    * @return - true if the dina repo should not map the given field
    */
   private static boolean isFieldMappable(Field field) {
     return !field.isAnnotationPresent(IgnoreDinaMapping.class) &&
-           !field.isAnnotationPresent(JsonApiRelation.class)
-           && !Modifier.isFinal(field.getModifiers())
-           && !field.isSynthetic();
+      !field.isAnnotationPresent(JsonApiRelation.class)
+      && !Modifier.isFinal(field.getModifiers())
+      && !field.isSynthetic();
   }
 
   /**
-   * Returns true if the dina repo should map the given relation. A relation should be mapped if it
-   * is not external, and present in the given dto and entity classes.
+   * Returns true if the dina repo should map the given relation. A relation should be mapped if it is not
+   * external, and present in the given dto and entity classes.
    *
    * @param dto              - resource class of the relation
    * @param entity           - entity class of the relation
@@ -280,18 +293,17 @@ public class DinaMappingRegistry {
    */
   private static boolean isRelationMappable(Class<?> dto, Class<?> entity, Field dtoRelationField) {
     return !dtoRelationField.isAnnotationPresent(IgnoreDinaMapping.class) &&
-           !dtoRelationField.isAnnotationPresent(JsonApiExternalRelation.class) &&
-           Stream.of(entity.getDeclaredFields())
-             .map(Field::getName)
-             .anyMatch(dtoRelationField.getName()::equalsIgnoreCase) &&
-           Stream.of(dto.getDeclaredFields())
-             .map(Field::getName)
-             .anyMatch(dtoRelationField.getName()::equalsIgnoreCase);
+      !dtoRelationField.isAnnotationPresent(JsonApiExternalRelation.class) &&
+      Stream.of(entity.getDeclaredFields())
+        .map(Field::getName)
+        .anyMatch(dtoRelationField.getName()::equalsIgnoreCase) &&
+      Stream.of(dto.getDeclaredFields())
+        .map(Field::getName)
+        .anyMatch(dtoRelationField.getName()::equalsIgnoreCase);
   }
 
   /**
-   * Returns the class of the parameterized type at the first position of a given class's given
-   * field.
+   * Returns the class of the parameterized type at the first position of a given class's given field.
    * <p>
    * given class is assumed to be a {@link ParameterizedType}
    *
