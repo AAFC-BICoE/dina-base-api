@@ -118,16 +118,16 @@ public class DinaMappingRegistryTest {
     DinaMappingRegistry registry = new DinaMappingRegistry(PersonDTO.class);
     Assertions.assertEquals(
       PersonDTO.class,
-      registry.findDeeplyNestedResource(PersonDTO.class, List.of("name")));
+      registry.resolveNestedResourceFromPath(PersonDTO.class, List.of("name")));
     Assertions.assertEquals(
       DepartmentDto.class,
-      registry.findDeeplyNestedResource(PersonDTO.class, List.of("department")));
+      registry.resolveNestedResourceFromPath(PersonDTO.class, List.of("department")));
     Assertions.assertEquals(
       EmployeeDto.class,
-      registry.findDeeplyNestedResource(PersonDTO.class, List.of("department", "employees")));
+      registry.resolveNestedResourceFromPath(PersonDTO.class, List.of("department", "employees")));
     Assertions.assertEquals(
       EmployeeDto.class,
-      registry.findDeeplyNestedResource(PersonDTO.class, List.of("department", "employees", "job")));
+      registry.resolveNestedResourceFromPath(PersonDTO.class, List.of("department", "employees", "job")));
   }
 
 }
