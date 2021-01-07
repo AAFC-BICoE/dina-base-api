@@ -54,7 +54,7 @@ public class DinaRepositoryIT {
 
   @BeforeEach
   public void setup() {
-    singleRelationUnderTest = persistDepartment();
+    singleRelationUnderTest =  persistDepartment();
     collectionRelationUnderTest = persistDepartments();
   }
 
@@ -64,11 +64,7 @@ public class DinaRepositoryIT {
 
     Person result = baseDAO.findOneByNaturalId(dto.getUuid(), Person.class);
     assertNotNull(result);
-    assertEqualsPersonDtoAndEntity(
-      dto,
-      result,
-      singleRelationUnderTest,
-      collectionRelationUnderTest);
+    assertEqualsPersonDtoAndEntity(dto, result, singleRelationUnderTest, collectionRelationUnderTest);
   }
 
   @Test
@@ -86,7 +82,7 @@ public class DinaRepositoryIT {
   public void findOne_NoResourceFound_ThrowsResourceNotFoundException() {
     assertThrows(
       ResourceNotFoundException.class,
-      () -> dinaRepository.findOne(UUID.randomUUID(), new QuerySpec(PersonDTO.class))
+      ()-> dinaRepository.findOne(UUID.randomUUID(), new QuerySpec(PersonDTO.class))
     );
   }
 
@@ -269,9 +265,8 @@ public class DinaRepositoryIT {
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setIncludedRelations(createIncludeRelationSpecs("department"));
     querySpec.setSort(
-      Arrays.asList(new SortSpec(
-        Arrays.asList("department", "name"),
-        Direction.ASC)));
+      Arrays.asList(new SortSpec(Arrays.asList("department", "name"),
+      Direction.ASC)));
 
     List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
     for (int i = 0; i < names.size(); i++) {
@@ -325,9 +320,7 @@ public class DinaRepositoryIT {
       persistPerson();
     }
 
-    ResourceList<PersonDTO> resultList = dinaRepository.findAll(
-      idList,
-      new QuerySpec(PersonDTO.class));
+    ResourceList<PersonDTO> resultList = dinaRepository.findAll(idList, new QuerySpec(PersonDTO.class));
     PagedMetaInformation metadata = (PagedMetaInformation) resultList.getMeta();
 
     assertEquals(idList.size(), metadata.getTotalResourceCount());
@@ -442,7 +435,7 @@ public class DinaRepositoryIT {
       new DinaMetaInfo()
     );
 
-    assertEquals("test-api-version", meta.getModuleVersion());
+    assertEquals("test-api-version" , meta.getModuleVersion());
   }
 
   private void assertEqualsPersonDtos(PersonDTO dto, PersonDTO result, boolean testRelations) {

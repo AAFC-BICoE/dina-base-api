@@ -49,5 +49,4 @@ public class Person implements DinaEntity {
   @OneToMany
   @JoinColumn(name = "department_list_fk")
   private List<Department> departments;
-
 }

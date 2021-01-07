@@ -100,16 +100,22 @@ public class DinaFilterResolver {
   }
 
   /**
-   * Returns an array of predicates by mapping crnk filters into JPA restrictions with a given
-   * querySpec, criteria builder, root, ids, and id field name.
+   * Returns an array of predicates by mapping crnk filters into JPA restrictions
+   * with a given querySpec, criteria builder, root, ids, and id field name.
    *
-   * @param <E>         - root entity type
-   * @param querySpec   - crnk query spec with filters, cannot be null
-   * @param cb          - the criteria builder, cannot be null
-   * @param root        - the root type, cannot be null
-   * @param ids         - collection of ids, can be null
-   * @param idFieldName - collection of ids, can be null if collections is null, else throws null
-   *                    pointer.
+   * @param <E>
+   *                      - root entity type
+   * @param querySpec
+   *                      - crnk query spec with filters, cannot be null
+   * @param cb
+   *                      - the criteria builder, cannot be null
+   * @param root
+   *                      - the root type, cannot be null
+   * @param ids
+   *                      - collection of ids, can be null
+   * @param idFieldName
+   *                      - collection of ids, can be null if collections is null,
+   *                      else throws null pointer.
    * @return - array of predicates
    */
   public <E> Predicate[] buildPredicates(
@@ -118,7 +124,6 @@ public class DinaFilterResolver {
     @NonNull Root<E> root,
     Collection<Serializable> ids,
     String idFieldName
-
   ) {
     List<Predicate> restrictions = new ArrayList<>();
     restrictions.add(simpleFilterHandler.getRestriction(querySpec, root, cb));
@@ -133,13 +138,17 @@ public class DinaFilterResolver {
   }
 
   /**
-   * Parses a crnk {@link QuerySpec} to return a list of {@link Order} from a given {@link
-   * CriteriaBuilder} and {@link Path}.
+   * Parses a crnk {@link QuerySpec} to return a list of {@link Order} from a
+   * given {@link CriteriaBuilder} and {@link Path}.
    *
-   * @param <T>  - root type
-   * @param qs   - crnk query spec to parse
-   * @param cb   - critera builder to build orders
-   * @param root - root path of entity
+   * @param <T>
+   *               - root type
+   * @param qs
+   *               - crnk query spec to parse
+   * @param cb
+   *               - critera builder to build orders
+   * @param root
+   *               - root path of entity
    * @return a list of {@link Order} from a given {@link CriteriaBuilder} and {@link Path}
    */
   public static <T> List<Order> getOrders(QuerySpec qs, CriteriaBuilder cb, Path<T> root) {
@@ -155,7 +164,7 @@ public class DinaFilterResolver {
   /**
    * Adds left joins for eager Loading the relationships of a given query spec to a given root.
    *
-   * @param root              - root path to add joins
+   * @param root      - root path to add joins
    * @param includedRelations - relations to map
    */
   public static void eagerLoadRelations(Root<?> root, List<IncludeRelationSpec> includedRelations) {
