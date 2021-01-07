@@ -58,7 +58,7 @@ public class DinaFilterResolver {
     for (FilterSpec filterSpec : filters) {
       List<String> path = filterSpec.getAttributePath();
       // find nested resource class
-      Class<?> dtoClass = registry.findDeeplyNestedResource(resource, path);
+      Class<?> dtoClass = registry.resolveNestedResourceFromPath(resource, path);
 
       // find last attribute in path
       String attr = path.stream().reduce((s, s2) -> s2)
