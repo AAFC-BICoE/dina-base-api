@@ -254,20 +254,6 @@ public class DinaMappingRegistry {
         field -> field.getAnnotation(JsonApiExternalRelation.class).type())));
   }
 
-  private Map<Class<?>, DinaFieldAdapterHandler<?>> parseFieldAdapters(Set<Class<?>> resources) {
-    Map<Class<?>, DinaFieldAdapterHandler<?>> adapterPerClass = new HashMap<>();
-    for (Class<?> dto : resources) {
-      RelatedEntity annotation = dto.getAnnotation(RelatedEntity.class);
-      if (annotation != null) {
-        Class<?> relatedEntity = annotation.value();
-        DinaFieldAdapterHandler<?> handler = new DinaFieldAdapterHandler<>(dto);
-        adapterPerClass.put(dto, handler);
-        adapterPerClass.put(relatedEntity, handler);
-      }
-    }
-    return Map.copyOf(adapterPerClass);
-  }
-
   /**
    * Returns true if the dina repo should map the given field. currently that means if the field is not
    * generated (Marked with {@link IgnoreDinaMapping}), final, or is a {@link JsonApiRelation}.

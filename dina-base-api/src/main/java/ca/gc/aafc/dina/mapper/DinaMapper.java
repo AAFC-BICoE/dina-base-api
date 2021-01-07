@@ -37,7 +37,6 @@ public class DinaMapper<D, E> {
    */
   public DinaMapper(Class<D> dtoClass) {
     this(dtoClass, new DinaMappingRegistry(dtoClass));
-    this(dtoClass, new DinaMappingRegistry(dtoClass));
   }
 
   /**
