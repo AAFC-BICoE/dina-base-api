@@ -125,11 +125,19 @@ public class DinaMappingLayer<D, E> {
     registry.getExternalRelations().forEach(external -> {
       Object id = PropertyUtils.getProperty(source, external);
       if (id != null) {
-        PropertyUtils.setProperty(target, external,
-          ExternalRelationDto.builder()
-            .type(registry.findExternalType(external))
-            .id(id.toString())
-            .build());
+        if (Collection.class.isAssignableFrom(id.getClass())) {
+          PropertyUtils.setProperty(target, external,
+            ((Collection<?>) id).stream().map(ids -> ExternalRelationDto.builder()
+              .type(registry.findExternalType(external))
+              .id(ids.toString())
+              .build()).collect(Collectors.toList()));
+        } else {
+          PropertyUtils.setProperty(target, external,
+            ExternalRelationDto.builder()
+              .type(registry.findExternalType(external))
+              .id(id.toString())
+              .build());
+        }
       } else {
         PropertyUtils.setProperty(target, external, null);
       }
@@ -147,8 +155,15 @@ public class DinaMappingLayer<D, E> {
       Object externalRelation = PropertyUtils.getProperty(source, external);
       if (externalRelation != null) {
         String jsonIdFieldName = registry.findJsonIdFieldName(ExternalRelationDto.class);
-        PropertyUtils.setProperty(target, external,
-          UUID.fromString(PropertyUtils.getProperty(externalRelation, jsonIdFieldName).toString()));
+        if (Collection.class.isAssignableFrom(externalRelation.getClass())) {
+          PropertyUtils.setProperty(target, external,
+            ((Collection<?>) externalRelation).stream()
+              .map(rel -> UUID.fromString(PropertyUtils.getProperty(rel, jsonIdFieldName).toString()))
+              .collect(Collectors.toList()));
+        } else {
+          PropertyUtils.setProperty(target, external,
+            UUID.fromString(PropertyUtils.getProperty(externalRelation, jsonIdFieldName).toString()));
+        }
       } else {
         PropertyUtils.setProperty(target, external, null);
       }

@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
 
+import javax.persistence.Transient;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -51,4 +52,7 @@ public final class ProjectDTO {
   @JsonApiRelation
   private ExternalRelationDto originalAuthor;
 
+  @JsonApiExternalRelation(type = "author")
+  @JsonApiRelation
+  private List<ExternalRelationDto> authors;
 }
