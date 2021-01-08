@@ -156,8 +156,15 @@ public class DinaMappingLayer<D, E> {
       Object externalRelation = PropertyUtils.getProperty(source, external);
       if (externalRelation != null) {
         String jsonIdFieldName = registry.findJsonIdFieldName(ExternalRelationDto.class);
-        PropertyUtils.setProperty(target, external,
-          UUID.fromString(PropertyUtils.getProperty(externalRelation, jsonIdFieldName).toString()));
+        if (Collection.class.isAssignableFrom(externalRelation.getClass())) {
+          PropertyUtils.setProperty(target, external,
+            ((Collection<?>) externalRelation).stream()
+              .map(rel -> UUID.fromString(PropertyUtils.getProperty(rel, jsonIdFieldName).toString()))
+              .collect(Collectors.toList()));
+        } else {
+          PropertyUtils.setProperty(target, external,
+            UUID.fromString(PropertyUtils.getProperty(externalRelation, jsonIdFieldName).toString()));
+        }
       } else {
         PropertyUtils.setProperty(target, external, null);
       }

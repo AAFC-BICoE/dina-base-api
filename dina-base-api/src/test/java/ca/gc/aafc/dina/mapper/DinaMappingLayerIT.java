@@ -186,6 +186,9 @@ public class DinaMappingLayerIT {
       .createdBy(RandomStringUtils.randomAlphabetic(5))
       .createdOn(OffsetDateTime.now())
       .name(RandomStringUtils.randomAlphabetic(5))
+      .authors(List.of(ExternalRelationDto.builder()
+        .id(UUID.randomUUID().toString()).type("authors")
+        .build()))
       .build();
   }
 
