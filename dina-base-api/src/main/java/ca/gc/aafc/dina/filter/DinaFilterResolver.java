@@ -60,12 +60,8 @@ public class DinaFilterResolver {
       // find nested resource class
       Class<?> dtoClass = registry.resolveNestedResourceFromPath(resource, path);
 
-      // find last attribute in path
-      String attr = path.stream().reduce((s, s2) -> s2)
-        .orElseThrow(() -> new IllegalArgumentException("FilterSpec must provide an attribute path"));
-
-      if (registry.getFieldAdaptersPerClass().containsKey(dtoClass)) {
-        registry.getFieldAdaptersPerClass().get(dtoClass).findFilterSpec(attr)
+      if (CollectionUtils.isNotEmpty(path) && registry.getFieldAdaptersPerClass().containsKey(dtoClass)) {
+        registry.getFieldAdaptersPerClass().get(dtoClass).findFilterSpec(path.get(path.size() - 1))
           .ifPresentOrElse(
             specs -> newFilters.addAll(resolveSpecs(filterSpec, specs)),
             () -> newFilters.add(filterSpec));
