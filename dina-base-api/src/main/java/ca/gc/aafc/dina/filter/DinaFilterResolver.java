@@ -84,7 +84,7 @@ public class DinaFilterResolver {
   ) {
     List<String> path = applyValue.getAttributePath();
     List<String> pathPrefix = new ArrayList<>(path.subList(0, path.size() - 1));
-    return List.of(specs.apply(applyValue)).stream()
+    return Stream.of(specs.apply(applyValue))
       .map(fs -> {
         // Resolve filter spec path with generated spec paths
         List<String> newPath = Stream
