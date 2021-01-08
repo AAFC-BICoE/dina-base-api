@@ -176,6 +176,8 @@ public class DinaMappingLayerIT {
       entity.getAcMetaDataCreator().toString(), result.getAcMetaDataCreator().getId());
     Assertions.assertEquals(
       entity.getOriginalAuthor().toString(), result.getOriginalAuthor().getId());
+    Assertions.assertEquals(
+      entity.getAuthors().get(0).toString(), result.getAuthors().get(0).getId());
   }
 
   private ProjectDTO newProjectDto() {
@@ -195,6 +197,7 @@ public class DinaMappingLayerIT {
       .name(RandomStringUtils.randomAlphabetic(5))
       .acMetaDataCreator(UUID.randomUUID())
       .originalAuthor(UUID.randomUUID())
+      .authors(List.of(UUID.randomUUID()))
       .build();
   }
 
