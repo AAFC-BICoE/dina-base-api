@@ -33,11 +33,6 @@ public class DinaMapper<D, E> {
    * custom field handlers needed to resolve the entity graph will parsed from the given dto class.
    * <p>
    *
-   * <p>
-   * Use this constructor if you have no custom fields to resolve or you are unsure if you can
-   * supply the custom field handlers per class.
-   * <p>
-   *
    * @param dtoClass - class to map
    */
   public DinaMapper(Class<D> dtoClass) {
