@@ -5,9 +5,13 @@ import io.crnk.core.queryspec.mapper.DefaultQuerySpecUrlMapper;
 import io.crnk.operations.server.OperationsModule;
 import io.crnk.operations.server.TransactionOperationFilter;
 import io.crnk.spring.jpa.SpringTransactionRunner;
+import org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator;
+import org.springframework.validation.beanvalidation.MessageSourceResourceBundleLocator;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -15,6 +19,8 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 import javax.inject.Inject;
+import javax.validation.Validation;
+import javax.validation.Validator;
 import java.util.Locale;
 
 @Configuration
@@ -43,8 +49,8 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
   }
 
   /**
-   * Provides Crnk's SpringTransactionRunner that implements transactions around bulk jsonpatch
-   * operations using Spring's transaction management.
+   * Provides Crnk's SpringTransactionRunner that implements transactions around bulk jsonpatch operations
+   * using Spring's transaction management.
    *
    * @return the transaction runner.
    */
@@ -70,6 +76,19 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
     registry.addInterceptor(localeChangeInterceptor());
+  }
+
+  @Bean
+  public Validator validator(MessageSource source) {
+    return Validation.byDefaultProvider()
+      .configure()
+      .messageInterpolator(
+        new LocaleContextMessageInterpolator(
+          new ResourceBundleMessageInterpolator(
+            new MessageSourceResourceBundleLocator(
+              source))))
+      .buildValidatorFactory()
+      .getValidator();
   }
 
 }

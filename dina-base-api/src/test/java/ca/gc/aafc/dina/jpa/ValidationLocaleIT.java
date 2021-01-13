@@ -29,7 +29,7 @@ public class ValidationLocaleIT extends BaseRestAssuredTest {
       .post("/department")
       .then()
       .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
-      .body("errors[0].detail", Matchers.equalToIgnoringCase("Test french translation"));
+      .body("errors[0].detail", Matchers.endsWith("Test french translation"));
   }
 
   @Test
@@ -39,7 +39,7 @@ public class ValidationLocaleIT extends BaseRestAssuredTest {
       .post("/department")
       .then()
       .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
-      .body("errors[0].detail", Matchers.equalToIgnoringCase("location cannot be null."));
+      .body("errors[0].detail", Matchers.endsWith("location cannot be null."));
   }
 
   private RequestSpecification newRequest() {

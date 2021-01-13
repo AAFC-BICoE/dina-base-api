@@ -4,6 +4,7 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -12,7 +13,10 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
@@ -36,6 +40,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public E create(E entity) {
     preCreate(entity);
+    validate(entity);
     baseDAO.create(entity);
     return entity;
   }
@@ -49,6 +54,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public E update(E entity) {
     preUpdate(entity);
+    validate(entity);
     return baseDAO.update(entity);
   }
 
@@ -60,12 +66,12 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public void delete(E entity) {
     preDelete(entity);
+    validate(entity);
     baseDAO.delete(entity);
   }
 
   /**
-   * Returns a list of Entities of a given class restricted by the predicates returned by a given
-   * function.
+   * Returns a list of Entities of a given class restricted by the predicates returned by a given function.
    *
    * @param entityClass - entity class to query cannot be null
    * @param where       - function to return the predicates cannot be null
@@ -166,6 +172,13 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    */
   protected void preDelete(E entity) {
     // Defaults to do nothing
+  }
+
+  private void validate(E entity) {
+    Set<ConstraintViolation<E>> constraintViolations = baseDAO.validateEntity(entity);
+    if (CollectionUtils.isNotEmpty(constraintViolations)) {
+      throw new ConstraintViolationException(constraintViolations);
+    }
   }
 
 }
