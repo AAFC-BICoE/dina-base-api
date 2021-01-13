@@ -5,6 +5,7 @@ import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.restassured.RestAssured;
+import io.restassured.specification.RequestSpecification;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,13 +23,9 @@ public class ValidationLocaleIT extends BaseRestAssuredTest {
 
   @Test
   void validate_OnDifferentLocale_DifferentLocaleUsed() {
-    Map<String, Object> map = newDto();
-
-    RestAssured.given()
-      .port(this.testPort)
-      .contentType("application/vnd.api+json")
+    newRequest()
       .header("Accept-Language", "fr")
-      .body(map)
+      .body(newDto())
       .post("/department")
       .then()
       .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
@@ -37,16 +34,16 @@ public class ValidationLocaleIT extends BaseRestAssuredTest {
 
   @Test
   void validate_OnDefaultLocale_DefaultLocaleUsed() {
-    Map<String, Object> map = newDto();
-
-    RestAssured.given()
-      .port(this.testPort)
-      .contentType("application/vnd.api+json")
-      .body(map)
+    newRequest()
+      .body(newDto())
       .post("/department")
       .then()
       .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
       .body("errors[0].detail", Matchers.equalToIgnoringCase("location cannot be null."));
+  }
+
+  private RequestSpecification newRequest() {
+    return RestAssured.given().port(this.testPort).contentType("application/vnd.api+json");
   }
 
   private Map<String, Object> newDto() {
