@@ -66,7 +66,6 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public void delete(E entity) {
     preDelete(entity);
-    validate(entity);
     baseDAO.delete(entity);
   }
 

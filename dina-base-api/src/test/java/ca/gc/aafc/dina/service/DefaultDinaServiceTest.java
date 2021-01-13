@@ -199,13 +199,11 @@ public class DefaultDinaServiceTest {
   }
 
   @Test
-  public void preDelete_SetNameAndLocationNull_RunsBeforeDelete() {
+  public void preDelete_SetNameNull_RunsBeforeDelete() {
     Department result = persistDepartment();
     assertNotNull(result.getName());
-    assertNotNull(result.getLocation());
     serviceUnderTest.delete(result);
     assertNull(result.getName());
-    assertNull(result.getLocation());
   }
 
   private Department persistDepartment() {
