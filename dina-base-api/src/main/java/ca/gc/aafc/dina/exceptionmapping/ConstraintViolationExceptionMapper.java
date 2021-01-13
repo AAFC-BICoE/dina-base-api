@@ -1,55 +1,38 @@
 package ca.gc.aafc.dina.exceptionmapping;
 
-import java.util.Locale;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
 import javax.inject.Named;
-import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
 import io.crnk.core.engine.document.ErrorData;
 import io.crnk.core.engine.error.ErrorResponse;
 import io.crnk.core.engine.error.ExceptionMapper;
 import io.crnk.core.engine.http.HttpStatus;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 
 /**
- * Maps javax.validation.ConstraintViolationException to user-friendly errors to be displayed in JSONAPI.
+ * Maps javax.validation.ConstraintViolationException to user-friendly errors to be displayed in
+ * JSONAPI.
  */
 @Named
 public class ConstraintViolationExceptionMapper
-  implements ExceptionMapper<ConstraintViolationException> {
+    implements ExceptionMapper<ConstraintViolationException> {
 
   private static final Integer STATUS_ON_ERROR = HttpStatus.UNPROCESSABLE_ENTITY_422;
-
-  @Inject
-  private MessageSource messageSource;
 
   @Override
   public ErrorResponse toErrorResponse(ConstraintViolationException exception) {
     return new ErrorResponse(
-      exception.getConstraintViolations()
-        .stream()
-        .map(cv -> ErrorData.builder()
-          .setStatus(STATUS_ON_ERROR.toString())
-          .setTitle("Constraint violation")
-          .setDetail(mapDetail(cv))
-          .build())
-        .collect(Collectors.toList()),
-      STATUS_ON_ERROR
+        exception.getConstraintViolations()
+            .stream()
+            .map(cv -> ErrorData.builder()
+                .setStatus(STATUS_ON_ERROR.toString())
+                .setTitle("Constraint violation")
+                .setDetail(String.join(" ", cv.getPropertyPath().toString(), cv.getMessage()))
+                .build())
+            .collect(Collectors.toList()),
+            STATUS_ON_ERROR
     );
-  }
-
-  private String mapDetail(ConstraintViolation<?> cv) {
-    String messageTemplate = cv.getMessageTemplate();
-    if (messageTemplate.startsWith("#{") && messageTemplate.endsWith("}")) {
-      String stripped = messageTemplate.substring(2, messageTemplate.length() - 1);
-      return messageSource.getMessage(stripped, null, LocaleContextHolder.getLocale());
-    } else {
-      return cv.getMessage();
-    }
   }
 
   @Override
