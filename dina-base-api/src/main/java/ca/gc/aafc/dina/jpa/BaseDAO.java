@@ -1,14 +1,12 @@
 package ca.gc.aafc.dina.jpa;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import io.crnk.core.engine.information.bean.BeanInformation;
+import lombok.NonNull;
+import org.hibernate.Session;
+import org.hibernate.SimpleNaturalIdLoadAccess;
+import org.hibernate.annotations.NaturalId;
+import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.NoResultException;
@@ -20,16 +18,12 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-
-import org.hibernate.Session;
-import org.hibernate.SimpleNaturalIdLoadAccess;
-import org.hibernate.annotations.NaturalId;
-import org.springframework.stereotype.Component;
-
-import io.crnk.core.engine.information.bean.BeanInformation;
-import lombok.NonNull;
+import java.io.Serializable;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Base Data Access Object layer. This class should be the only one holding a
