@@ -11,6 +11,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.validation.Validator;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -286,10 +287,11 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     public DinaRepository<ProjectDTO, Project> projectRepo(
       BaseDAO baseDAO,
       DinaFilterResolver filterResolver,
-      ExternalResourceProvider externalResourceProvider
+      ExternalResourceProvider externalResourceProvider,
+      Validator validator
     ) {
       return new DinaRepository<>(
-        new DefaultDinaService<>(baseDAO),
+        new DefaultDinaService<>(baseDAO, validator),
         Optional.empty(),
         Optional.empty(),
         new DinaMapper<>(ProjectDTO.class),
@@ -305,10 +307,11 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     public DinaRepository<TaskDTO, Task> taskRepo(
       BaseDAO baseDAO,
       DinaFilterResolver filterResolver,
-      ExternalResourceProvider externalResourceProvider
+      ExternalResourceProvider externalResourceProvider,
+      Validator validator
     ) {
       return new DinaRepository<>(
-        new DefaultDinaService<>(baseDAO),
+        new DefaultDinaService<>(baseDAO, validator),
         Optional.empty(),
         Optional.empty(),
         new DinaMapper<>(TaskDTO.class),

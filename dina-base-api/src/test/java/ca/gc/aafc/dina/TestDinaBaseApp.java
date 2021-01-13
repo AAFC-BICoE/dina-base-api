@@ -26,6 +26,7 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 
 import javax.inject.Inject;
+import javax.validation.Validator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -44,9 +45,12 @@ public class TestDinaBaseApp {
   private Optional<GroupAuthorizationService> groupAuthService;
 
   @Bean
-  public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO) {
+  public DinaRepository<DepartmentDto, Department> departmentRepository(
+    BaseDAO baseDAO,
+    Validator validator
+  ) {
     return new DinaRepository<>(
-      new DefaultDinaService<>(baseDAO),
+      new DefaultDinaService<>(baseDAO, validator),
       Optional.empty(),
       Optional.empty(),
       new DinaMapper<>(DepartmentDto.class),
@@ -58,9 +62,9 @@ public class TestDinaBaseApp {
   }
 
   @Bean
-  public DinaRepository<EmployeeDto, Employee> employeeRepository(BaseDAO baseDAO) {
+  public DinaRepository<EmployeeDto, Employee> employeeRepository(BaseDAO baseDAO, Validator validator) {
     return new DinaRepository<>(
-      new DefaultDinaService<>(baseDAO),
+      new DefaultDinaService<>(baseDAO, validator),
       Optional.empty(),
       Optional.empty(),
       new DinaMapper<>(EmployeeDto.class),
@@ -72,13 +76,13 @@ public class TestDinaBaseApp {
   }
 
   @Bean
-  public DinaServiceTestImplementation serviceUnderTest(BaseDAO baseDAO) {
-    return new DinaServiceTestImplementation(baseDAO);
+  public DinaServiceTestImplementation serviceUnderTest(BaseDAO baseDAO, Validator validator) {
+    return new DinaServiceTestImplementation(baseDAO, validator);
   }
 
   @Bean
-  public DinaPersonService personService(BaseDAO baseDAO) {
-    return new DinaPersonService(baseDAO);
+  public DinaPersonService personService(BaseDAO baseDAO, Validator validator) {
+    return new DinaPersonService(baseDAO, validator);
   }
 
   @Bean
@@ -100,10 +104,13 @@ public class TestDinaBaseApp {
   }
 
   @Bean
-  public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(BaseDAO baseDAO) {
+  public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(
+    BaseDAO baseDAO,
+    Validator validator
+  ) {
     DinaMapper<VocabularyDto, Vocabulary> dinaMapper = new DinaMapper<>(VocabularyDto.class);
     return new ReadOnlyDinaRepository<>(
-      new DefaultDinaService<>(baseDAO),
+      new DefaultDinaService<>(baseDAO, validator),
       dinaMapper,
       VocabularyDto.class,
       Vocabulary.class,

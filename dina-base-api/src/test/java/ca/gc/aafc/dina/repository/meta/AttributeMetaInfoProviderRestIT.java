@@ -30,6 +30,7 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.validation.Validator;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +66,8 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
     @Bean
     public DinaRepository<ThingDTO, Thing> projectRepo(
       BaseDAO baseDAO,
-      DinaFilterResolver filterResolver
+      DinaFilterResolver filterResolver,
+      Validator validator
     ) {
       return new DinaMetaInfoRepo<>(
         baseDAO,
@@ -74,7 +76,7 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
         filterResolver,
         thingDTO -> AttributeMetaInfoProvider.DinaJsonMetaInfo.builder()
           .properties(Map.of(KEY, List.of(VALUE_1, VALUE_2).toArray()))
-          .build());
+          .build(), validator);
     }
   }
 
@@ -125,10 +127,11 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
       Class<D> resourceClass,
       Class<E> entityClass,
       DinaFilterResolver filterResolver,
-      Function<D, AttributeMetaInfoProvider.DinaJsonMetaInfo> handler
+      Function<D, AttributeMetaInfoProvider.DinaJsonMetaInfo> handler,
+      Validator validator
     ) {
       super(
-        new DefaultDinaService<>(baseDAO),
+        new DefaultDinaService<>(baseDAO, validator),
         Optional.empty(),
         Optional.empty(),
         new DinaMapper<>(resourceClass),

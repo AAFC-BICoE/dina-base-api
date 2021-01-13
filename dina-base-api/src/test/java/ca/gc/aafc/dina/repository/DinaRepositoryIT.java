@@ -27,6 +27,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.validation.Validator;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -519,8 +520,8 @@ public class DinaRepositoryIT {
 
   public static class DinaPersonService extends DefaultDinaService<Person> {
 
-    public DinaPersonService(@NonNull BaseDAO baseDAO) {
-      super(baseDAO);
+    public DinaPersonService(@NonNull BaseDAO baseDAO, @NonNull Validator validator) {
+      super(baseDAO, validator);
     }
 
     @Override

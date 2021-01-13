@@ -22,6 +22,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
+import javax.validation.Validator;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.CoreMatchers;
@@ -240,8 +241,11 @@ public class DefaultDinaServiceTest {
     @Inject
     private BaseDAO baseDAO;
 
-    public DinaServiceTestImplementation(@NonNull BaseDAO baseDAO) {
-      super(baseDAO);
+    public DinaServiceTestImplementation(
+      @NonNull BaseDAO baseDAO,
+      @NonNull Validator validator
+    ) {
+      super(baseDAO, validator);
     }
 
     @Override

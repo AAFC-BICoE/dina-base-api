@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Import;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.validation.Validator;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -219,10 +220,11 @@ public class DinaMappingLayerIT {
       BaseDAO baseDAO,
       DinaFilterResolver filterResolver,
       ExternalResourceProvider externalResourceProvider,
-      BuildProperties buildProperties
+      BuildProperties buildProperties,
+      Validator validator
     ) {
       return new DinaRepository<>(
-        new DefaultDinaService<>(baseDAO),
+        new DefaultDinaService<>(baseDAO, validator),
         Optional.empty(),
         Optional.empty(),
         new DinaMapper<>(ProjectDTO.class),
@@ -239,10 +241,11 @@ public class DinaMappingLayerIT {
       BaseDAO baseDAO,
       DinaFilterResolver filterResolver,
       ExternalResourceProvider externalResourceProvider,
-      BuildProperties buildProperties
+      BuildProperties buildProperties,
+      Validator validator
     ) {
       return new DinaRepository<>(
-        new DefaultDinaService<>(baseDAO),
+        new DefaultDinaService<>(baseDAO, validator),
         Optional.empty(),
         Optional.empty(),
         new DinaMapper<>(TaskDTO.class),

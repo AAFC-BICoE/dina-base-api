@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import javax.inject.Inject;
+import javax.validation.Validator;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -151,10 +152,11 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     @Bean
     public DinaRepository<ChainDto, Chain> chainRepo(
       BaseDAO baseDAO,
-      DinaFilterResolver filterResolver
+      DinaFilterResolver filterResolver,
+      Validator val
     ) {
       return new DinaRepository<>(
-        new DefaultDinaService<>(baseDAO) {
+        new DefaultDinaService<>(baseDAO, val) {
           @Override
           protected void preCreate(Chain entity) {
             entity.setUuid(UUID.randomUUID());
@@ -174,10 +176,11 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     @Bean
     public DinaRepository<ChainTemplateDto, ChainTemplate> TemplateRepo(
       BaseDAO baseDAO,
-      DinaFilterResolver filterResolver
+      DinaFilterResolver filterResolver,
+      Validator val
     ) {
       return new DinaRepository<>(
-        new DefaultDinaService<>(baseDAO) {
+        new DefaultDinaService<>(baseDAO, val) {
           @Override
           protected void preCreate(ChainTemplate entity) {
             entity.setUuid(UUID.randomUUID());

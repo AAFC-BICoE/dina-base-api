@@ -15,6 +15,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -30,6 +31,8 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
 
   @NonNull
   private final BaseDAO baseDAO;
+  @NonNull
+  private final Validator validator;
 
   /**
    * Persist an instance of the provided entity in the database.
@@ -175,7 +178,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   private void validate(E entity) {
-    Set<ConstraintViolation<E>> constraintViolations = baseDAO.validateEntity(entity);
+    Set<ConstraintViolation<E>> constraintViolations = validator.validate(entity);
     if (CollectionUtils.isNotEmpty(constraintViolations)) {
       throw new ConstraintViolationException(constraintViolations);
     }
