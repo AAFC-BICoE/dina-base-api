@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.jpa;
+package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
@@ -15,9 +15,9 @@ import java.util.Map;
 @SpringBootTest(classes = TestDinaBaseApp.class,
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"})
-public class ValidationLocaleIT extends BaseRestAssuredTest {
+public class DinaServiceValidationLocaleIT extends BaseRestAssuredTest {
 
-  protected ValidationLocaleIT() {
+  protected DinaServiceValidationLocaleIT() {
     super("/department");
   }
 
