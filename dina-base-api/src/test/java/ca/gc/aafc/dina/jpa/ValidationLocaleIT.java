@@ -5,8 +5,8 @@ import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.restassured.RestAssured;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Map;
@@ -21,19 +21,36 @@ public class ValidationLocaleIT extends BaseRestAssuredTest {
   }
 
   @Test
-  void validate_OnDifferentLanguage_LanguageTranslated() {
-    DepartmentDto dto = DepartmentDto.builder().name("dfadf").location(null).build();
-
-    Map<String, Object> map = JsonAPITestHelper.toJsonAPIMap(
-      "department",
-      JsonAPITestHelper.toAttributeMap(dto));
+  void validate_OnDifferentLocale_DifferentLocaleUsed() {
+    Map<String, Object> map = newDto();
 
     RestAssured.given()
       .port(this.testPort)
       .contentType("application/vnd.api+json")
-      .header("lang", "fr")
+      .header("Accept-Language", "fr")
       .body(map)
       .post("/department")
-      .then().log().all(true);
+      .then()
+      .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
+      .body("errors[0].detail", Matchers.equalToIgnoringCase("Test french translation"));
+  }
+
+  @Test
+  void validate_OnDefaultLocale_DefaultLocaleUsed() {
+    Map<String, Object> map = newDto();
+
+    RestAssured.given()
+      .port(this.testPort)
+      .contentType("application/vnd.api+json")
+      .body(map)
+      .post("/department")
+      .then()
+      .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
+      .body("errors[0].detail", Matchers.equalToIgnoringCase("location cannot be null."));
+  }
+
+  private Map<String, Object> newDto() {
+    DepartmentDto dto = DepartmentDto.builder().name("dfadf").location(null).build();
+    return JsonAPITestHelper.toJsonAPIMap("department", JsonAPITestHelper.toAttributeMap(dto));
   }
 }
