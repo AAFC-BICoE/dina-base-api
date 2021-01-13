@@ -110,7 +110,7 @@ public class DinaMappingRegistryTest {
     DinaMappingRegistry registry = new DinaMappingRegistry(ProjectDTO.class);
     MatcherAssert.assertThat(
       registry.getExternalRelations(),
-      Matchers.containsInAnyOrder("acMetaDataCreator", "originalAuthor"));
+      Matchers.containsInAnyOrder("acMetaDataCreator", "originalAuthor", "authors"));
   }
 
   @Test

@@ -1,32 +1,5 @@
 package ca.gc.aafc.dina.repository;
 
-import static org.junit.Assert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.hamcrest.core.Is;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
@@ -45,6 +18,26 @@ import io.crnk.core.queryspec.SortSpec;
 import io.crnk.core.resource.list.ResourceList;
 import io.crnk.core.resource.meta.PagedMetaInformation;
 import lombok.NonNull;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.hamcrest.core.Is;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class)
@@ -196,6 +189,47 @@ public class DinaRepositoryIT {
   }
 
   @Test
+  public void findAll_FilterOnCustomField() {
+    List<PersonDTO> persited = new ArrayList<>();
+    for (int i = 0; i < 10; i++) {
+      persited.add(persistPerson());
+    }
+
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    PersonDTO expected = persited.get(0);
+    querySpec.addFilter(
+      PathSpec.of("customField").filter(FilterOperator.EQ, expected.getCustomField()));
+
+    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    assertEquals(1, resultList.size());
+    assertEquals(expected.getUuid(), resultList.get(0).getUuid());
+  }
+
+  @Test
+  public void findAll_FilterOnNestedCustomField() {
+    Department depart = persistDepartment();
+    PersonDTO expected = createPersonDto();
+    expected.setDepartment(DepartmentDto.builder().uuid(depart.getUuid()).build());
+    expected = dinaRepository.create(expected);
+
+    // Persist extra people with no department
+    for (int i = 0; i < 10; i++) {
+      PersonDTO toPersist = createPersonDto();
+      toPersist.setDepartment(null);
+      dinaRepository.create(toPersist);
+    }
+
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+
+    querySpec.addFilter(PathSpec.of("department", "derivedFromLocation")
+      .filter(FilterOperator.EQ, depart.getLocation()));
+
+    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    assertEquals(1, resultList.size());
+    assertEquals(expected.getUuid(), resultList.get(0).getUuid());
+  }
+
+  @Test
   public void findAll_SortingByName_ReturnsSorted() {
     List<String> names = Arrays.asList("a", "b", "c", "d");
     List<String> shuffledNames = Arrays.asList("b", "a", "d", "c");
@@ -325,7 +359,7 @@ public class DinaRepositoryIT {
         new IncludeRelationSpec(List.of("department", "departmentHead")),
         new IncludeRelationSpec(List.of("department", "departmentHead", "department"))
       ));
-    
+
     dinaRepository.findAll(querySpec);
   }
 
@@ -439,16 +473,18 @@ public class DinaRepositoryIT {
 
   private PersonDTO createPersonDto() {
     DepartmentDto singleRelationDto = DepartmentDto.builder()
-        .uuid(singleRelationUnderTest.getUuid())
-        .build();
+      .uuid(singleRelationUnderTest.getUuid())
+      .build();
     List<DepartmentDto> collectionRelationDtos = collectionRelationUnderTest.stream()
-        .map(c -> DepartmentDto.builder().uuid(c.getUuid()).build())
-        .collect(Collectors.toList());
+      .map(c -> DepartmentDto.builder().uuid(c.getUuid()).build())
+      .collect(Collectors.toList());
     return PersonDTO.builder()
-        .department(singleRelationDto)
-        .departments(collectionRelationDtos)
-        .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
-        .name(RandomStringUtils.random(4)).build();
+      .department(singleRelationDto)
+      .departments(collectionRelationDtos)
+      .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
+      .name(RandomStringUtils.randomAlphabetic(4))
+      .group(RandomStringUtils.randomAlphabetic(4))
+      .build();
   }
 
   private static Department createDepartment(String name, String Location) {

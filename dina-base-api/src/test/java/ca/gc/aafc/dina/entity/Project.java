@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -42,4 +43,6 @@ public final class Project implements DinaEntity {
   private UUID originalAuthor;
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<ComplexObject> nameTranslations;
+  @Transient
+  private List<UUID> authors;
 }

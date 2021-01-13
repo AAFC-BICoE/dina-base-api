@@ -4,6 +4,7 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
+import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
@@ -11,8 +12,6 @@ import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
-import io.crnk.core.engine.registry.ResourceRegistry;
-import io.crnk.core.engine.registry.ResourceRegistryAware;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.QuerySpec;
@@ -25,14 +24,11 @@ import io.crnk.core.resource.meta.MetaInformation;
 import io.crnk.core.resource.meta.PagedMetaInformation;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.SneakyThrows;
+import org.springframework.boot.info.BuildProperties;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-
-import org.springframework.boot.info.BuildProperties;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,10 +46,11 @@ import java.util.stream.Collectors;
  */
 @Transactional
 public class DinaRepository<D, E extends DinaEntity>
-  implements ResourceRepository<D, Serializable>, ResourceRegistryAware, MetaRepository<D> {
+  implements ResourceRepository<D, Serializable>, MetaRepository<D> {
 
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
+  private static final long DEFAULT_LIMIT = 100;
 
   @Getter
   private final Class<D> resourceClass;
@@ -69,12 +66,7 @@ public class DinaRepository<D, E extends DinaEntity>
   private final List<Map<String, String>> externalMetaMap;
 
   private final BuildProperties buildProperties;
-
-  private static final long DEFAULT_LIMIT = 100;
-
-  @Getter
-  @Setter(onMethod_ = @Override)
-  private ResourceRegistry resourceRegistry;
+  private final DinaMappingRegistry registry;
 
   @Inject
   public DinaRepository(
@@ -101,7 +93,8 @@ public class DinaRepository<D, E extends DinaEntity>
     } else {
       this.externalMetaMap = null;
     }
-    this.mappingLayer = new DinaMappingLayer<>(resourceClass, dinaService, dinaMapper);
+    this.registry = new DinaMappingRegistry(resourceClass);
+    this.mappingLayer = new DinaMappingLayer<>(resourceClass, dinaMapper, dinaService, this.registry);
   }
 
   /**
@@ -148,13 +141,16 @@ public class DinaRepository<D, E extends DinaEntity>
    */
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
-    String idName = SelectionHandler.getIdAttribute(resourceClass, resourceRegistry);
+    QuerySpec newQuery = querySpec.clone();
+    newQuery.setFilters(
+      DinaFilterResolver.resolveFilterAdapters(resourceClass, querySpec.getFilters(), registry));
+    String idName = findIdFieldName(resourceClass);
 
-    List<D> dList = mappingLayer.mapEntitiesToDto(querySpec, fetchEntities(ids, querySpec, idName));
+    List<D> dList = mappingLayer.mapEntitiesToDto(newQuery, fetchEntities(ids, newQuery, idName));
 
     Long resourceCount = dinaService.getResourceCount(
       entityClass,
-      (cb, root) -> filterResolver.buildPredicates(querySpec, cb, root, ids, idName));
+      (cb, root) -> filterResolver.buildPredicates(newQuery, cb, root, ids, idName));
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
@@ -276,9 +272,6 @@ public class DinaRepository<D, E extends DinaEntity>
    * @return - id field name for a given class.
    */
   private String findIdFieldName(Class<?> clazz) {
-    return this.resourceRegistry.findEntry(clazz)
-      .getResourceInformation()
-      .getIdField()
-      .getUnderlyingName();
+    return this.registry.findJsonIdFieldName(clazz);
   }
 }

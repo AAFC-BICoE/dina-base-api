@@ -5,6 +5,7 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.queryspec.QuerySpec;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
  * @param <D> - Resource type for the mapping layer
  * @param <E> - Entity type for the mapping layer
  */
+@AllArgsConstructor
 public class DinaMappingLayer<D, E> {
 
   private final Class<D> resourceClass;
@@ -40,14 +42,11 @@ public class DinaMappingLayer<D, E> {
   private final DinaMappingRegistry registry;
 
   public DinaMappingLayer(
-    @NonNull Class<D> resourceClass,
-    @NonNull DinaService<? extends DinaEntity> dinaService,
-    @NonNull DinaMapper<D, E> dinaMapper
+    Class<D> resourceClass,
+    DinaService<? extends DinaEntity> dinaService,
+    DinaMapper<D, E> dinaMapper
   ) {
-    this.resourceClass = resourceClass;
-    this.dinaService = dinaService;
-    this.dinaMapper = dinaMapper;
-    this.registry = new DinaMappingRegistry(resourceClass);
+    this(resourceClass, dinaMapper, dinaService, new DinaMappingRegistry(resourceClass));
   }
 
   /**
@@ -126,11 +125,19 @@ public class DinaMappingLayer<D, E> {
     registry.getExternalRelations().forEach(external -> {
       Object id = PropertyUtils.getProperty(source, external);
       if (id != null) {
-        PropertyUtils.setProperty(target, external,
-          ExternalRelationDto.builder()
-            .type(registry.findExternalType(external))
-            .id(id.toString())
-            .build());
+        if (Collection.class.isAssignableFrom(id.getClass())) {
+          PropertyUtils.setProperty(target, external,
+            ((Collection<?>) id).stream().map(ids -> ExternalRelationDto.builder()
+              .type(registry.findExternalType(external))
+              .id(ids.toString())
+              .build()).collect(Collectors.toList()));
+        } else {
+          PropertyUtils.setProperty(target, external,
+            ExternalRelationDto.builder()
+              .type(registry.findExternalType(external))
+              .id(id.toString())
+              .build());
+        }
       } else {
         PropertyUtils.setProperty(target, external, null);
       }
@@ -148,8 +155,15 @@ public class DinaMappingLayer<D, E> {
       Object externalRelation = PropertyUtils.getProperty(source, external);
       if (externalRelation != null) {
         String jsonIdFieldName = registry.findJsonIdFieldName(ExternalRelationDto.class);
-        PropertyUtils.setProperty(target, external,
-          UUID.fromString(PropertyUtils.getProperty(externalRelation, jsonIdFieldName).toString()));
+        if (Collection.class.isAssignableFrom(externalRelation.getClass())) {
+          PropertyUtils.setProperty(target, external,
+            ((Collection<?>) externalRelation).stream()
+              .map(rel -> UUID.fromString(PropertyUtils.getProperty(rel, jsonIdFieldName).toString()))
+              .collect(Collectors.toList()));
+        } else {
+          PropertyUtils.setProperty(target, external,
+            UUID.fromString(PropertyUtils.getProperty(externalRelation, jsonIdFieldName).toString()));
+        }
       } else {
         PropertyUtils.setProperty(target, external, null);
       }
