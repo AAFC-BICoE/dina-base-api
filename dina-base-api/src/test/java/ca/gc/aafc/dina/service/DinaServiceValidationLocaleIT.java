@@ -2,24 +2,23 @@ package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
-import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.server.LocalServerPort;
 
 import java.util.Map;
 
 @SpringBootTest(classes = TestDinaBaseApp.class,
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"})
-public class DinaServiceValidationLocaleIT extends BaseRestAssuredTest {
+public class DinaServiceValidationLocaleIT {
 
-  protected DinaServiceValidationLocaleIT() {
-    super("/department");
-  }
+  @LocalServerPort
+  protected int testPort;
 
   @Test
   void validate_OnDifferentLocale_DifferentLocaleUsed() {
