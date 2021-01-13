@@ -44,8 +44,8 @@ public class ConstraintViolationExceptionMapper
 
   private String mapDetail(ConstraintViolation<?> cv) {
     String messageTemplate = cv.getMessageTemplate();
-    if (messageTemplate.startsWith("{") && messageTemplate.endsWith("}")) {
-      String stripped = messageTemplate.substring(1, messageTemplate.length() - 1);
+    if (messageTemplate.startsWith("#{") && messageTemplate.endsWith("}")) {
+      String stripped = messageTemplate.substring(2, messageTemplate.length() - 1);
       return messageSource.getMessage(stripped, null, LocaleContextHolder.getLocale());
     } else {
       return cv.getMessage();
