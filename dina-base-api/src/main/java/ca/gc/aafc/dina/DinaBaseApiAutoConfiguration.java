@@ -49,8 +49,8 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
   }
 
   /**
-   * Provides Crnk's SpringTransactionRunner that implements transactions around bulk jsonpatch operations
-   * using Spring's transaction management.
+   * Provides Crnk's SpringTransactionRunner that implements transactions around bulk jsonpatch
+   * operations using Spring's transaction management.
    *
    * @return the transaction runner.
    */

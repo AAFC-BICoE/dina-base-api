@@ -71,7 +71,8 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
-   * Returns a list of Entities of a given class restricted by the predicates returned by a given function.
+   * Returns a list of Entities of a given class restricted by the predicates returned by a given
+   * function.
    *
    * @param entityClass - entity class to query cannot be null
    * @param where       - function to return the predicates cannot be null
