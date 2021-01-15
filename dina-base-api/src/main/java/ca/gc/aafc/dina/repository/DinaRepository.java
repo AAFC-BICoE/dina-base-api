@@ -25,6 +25,7 @@ import io.crnk.core.resource.meta.PagedMetaInformation;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.boot.info.BuildProperties;
 
 import javax.inject.Inject;
@@ -67,6 +68,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private final BuildProperties buildProperties;
   private final DinaMappingRegistry registry;
+  private final boolean hasFieldAdapters;
 
   @Inject
   public DinaRepository(
@@ -95,6 +97,7 @@ public class DinaRepository<D, E extends DinaEntity>
     }
     this.registry = new DinaMappingRegistry(resourceClass);
     this.mappingLayer = new DinaMappingLayer<>(resourceClass, dinaMapper, dinaService, this.registry);
+    this.hasFieldAdapters = CollectionUtils.isNotEmpty(registry.getFieldAdaptersPerClass().keySet());
   }
 
   /**
@@ -164,8 +167,7 @@ public class DinaRepository<D, E extends DinaEntity>
    * @return A new QuerySpec with the resolved filters, or the original query spec.
    */
   private QuerySpec resolveFilterAdapters(QuerySpec querySpec) {
-    // If a resource in the resource graph is present in the tracked field adapter classes, process the spec.
-    if (!Collections.disjoint(registry.getFieldAdaptersPerClass().keySet(), registry.getResourceGraph())) {
+    if (hasFieldAdapters) {
       QuerySpec spec = querySpec.clone();
       spec.setFilters(
         DinaFilterResolver.resolveFilterAdapters(resourceClass, querySpec.getFilters(), registry));
