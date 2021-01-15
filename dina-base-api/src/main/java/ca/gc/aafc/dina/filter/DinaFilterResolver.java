@@ -65,6 +65,8 @@ public class DinaFilterResolver {
           .ifPresentOrElse(
             specs -> newFilters.addAll(resolveSpecs(filterSpec, specs)),
             () -> newFilters.add(filterSpec));
+      } else {
+        newFilters.add(filterSpec);
       }
     }
     return newFilters;
