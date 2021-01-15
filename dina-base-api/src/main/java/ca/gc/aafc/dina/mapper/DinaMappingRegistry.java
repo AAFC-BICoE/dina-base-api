@@ -244,7 +244,7 @@ public class DinaMappingRegistry {
     Map<Class<?>, DinaFieldAdapterHandler<?>> adapterPerClass = new HashMap<>();
     for (Class<?> dto : resources) {
       RelatedEntity annotation = dto.getAnnotation(RelatedEntity.class);
-      if (annotation != null) {
+      if (annotation != null && dto.isAnnotationPresent(CustomFieldAdapter.class)) {
         Class<?> relatedEntity = annotation.value();
         DinaFieldAdapterHandler<?> handler = new DinaFieldAdapterHandler<>(dto);
         adapterPerClass.put(dto, handler);
