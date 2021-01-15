@@ -14,7 +14,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,9 +41,6 @@ public class DinaMappingRegistry {
   // Track Field adapters per class
   @Getter
   private final Map<Class<?>, DinaFieldAdapterHandler<?>> fieldAdaptersPerClass;
-  @Getter
-  // The set of resources representing the graph of this resource domain.
-  private final Set<Class<?>> resourceGraph;
 
   /**
    * Parsing a given resource graph requires the use of reflection. A DinaMappingRegistry should not be
@@ -53,12 +49,12 @@ public class DinaMappingRegistry {
    * @param resourceClass - resource class to track
    */
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
-    resourceGraph = Collections.unmodifiableSet(parseGraph(resourceClass, new HashSet<>()));
+    Set<Class<?>> resources = parseGraph(resourceClass, new HashSet<>());
     this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
-    this.attributesPerClass = parseAttributesPerClass(resourceGraph);
-    this.mappableRelationsPerClass = parseMappableRelations(resourceGraph);
-    this.jsonIdFieldNamePerClass = parseJsonIds(resourceGraph);
-    this.fieldAdaptersPerClass = parseFieldAdapters(resourceGraph);
+    this.attributesPerClass = parseAttributesPerClass(resources);
+    this.mappableRelationsPerClass = parseMappableRelations(resources);
+    this.jsonIdFieldNamePerClass = parseJsonIds(resources);
+    this.fieldAdaptersPerClass = parseFieldAdapters(resources);
   }
 
   /**
