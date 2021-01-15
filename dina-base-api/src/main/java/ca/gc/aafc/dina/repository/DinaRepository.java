@@ -166,7 +166,7 @@ public class DinaRepository<D, E extends DinaEntity>
   private QuerySpec resolveFilterAdapters(QuerySpec querySpec) {
     // If a resource in the resource graph is present in the tracked field adapter classes, process the spec.
     if (!Collections.disjoint(registry.getFieldAdaptersPerClass().keySet(), registry.getResourceGraph())) {
-      QuerySpec spec = spec = querySpec.clone();
+      QuerySpec spec = querySpec.clone();
       spec.setFilters(
         DinaFilterResolver.resolveFilterAdapters(resourceClass, querySpec.getFilters(), registry));
       return spec;
