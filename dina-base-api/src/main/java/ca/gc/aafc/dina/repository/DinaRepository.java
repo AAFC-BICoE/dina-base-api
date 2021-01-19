@@ -25,6 +25,7 @@ import io.crnk.core.resource.meta.PagedMetaInformation;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.boot.info.BuildProperties;
 
 import javax.inject.Inject;
@@ -67,6 +68,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private final BuildProperties buildProperties;
   private final DinaMappingRegistry registry;
+  private final boolean hasFieldAdapters;
 
   @Inject
   public DinaRepository(
@@ -95,6 +97,7 @@ public class DinaRepository<D, E extends DinaEntity>
     }
     this.registry = new DinaMappingRegistry(resourceClass);
     this.mappingLayer = new DinaMappingLayer<>(resourceClass, dinaMapper, dinaService, this.registry);
+    this.hasFieldAdapters = CollectionUtils.isNotEmpty(registry.getFieldAdaptersPerClass().keySet());
   }
 
   /**
@@ -141,20 +144,36 @@ public class DinaRepository<D, E extends DinaEntity>
    */
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
-    QuerySpec newQuery = querySpec.clone();
-    newQuery.setFilters(
-      DinaFilterResolver.resolveFilterAdapters(resourceClass, querySpec.getFilters(), registry));
+    final QuerySpec spec = resolveFilterAdapters(querySpec);
     String idName = findIdFieldName(resourceClass);
 
-    List<D> dList = mappingLayer.mapEntitiesToDto(newQuery, fetchEntities(ids, newQuery, idName));
+    List<D> dList = mappingLayer.mapEntitiesToDto(spec, fetchEntities(ids, spec, idName));
 
     Long resourceCount = dinaService.getResourceCount(
       entityClass,
-      (cb, root) -> filterResolver.buildPredicates(newQuery, cb, root, ids, idName));
+      (cb, root) -> filterResolver.buildPredicates(spec, cb, root, ids, idName));
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
     return new DefaultResourceList<>(dList, metaInformation, NO_LINK_INFORMATION);
+  }
+
+  /**
+   * Convenience method to resolve the filters of a given query spec for {@link
+   * ca.gc.aafc.dina.mapper.DinaFieldAdapter}'s. A QuerySpec will only be processed if a resources entity
+   * graph contains any field adapters.
+   *
+   * @param querySpec - QuerySpec with filters to resolve
+   * @return A new QuerySpec with the resolved filters, or the original query spec.
+   */
+  private QuerySpec resolveFilterAdapters(QuerySpec querySpec) {
+    if (hasFieldAdapters) {
+      QuerySpec spec = querySpec.clone();
+      spec.setFilters(
+        DinaFilterResolver.resolveFilterAdapters(resourceClass, querySpec.getFilters(), registry));
+      return spec;
+    }
+    return querySpec;
   }
 
   private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName) {
