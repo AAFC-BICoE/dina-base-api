@@ -27,7 +27,7 @@ public class DinaFilterArgumentParser extends DefaultArgumentParser {
     if (type.equals(OffsetDateTime.class)) {
       return (T) OffsetDateTime.parse(argument);
     }
-    if (type.equals(LocalDateTime.class)){
+    if (type.equals(LocalDateTime.class)) {
       return (T) LocalDateTime.parse(argument);
     }
 
