@@ -150,7 +150,7 @@ public final class JsonAPITestHelper {
    * Convenience method to generate a Map representation of a single External Relation.
    *
    * @param type type of the external relation
-   * @return a Map representation of a External Relation as a List
+   * @return a Map representation of a External Relation
    */
   public static Map<String, Object> generateExternalRelation(String type) {
     return Map.of("data", Map.of(
