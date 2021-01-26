@@ -37,14 +37,14 @@ public class YamlPropertyLoaderFactoryTest {
   @Getter
   @Setter
   @EnableConfigurationProperties
-  public static class TestConfig {
+  static class TestConfig {
     private YamlConfig yaml;
   }
 
   @ConstructorBinding
   @RequiredArgsConstructor
   @Getter
-  public static class YamlConfig {
+  static class YamlConfig {
     private final String test;
   }
 }
