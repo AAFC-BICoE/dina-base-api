@@ -21,8 +21,6 @@ public class YamlPropertyLoaderFactory extends DefaultPropertySourceFactory {
   public PropertySource<?> createPropertySource(String name, EncodedResource resource)
       throws IOException {
 
-    System.out.println("hahahaha");
-
     CompositePropertySource propertySource = new CompositePropertySource(
         resource.getResource().getFilename());
     new YamlPropertySourceLoader()
