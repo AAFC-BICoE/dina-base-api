@@ -1,39 +1,50 @@
 package ca.gc.aafc.dina.property;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.ConstructorBinding;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import javax.inject.Inject;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest
+@SpringBootTest(classes = YamlPropertyLoaderFactoryTest.TestConfig.class)
 public class YamlPropertyLoaderFactoryTest {
 
-  @Autowired
-  private YamlConfig yamlConfig;
+  @Inject
+  private TestConfig testConfig;
 
   @Test
   public void testConfig() {
-    assertNotNull(yamlConfig.getTest());
+    assertNotNull(testConfig.getYaml().getTest());
+    assertEquals("test1", testConfig.getYaml().getTest());
   }
 
   /**
    * Nested configuration to avoid class scanning
    */
-  @Configuration(proxyBeanMethods = false)
-  @EnableConfigurationProperties(YamlConfig.class)
-  static class TestConfig{
+  @Configuration
+  @ConfigurationProperties
+  @PropertySource(value = "classpath:yamlConfig.yml", factory = YamlPropertyLoaderFactory.class)
+  @Getter
+  @Setter
+  @EnableConfigurationProperties
+  public static class TestConfig {
+    private YamlConfig yaml;
   }
 
-  @PropertySource(value = "classpath:yamlConfig.yml", factory = YamlPropertyLoaderFactory.class)
-  @ConfigurationProperties
-  @Data
-  static class YamlConfig {
+  @ConstructorBinding
+  @RequiredArgsConstructor
+  @Getter
+  public static class YamlConfig {
     private final String test;
   }
 }
