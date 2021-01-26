@@ -147,7 +147,7 @@ public final class JsonAPITestHelper {
   }
 
   /**
-   * Convenience method to generate Map representation of a single External Relation.
+   * Convenience method to generate a Map representation of a single External Relation.
    *
    * @param type type of the external relation
    * @return a Map representation of a External Relation as a List
