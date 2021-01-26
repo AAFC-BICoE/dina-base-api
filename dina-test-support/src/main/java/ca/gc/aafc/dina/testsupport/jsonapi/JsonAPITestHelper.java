@@ -129,6 +129,13 @@ public final class JsonAPITestHelper {
         .get("data.id");
   }
 
+  /**
+   * Convenience method to generate a Map representation of a External Relation as a List.
+   *
+   * @param type         type of the external relation
+   * @param elementCount number of relations to generate
+   * @return a Map representation of a External Relation as a List
+   */
   public static Map<String, Object> generateExternalRelationList(String type, int elementCount) {
     List<Map<String, String>> list = new ArrayList<>();
     for (int i = 0; i < elementCount; i++) {
@@ -139,6 +146,12 @@ public final class JsonAPITestHelper {
     return Map.of("data", list);
   }
 
+  /**
+   * Convenience method to generate Map representation of a single External Relation.
+   *
+   * @param type type of the external relation
+   * @return a Map representation of a External Relation as a List
+   */
   public static Map<String, Object> generateExternalRelation(String type) {
     return Map.of("data", Map.of(
       "id", UUID.randomUUID().toString(),
