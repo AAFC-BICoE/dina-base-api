@@ -129,7 +129,7 @@ public final class JsonAPITestHelper {
         .get("data.id");
   }
 
-  private static Map<String, Object> generateExternalRelationList(String type, int elementCount) {
+  public static Map<String, Object> generateExternalRelationList(String type, int elementCount) {
     List<Map<String, String>> list = new ArrayList<>();
     for (int i = 0; i < elementCount; i++) {
       list.add(Map.of(
@@ -139,7 +139,7 @@ public final class JsonAPITestHelper {
     return Map.of("data", list);
   }
 
-  private static Map<String, Object> generateExternalRelation(String type) {
+  public static Map<String, Object> generateExternalRelation(String type) {
     return Map.of("data", Map.of(
       "id", UUID.randomUUID().toString(),
       "type", type));
