@@ -92,9 +92,4 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
       .getValidator();
   }
 
-  @Bean
-  public Validator localValidatorFactoryBean(MessageSource source) {
-    return validator(source);
-  }
-
 }
