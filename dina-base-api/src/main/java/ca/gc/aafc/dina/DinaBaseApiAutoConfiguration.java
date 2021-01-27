@@ -10,6 +10,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.LocaleContextMessageInterpolator;
 import org.springframework.validation.beanvalidation.MessageSourceResourceBundleLocator;
 import org.springframework.web.servlet.LocaleResolver;
@@ -49,8 +50,8 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
   }
 
   /**
-   * Provides Crnk's SpringTransactionRunner that implements transactions around bulk jsonpatch
-   * operations using Spring's transaction management.
+   * Provides Crnk's SpringTransactionRunner that implements transactions around bulk jsonpatch operations
+   * using Spring's transaction management.
    *
    * @return the transaction runner.
    */
@@ -89,6 +90,11 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
               source))))
       .buildValidatorFactory()
       .getValidator();
+  }
+
+  @Bean
+  public Validator localValidatorFactoryBean(MessageSource source) {
+    return validator(source);
   }
 
 }
