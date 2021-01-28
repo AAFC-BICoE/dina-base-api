@@ -23,3 +23,5 @@ include::externalTypes.adoc[]
 include::release.adoc[]
 
 include::fieldAdapters.adoc[]
+
+include::etags.adoc[]
