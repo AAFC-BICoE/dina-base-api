@@ -1,7 +1,10 @@
 package ca.gc.aafc.dina.filter;
 
+import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import io.crnk.core.queryspec.Direction;
+import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.IncludeRelationSpec;
+import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +24,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Component used to map crnk filters into valid JPA objects.
@@ -34,9 +39,68 @@ public class DinaFilterResolver {
   private final RsqlFilterHandler rsqlFilterHandler;
 
   /**
+   * Returns a new List of filter specs resolved from the given filters for fields being mapped by
+   * field adapters. Filters for fields that are not resolved through field adapters will remain in
+   * the new list, Filter for fields that are resolved through field adapters will be replaced by
+   * the adapters {@link ca.gc.aafc.dina.mapper.DinaFieldAdapter#toFilterSpec}
+   *
+   * @param resource - Type of resource to be filtered.
+   * @param filters  - Filter specs to resolve.
+   * @param registry - Registry used for resolution.
+   * @return a new List of filter specs resolved from the given filters
+   */
+  public static List<FilterSpec> resolveFilterAdapters(
+    @NonNull Class<?> resource,
+    @NonNull List<FilterSpec> filters,
+    @NonNull DinaMappingRegistry registry
+  ) {
+    List<FilterSpec> newFilters = new ArrayList<>();
+    for (FilterSpec filterSpec : filters) {
+      List<String> path = filterSpec.getAttributePath();
+      // find nested resource class
+      Class<?> dtoClass = registry.resolveNestedResourceFromPath(resource, path);
+
+      if (CollectionUtils.isNotEmpty(path) && registry.getFieldAdaptersPerClass().containsKey(dtoClass)) {
+        registry.getFieldAdaptersPerClass().get(dtoClass).findFilterSpec(path.get(path.size() - 1))
+          .ifPresentOrElse(
+            specs -> newFilters.addAll(resolveSpecs(filterSpec, specs)),
+            () -> newFilters.add(filterSpec));
+      } else {
+        newFilters.add(filterSpec);
+      }
+    }
+    return newFilters;
+  }
+
+  /**
+   * Convenience method to return a list of filter specs resolved from a given Filter Spec mapping
+   * function.
+   *
+   * @param applyValue - filter spec to apply
+   * @param specs      - Functions to invoke apply.
+   * @return a list of resolved filter specs.
+   */
+  private static List<FilterSpec> resolveSpecs(
+    @NonNull FilterSpec applyValue,
+    @NonNull Function<FilterSpec, FilterSpec[]> specs
+  ) {
+    List<String> path = applyValue.getAttributePath();
+    List<String> pathPrefix = new ArrayList<>(path.subList(0, path.size() - 1));
+    return Stream.of(specs.apply(applyValue))
+      .map(fs -> {
+        // Resolve filter spec path with generated spec paths
+        List<String> newPath = Stream
+          .concat(pathPrefix.stream(), fs.getAttributePath().stream())
+          .collect(Collectors.toList());
+        return PathSpec.of(newPath).filter(fs.getOperator(), fs.getValue());
+      })
+      .collect(Collectors.toList());
+  }
+
+  /**
    * Returns an array of predicates by mapping crnk filters into JPA restrictions
    * with a given querySpec, criteria builder, root, ids, and id field name.
-   * 
+   *
    * @param <E>
    *                      - root entity type
    * @param querySpec
@@ -74,7 +138,7 @@ public class DinaFilterResolver {
   /**
    * Parses a crnk {@link QuerySpec} to return a list of {@link Order} from a
    * given {@link CriteriaBuilder} and {@link Path}.
-   * 
+   *
    * @param <T>
    *               - root type
    * @param qs

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.2.xsd">
     <suppress>
-        <cpe>cpe:/a:pivotal_software:spring_security:5.3.5</cpe>
+        <cpe>cpe:/a:pivotal_software:spring_security:5.4.2</cpe>
     </suppress>
     <suppress>
         <!--   https://access.redhat.com/security/cve/cve-2020-14389

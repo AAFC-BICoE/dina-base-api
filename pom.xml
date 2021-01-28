@@ -6,7 +6,7 @@
 
   <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.46-SNAPSHOT</version>
+  <version>0.49-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
@@ -34,15 +34,16 @@
 
     <!-- Build plugin properties -->
     <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
-    <checkstyle.version>8.36.2</checkstyle.version>
-    <spotbugs.version>4.1.4</spotbugs.version>
-    <maven-spotbugs.version>4.1.4</maven-spotbugs.version>
+    <checkstyle.version>8.39</checkstyle.version>
+    <spotbugs.version>4.2.0</spotbugs.version>
+    <maven-spotbugs.version>4.2.0</maven-spotbugs.version>
     <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.5</asciidoctorj.diagram.version>
-    <dependency.check.version>6.0.3</dependency.check.version>
+    <dependency.check.version>6.0.4</dependency.check.version>
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
     <keycloak-starter.version>11.0.2</keycloak-starter.version>
+    <bcprov-jdk15on.version>1.68</bcprov-jdk15on.version>
     <guava.version>30.0-jre</guava.version>
    
   </properties>
@@ -77,6 +78,14 @@
       <artifactId>keycloak-spring-boot-starter</artifactId>
       <version>${keycloak-starter.version}</version>
     </dependency>
+
+     <!-- only required until keycloak uses 1.68 -->
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk15on</artifactId>
+      <version>${bcprov-jdk15on.version}</version>
+    </dependency>
+
     <!-- Java standard extensions -->
     <dependency>
       <groupId>javax.inject</groupId>

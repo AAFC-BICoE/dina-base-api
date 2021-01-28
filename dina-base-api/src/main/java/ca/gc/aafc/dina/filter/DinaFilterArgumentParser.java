@@ -1,13 +1,12 @@
 package ca.gc.aafc.dina.filter;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
+import com.github.tennaito.rsql.misc.DefaultArgumentParser;
+import lombok.SneakyThrows;
 
 import javax.inject.Named;
-
-import com.github.tennaito.rsql.misc.DefaultArgumentParser;
-
-import lombok.SneakyThrows;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 /** Augments the RSQL DefaultArgumentParser with additional filterable types. */
 @Named
@@ -18,8 +17,8 @@ public class DinaFilterArgumentParser extends DefaultArgumentParser {
   @SuppressWarnings("unchecked")
   public <T> T parse(String argument, Class<T> type) {
     // Handle null values before not-nul values:
-    if (argument == null || "null".equals(argument.trim().toLowerCase())) {
-      return (T) null;
+    if (argument == null || "null".equalsIgnoreCase(argument.trim())) {
+      return null;
     }
 
     if (type.equals(UUID.class)) {
@@ -27,6 +26,9 @@ public class DinaFilterArgumentParser extends DefaultArgumentParser {
     }
     if (type.equals(OffsetDateTime.class)) {
       return (T) OffsetDateTime.parse(argument);
+    }
+    if (type.equals(LocalDateTime.class)) {
+      return (T) LocalDateTime.parse(argument);
     }
 
     // Otherwise fallback to the default behavior:
