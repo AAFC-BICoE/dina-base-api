@@ -10,6 +10,19 @@ public ShallowEtagHeaderFilter shallowEtagHeaderFilter() {
 }
 ----
 
+To target specific URL patterns, you instead use a FilterRegistrationBean which allows for additional configurations.
+[source,java]
+----
+@Bean
+public FilterRegistrationBean<ShallowEtagHeaderFilter> shallowEtagHeaderFilter() {
+    FilterRegistrationBean<ShallowEtagHeaderFilter> filterRegistrationBean
+      = new FilterRegistrationBean<>( new ShallowEtagHeaderFilter());
+    filterRegistrationBean.addUrlPatterns("/foos/*");
+    filterRegistrationBean.setName("etagFilter");
+    return filterRegistrationBean;
+}
+----
+
 Sending a request with the 'If-None-Match' header will enable the use of the Etags as the following example of a request and response shows.
 
 [source,bash]
