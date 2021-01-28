@@ -1,0 +1,24 @@
+= Etags
+
+Etags can be enabled through the declaration of the ShallowEtagHeaderFilter bean.
+
+[source,java]
+----
+@Bean
+public ShallowEtagHeaderFilter shallowEtagHeaderFilter() {
+    return new ShallowEtagHeaderFilter();
+}
+----
+
+Sending a request with the 'If-None-Match' header will enable the use of the Etags as the following example of a request and response shows.
+
+[source,bash]
+----
+//Request
+curl -H "Accept: application/json" -H 'If-None-Match: "f88dd058fe004909615a64f01be66a7"'
+ -i http://localhost:8080/spring-boot-rest/foos/1
+
+//Response
+ HTTP/1.1 304 Not Modified
+ ETag: "f88dd058fe004909615a64f01be66a7"
+----
