@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -32,9 +33,10 @@ public class PostgresTestContainerInitializer
     // If there is a postgres container enabled, point Spring's datasource properties to it:
     if (!Objects.equals(env.getProperty("embedded.postgresql.enabled"), "false")) {
       if (sqlContainer == null) {
-        sqlContainer = new PostgreSQLContainer<>(
-          Optional.ofNullable(env.getProperty("embedded.postgresql.image"))
-              .orElse("postgres"))
+        DockerImageName myImage = DockerImageName
+          .parse(Optional.ofNullable(env.getProperty("embedded.postgresql.image")).orElse("postgres"))
+          .asCompatibleSubstituteFor("postgres");
+        sqlContainer = new PostgreSQLContainer<>(myImage)
           .withDatabaseName(
             Optional.ofNullable(env.getProperty("embedded.postgresql.database"))
               .orElse("integration-tests-db"))
