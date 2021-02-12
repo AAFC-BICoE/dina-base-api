@@ -18,8 +18,12 @@ public enum DinaRole {
   DINA_ADMIN("dina-admin");
 
   private static final Pattern NON_ALPHA = Pattern.compile("[^A-Za-z]");
+
+  /**
+   * Name as entered in Keycloak
+   */
   @Getter
-  private final String keyCloakDefinition;
+  private final String keycloakRoleName;
 
   /**
    * Similar but more lenient than {@link #valueOf(String)}.
