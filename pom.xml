@@ -4,7 +4,7 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>ca.gc.aafc</groupId>
+  <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
   <version>0.49-SNAPSHOT</version>
 
@@ -254,6 +254,13 @@
       </plugin>
     </plugins>
   </reporting>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/mit-license</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
   <distributionManagement>
     <repository>
       <id>bintray-aafc-bice-BICoE</id>
