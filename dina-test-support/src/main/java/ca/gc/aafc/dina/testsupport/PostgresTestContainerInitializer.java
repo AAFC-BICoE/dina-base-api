@@ -16,9 +16,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * Initializes the Postgres TestContainer if the "embedded.postgresql.enabled" property is true.
  * 
  * Use this initializer in integration tests by adding this annotation to your test class:
- * <pre>{@code
- * @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
- * }</pre>
+ * <pre>
+ * {@code @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })}
+ * </pre>
  */
 @SuppressFBWarnings({"LI_LAZY_INIT_UPDATE_STATIC", "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"})
 public class PostgresTestContainerInitializer
