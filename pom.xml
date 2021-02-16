@@ -40,6 +40,7 @@
     <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.5</asciidoctorj.diagram.version>
     <dependency.check.version>6.0.4</dependency.check.version>
+    <lombok-maven-plugin.version>1.18.16.0</lombok-maven-plugin.version>
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
     <keycloak-starter.version>11.0.2</keycloak-starter.version>
@@ -136,6 +137,17 @@
   </dependencies>
 
   <build>
+    <!-- declare plugin version to use in Maven modules-->
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.projectlombok</groupId>
+          <artifactId>lombok-maven-plugin</artifactId>
+          <version>${lombok-maven-plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -151,6 +163,18 @@
         <executions>
           <execution>
             <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
             <goals>
               <goal>jar</goal>
             </goals>
