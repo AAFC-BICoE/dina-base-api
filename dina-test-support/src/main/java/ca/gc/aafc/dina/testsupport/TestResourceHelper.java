@@ -19,12 +19,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public final class TestResourceHelper {
   
   private TestResourceHelper() {
-    
   }
   
   /**
    * Read the content of a resource in the classpath. The resource encoding is assumed to be UTF8.
-   * Newline character is expected to be &bsol;n.
+   * Newline character is expected to be {@literal \n}
    * 
    * @param resourceName
    * @return the content of the resource as String
