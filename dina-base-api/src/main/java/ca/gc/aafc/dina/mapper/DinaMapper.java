@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 /**
  * DTO to Entity Bean mapper (and vice-versa). Used to map fields between DTO's and Entities.
  *
- * @param <D> - Type of Dto
- * @param <E> - Type of Entity
+ * @param <D> Type of Dto
+ * @param <E> Type of Entity
  */
 @AllArgsConstructor
 public class DinaMapper<D, E> {
