@@ -8,7 +8,7 @@ import org.springframework.security.authentication.AuthenticationTrustResolverIm
 import org.springframework.security.core.Authentication;
 
 /**
- * Custom security expression handler using a custom {@link SecurityExpressionRoot}
+ * Custom security expression handler using a custom SecurityExpressionRoot
  */
 public class DinaSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
   private AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();

@@ -6,8 +6,16 @@
 
   <modelVersion>4.0.0</modelVersion>
 
+  <parent>
+    <groupId>io.github.aafc-bicoe</groupId>
+    <artifactId>dina-base-parent</artifactId>
+    <version>0.49-SNAPSHOT</version>
+  </parent>
+
   <artifactId>dina-test-support</artifactId>
   <name>dina-test-support</name>
+  <description>Base DINA API test support package</description>
+  <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <properties>
     <openapi4j.version>1.0.4</openapi4j.version>
@@ -17,11 +25,6 @@
     <testcontainers.version>1.15.1</testcontainers.version>
   </properties>
 
-  <parent>
-    <groupId>ca.gc.aafc</groupId>
-    <artifactId>dina-base-parent</artifactId>
-    <version>0.49-SNAPSHOT</version>
-  </parent>
   <dependencies>
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
@@ -70,6 +73,13 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/mit-license</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
   <distributionManagement>
     <repository>
       <id>bintray-aafc-bice-BICoE</id>

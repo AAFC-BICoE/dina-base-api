@@ -4,13 +4,14 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>ca.gc.aafc</groupId>
+  <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
   <version>0.49-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
   <name>dina-parent Maven Multi Project</name>
+  <description>dina base api parent pom</description>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <parent>
@@ -40,6 +41,8 @@
     <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.5</asciidoctorj.diagram.version>
     <dependency.check.version>6.0.4</dependency.check.version>
+    <lombok-maven-plugin.version>1.18.16.0</lombok-maven-plugin.version>
+    <maven-gpg-plugin.version>1.5</maven-gpg-plugin.version>
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
     <keycloak-starter.version>11.0.2</keycloak-starter.version>
@@ -136,6 +139,17 @@
   </dependencies>
 
   <build>
+    <!-- declare plugin version to use in Maven modules-->
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.projectlombok</groupId>
+          <artifactId>lombok-maven-plugin</artifactId>
+          <version>${lombok-maven-plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -156,6 +170,25 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <doclint>none</doclint>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>${maven-gpg-plugin.version}</version>
+        <configuration>
+          <!-- Prevent gpg from using pinentry programs -->
+          <gpgArguments>
+            <arg>--pinentry-mode</arg>
+            <arg>loopback</arg>
+          </gpgArguments>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -254,11 +287,22 @@
       </plugin>
     </plugins>
   </reporting>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/mit-license</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
   <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
     <repository>
-      <id>bintray-aafc-bice-BICoE</id>
-      <name>aafc-bice-BICoE</name>
-      <url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-base-parent/;publish=1;</url>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
 </project>
