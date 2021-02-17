@@ -49,6 +49,17 @@
     <bcprov-jdk15on.version>1.68</bcprov-jdk15on.version>
     <guava.version>30.0-jre</guava.version>
   </properties>
+  
+  <repositories>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>jcenter central</id>
+      <name>bintray</name>
+      <url>https://jcenter.bintray.com</url>
+    </repository>
+  </repositories>
 
   <!-- Common sub module dependencies -->
   <dependencies>
