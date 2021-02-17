@@ -13,6 +13,7 @@
 
   <artifactId>dina-base-api</artifactId>
   <name>dina-base-api</name>
+  <description>Base DINA API package for Java built on SpringBoot and Crnk</description>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <properties>

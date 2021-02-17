@@ -11,6 +11,7 @@
   <packaging>pom</packaging>
 
   <name>dina-parent Maven Multi Project</name>
+  <description>dina base api parent pom</description>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <parent>

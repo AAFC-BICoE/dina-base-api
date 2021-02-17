@@ -14,6 +14,8 @@
 
   <artifactId>dina-test-support</artifactId>
   <name>dina-test-support</name>
+  <description>Base DINA API test support package</description>
+  <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <properties>
     <openapi4j.version>1.0.4</openapi4j.version>
