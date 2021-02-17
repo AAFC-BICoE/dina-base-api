@@ -228,12 +228,4 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-  <distributionManagement>
-    <repository>
-      <id>bintray-aafc-bice-BICoE</id>
-      <name>aafc-bice-BICoE</name>
-      <url>https://api.bintray.com/maven/aafc-bice/BICoE/dina-base-api/;publish=1;</url>
-    </repository>
-  </distributionManagement>
-
 </project>
