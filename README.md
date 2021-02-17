@@ -18,27 +18,14 @@ Documentation can be generated using:
 An `index.html` page will be generated in `target/generated-docs`
 
 ## Artifact
-dina-base-api artifact is published on [BinTray](https://bintray.com/aafc-bice/BICoE/dina-base-api).
+dina-base-api artifact is published on Maven Central.
 
 ```
 <dependency>
-  <groupId>ca.gc.aafc</groupId>
+  <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-api</artifactId>
   <version>0.48</version>
 </dependency>
 ```
 
 Test related classes are included in an artifact named `dina-test-support`.
-
-Add BICoE BinTray repository :
-
-```
-<repository>
-  <snapshots>
-    <enabled>false</enabled>
-  </snapshots>
-  <id>bintray-aafc-bice-BICoE</id>
-  <name>bintray</name>
-  <url>https://dl.bintray.com/aafc-bice/BICoE</url>
-</repository>
-```

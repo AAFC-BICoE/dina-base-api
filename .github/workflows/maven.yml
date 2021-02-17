@@ -38,21 +38,24 @@ jobs:
         run: mvn org.owasp:dependency-check-maven:check
         if: ${{ github.ref == 'refs/heads/dev' }}
 
-      - name: Set up for BinTray deploy (master branch only)
+      - name: Set up for Maven Central deploy (master branch only)
         if: ${{ github.ref == 'refs/heads/master' }}
         uses: actions/setup-java@v1
         with: # running setup-java again overwrites the settings.xml
           java-version: 11
-          server-id: bintray-aafc-bice-BICoE
-          server-username: BINTRAY_USERNAME
-          server-password: BINTRAY_TOKEN
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_CENTRAL_PW
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
-      - name: Publish to BinTray (only on master branch)
-        run: mvn deploy
+      - name: Publish to Maven Central (only on master branch)
+        run: mvn javadoc:jar gpg:sign deploy
         if: ${{ github.ref == 'refs/heads/master' }}
         env:
-          BINTRAY_USERNAME: aafc-bice
-          BINTRAY_TOKEN: ${{ secrets.BINTRAY_API_KEY }}
+          MAVEN_USERNAME: aafc-bicoe
+          MAVEN_CENTRAL_PW: ${{ secrets.MAVEN_CENTRAL_PW }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
       - name: Deploy GitHub Pages (only on master branch)
         if: ${{ github.ref == 'refs/heads/master' }}
