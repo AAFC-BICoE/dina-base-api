@@ -88,10 +88,7 @@ public class OperationJsonApiIT extends BaseRestAssuredTest {
       .buildOperation();
 
     ValidatableResponse operationResponse = sendOperation(operationMap);
-    Integer returnCode = operationResponse.extract().body().jsonPath().getInt("[0].status");
-    Integer returnCode2 = operationResponse.extract().body().jsonPath().getInt("[1].status");
-    assertEquals(201, returnCode);
-    assertEquals(201, returnCode2);
-    operationResponse.log().all(true);
+    assertEquals(201, operationResponse.extract().body().jsonPath().getInt("[0].status"));
+    assertEquals(201, operationResponse.extract().body().jsonPath().getInt("[1].status"));
   }
 }
