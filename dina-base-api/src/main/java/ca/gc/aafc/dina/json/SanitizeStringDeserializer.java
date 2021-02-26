@@ -12,12 +12,12 @@ import java.io.IOException;
  * There is no know use cases where leading and trailing whitespaces should be preserved.
  */
 @JsonComponent
-public class TrimStringDeserializer extends StringDeserializer {
+public class SanitizeStringDeserializer extends StringDeserializer {
 
   @Override
   public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
     String value = super.deserialize(p, ctxt);
-    return value != null ? value.trim() : null;
+    return value != null ? value.strip() : null;
   }
 
 }

@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * managed ObjectMapper.
  */
 @SpringBootTest(classes = TestDinaBaseApp.class)
-public class TrimStringDeserializerIT {
+public class SanitizeStringDeserializerIT {
 
   @Inject
   private ObjectMapper objectMapper;
@@ -32,16 +32,16 @@ public class TrimStringDeserializerIT {
   @Test
   public void trimJsonString_whenStringContainsLeadingTrailingWhitespaces_whitespacesAreRemoved() throws IOException {
     String jsonValue = "{\"value\": \"  this is a value" + 	"\\t"+ "\"}";
-    TrimStringDeserializerIT.StringWrapper stringWrapper = objectMapper.readValue(jsonValue,
-        TrimStringDeserializerIT.StringWrapper.class);
+    SanitizeStringDeserializerIT.StringWrapper stringWrapper = objectMapper.readValue(jsonValue,
+        SanitizeStringDeserializerIT.StringWrapper.class);
     assertEquals("this is a value", stringWrapper.getValue());
   }
 
   @Test
   public void trimJsonString_whenStringContainsWhitespacesInString_whitespacesAreNotRemoved() throws IOException {
     String jsonValue = "{\"value\": \"this is  a  value\"}";
-    TrimStringDeserializerIT.StringWrapper stringWrapper = objectMapper.readValue(jsonValue,
-        TrimStringDeserializerIT.StringWrapper.class);
+    SanitizeStringDeserializerIT.StringWrapper stringWrapper = objectMapper.readValue(jsonValue,
+        SanitizeStringDeserializerIT.StringWrapper.class);
     assertEquals("this is  a  value", stringWrapper.getValue());
   }
 }
