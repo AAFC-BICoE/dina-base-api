@@ -28,11 +28,10 @@ import lombok.RequiredArgsConstructor;
 @Named
 //CHECKSTYLE:OFF AnnotationUseStyle
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-public class SimpleFilterHandler implements FilterHandler {
+public class SimpleFilterHandler {
 
   private final ArgumentParser argumentParser;
 
-  @Override
   public Predicate getRestriction(QuerySpec querySpec, From<?, ?> root, CriteriaBuilder cb) {
     List<FilterSpec> filterSpecs = querySpec.getFilters();
     List<Predicate> predicates = new ArrayList<>();

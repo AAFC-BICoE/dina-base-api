@@ -32,14 +32,13 @@ import java.util.Set;
 @Named
 //CHECKSTYLE:OFF AnnotationUseStyle
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-public class RsqlFilterHandler implements FilterHandler {
+public class RsqlFilterHandler {
 
   private final BaseDAO baseDAO;
   private final ArgumentParser rsqlArgumentParser;
   private final RSQLParser rsqlParser = new RSQLParser();
   private final Set<RsqlFilterAdapter> adapters = new HashSet<>();
 
-  @Override
   public Predicate getRestriction(QuerySpec querySpec, From<?, ?> root, CriteriaBuilder cb) {
     FilterSpec rsqlFilterSpec = querySpec.findFilter(PathSpec.of("rsql")).orElse(null);
     if (rsqlFilterSpec == null || StringUtils.isBlank(rsqlFilterSpec.getValue().toString())) {
