@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -171,6 +172,17 @@ public class DinaFilterResolver {
       for (String path : relation.getAttributePath()) {
         join = join.fetch(path, JoinType.LEFT);
       }
+    }
+  }
+
+  /**
+   * clear or set the RSQL handlers {@link ca.gc.aafc.dina.filter.RsqlFilterAdapter}'s
+   *
+   * @param adapters - Adapters to set, can be null or empty to clear adapters.
+   */
+  public void setAdapters(Set<RsqlFilterAdapter> adapters) {
+    if (rsqlFilterHandler != null) {
+      rsqlFilterHandler.setAdapters(adapters);
     }
   }
 

@@ -67,7 +67,7 @@ public class RsqlFilterHandler implements FilterHandler {
   }
 
   /**
-   * clear or set the adapters {@link ca.gc.aafc.dina.filter.RsqlFilterAdapter}'s
+   * clear or set the handlers {@link ca.gc.aafc.dina.filter.RsqlFilterAdapter}'s
    *
    * @param adapters - Adapters to set, can be null or empty to clear adapters.
    */
