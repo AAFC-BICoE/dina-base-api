@@ -37,9 +37,13 @@ public class RsqlFilterHandler {
   private final BaseDAO baseDAO;
   private final ArgumentParser rsqlArgumentParser;
   private final RSQLParser rsqlParser = new RSQLParser();
-  private final Set<RsqlFilterAdapter> adapters = new HashSet<>();
 
-  public Predicate getRestriction(QuerySpec querySpec, From<?, ?> root, CriteriaBuilder cb) {
+  public Predicate getRestriction(
+    QuerySpec querySpec,
+    From<?, ?> root,
+    CriteriaBuilder cb,
+    Set<RsqlFilterAdapter> adapters
+  ) {
     FilterSpec rsqlFilterSpec = querySpec.findFilter(PathSpec.of("rsql")).orElse(null);
     if (rsqlFilterSpec == null || StringUtils.isBlank(rsqlFilterSpec.getValue().toString())) {
       // Return a blank predicate if there is no requested RSQL filter.
@@ -52,28 +56,19 @@ public class RsqlFilterHandler {
     JpaPredicateVisitor<?> rsqlVisitor = new JpaPredicateVisitor<>().defineRoot(root);
     rsqlVisitor.getBuilderTools().setArgumentParser(rsqlArgumentParser);
 
-    final Node rsqlNode = processAdapters(rsqlString);
+    final Node rsqlNode = processAdapters(rsqlString, adapters);
 
     return baseDAO.createWithEntityManager(em -> rsqlNode.accept(rsqlVisitor, em));
   }
 
-  private Node processAdapters(String rsqlString) {
+  private Node processAdapters(String rsqlString, Set<RsqlFilterAdapter> adapters) {
     Node rsqlNode = rsqlParser.parse(rsqlString);
-    for (RsqlFilterAdapter adapter : adapters) {
-      rsqlNode = adapter.process(rsqlNode);
+    if (CollectionUtils.isNotEmpty(adapters)) {
+      for (RsqlFilterAdapter adapter : adapters) {
+        rsqlNode = adapter.process(rsqlNode);
+      }
     }
     return rsqlNode;
   }
 
-  /**
-   * clear or set the handlers {@link ca.gc.aafc.dina.filter.RsqlFilterAdapter}'s
-   *
-   * @param adapters - Adapters to set, can be null or empty to clear adapters.
-   */
-  public void setAdapters(Set<RsqlFilterAdapter> adapters) {
-    this.adapters.clear();
-    if (CollectionUtils.isNotEmpty(adapters)) {
-      this.adapters.addAll(adapters);
-    }
-  }
 }
