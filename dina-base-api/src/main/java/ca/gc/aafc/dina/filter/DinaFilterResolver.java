@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.filter;
 
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
+import com.github.tennaito.rsql.jpa.JpaPredicateVisitor;
 import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.IncludeRelationSpec;
@@ -9,6 +10,7 @@ import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -123,9 +126,21 @@ public class DinaFilterResolver {
     Collection<Serializable> ids,
     String idFieldName
   ) {
-    List<Predicate> restrictions = new ArrayList<>();
+    final List<Predicate> restrictions = new ArrayList<>();
+
+    //Simple Filters
     restrictions.add(simpleFilterHandler.getRestriction(querySpec, root, cb));
-    restrictions.add(rsqlFilterHandler.getRestriction(querySpec, root, cb, null));
+
+    //Rsql Filters
+    Optional<FilterSpec> rsql = querySpec.findFilter(PathSpec.of("rsql"));
+    if (rsql.isPresent() && StringUtils.isNotBlank(rsql.get().getValue())) {
+      restrictions.add(rsqlFilterHandler.getRestriction(
+        null,
+        rsql.get().getValue(),
+        new JpaPredicateVisitor<>().defineRoot(root)));
+    } else {
+      restrictions.add(cb.and());
+    }
 
     if (CollectionUtils.isNotEmpty(ids)) {
       Objects.requireNonNull(idFieldName);
