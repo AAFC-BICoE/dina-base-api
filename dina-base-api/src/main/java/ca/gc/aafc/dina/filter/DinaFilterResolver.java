@@ -225,11 +225,15 @@ public class DinaFilterResolver {
   }
 
   public void addRsqlAdapter(Class<?> clz, RsqlFilterAdapter adapter) {
-    rsqlAdapterPerClass.put(clz, adapter);
+    if (clz != null && adapter != null) {
+      rsqlAdapterPerClass.put(clz, adapter);
+    }
   }
 
   public void clearRsqlAdaptersForClass(Class<?> clz) {
-    rsqlAdapterPerClass.remove(clz);
+    if (clz != null) {
+      rsqlAdapterPerClass.remove(clz);
+    }
   }
 
 }
