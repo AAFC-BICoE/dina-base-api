@@ -203,7 +203,7 @@ public class DinaFilterResolver {
   }
 
   /**
-   * Process a Rsql node processed with a given adapter.
+   * Returns a Rsql node processed with a given adapter.
    *
    * @param adapter adapter to process
    * @param node    node to process
@@ -217,12 +217,23 @@ public class DinaFilterResolver {
     return rsqlNode;
   }
 
+  /**
+   * Set the rsql adapter for a specific resource class.
+   *
+   * @param clz     resource class of the adapter
+   * @param adapter adapter
+   */
   public void addRsqlAdapter(Class<?> clz, RsqlFilterAdapter adapter) {
     if (clz != null && adapter != null) {
       rsqlAdapterPerClass.put(clz, adapter);
     }
   }
 
+  /**
+   * Clear the rsql adapter for a specific resource class.
+   *
+   * @param clz resource class of the adapter
+   */
   public void clearRsqlAdaptersForClass(Class<?> clz) {
     if (clz != null) {
       rsqlAdapterPerClass.remove(clz);
