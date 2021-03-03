@@ -28,10 +28,11 @@ import javax.persistence.criteria.Root;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,6 +48,7 @@ public class DinaFilterResolver {
   private final BaseDAO baseDAO;
   private final ArgumentParser rsqlArgumentParser;
   private final RSQLParser rsqlParser = new RSQLParser();
+  private final Map<Class<?>, RsqlFilterAdapter> rsqlAdapterPerClass = new HashMap<>();
 
   /**
    * Returns a new List of filter specs resolved from the given filters for fields being mapped by
@@ -160,7 +162,8 @@ public class DinaFilterResolver {
       JpaPredicateVisitor<Object> visitor = new JpaPredicateVisitor<>().defineRoot(root);
       // Add the Injected ArgumentParser into the RSQL visitor:
       visitor.getBuilderTools().setArgumentParser(rsqlArgumentParser);
-      final Node rsqlNode = processRsqlAdapters(null, rsqlParser.parse(rsql.get().getValue()));
+      RsqlFilterAdapter adapter = rsqlAdapterPerClass.get(querySpec.getResourceClass());
+      final Node rsqlNode = processRsqlAdapters(adapter, rsqlParser.parse(rsql.get().getValue()));
       restrictions.add(baseDAO.createWithEntityManager(em -> rsqlNode.accept(visitor, em)));
     } else {
       restrictions.add(cb.and());
@@ -207,20 +210,22 @@ public class DinaFilterResolver {
   }
 
   /**
-   * Process a Rsql node processed with a given set of adapters.
+   * Process a Rsql node processed with a given adapter.
    *
-   * @param adapters adapters to process
-   * @param node     node to process
+   * @param adapter adapter to process
+   * @param node    node to process
    * @return a processed rsql node
    */
-  private static Node processRsqlAdapters(Set<RsqlFilterAdapter> adapters, Node node) {
+  private static Node processRsqlAdapters(RsqlFilterAdapter adapter, Node node) {
     Node rsqlNode = node;
-    if (CollectionUtils.isNotEmpty(adapters) && node != null) {
-      for (RsqlFilterAdapter adapter : adapters) {
-        rsqlNode = adapter.process(rsqlNode);
-      }
+    if (adapter != null && node != null) {
+      rsqlNode = adapter.process(rsqlNode);
     }
     return rsqlNode;
+  }
+
+  public void addRsqlAdapter(Class<?> clz, RsqlFilterAdapter adapter) {
+    rsqlAdapterPerClass.put(clz, adapter);
   }
 
 }
