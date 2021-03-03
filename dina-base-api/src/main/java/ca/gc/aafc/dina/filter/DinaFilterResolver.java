@@ -140,8 +140,8 @@ public class DinaFilterResolver {
 
     //Simple Filters
     restrictions.add(simpleFilterHandler.getRestriction(querySpec, root, cb));
-
-    handleRsqlFilters(querySpec, cb, root, restrictions);
+    //Rsql Filters
+    restrictions.add(handleRsqlFilters(querySpec, cb, root));
 
     if (CollectionUtils.isNotEmpty(ids)) {
       Objects.requireNonNull(idFieldName);
@@ -151,20 +151,15 @@ public class DinaFilterResolver {
     return restrictions.toArray(Predicate[]::new);
   }
 
-  private <E> void handleRsqlFilters(
-    QuerySpec querySpec,
-    CriteriaBuilder cb,
-    Root<E> root,
-    List<Predicate> restrictions
-  ) {
+  private <E> Predicate handleRsqlFilters(QuerySpec querySpec, CriteriaBuilder cb, Root<E> root) {
     Optional<FilterSpec> rsql = querySpec.findFilter(PathSpec.of("rsql"));
     if (rsql.isPresent() && StringUtils.isNotBlank(rsql.get().getValue())) {
       VISITOR.defineRoot(root).getBuilderTools().setArgumentParser(rsqlArgumentParser);
       RsqlFilterAdapter adapter = rsqlAdapterPerClass.get(querySpec.getResourceClass());
       final Node rsqlNode = processRsqlAdapters(adapter, rsqlParser.parse(rsql.get().getValue()));
-      restrictions.add(baseDAO.createWithEntityManager(em -> rsqlNode.accept(VISITOR, em)));
+      return baseDAO.createWithEntityManager(em -> rsqlNode.accept(VISITOR, em));
     } else {
-      restrictions.add(cb.and());
+      return cb.and();
     }
   }
 
