@@ -44,6 +44,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class DinaFilterResolver {
 
+  public static final JpaPredicateVisitor<Object> VISITOR = new JpaPredicateVisitor<>();
   private final SimpleFilterHandler simpleFilterHandler;
   private final BaseDAO baseDAO;
   private final ArgumentParser rsqlArgumentParser;
@@ -156,15 +157,12 @@ public class DinaFilterResolver {
     Root<E> root,
     List<Predicate> restrictions
   ) {
-    //Rsql Filters
     Optional<FilterSpec> rsql = querySpec.findFilter(PathSpec.of("rsql"));
     if (rsql.isPresent() && StringUtils.isNotBlank(rsql.get().getValue())) {
-      JpaPredicateVisitor<Object> visitor = new JpaPredicateVisitor<>().defineRoot(root);
-      // Add the Injected ArgumentParser into the RSQL visitor:
-      visitor.getBuilderTools().setArgumentParser(rsqlArgumentParser);
+      VISITOR.defineRoot(root).getBuilderTools().setArgumentParser(rsqlArgumentParser);
       RsqlFilterAdapter adapter = rsqlAdapterPerClass.get(querySpec.getResourceClass());
       final Node rsqlNode = processRsqlAdapters(adapter, rsqlParser.parse(rsql.get().getValue()));
-      restrictions.add(baseDAO.createWithEntityManager(em -> rsqlNode.accept(visitor, em)));
+      restrictions.add(baseDAO.createWithEntityManager(em -> rsqlNode.accept(VISITOR, em)));
     } else {
       restrictions.add(cb.and());
     }
