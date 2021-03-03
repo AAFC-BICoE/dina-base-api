@@ -10,6 +10,8 @@ This is a simple Functional interface which will provide the entry point to run 
 
  Node process(Node node);
 
+The process method will receive the root node of the rsql filters and will return the final rsql node to be used in the filtering process.
+
 === Step 2: Pass your filter adapter to the Dina filter resolver.
 
 The DinaFilterResolver will allow you to pass your adapter to the resolver.
