@@ -104,6 +104,7 @@ public class TestDinaBaseApp {
       dinaMapper,
       VocabularyDto.class,
       Vocabulary.class,
+      null,
       buildProperties());
   }
 

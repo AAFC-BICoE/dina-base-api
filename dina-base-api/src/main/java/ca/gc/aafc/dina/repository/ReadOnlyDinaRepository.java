@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.repository;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.exception.MethodNotAllowedException;
@@ -22,6 +23,7 @@ public class ReadOnlyDinaRepository<D, E extends DinaEntity> extends DinaReposit
     DinaMapper<D, E> dinaMapper,
     Class<D> resourceClass,
     Class<E> entityClass,
+    DinaFilterResolver<E> filterResolver,
     BuildProperties buildProperties
   ) {
     super(
@@ -31,7 +33,7 @@ public class ReadOnlyDinaRepository<D, E extends DinaEntity> extends DinaReposit
       dinaMapper,
       resourceClass,
       entityClass,
-      null,
+      filterResolver,
       null,
       buildProperties);
   }
