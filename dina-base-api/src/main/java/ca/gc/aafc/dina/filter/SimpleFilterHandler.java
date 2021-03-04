@@ -21,6 +21,9 @@ import java.util.Optional;
  */
 public final class SimpleFilterHandler {
 
+  private SimpleFilterHandler() {
+  }
+
   public static Predicate getRestriction(
     @NonNull QuerySpec querySpec,
     @NonNull From<?, ?> root,
