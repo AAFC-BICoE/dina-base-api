@@ -16,7 +16,7 @@ The process method will receive the root node of the rsql filters and will retur
 
 The DinaFilterResolver will allow you to pass your adapter to the resolver in the constructor.
 
-You can do this during the creation of your repository for the resource, or else where if needed.
+You can do this during the creation of your repository for the resource.
 
  DinaFilterResolver(@NonNull DinaService<T> service, RsqlFilterAdapter rsqlFilterAdapter)
 
