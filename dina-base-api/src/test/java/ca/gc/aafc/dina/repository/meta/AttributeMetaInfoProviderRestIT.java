@@ -131,6 +131,7 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
         resourceClass,
         entityClass,
         null,
+        null,
         new BuildProperties(new Properties()));
       this.handler = handler;
     }

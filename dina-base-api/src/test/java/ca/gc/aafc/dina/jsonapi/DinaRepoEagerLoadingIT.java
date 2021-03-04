@@ -161,7 +161,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
         new DinaMapper<>(ChainDto.class),
         ChainDto.class,
         Chain.class,
-        null,
+        null, null,
         new BuildProperties(new Properties())
       );
     }
@@ -181,6 +181,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
         new DinaMapper<>(ChainTemplateDto.class),
         ChainTemplateDto.class,
         ChainTemplate.class,
+        null,
         null,
         new BuildProperties(new Properties())
       );

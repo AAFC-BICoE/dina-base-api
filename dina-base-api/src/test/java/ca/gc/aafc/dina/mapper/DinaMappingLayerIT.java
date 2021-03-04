@@ -226,6 +226,7 @@ public class DinaMappingLayerIT {
         new DinaMapper<>(ProjectDTO.class),
         ProjectDTO.class,
         Project.class,
+        null,
         externalResourceProvider,
         buildProperties
       );
@@ -244,6 +245,7 @@ public class DinaMappingLayerIT {
         new DinaMapper<>(TaskDTO.class),
         TaskDTO.class,
         Task.class,
+        null,
         externalResourceProvider,
         buildProperties
       );

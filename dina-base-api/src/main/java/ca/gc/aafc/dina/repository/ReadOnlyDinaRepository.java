@@ -32,6 +32,7 @@ public class ReadOnlyDinaRepository<D, E extends DinaEntity> extends DinaReposit
       resourceClass,
       entityClass,
       null,
+      null,
       buildProperties);
   }
 

@@ -8,6 +8,7 @@ import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.entity.Vocabulary;
+import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
@@ -49,6 +50,7 @@ public class TestDinaBaseApp {
       DepartmentDto.class,
       Department.class,
       null,
+      null,
       buildProperties());
   }
 
@@ -61,6 +63,7 @@ public class TestDinaBaseApp {
       new DinaMapper<>(EmployeeDto.class),
       EmployeeDto.class,
       Employee.class,
+      null, 
       null,
       buildProperties());
   }
@@ -88,6 +91,7 @@ public class TestDinaBaseApp {
       dinaMapper,
       PersonDTO.class,
       Person.class,
+      new DinaFilterResolver<>(service, new PersonRsqlAdapter()),
       null,
       buildProperties());
   }

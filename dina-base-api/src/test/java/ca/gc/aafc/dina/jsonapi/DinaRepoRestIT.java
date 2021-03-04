@@ -291,6 +291,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         new DinaMapper<>(ProjectDTO.class),
         ProjectDTO.class,
         Project.class,
+        null,
         externalResourceProvider,
         new BuildProperties(new Properties())
       );
@@ -308,6 +309,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         new DinaMapper<>(TaskDTO.class),
         TaskDTO.class,
         Task.class,
+        null,
         externalResourceProvider,
         new BuildProperties(new Properties())
       );

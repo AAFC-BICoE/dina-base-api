@@ -28,13 +28,13 @@ import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.boot.info.BuildProperties;
 
-import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -70,7 +70,6 @@ public class DinaRepository<D, E extends DinaEntity>
   private final DinaMappingRegistry registry;
   private final boolean hasFieldAdapters;
 
-  @Inject
   public DinaRepository(
     @NonNull DinaService<E> dinaService,
     @NonNull Optional<DinaAuthorizationService> authorizationService,
@@ -78,6 +77,7 @@ public class DinaRepository<D, E extends DinaEntity>
     @NonNull DinaMapper<D, E> dinaMapper,
     @NonNull Class<D> resourceClass,
     @NonNull Class<E> entityClass,
+    DinaFilterResolver<E> filterResolver,
     ExternalResourceProvider externalResourceProvider,
     @NonNull BuildProperties buildProperties
   ) {
@@ -86,7 +86,8 @@ public class DinaRepository<D, E extends DinaEntity>
     this.auditService = auditService;
     this.resourceClass = resourceClass;
     this.entityClass = entityClass;
-    this.filterResolver = new DinaFilterResolver<>(dinaService, null);
+    this.filterResolver = Objects.requireNonNullElseGet(
+      filterResolver, () -> new DinaFilterResolver<>(dinaService, null));
     this.buildProperties = buildProperties;
     if (externalResourceProvider != null) {
       this.externalMetaMap =

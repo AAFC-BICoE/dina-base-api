@@ -206,14 +206,13 @@ public class RsqlFilterHandlerIT {
   void checkFilter_WhenUsingCustomRsqlFilter_FilterApplied() {
     UUID personUuid = this.personRepository.findAll(new QuerySpec(PersonDTO.class)).get(0).getUuid();
 
-//    // Custom filter always returns filter by id = personUuid no matter what for the sake of the test
-//    filterResolver.addRsqlAdapter(
-//      PersonDTO.class,node -> new ComparisonNode(RSQLOperators.EQUAL, "uuid", List.of(personUuid.toString())));
-
     // Filter by useless filter createdOn that is blank:
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setFilters(Collections.singletonList(
-        new FilterSpec(Collections.singletonList("rsql"), FilterOperator.EQ, "createdOn==" + "2020")));
+      new FilterSpec(
+        Collections.singletonList("rsql"),
+        FilterOperator.EQ,
+        "customSearch==" + personUuid.toString())));
 
     // The results should be filtered to the one person with that UUID and not the createdOn filter:
     ResourceList<PersonDTO> persons = this.personRepository.findAll(querySpec);
