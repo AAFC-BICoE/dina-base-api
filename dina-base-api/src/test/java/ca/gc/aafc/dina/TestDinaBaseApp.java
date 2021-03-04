@@ -8,7 +8,6 @@ import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.entity.Vocabulary;
-import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
@@ -38,9 +37,6 @@ import java.util.Properties;
 public class TestDinaBaseApp {
 
   @Inject
-  private DinaFilterResolver filterResolver;
-
-  @Inject
   private Optional<GroupAuthorizationService> groupAuthService;
 
   @Bean
@@ -52,7 +48,6 @@ public class TestDinaBaseApp {
       new DinaMapper<>(DepartmentDto.class),
       DepartmentDto.class,
       Department.class,
-      filterResolver,
       null,
       buildProperties());
   }
@@ -66,7 +61,6 @@ public class TestDinaBaseApp {
       new DinaMapper<>(EmployeeDto.class),
       EmployeeDto.class,
       Employee.class,
-      filterResolver,
       null,
       buildProperties());
   }
@@ -94,7 +88,6 @@ public class TestDinaBaseApp {
       dinaMapper,
       PersonDTO.class,
       Person.class,
-      filterResolver,
       null,
       buildProperties());
   }
@@ -107,7 +100,6 @@ public class TestDinaBaseApp {
       dinaMapper,
       VocabularyDto.class,
       Vocabulary.class,
-      filterResolver,
       buildProperties());
   }
 

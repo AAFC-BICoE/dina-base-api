@@ -1,30 +1,5 @@
 package ca.gc.aafc.dina.jsonapi;
 
-import static io.restassured.RestAssured.given;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.UUID;
-
-import javax.inject.Inject;
-
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.RandomUtils;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.info.BuildProperties;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-
 import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.ProjectDTO;
@@ -32,7 +7,6 @@ import ca.gc.aafc.dina.dto.TaskDTO;
 import ca.gc.aafc.dina.entity.ComplexObject;
 import ca.gc.aafc.dina.entity.Project;
 import ca.gc.aafc.dina.entity.Task;
-import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
@@ -47,6 +21,29 @@ import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.restassured.http.Header;
 import io.restassured.response.ValidatableResponse;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.info.BuildProperties;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+
+import javax.inject.Inject;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.UUID;
+
+import static io.restassured.RestAssured.given;
 
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
@@ -285,7 +282,6 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     @Bean
     public DinaRepository<ProjectDTO, Project> projectRepo(
       BaseDAO baseDAO,
-      DinaFilterResolver filterResolver,
       ExternalResourceProvider externalResourceProvider
     ) {
       return new DinaRepository<>(
@@ -295,7 +291,6 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         new DinaMapper<>(ProjectDTO.class),
         ProjectDTO.class,
         Project.class,
-        filterResolver,
         externalResourceProvider,
         new BuildProperties(new Properties())
       );
@@ -304,7 +299,6 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     @Bean
     public DinaRepository<TaskDTO, Task> taskRepo(
       BaseDAO baseDAO,
-      DinaFilterResolver filterResolver,
       ExternalResourceProvider externalResourceProvider
     ) {
       return new DinaRepository<>(
@@ -314,7 +308,6 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         new DinaMapper<>(TaskDTO.class),
         TaskDTO.class,
         Task.class,
-        filterResolver,
         externalResourceProvider,
         new BuildProperties(new Properties())
       );

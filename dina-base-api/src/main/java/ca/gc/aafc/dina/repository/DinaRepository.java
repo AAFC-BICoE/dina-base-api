@@ -78,7 +78,6 @@ public class DinaRepository<D, E extends DinaEntity>
     @NonNull DinaMapper<D, E> dinaMapper,
     @NonNull Class<D> resourceClass,
     @NonNull Class<E> entityClass,
-    @NonNull DinaFilterResolver filterResolver,
     ExternalResourceProvider externalResourceProvider,
     @NonNull BuildProperties buildProperties
   ) {
@@ -87,7 +86,7 @@ public class DinaRepository<D, E extends DinaEntity>
     this.auditService = auditService;
     this.resourceClass = resourceClass;
     this.entityClass = entityClass;
-    this.filterResolver = filterResolver;
+    this.filterResolver = new DinaFilterResolver<>(dinaService, null);
     this.buildProperties = buildProperties;
     if (externalResourceProvider != null) {
       this.externalMetaMap =

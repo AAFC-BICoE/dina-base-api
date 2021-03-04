@@ -1,34 +1,11 @@
 package ca.gc.aafc.dina.filter;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import java.io.Serializable;
-import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-
-import com.google.common.collect.Sets;
-
-import cz.jirutka.rsql.parser.ast.ComparisonNode;
-import cz.jirutka.rsql.parser.ast.RSQLOperators;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
+import com.google.common.collect.Sets;
 import io.crnk.core.engine.information.resource.ResourceInformation;
 import io.crnk.core.engine.query.QueryContext;
 import io.crnk.core.engine.registry.ResourceRegistry;
@@ -39,6 +16,23 @@ import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.queryspec.mapper.QuerySpecUrlMapper;
 import io.crnk.core.repository.ResourceRepository;
 import io.crnk.core.resource.list.ResourceList;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import java.io.Serializable;
+import java.time.OffsetDateTime;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class, properties = "crnk.allow-unknown-attributes=true")
@@ -58,9 +52,6 @@ public class RsqlFilterHandlerIT {
 
   @Inject
   protected ResourceRegistry resourceRegistry;
-
-  @Inject
-  private DinaFilterResolver filterResolver;
 
   private OffsetDateTime creationDateTime = OffsetDateTime.parse("2013-07-01T17:55:13-07:00");
   
@@ -215,9 +206,9 @@ public class RsqlFilterHandlerIT {
   void checkFilter_WhenUsingCustomRsqlFilter_FilterApplied() {
     UUID personUuid = this.personRepository.findAll(new QuerySpec(PersonDTO.class)).get(0).getUuid();
 
-    // Custom filter always returns filter by id = personUuid no matter what for the sake of the test
-    filterResolver.addRsqlAdapter(
-      PersonDTO.class,node -> new ComparisonNode(RSQLOperators.EQUAL, "uuid", List.of(personUuid.toString())));
+//    // Custom filter always returns filter by id = personUuid no matter what for the sake of the test
+//    filterResolver.addRsqlAdapter(
+//      PersonDTO.class,node -> new ComparisonNode(RSQLOperators.EQUAL, "uuid", List.of(personUuid.toString())));
 
     // Filter by useless filter createdOn that is blank:
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
@@ -229,6 +220,6 @@ public class RsqlFilterHandlerIT {
     assertEquals(1, persons.size());
     assertEquals(personUuid, persons.get(0).getUuid());
 
-    filterResolver.clearRsqlAdaptersForClass(PersonDTO.class);
+//    filterResolver.clearRsqlAdaptersForClass(PersonDTO.class);
   }
 }

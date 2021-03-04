@@ -4,7 +4,6 @@ import ca.gc.aafc.dina.dto.ChainDto;
 import ca.gc.aafc.dina.dto.ChainTemplateDto;
 import ca.gc.aafc.dina.entity.Chain;
 import ca.gc.aafc.dina.entity.ChainTemplate;
-import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
@@ -149,10 +148,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
   @TestConfiguration
   static class DinaRepoBulkOperationITConfig {
     @Bean
-    public DinaRepository<ChainDto, Chain> chainRepo(
-      BaseDAO baseDAO,
-      DinaFilterResolver filterResolver
-    ) {
+    public DinaRepository<ChainDto, Chain> chainRepo(BaseDAO baseDAO) {
       return new DinaRepository<>(
         new DefaultDinaService<>(baseDAO) {
           @Override
@@ -165,17 +161,13 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
         new DinaMapper<>(ChainDto.class),
         ChainDto.class,
         Chain.class,
-        filterResolver,
         null,
         new BuildProperties(new Properties())
       );
     }
 
     @Bean
-    public DinaRepository<ChainTemplateDto, ChainTemplate> TemplateRepo(
-      BaseDAO baseDAO,
-      DinaFilterResolver filterResolver
-    ) {
+    public DinaRepository<ChainTemplateDto, ChainTemplate> TemplateRepo(BaseDAO baseDAO) {
       return new DinaRepository<>(
         new DefaultDinaService<>(baseDAO) {
           @Override
@@ -189,7 +181,6 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
         new DinaMapper<>(ChainTemplateDto.class),
         ChainTemplateDto.class,
         ChainTemplate.class,
-        filterResolver,
         null,
         new BuildProperties(new Properties())
       );
