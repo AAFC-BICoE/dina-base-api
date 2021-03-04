@@ -28,6 +28,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.boot.info.BuildProperties;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.io.Serializable;
 import java.util.Collection;
@@ -58,6 +59,7 @@ public class DinaRepository<D, E extends DinaEntity>
   private final Class<E> entityClass;
 
   private final DinaService<E> dinaService;
+  private final EntityManager entityManager;
   private final Optional<DinaAuthorizationService> authorizationService;
   private final Optional<AuditService> auditService;
 
@@ -98,6 +100,7 @@ public class DinaRepository<D, E extends DinaEntity>
     this.registry = new DinaMappingRegistry(resourceClass);
     this.mappingLayer = new DinaMappingLayer<>(resourceClass, dinaMapper, dinaService, this.registry);
     this.hasFieldAdapters = CollectionUtils.isNotEmpty(registry.getFieldAdaptersPerClass().keySet());
+    this.entityManager = dinaService.createWithEntityManager(manager -> manager);
   }
 
   /**
@@ -151,7 +154,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
     Long resourceCount = dinaService.getResourceCount(
       entityClass,
-      (cb, root) -> filterResolver.buildPredicates(spec, cb, root, ids, idName, dinaService));
+      (cb, root) -> filterResolver.buildPredicates(spec, cb, root, ids, idName, entityManager));
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
@@ -194,7 +197,7 @@ public class DinaRepository<D, E extends DinaEntity>
       entityClass,
       (cb, root) -> {
         DinaFilterResolver.eagerLoadRelations(root, relationsToEagerLoad);
-        return filterResolver.buildPredicates(querySpec, cb, root, ids, idName, dinaService);
+        return filterResolver.buildPredicates(querySpec, cb, root, ids, idName, entityManager);
       },
       (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
       Math.toIntExact(querySpec.getOffset()),

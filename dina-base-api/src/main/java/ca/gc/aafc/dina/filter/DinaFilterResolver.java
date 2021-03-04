@@ -1,8 +1,6 @@
 package ca.gc.aafc.dina.filter;
 
-import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
-import ca.gc.aafc.dina.service.DinaService;
 import com.github.tennaito.rsql.jpa.JpaPredicateVisitor;
 import com.github.tennaito.rsql.misc.ArgumentParser;
 import cz.jirutka.rsql.parser.RSQLParser;
@@ -16,6 +14,7 @@ import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.FetchParent;
 import javax.persistence.criteria.JoinType;
@@ -121,7 +120,7 @@ public class DinaFilterResolver {
     @NonNull Root<E> root,
     Collection<Serializable> ids,
     String idFieldName,
-    DinaService<?> dinaService
+    @NonNull EntityManager em
   ) {
     final List<Predicate> restrictions = new ArrayList<>();
 
@@ -132,8 +131,7 @@ public class DinaFilterResolver {
     if (rsql.isPresent() && StringUtils.isNotBlank(rsql.get().getValue())) {
       visitor.defineRoot(root);
       final Node rsqlNode = processRsqlAdapters(rsqlFilterAdapter, rsqlParser.parse(rsql.get().getValue()));
-      Predicate withEntityManager = dinaService.createWithEntityManager(em -> rsqlNode.accept(visitor, em));
-      restrictions.add(withEntityManager);
+      restrictions.add(rsqlNode.accept(visitor, em));
     } else {
       restrictions.add(cb.and());
     }
