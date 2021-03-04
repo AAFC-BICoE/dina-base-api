@@ -3,12 +3,14 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import lombok.NonNull;
 
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Service class to provide a interface to a datasource.
@@ -95,5 +97,7 @@ public interface DinaService<E extends DinaEntity> {
    * Check for the existence of a record by natural id.
    */
   boolean exists(Class<?> entityClass, Object naturalId);
+
+  <T> T createWithEntityManager(Function<EntityManager, T> creator);
 
 }

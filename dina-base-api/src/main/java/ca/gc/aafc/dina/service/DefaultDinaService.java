@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Order;
@@ -14,6 +15,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Service class for database interactions with a {@link DinaEntity}.
@@ -139,6 +141,16 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public boolean exists(Class<?> entityClass, Object naturalId) {
     return baseDAO.existsByNaturalId(naturalId, entityClass);
+  }
+
+  /**
+   * This method can be used to inject the EntityManager into an external object.
+   *
+   * @param creator function using EM
+   */
+  @Override
+  public <T> T createWithEntityManager(Function<EntityManager, T> creator) {
+    return baseDAO.createWithEntityManager(creator);
   }
 
   /**
