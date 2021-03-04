@@ -14,12 +14,10 @@ The process method will receive the root node of the rsql filters and will retur
 
 === Step 2: Pass your filter adapter to the Dina filter resolver.
 
-The DinaFilterResolver will allow you to pass your adapter to the resolver.
-
- void addRsqlAdapter(Class<?> clz, RsqlFilterAdapter adapter)
+The DinaFilterResolver will allow you to pass your adapter to the resolver in the constructor.
 
 You can do this during the creation of your repository for the resource, or else where if needed.
 
-'''
+ DinaFilterResolver(@NonNull DinaService<T> service, RsqlFilterAdapter rsqlFilterAdapter)
 
-NOTE: The DinaFilterResolver will only run your adapter when a Rsql filter for your resource is detected in the request.
+'''
