@@ -98,6 +98,11 @@ public interface DinaService<E extends DinaEntity> {
    */
   boolean exists(Class<?> entityClass, Object naturalId);
 
+  /**
+   * This method can be used to inject the EntityManager into an external object.
+   *
+   * @param creator creator function
+   */
   <T> T createWithEntityManager(Function<EntityManager, T> creator);
 
 }
