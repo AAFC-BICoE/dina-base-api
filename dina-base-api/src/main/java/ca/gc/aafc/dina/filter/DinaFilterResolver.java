@@ -1,7 +1,8 @@
 package ca.gc.aafc.dina.filter;
 
-import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
+import ca.gc.aafc.dina.service.DinaService;
 import com.github.tennaito.rsql.jpa.JpaPredicateVisitor;
 import com.github.tennaito.rsql.misc.ArgumentParser;
 import cz.jirutka.rsql.parser.RSQLParser;
@@ -12,10 +13,8 @@ import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.FetchParent;
@@ -34,15 +33,19 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
-@RequiredArgsConstructor
-public class DinaFilterResolver {
+public class DinaFilterResolver<T extends DinaEntity> {
 
-  private final JpaPredicateVisitor<Object> VISITOR = new JpaPredicateVisitor<>();
-  private final BaseDAO baseDAO;
+  private final JpaPredicateVisitor<Object> visitor = new JpaPredicateVisitor<>();
+  private final DinaService<T> service;
   private final RSQLParser rsqlParser = new RSQLParser();
-  private final RsqlFilterAdapter rsqlFilterAdapter = null;
+  private final RsqlFilterAdapter rsqlFilterAdapter;
   private final ArgumentParser rsqlArgumentParser = new DinaFilterArgumentParser();
+
+  public DinaFilterResolver(@NonNull DinaService<T> service, RsqlFilterAdapter rsqlFilterAdapter) {
+    this.service = service;
+    this.rsqlFilterAdapter = rsqlFilterAdapter;
+    this.visitor.getBuilderTools().setArgumentParser(rsqlArgumentParser);
+  }
 
   /**
    * Returns a new List of filter specs resolved from the given filters for fields being mapped by field
@@ -126,7 +129,15 @@ public class DinaFilterResolver {
     //Simple Filters
     restrictions.add(SimpleFilterHandler.getRestriction(querySpec, root, cb, rsqlArgumentParser));
     //Rsql Filters
-    restrictions.add(handleRsqlFilters(querySpec, cb, root));
+    Optional<FilterSpec> rsql = querySpec.findFilter(PathSpec.of("rsql"));
+    if (rsql.isPresent() && StringUtils.isNotBlank(rsql.get().getValue())) {
+      visitor.defineRoot(root);
+      final Node rsqlNode = processRsqlAdapters(rsqlFilterAdapter, rsqlParser.parse(rsql.get().getValue()));
+      Predicate withEntityManager = service.createWithEntityManager(em -> rsqlNode.accept(visitor, em));
+      restrictions.add(withEntityManager);
+    } else {
+      restrictions.add(cb.and());
+    }
 
     if (CollectionUtils.isNotEmpty(ids)) {
       Objects.requireNonNull(idFieldName);
@@ -134,17 +145,6 @@ public class DinaFilterResolver {
     }
 
     return restrictions.toArray(Predicate[]::new);
-  }
-
-  private <E> Predicate handleRsqlFilters(QuerySpec querySpec, CriteriaBuilder cb, Root<E> root) {
-    Optional<FilterSpec> rsql = querySpec.findFilter(PathSpec.of("rsql"));
-    if (rsql.isPresent() && StringUtils.isNotBlank(rsql.get().getValue())) {
-      VISITOR.defineRoot(root).getBuilderTools().setArgumentParser(rsqlArgumentParser);
-      final Node rsqlNode = processRsqlAdapters(rsqlFilterAdapter, rsqlParser.parse(rsql.get().getValue()));
-      return baseDAO.createWithEntityManager(em -> rsqlNode.accept(VISITOR, em));
-    } else {
-      return cb.and();
-    }
   }
 
   /**
