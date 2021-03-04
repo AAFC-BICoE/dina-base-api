@@ -17,7 +17,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.FetchParent;
 import javax.persistence.criteria.JoinType;
@@ -28,34 +27,28 @@ import javax.persistence.criteria.Root;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Component used to map crnk filters into valid JPA objects.
- */
 @Component
-@RequiredArgsConstructor(onConstructor_ = @Inject)
+@RequiredArgsConstructor
 public class DinaFilterResolver {
 
-  public static final JpaPredicateVisitor<Object> VISITOR = new JpaPredicateVisitor<>();
-  private final SimpleFilterHandler simpleFilterHandler;
+  private final JpaPredicateVisitor<Object> VISITOR = new JpaPredicateVisitor<>();
   private final BaseDAO baseDAO;
-  private final ArgumentParser rsqlArgumentParser;
   private final RSQLParser rsqlParser = new RSQLParser();
-  private final Map<Class<?>, RsqlFilterAdapter> rsqlAdapterPerClass = new HashMap<>();
+  private final RsqlFilterAdapter rsqlFilterAdapter = null;
+  private final ArgumentParser rsqlArgumentParser = new DinaFilterArgumentParser();
 
   /**
-   * Returns a new List of filter specs resolved from the given filters for fields being mapped by
-   * field adapters. Filters for fields that are not resolved through field adapters will remain in
-   * the new list, Filter for fields that are resolved through field adapters will be replaced by
-   * the adapters {@link ca.gc.aafc.dina.mapper.DinaFieldAdapter#toFilterSpec}
+   * Returns a new List of filter specs resolved from the given filters for fields being mapped by field
+   * adapters. Filters for fields that are not resolved through field adapters will remain in the new list,
+   * Filter for fields that are resolved through field adapters will be replaced by the adapters {@link
+   * ca.gc.aafc.dina.mapper.DinaFieldAdapter#toFilterSpec}
    *
    * @param resource - Type of resource to be filtered.
    * @param filters  - Filter specs to resolve.
@@ -86,8 +79,7 @@ public class DinaFilterResolver {
   }
 
   /**
-   * Convenience method to return a list of filter specs resolved from a given Filter Spec mapping
-   * function.
+   * Convenience method to return a list of filter specs resolved from a given Filter Spec mapping function.
    *
    * @param applyValue - filter spec to apply
    * @param specs      - Functions to invoke apply.
@@ -111,22 +103,15 @@ public class DinaFilterResolver {
   }
 
   /**
-   * Returns an array of predicates by mapping crnk filters into JPA restrictions
-   * with a given querySpec, criteria builder, root, ids, and id field name.
+   * Returns an array of predicates by mapping crnk filters into JPA restrictions with a given querySpec,
+   * criteria builder, root, ids, and id field name.
    *
-   * @param <E>
-   *                      - root entity type
-   * @param querySpec
-   *                      - crnk query spec with filters, cannot be null
-   * @param cb
-   *                      - the criteria builder, cannot be null
-   * @param root
-   *                      - the root type, cannot be null
-   * @param ids
-   *                      - collection of ids, can be null
-   * @param idFieldName
-   *                      - collection of ids, can be null if collections is null,
-   *                      else throws null pointer.
+   * @param <E>         - root entity type
+   * @param querySpec   - crnk query spec with filters, cannot be null
+   * @param cb          - the criteria builder, cannot be null
+   * @param root        - the root type, cannot be null
+   * @param ids         - collection of ids, can be null
+   * @param idFieldName - collection of ids, can be null if collections is null, else throws null pointer.
    * @return - array of predicates
    */
   public <E> Predicate[] buildPredicates(
@@ -139,7 +124,7 @@ public class DinaFilterResolver {
     final List<Predicate> restrictions = new ArrayList<>();
 
     //Simple Filters
-    restrictions.add(simpleFilterHandler.getRestriction(querySpec, root, cb));
+    restrictions.add(SimpleFilterHandler.getRestriction(querySpec, root, cb, rsqlArgumentParser));
     //Rsql Filters
     restrictions.add(handleRsqlFilters(querySpec, cb, root));
 
@@ -155,8 +140,7 @@ public class DinaFilterResolver {
     Optional<FilterSpec> rsql = querySpec.findFilter(PathSpec.of("rsql"));
     if (rsql.isPresent() && StringUtils.isNotBlank(rsql.get().getValue())) {
       VISITOR.defineRoot(root).getBuilderTools().setArgumentParser(rsqlArgumentParser);
-      RsqlFilterAdapter adapter = rsqlAdapterPerClass.get(querySpec.getResourceClass());
-      final Node rsqlNode = processRsqlAdapters(adapter, rsqlParser.parse(rsql.get().getValue()));
+      final Node rsqlNode = processRsqlAdapters(rsqlFilterAdapter, rsqlParser.parse(rsql.get().getValue()));
       return baseDAO.createWithEntityManager(em -> rsqlNode.accept(VISITOR, em));
     } else {
       return cb.and();
@@ -164,17 +148,13 @@ public class DinaFilterResolver {
   }
 
   /**
-   * Parses a crnk {@link QuerySpec} to return a list of {@link Order} from a
-   * given {@link CriteriaBuilder} and {@link Path}.
+   * Parses a crnk {@link QuerySpec} to return a list of {@link Order} from a given {@link CriteriaBuilder}
+   * and {@link Path}.
    *
-   * @param <T>
-   *               - root type
-   * @param qs
-   *               - crnk query spec to parse
-   * @param cb
-   *               - critera builder to build orders
-   * @param root
-   *               - root path of entity
+   * @param <T>  - root type
+   * @param qs   - crnk query spec to parse
+   * @param cb   - critera builder to build orders
+   * @param root - root path of entity
    * @return a list of {@link Order} from a given {@link CriteriaBuilder} and {@link Path}
    */
   public static <T> List<Order> getOrders(QuerySpec qs, CriteriaBuilder cb, Path<T> root) {
@@ -190,7 +170,7 @@ public class DinaFilterResolver {
   /**
    * Adds left joins for eager Loading the relationships of a given query spec to a given root.
    *
-   * @param root      - root path to add joins
+   * @param root              - root path to add joins
    * @param includedRelations - relations to map
    */
   public static void eagerLoadRelations(Root<?> root, List<IncludeRelationSpec> includedRelations) {
@@ -215,29 +195,6 @@ public class DinaFilterResolver {
       rsqlNode = adapter.process(rsqlNode);
     }
     return rsqlNode;
-  }
-
-  /**
-   * Set the rsql adapter for a specific resource class.
-   *
-   * @param clz     resource class of the adapter
-   * @param adapter adapter
-   */
-  public void addRsqlAdapter(Class<?> clz, RsqlFilterAdapter adapter) {
-    if (clz != null && adapter != null) {
-      rsqlAdapterPerClass.put(clz, adapter);
-    }
-  }
-
-  /**
-   * Clear the rsql adapter for a specific resource class.
-   *
-   * @param clz resource class of the adapter
-   */
-  public void clearRsqlAdaptersForClass(Class<?> clz) {
-    if (clz != null) {
-      rsqlAdapterPerClass.remove(clz);
-    }
   }
 
 }
