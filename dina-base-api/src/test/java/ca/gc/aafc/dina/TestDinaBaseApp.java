@@ -91,7 +91,7 @@ public class TestDinaBaseApp {
       dinaMapper,
       PersonDTO.class,
       Person.class,
-      new DinaFilterResolver<>(service, new PersonRsqlAdapter()),
+      new DinaFilterResolver(new PersonRsqlAdapter()),
       null,
       buildProperties());
   }

@@ -23,7 +23,7 @@ public class ReadOnlyDinaRepository<D, E extends DinaEntity> extends DinaReposit
     DinaMapper<D, E> dinaMapper,
     Class<D> resourceClass,
     Class<E> entityClass,
-    DinaFilterResolver<E> filterResolver,
+    DinaFilterResolver filterResolver,
     BuildProperties buildProperties
   ) {
     super(

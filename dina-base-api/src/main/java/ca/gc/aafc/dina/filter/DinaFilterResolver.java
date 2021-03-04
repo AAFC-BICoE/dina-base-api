@@ -33,16 +33,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DinaFilterResolver<T extends DinaEntity> {
+public class DinaFilterResolver {
 
   private final JpaPredicateVisitor<Object> visitor = new JpaPredicateVisitor<>();
-  private final DinaService<T> service;
   private final RSQLParser rsqlParser = new RSQLParser();
   private final RsqlFilterAdapter rsqlFilterAdapter;
   private final ArgumentParser rsqlArgumentParser = new DinaFilterArgumentParser();
 
-  public DinaFilterResolver(@NonNull DinaService<T> service, RsqlFilterAdapter rsqlFilterAdapter) {
-    this.service = service;
+  public DinaFilterResolver(RsqlFilterAdapter rsqlFilterAdapter) {
     this.rsqlFilterAdapter = rsqlFilterAdapter;
     this.visitor.getBuilderTools().setArgumentParser(rsqlArgumentParser);
   }
@@ -122,7 +120,8 @@ public class DinaFilterResolver<T extends DinaEntity> {
     @NonNull CriteriaBuilder cb,
     @NonNull Root<E> root,
     Collection<Serializable> ids,
-    String idFieldName
+    String idFieldName,
+    DinaService<?> dinaService
   ) {
     final List<Predicate> restrictions = new ArrayList<>();
 
@@ -133,7 +132,7 @@ public class DinaFilterResolver<T extends DinaEntity> {
     if (rsql.isPresent() && StringUtils.isNotBlank(rsql.get().getValue())) {
       visitor.defineRoot(root);
       final Node rsqlNode = processRsqlAdapters(rsqlFilterAdapter, rsqlParser.parse(rsql.get().getValue()));
-      Predicate withEntityManager = service.createWithEntityManager(em -> rsqlNode.accept(visitor, em));
+      Predicate withEntityManager = dinaService.createWithEntityManager(em -> rsqlNode.accept(visitor, em));
       restrictions.add(withEntityManager);
     } else {
       restrictions.add(cb.and());

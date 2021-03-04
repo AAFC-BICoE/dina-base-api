@@ -77,7 +77,7 @@ public class DinaRepository<D, E extends DinaEntity>
     @NonNull DinaMapper<D, E> dinaMapper,
     @NonNull Class<D> resourceClass,
     @NonNull Class<E> entityClass,
-    DinaFilterResolver<E> filterResolver,
+    DinaFilterResolver filterResolver,
     ExternalResourceProvider externalResourceProvider,
     @NonNull BuildProperties buildProperties
   ) {
@@ -87,7 +87,7 @@ public class DinaRepository<D, E extends DinaEntity>
     this.resourceClass = resourceClass;
     this.entityClass = entityClass;
     this.filterResolver = Objects.requireNonNullElseGet(
-      filterResolver, () -> new DinaFilterResolver<>(dinaService, null));
+      filterResolver, () -> new DinaFilterResolver(null));
     this.buildProperties = buildProperties;
     if (externalResourceProvider != null) {
       this.externalMetaMap =
@@ -151,7 +151,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
     Long resourceCount = dinaService.getResourceCount(
       entityClass,
-      (cb, root) -> filterResolver.buildPredicates(spec, cb, root, ids, idName));
+      (cb, root) -> filterResolver.buildPredicates(spec, cb, root, ids, idName, dinaService));
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
@@ -194,7 +194,7 @@ public class DinaRepository<D, E extends DinaEntity>
       entityClass,
       (cb, root) -> {
         DinaFilterResolver.eagerLoadRelations(root, relationsToEagerLoad);
-        return filterResolver.buildPredicates(querySpec, cb, root, ids, idName);
+        return filterResolver.buildPredicates(querySpec, cb, root, ids, idName, dinaService);
       },
       (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
       Math.toIntExact(querySpec.getOffset()),
