@@ -206,7 +206,7 @@ public class RsqlFilterHandlerIT {
   void checkFilter_WhenUsingCustomRsqlFilter_FilterApplied() {
     UUID personUuid = this.personRepository.findAll(new QuerySpec(PersonDTO.class)).get(0).getUuid();
 
-    // Filter by useless filter createdOn that is blank:
+    // Filter by custom set filter:
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setFilters(Collections.singletonList(
       new FilterSpec(
@@ -218,7 +218,5 @@ public class RsqlFilterHandlerIT {
     ResourceList<PersonDTO> persons = this.personRepository.findAll(querySpec);
     assertEquals(1, persons.size());
     assertEquals(personUuid, persons.get(0).getUuid());
-
-//    filterResolver.clearRsqlAdaptersForClass(PersonDTO.class);
   }
 }
