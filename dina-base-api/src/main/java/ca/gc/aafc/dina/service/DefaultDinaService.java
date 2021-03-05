@@ -65,8 +65,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
-   * Returns a list of Entities of a given class restricted by the predicates returned by a given
-   * function.
+   * Returns a list of Entities of a given class restricted by the predicates returned by a given function.
    *
    * @param entityClass - entity class to query cannot be null
    * @param where       - function to return the predicates cannot be null
@@ -86,14 +85,20 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
     CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
     Root<T> root = criteria.from(entityClass);
-
-    criteria.where(where.apply(criteriaBuilder, root)).select(root);
-    if (orderBy != null) {
-      criteria.orderBy(orderBy.apply(criteriaBuilder, root));
-    }
-    return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult);
+    Predicate[] predicates = where.apply(criteriaBuilder, root);
+    return getResults(orderBy, startIndex, maxResult, criteriaBuilder, criteria, root, predicates);
   }
 
+  /**
+   * Returns a list of Entities of a given class restricted by the predicates returned by a given function.
+   *
+   * @param entityClass - entity class to query cannot be null
+   * @param where       - function to return the predicates cannot be null
+   * @param orderBy     - function to return the sorting criteria can be null
+   * @param startIndex  - position of first result to retrieve
+   * @param maxResult   - maximun number of results to return
+   * @return list of entities
+   */
   @Override
   public <T> List<T> findAll(
     @NonNull Class<T> entityClass,
@@ -105,12 +110,24 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
     CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
     Root<T> root = criteria.from(entityClass);
-
-    criteria.where(where.apply(DinaFilterPackage.builder()
+    Predicate[] predicates = where.apply(DinaFilterPackage.builder()
       .criteriaBuilder(criteriaBuilder)
       .root(root)
       .em(baseDAO.createWithEntityManager(manager -> manager))
-      .build())).select(root);
+      .build());
+    return getResults(orderBy, startIndex, maxResult, criteriaBuilder, criteria, root, predicates);
+  }
+
+  private <T> List<T> getResults(
+    BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
+    int startIndex,
+    int maxResult,
+    CriteriaBuilder criteriaBuilder,
+    CriteriaQuery<T> criteria,
+    Root<T> root,
+    Predicate[] predicates
+  ) {
+    criteria.where(predicates).select(root);
 
     if (orderBy != null) {
       criteria.orderBy(orderBy.apply(criteriaBuilder, root));
