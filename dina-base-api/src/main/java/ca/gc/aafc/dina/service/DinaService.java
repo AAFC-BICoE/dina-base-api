@@ -1,8 +1,6 @@
 package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
-import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 
 import javax.persistence.EntityManager;
@@ -12,7 +10,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * Service class to provide a interface to a datasource.
@@ -94,7 +91,7 @@ public interface DinaService<E extends DinaEntity> {
    */
   <T> List<T> findAll(
     @NonNull Class<T> entityClass,
-    @NonNull Function<DinaFilterPackage, Predicate[]> where,
+    @NonNull DinaService.DinaPredicateSupplier<T> where,
     BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
     int startIndex,
     int maxResult
@@ -121,7 +118,7 @@ public interface DinaService<E extends DinaEntity> {
    */
   <T> Long getResourceCount(
     @NonNull Class<T> entityClass,
-    @NonNull Function<DinaFilterPackage, Predicate[]> predicateSupplier
+    @NonNull DinaService.DinaPredicateSupplier<T> predicateSupplier
   );
 
   /**
@@ -129,12 +126,9 @@ public interface DinaService<E extends DinaEntity> {
    */
   boolean exists(Class<?> entityClass, Object naturalId);
 
-  @Builder
-  @Getter
-  class DinaFilterPackage {
-    private final CriteriaBuilder criteriaBuilder;
-    private final Root<?> root;
-    private final EntityManager em;
+  @FunctionalInterface
+  interface DinaPredicateSupplier<T> {
+    Predicate[] supply(CriteriaBuilder criteriaBuilder, Root<T> root, EntityManager em);
   }
 
 }

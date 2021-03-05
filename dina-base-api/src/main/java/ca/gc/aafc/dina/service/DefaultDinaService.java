@@ -14,7 +14,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * Service class for database interactions with a {@link DinaEntity}.
@@ -82,11 +81,8 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     int startIndex,
     int maxResult
   ) {
-    CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
-    CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
-    Root<T> root = criteria.from(entityClass);
-    Predicate[] predicates = where.apply(criteriaBuilder, root);
-    return findAll(root, predicates, criteria, criteriaBuilder, startIndex, maxResult, orderBy);
+    return findAll(entityClass, (criteriaBuilder, root, em) -> where.apply(criteriaBuilder, root),
+      orderBy, startIndex, maxResult);
   }
 
   /**
@@ -102,7 +98,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public <T> List<T> findAll(
     @NonNull Class<T> entityClass,
-    @NonNull Function<DinaFilterPackage, Predicate[]> where,
+    @NonNull DinaService.DinaPredicateSupplier<T> where,
     BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
     int startIndex,
     int maxResult
@@ -110,23 +106,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
     CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
     Root<T> root = criteria.from(entityClass);
-    Predicate[] predicates = where.apply(DinaFilterPackage.builder()
-      .criteriaBuilder(criteriaBuilder)
-      .root(root)
-      .em(baseDAO.createWithEntityManager(manager -> manager))
-      .build());
-    return findAll(root, predicates, criteria, criteriaBuilder, startIndex, maxResult, orderBy);
-  }
-
-  private <T> List<T> findAll(
-    Root<T> root,
-    Predicate[] predicates,
-    CriteriaQuery<T> criteria,
-    CriteriaBuilder criteriaBuilder,
-    int startIndex,
-    int maxResult,
-    BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy
-  ) {
+    Predicate[] predicates = where.supply(criteriaBuilder, root, baseDAO.createWithEntityManager(m -> m));
     criteria.where(predicates).select(root);
     if (orderBy != null) {
       criteria.orderBy(orderBy.apply(criteriaBuilder, root));
@@ -144,7 +124,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public <T> Long getResourceCount(
     @NonNull Class<T> entityClass,
-    @NonNull Function<DinaFilterPackage, Predicate[]> predicateSupplier
+    @NonNull DinaService.DinaPredicateSupplier<T> predicateSupplier
   ) {
     return baseDAO.getResourceCount(entityClass, predicateSupplier);
   }

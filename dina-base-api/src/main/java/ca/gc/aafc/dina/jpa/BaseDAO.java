@@ -1,12 +1,12 @@
 package ca.gc.aafc.dina.jpa;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import ca.gc.aafc.dina.service.DinaService;
+import io.crnk.core.engine.information.bean.BeanInformation;
+import lombok.NonNull;
+import org.hibernate.Session;
+import org.hibernate.SimpleNaturalIdLoadAccess;
+import org.hibernate.annotations.NaturalId;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -22,15 +22,13 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
-
-import ca.gc.aafc.dina.service.DinaService;
-import org.hibernate.Session;
-import org.hibernate.SimpleNaturalIdLoadAccess;
-import org.hibernate.annotations.NaturalId;
-import org.springframework.stereotype.Component;
-
-import io.crnk.core.engine.information.bean.BeanInformation;
-import lombok.NonNull;
+import java.io.Serializable;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Base Data Access Object layer. This class should be the only one holding a
@@ -355,17 +353,13 @@ public class BaseDAO {
    */
   public <E> Long getResourceCount(
     @NonNull Class<E> entityClass,
-    @NonNull Function<DinaService.DinaFilterPackage, Predicate[]> predicateSupplier
+    @NonNull DinaService.DinaPredicateSupplier<E> predicateSupplier
   ) {
     CriteriaBuilder cb = entityManager.getCriteriaBuilder();
     CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
     Root<E> root = countQuery.from(entityClass);
     countQuery.select(cb.count(root));
-    countQuery.where(predicateSupplier.apply(DinaService.DinaFilterPackage.builder()
-      .root(root)
-      .em(createWithEntityManager(manager -> manager))
-      .criteriaBuilder(cb)
-      .build()));
+    countQuery.where(predicateSupplier.supply(cb, root, createWithEntityManager(m -> m)));
     return entityManager.createQuery(countQuery).getSingleResult();
   }
 }
