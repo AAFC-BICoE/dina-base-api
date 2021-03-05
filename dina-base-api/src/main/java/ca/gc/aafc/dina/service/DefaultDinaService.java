@@ -141,7 +141,9 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     @NonNull Class<T> entityClass,
     @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
   ) {
-    return baseDAO.getResourceCount(entityClass, predicateSupplier);
+    return getResourceCount(
+      entityClass,
+      (criteriaBuilder, root, em) -> predicateSupplier.apply(criteriaBuilder, root));
   }
 
   /**
