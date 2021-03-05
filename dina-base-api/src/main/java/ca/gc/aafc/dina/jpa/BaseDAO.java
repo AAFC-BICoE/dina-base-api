@@ -323,12 +323,10 @@ public class BaseDAO {
 
   /**
    * Returns the resource count from a given predicate supplier.
-   * 
-   * @param <E>
-   * @param entityClass
-   *                            - entity class to query cannot be null
-   * @param predicateSupplier
-   *                            - function to return the predicates cannot be null
+   *
+   * @param <E>               entity type
+   * @param entityClass       - entity class to query cannot be null
+   * @param predicateSupplier - function to return the predicates cannot be null
    * @return resource count
    */
   public <E> Long getResourceCount(
@@ -338,13 +336,19 @@ public class BaseDAO {
     CriteriaBuilder cb = entityManager.getCriteriaBuilder();
     CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
     Root<E> root = countQuery.from(entityClass);
-
     countQuery.select(cb.count(root));
     countQuery.where(predicateSupplier.apply(cb, root));
-
     return entityManager.createQuery(countQuery).getSingleResult();
   }
 
+  /**
+   * Returns the resource count from a given predicate supplier.
+   *
+   * @param <E>               entity type
+   * @param entityClass       - entity class to query cannot be null
+   * @param predicateSupplier - function to return the predicates cannot be null
+   * @return resource count
+   */
   public <E> Long getResourceCount(
     @NonNull Class<E> entityClass,
     @NonNull Function<DinaService.DinaFilterPackage, Predicate[]> predicateSupplier
@@ -352,14 +356,12 @@ public class BaseDAO {
     CriteriaBuilder cb = entityManager.getCriteriaBuilder();
     CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
     Root<E> root = countQuery.from(entityClass);
-
     countQuery.select(cb.count(root));
     countQuery.where(predicateSupplier.apply(DinaService.DinaFilterPackage.builder()
       .root(root)
       .em(createWithEntityManager(manager -> manager))
       .criteriaBuilder(cb)
       .build()));
-
     return entityManager.createQuery(countQuery).getSingleResult();
   }
 
