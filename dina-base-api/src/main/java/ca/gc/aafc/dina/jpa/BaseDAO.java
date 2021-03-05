@@ -23,6 +23,7 @@ import javax.persistence.criteria.Root;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
+import ca.gc.aafc.dina.service.DinaService;
 import org.hibernate.Session;
 import org.hibernate.SimpleNaturalIdLoadAccess;
 import org.hibernate.annotations.NaturalId;
@@ -340,6 +341,24 @@ public class BaseDAO {
 
     countQuery.select(cb.count(root));
     countQuery.where(predicateSupplier.apply(cb, root));
+
+    return entityManager.createQuery(countQuery).getSingleResult();
+  }
+
+  public <E> Long getResourceCount(
+    @NonNull Class<E> entityClass,
+    @NonNull Function<DinaService.DinaFilterPackage, Predicate[]> predicateSupplier
+  ) {
+    CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+    Root<E> root = countQuery.from(entityClass);
+
+    countQuery.select(cb.count(root));
+    countQuery.where(predicateSupplier.apply(DinaService.DinaFilterPackage.builder()
+      .root(root)
+      .em(createWithEntityManager(manager -> manager))
+      .criteriaBuilder(cb)
+      .build()));
 
     return entityManager.createQuery(countQuery).getSingleResult();
   }

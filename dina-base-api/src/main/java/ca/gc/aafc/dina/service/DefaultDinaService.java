@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Order;
@@ -95,6 +94,45 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult);
   }
 
+  @Override
+  public <T> List<T> findAll(
+    @NonNull Class<T> entityClass,
+    @NonNull Function<DinaFilterPackage, Predicate[]> where,
+    BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
+    int startIndex,
+    int maxResult
+  ) {
+    CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
+    CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
+    Root<T> root = criteria.from(entityClass);
+
+    criteria.where(where.apply(DinaFilterPackage.builder()
+      .criteriaBuilder(criteriaBuilder)
+      .root(root)
+      .em(baseDAO.createWithEntityManager(manager -> manager))
+      .build())).select(root);
+
+    if (orderBy != null) {
+      criteria.orderBy(orderBy.apply(criteriaBuilder, root));
+    }
+    return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult);
+  }
+
+  /**
+   * Returns the resource count from a given predicate supplier.
+   *
+   * @param entityClass       - entity class to query cannot be null
+   * @param predicateSupplier - function to return the predicates cannot be null
+   * @return resource count
+   */
+  @Override
+  public <T> Long getResourceCount(
+    @NonNull Class<T> entityClass,
+    @NonNull Function<DinaFilterPackage, Predicate[]> predicateSupplier
+  ) {
+    return baseDAO.getResourceCount(entityClass, predicateSupplier);
+  }
+
   /**
    * Returns the resource count from a given predicate supplier.
    *
@@ -141,16 +179,6 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public boolean exists(Class<?> entityClass, Object naturalId) {
     return baseDAO.existsByNaturalId(naturalId, entityClass);
-  }
-
-  /**
-   * This method can be used to inject the EntityManager into an external object.
-   *
-   * @param creator function using EM
-   */
-  @Override
-  public <T> T createWithEntityManager(Function<EntityManager, T> creator) {
-    return baseDAO.createWithEntityManager(creator);
   }
 
   /**

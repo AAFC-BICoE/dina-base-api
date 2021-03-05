@@ -28,7 +28,6 @@ import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.boot.info.BuildProperties;
 
-import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.io.Serializable;
 import java.util.Collection;
@@ -59,7 +58,6 @@ public class DinaRepository<D, E extends DinaEntity>
   private final Class<E> entityClass;
 
   private final DinaService<E> dinaService;
-  private final EntityManager entityManager;
   private final Optional<DinaAuthorizationService> authorizationService;
   private final Optional<AuditService> auditService;
 
@@ -100,7 +98,6 @@ public class DinaRepository<D, E extends DinaEntity>
     this.registry = new DinaMappingRegistry(resourceClass);
     this.mappingLayer = new DinaMappingLayer<>(resourceClass, dinaMapper, dinaService, this.registry);
     this.hasFieldAdapters = CollectionUtils.isNotEmpty(registry.getFieldAdaptersPerClass().keySet());
-    this.entityManager = dinaService.createWithEntityManager(manager -> manager);
   }
 
   /**
@@ -152,9 +149,8 @@ public class DinaRepository<D, E extends DinaEntity>
 
     List<D> dList = mappingLayer.mapEntitiesToDto(spec, fetchEntities(ids, spec, idName));
 
-    Long resourceCount = dinaService.getResourceCount(
-      entityClass,
-      (cb, root) -> filterResolver.buildPredicates(spec, cb, root, ids, idName, entityManager));
+    Long resourceCount = dinaService.getResourceCount(entityClass, cp -> filterResolver
+      .buildPredicates(spec, cp.getCriteriaBuilder(), cp.getRoot(), ids, idName, cp.getEm()));
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
@@ -195,9 +191,10 @@ public class DinaRepository<D, E extends DinaEntity>
 
     return dinaService.findAll(
       entityClass,
-      (cb, root) -> {
-        DinaFilterResolver.eagerLoadRelations(root, relationsToEagerLoad);
-        return filterResolver.buildPredicates(querySpec, cb, root, ids, idName, entityManager);
+      cp -> {
+        DinaFilterResolver.eagerLoadRelations(cp.getRoot(), relationsToEagerLoad);
+        return filterResolver.buildPredicates(
+          querySpec, cp.getCriteriaBuilder(), cp.getRoot(), ids, idName, cp.getEm());
       },
       (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
       Math.toIntExact(querySpec.getOffset()),
