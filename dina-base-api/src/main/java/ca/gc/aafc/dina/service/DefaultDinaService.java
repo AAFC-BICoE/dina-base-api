@@ -86,7 +86,8 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
     Root<T> root = criteria.from(entityClass);
     Predicate[] predicates = where.apply(criteriaBuilder, root);
-    return getResults(orderBy, startIndex, maxResult, criteriaBuilder, criteria, root, predicates);
+    applySortAndFilters(orderBy, criteriaBuilder, criteria, root, predicates);
+    return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult);
   }
 
   /**
@@ -115,24 +116,21 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
       .root(root)
       .em(baseDAO.createWithEntityManager(manager -> manager))
       .build());
-    return getResults(orderBy, startIndex, maxResult, criteriaBuilder, criteria, root, predicates);
+    applySortAndFilters(orderBy, criteriaBuilder, criteria, root, predicates);
+    return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult);
   }
 
-  private <T> List<T> getResults(
+  private <T> void applySortAndFilters(
     BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
-    int startIndex,
-    int maxResult,
     CriteriaBuilder criteriaBuilder,
     CriteriaQuery<T> criteria,
     Root<T> root,
     Predicate[] predicates
   ) {
     criteria.where(predicates).select(root);
-
     if (orderBy != null) {
       criteria.orderBy(orderBy.apply(criteriaBuilder, root));
     }
-    return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult);
   }
 
   /**
