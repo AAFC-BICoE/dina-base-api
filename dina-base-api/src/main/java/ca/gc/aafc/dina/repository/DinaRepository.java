@@ -149,8 +149,9 @@ public class DinaRepository<D, E extends DinaEntity>
 
     List<D> dList = mappingLayer.mapEntitiesToDto(spec, fetchEntities(ids, spec, idName));
 
-    Long resourceCount = dinaService.getResourceCount(entityClass, cp -> filterResolver
-      .buildPredicates(spec, cp.getCriteriaBuilder(), cp.getRoot(), ids, idName, cp.getEm()));
+    Long resourceCount = dinaService.getResourceCount(entityClass,
+      (criteriaBuilder, root, em) -> filterResolver.buildPredicates(spec,criteriaBuilder,root,ids,idName,em));
+
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
@@ -191,10 +192,9 @@ public class DinaRepository<D, E extends DinaEntity>
 
     return dinaService.findAll(
       entityClass,
-      cp -> {
-        DinaFilterResolver.eagerLoadRelations(cp.getRoot(), relationsToEagerLoad);
-        return filterResolver.buildPredicates(
-          querySpec, cp.getCriteriaBuilder(), cp.getRoot(), ids, idName, cp.getEm());
+      (criteriaBuilder, root, em) -> {
+        DinaFilterResolver.eagerLoadRelations(root, relationsToEagerLoad);
+        return filterResolver.buildPredicates(querySpec, criteriaBuilder, root, ids, idName, em);
       },
       (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
       Math.toIntExact(querySpec.getOffset()),
