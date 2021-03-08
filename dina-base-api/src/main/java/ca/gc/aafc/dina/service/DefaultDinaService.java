@@ -107,7 +107,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
     CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
     Root<T> root = criteria.from(entityClass);
-    Predicate[] predicates = where.supply(criteriaBuilder, root, baseDAO.createWithEntityManager(m -> m));
+    Predicate[] predicates = baseDAO.buildPredicateFromSupplier(where, criteriaBuilder, root);
     criteria.where(predicates).select(root);
     if (orderBy != null) {
       criteria.orderBy(orderBy.apply(criteriaBuilder, root));

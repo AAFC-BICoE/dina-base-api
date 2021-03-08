@@ -55,6 +55,19 @@ public class BaseDAO {
   }
 
   /**
+   * Used to call the provided PredicateSupplier with the EntityManager.
+   * @param where
+   * @param criteriaBuilder
+   * @param root
+   * @param <T>
+   * @return
+   */
+  public <T> Predicate[] buildPredicateFromSupplier(PredicateSupplier<T> where, CriteriaBuilder criteriaBuilder, Root<T> root) {
+    return where.supply(criteriaBuilder, root, entityManager);
+  }
+
+
+  /**
    * Utility function that can check if a lazy loaded attribute is actually
    * loaded.
    *
@@ -333,7 +346,7 @@ public class BaseDAO {
     CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
     Root<E> root = countQuery.from(entityClass);
     countQuery.select(cb.count(root));
-    countQuery.where(predicateSupplier.supply(cb, root, createWithEntityManager(m -> m)));
+    countQuery.where(predicateSupplier.supply(cb, root, entityManager));
     return entityManager.createQuery(countQuery).getSingleResult();
   }
 }
