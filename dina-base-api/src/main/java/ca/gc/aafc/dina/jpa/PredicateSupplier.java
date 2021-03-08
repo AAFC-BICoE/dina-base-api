@@ -6,7 +6,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 @FunctionalInterface
-public
-interface PredicateSupplier<T> {
+public interface PredicateSupplier<T> {
   Predicate[] supply(CriteriaBuilder criteriaBuilder, Root<T> root, EntityManager em);
 }
