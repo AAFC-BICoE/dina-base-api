@@ -18,6 +18,6 @@ The DinaFilterResolver will allow you to pass your adapter to the resolver in th
 
 You can do this during the creation of your repository for the resource.
 
- DinaFilterResolver(@NonNull DinaService<T> service, RsqlFilterAdapter rsqlFilterAdapter)
+ DinaFilterResolver(RsqlFilterAdapter rsqlFilterAdapter)
 
 '''
