@@ -149,9 +149,8 @@ public class DinaRepository<D, E extends DinaEntity>
 
     List<D> dList = mappingLayer.mapEntitiesToDto(spec, fetchEntities(ids, spec, idName));
 
-    Long resourceCount = dinaService.getResourceCount(entityClass,
-      (criteriaBuilder, root, em) -> filterResolver.buildPredicates(spec,criteriaBuilder,root,ids,idName,em));
-
+    Long resourceCount = dinaService.getResourceCount( entityClass,
+      (criteriaBuilder, root, em) -> filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idName, em));
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
