@@ -32,6 +32,17 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * DinaFilterResolver handles the responsibilities for dina repo filtering operations. Those responsibilities
+ * are the following.
+ * <pre>
+ *    <ul>
+ *    <li>Resolving filter adapter</li>
+ *    <li>Generating JPA predicates for filtering</li>
+ *    <li>Generating JPA Order by's for filtering</li>
+ *  </ul>
+ * </pre>
+ */
 public class DinaFilterResolver {
 
   private final JpaPredicateVisitor<Object> visitor = new JpaPredicateVisitor<>();
