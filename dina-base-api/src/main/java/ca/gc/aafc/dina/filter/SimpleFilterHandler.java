@@ -24,6 +24,16 @@ public final class SimpleFilterHandler {
   private SimpleFilterHandler() {
   }
 
+  /**
+   * Generates a predicate for a given crnk filter.
+   *
+   * @param querySpec      - crnk query spec with filters, cannot be null
+   * @param cb             - the criteria builder, cannot be null
+   * @param root           - the root type, cannot be null
+   * @param argumentParser - used to parse the arguments into there given types. See {@link
+   *                       DinaFilterArgumentParser}
+   * @return Generates a predicate for a given crnk filter.
+   */
   public static Predicate getRestriction(
     @NonNull QuerySpec querySpec,
     @NonNull From<?, ?> root,
