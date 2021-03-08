@@ -1,12 +1,11 @@
 package ca.gc.aafc.dina.jpa;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import io.crnk.core.engine.information.bean.BeanInformation;
+import lombok.NonNull;
+import org.hibernate.Session;
+import org.hibernate.SimpleNaturalIdLoadAccess;
+import org.hibernate.annotations.NaturalId;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -22,14 +21,12 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
-
-import org.hibernate.Session;
-import org.hibernate.SimpleNaturalIdLoadAccess;
-import org.hibernate.annotations.NaturalId;
-import org.springframework.stereotype.Component;
-
-import io.crnk.core.engine.information.bean.BeanInformation;
-import lombok.NonNull;
+import java.io.Serializable;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Base Data Access Object layer. This class should be the only one holding a
@@ -49,7 +46,7 @@ public class BaseDAO {
 
   /**
    * This method can be used to inject the EntityManager into an external object.
-   * 
+   *
    * @param creator
    */
   public <T> T createWithEntityManager(Function<EntityManager, T> creator) {
@@ -58,9 +55,22 @@ public class BaseDAO {
   }
 
   /**
+   * Used to call the provided PredicateSupplier with the EntityManager.
+   * @param where
+   * @param criteriaBuilder
+   * @param root
+   * @param <T>
+   * @return
+   */
+  public <T> Predicate[] buildPredicateFromSupplier(PredicateSupplier<T> where, CriteriaBuilder criteriaBuilder, Root<T> root) {
+    return where.supply(criteriaBuilder, root, entityManager);
+  }
+
+
+  /**
    * Utility function that can check if a lazy loaded attribute is actually
    * loaded.
-   * 
+   *
    * @param entity
    * @param fieldName
    * @return
@@ -76,7 +86,7 @@ public class BaseDAO {
   /**
    * Find an entity by it's natural ID or database ID. The method assumes that the
    * naturalId is unique.
-   * 
+   *
    * @param id
    * @param entityClass
    * @return
@@ -88,7 +98,7 @@ public class BaseDAO {
   /**
    * Find an entity by it's {@link NaturalId}. The method assumes that the
    * naturalId is unique.
-   * 
+   *
    * @param id
    * @param entityClass
    * @return
@@ -101,7 +111,7 @@ public class BaseDAO {
   /**
    * Find an entity by a specific property. The method assumes that the property
    * is unique.
-   * 
+   *
    * @param clazz
    * @param property
    * @param value
@@ -188,7 +198,7 @@ public class BaseDAO {
   /**
    * Returns a reference to an entity that should exist without actually loading it. Useful to set
    * relationships without loading the entity.
-   * 
+   *
    * @param entityClass
    * @param naturalId
    * @return
@@ -202,13 +212,13 @@ public class BaseDAO {
   /**
    * Set a relationship by calling the provided {@link Consumer} with a reference Entity loaded by
    * NaturalId. A reference to the entity allows to set a foreign key without loading the other entity.
-   * 
+   *
    * Usage:
-   * 
+   *
    * Using the object 'dep', set the relationship to DepartmentType using only its NaturalId (depTypeUUID).
    * baseDAO.setRelationshipByNaturalIdReference(DepartmentType.class, depTypeUUID,
         (x) -> dep.setDepartmentType(x));
-   * 
+   *
    * @param entityClass entity to link to that will be loaded with a reference entity
    * @param naturalId value
    * @param objConsumer
@@ -219,7 +229,7 @@ public class BaseDAO {
 
   /**
    * Save the provided entity.
-   * 
+   *
    * @param entity
    */
   public void create(Object entity) {
@@ -228,7 +238,7 @@ public class BaseDAO {
 
   /**
    * Merge the state of a given entity into the current persistence context.
-   * 
+   *
    * @param <E>    Type of the entity
    * @param entity entity to update
    * @return returns the managed instance the state was merged to.
@@ -242,7 +252,7 @@ public class BaseDAO {
 
   /**
    * Delete the provided entity.
-   * 
+   *
    * @param entity
    */
   public void delete(Object entity) {
@@ -251,7 +261,7 @@ public class BaseDAO {
 
   /**
    * Same as {@link Validator#validate(Object, Class...)}
-   * 
+   *
    * @param entity
    *          the entity to validate (not null)
    * @return constraint violations or an empty set if none
@@ -262,7 +272,7 @@ public class BaseDAO {
 
   /**
    * Given a class, this method will extract the name of the field annotated with {@link NaturalId}.
-   * 
+   *
    * @param entityClass
    * @return
    */
@@ -279,7 +289,7 @@ public class BaseDAO {
 
   /**
    * Given a class, this method will return the name of the field annotated with {@link Id}.
-   * 
+   *
    * @param entityClass
    * @return
    */
@@ -293,7 +303,7 @@ public class BaseDAO {
   /**
    * returns a {@link CriteriaBuilder} for the creation of {@link CriteriaQuery},
    * {@link Predicate}, {@link Expression}, and compound selections.
-   * 
+   *
    * @return {@link CriteriaBuilder}
    */
   public CriteriaBuilder getCriteriaBuilder() {
@@ -322,26 +332,21 @@ public class BaseDAO {
 
   /**
    * Returns the resource count from a given predicate supplier.
-   * 
-   * @param <E>
-   * @param entityClass
-   *                            - entity class to query cannot be null
-   * @param predicateSupplier
-   *                            - function to return the predicates cannot be null
+   *
+   * @param <E>               entity type
+   * @param entityClass       - entity class to query cannot be null
+   * @param predicateSupplier - function to return the predicates cannot be null
    * @return resource count
    */
   public <E> Long getResourceCount(
     @NonNull Class<E> entityClass,
-    @NonNull BiFunction<CriteriaBuilder, Root<E>, Predicate[]> predicateSupplier
+    @NonNull PredicateSupplier<E> predicateSupplier
   ) {
     CriteriaBuilder cb = entityManager.getCriteriaBuilder();
     CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
     Root<E> root = countQuery.from(entityClass);
-
     countQuery.select(cb.count(root));
-    countQuery.where(predicateSupplier.apply(cb, root));
-
+    countQuery.where(predicateSupplier.supply(cb, root, entityManager));
     return entityManager.createQuery(countQuery).getSingleResult();
   }
-
 }

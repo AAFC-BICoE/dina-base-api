@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -64,14 +65,13 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
-   * Returns a list of Entities of a given class restricted by the predicates returned by a given
-   * function.
+   * Returns a list of Entities of a given class restricted by the predicates returned by a given function.
    *
    * @param entityClass - entity class to query cannot be null
    * @param where       - function to return the predicates cannot be null
    * @param orderBy     - function to return the sorting criteria can be null
    * @param startIndex  - position of first result to retrieve
-   * @param maxResult   - maximun number of results to return
+   * @param maxResult   - maximum number of results to return
    * @return list of entities
    */
   @Override
@@ -82,11 +82,33 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     int startIndex,
     int maxResult
   ) {
+    return findAll(entityClass, (criteriaBuilder, root, em) -> where.apply(criteriaBuilder, root),
+      orderBy, startIndex, maxResult);
+  }
+
+  /**
+   * Returns a list of Entities of a given class restricted by the predicates returned by a given function.
+   *
+   * @param entityClass - entity class to query cannot be null
+   * @param where       - function to return the predicates cannot be null
+   * @param orderBy     - function to return the sorting criteria can be null
+   * @param startIndex  - position of first result to retrieve
+   * @param maxResult   - maximum number of results to return
+   * @return list of entities
+   */
+  @Override
+  public <T> List<T> findAll(
+    @NonNull Class<T> entityClass,
+    @NonNull PredicateSupplier<T> where,
+    BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
+    int startIndex,
+    int maxResult
+  ) {
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
     CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
     Root<T> root = criteria.from(entityClass);
-
-    criteria.where(where.apply(criteriaBuilder, root)).select(root);
+    Predicate[] predicates = baseDAO.buildPredicateFromSupplier(where, criteriaBuilder, root);
+    criteria.where(predicates).select(root);
     if (orderBy != null) {
       criteria.orderBy(orderBy.apply(criteriaBuilder, root));
     }
@@ -103,9 +125,26 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public <T> Long getResourceCount(
     @NonNull Class<T> entityClass,
-    @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
+    @NonNull PredicateSupplier<T> predicateSupplier
   ) {
     return baseDAO.getResourceCount(entityClass, predicateSupplier);
+  }
+
+  /**
+   * Returns the resource count from a given predicate supplier.
+   *
+   * @param entityClass       - entity class to query cannot be null
+   * @param predicateSupplier - function to return the predicates cannot be null
+   * @return resource count
+   */
+  @Override
+  public <T> Long getResourceCount(
+    @NonNull Class<T> entityClass,
+    @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
+  ) {
+    return getResourceCount(
+      entityClass,
+      (criteriaBuilder, root, em) -> predicateSupplier.apply(criteriaBuilder, root));
   }
 
   /**
