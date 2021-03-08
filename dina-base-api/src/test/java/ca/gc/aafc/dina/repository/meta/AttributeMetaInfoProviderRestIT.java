@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.repository.meta;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
@@ -64,14 +63,12 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
   static class TestConfig {
     @Bean
     public DinaRepository<ThingDTO, Thing> projectRepo(
-      BaseDAO baseDAO,
-      DinaFilterResolver filterResolver
+      BaseDAO baseDAO
     ) {
       return new DinaMetaInfoRepo<>(
         baseDAO,
         ThingDTO.class,
         Thing.class,
-        filterResolver,
         thingDTO -> AttributeMetaInfoProvider.DinaJsonMetaInfo.builder()
           .properties(Map.of(KEY, List.of(VALUE_1, VALUE_2).toArray()))
           .build());
@@ -124,7 +121,6 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
       BaseDAO baseDAO,
       Class<D> resourceClass,
       Class<E> entityClass,
-      DinaFilterResolver filterResolver,
       Function<D, AttributeMetaInfoProvider.DinaJsonMetaInfo> handler
     ) {
       super(
@@ -134,7 +130,7 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
         new DinaMapper<>(resourceClass),
         resourceClass,
         entityClass,
-        filterResolver,
+        null,
         null,
         new BuildProperties(new Properties()));
       this.handler = handler;

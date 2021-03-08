@@ -3,16 +3,18 @@ package ca.gc.aafc.dina.filter;
 import com.github.tennaito.rsql.misc.DefaultArgumentParser;
 import lombok.SneakyThrows;
 
-import javax.inject.Named;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-/** Augments the RSQL DefaultArgumentParser with additional filterable types. */
-@Named
+/**
+ * Augments the RSQL DefaultArgumentParser with additional filterable types.
+ */
 public class DinaFilterArgumentParser extends DefaultArgumentParser {
-  
-  /** Override the default parse method to add more parseable types to filter by. */
+
+  /**
+   * Override the default parse method to add more parseable types to filter by.
+   */
   @SneakyThrows
   @SuppressWarnings("unchecked")
   public <T> T parse(String argument, Class<T> type) {
@@ -32,7 +34,7 @@ public class DinaFilterArgumentParser extends DefaultArgumentParser {
     }
 
     // Otherwise fallback to the default behavior:
-    return super.parse(argument,type);
+    return super.parse(argument, type);
   }
-  
+
 }

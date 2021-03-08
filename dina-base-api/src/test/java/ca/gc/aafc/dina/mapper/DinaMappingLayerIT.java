@@ -7,7 +7,6 @@ import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.TaskDTO;
 import ca.gc.aafc.dina.entity.Project;
 import ca.gc.aafc.dina.entity.Task;
-import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
@@ -217,7 +216,6 @@ public class DinaMappingLayerIT {
     @Bean
     public DinaRepository<ProjectDTO, Project> projectRepo(
       BaseDAO baseDAO,
-      DinaFilterResolver filterResolver,
       ExternalResourceProvider externalResourceProvider,
       BuildProperties buildProperties
     ) {
@@ -228,7 +226,7 @@ public class DinaMappingLayerIT {
         new DinaMapper<>(ProjectDTO.class),
         ProjectDTO.class,
         Project.class,
-        filterResolver,
+        null,
         externalResourceProvider,
         buildProperties
       );
@@ -237,7 +235,6 @@ public class DinaMappingLayerIT {
     @Bean
     public DinaRepository<TaskDTO, Task> taskRepo(
       BaseDAO baseDAO,
-      DinaFilterResolver filterResolver,
       ExternalResourceProvider externalResourceProvider,
       BuildProperties buildProperties
     ) {
@@ -248,7 +245,7 @@ public class DinaMappingLayerIT {
         new DinaMapper<>(TaskDTO.class),
         TaskDTO.class,
         Task.class,
-        filterResolver,
+        null,
         externalResourceProvider,
         buildProperties
       );
