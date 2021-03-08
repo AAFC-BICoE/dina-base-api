@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.jpa;
 
-import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.engine.information.bean.BeanInformation;
 import lombok.NonNull;
 import org.hibernate.Session;
@@ -328,7 +327,7 @@ public class BaseDAO {
    */
   public <E> Long getResourceCount(
     @NonNull Class<E> entityClass,
-    @NonNull DinaService.DinaPredicateSupplier<E> predicateSupplier
+    @NonNull PredicateSupplier<E> predicateSupplier
   ) {
     CriteriaBuilder cb = entityManager.getCriteriaBuilder();
     CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);

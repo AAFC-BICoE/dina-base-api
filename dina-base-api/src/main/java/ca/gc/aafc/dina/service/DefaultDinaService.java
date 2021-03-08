@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -98,7 +99,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public <T> List<T> findAll(
     @NonNull Class<T> entityClass,
-    @NonNull DinaService.DinaPredicateSupplier<T> where,
+    @NonNull PredicateSupplier<T> where,
     BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
     int startIndex,
     int maxResult
@@ -124,7 +125,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public <T> Long getResourceCount(
     @NonNull Class<T> entityClass,
-    @NonNull DinaService.DinaPredicateSupplier<T> predicateSupplier
+    @NonNull PredicateSupplier<T> predicateSupplier
   ) {
     return baseDAO.getResourceCount(entityClass, predicateSupplier);
   }
