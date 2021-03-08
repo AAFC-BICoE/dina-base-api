@@ -1,9 +1,9 @@
 package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import lombok.NonNull;
 
-import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
@@ -91,7 +91,7 @@ public interface DinaService<E extends DinaEntity> {
    */
   <T> List<T> findAll(
     @NonNull Class<T> entityClass,
-    @NonNull DinaService.DinaPredicateSupplier<T> where,
+    @NonNull PredicateSupplier<T> where,
     BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
     int startIndex,
     int maxResult
@@ -118,17 +118,12 @@ public interface DinaService<E extends DinaEntity> {
    */
   <T> Long getResourceCount(
     @NonNull Class<T> entityClass,
-    @NonNull DinaService.DinaPredicateSupplier<T> predicateSupplier
+    @NonNull PredicateSupplier<T> predicateSupplier
   );
 
   /**
    * Check for the existence of a record by natural id.
    */
   boolean exists(Class<?> entityClass, Object naturalId);
-
-  @FunctionalInterface
-  interface DinaPredicateSupplier<T> {
-    Predicate[] supply(CriteriaBuilder criteriaBuilder, Root<T> root, EntityManager em);
-  }
 
 }
