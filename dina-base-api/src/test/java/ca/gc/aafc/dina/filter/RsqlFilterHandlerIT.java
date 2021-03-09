@@ -1,31 +1,11 @@
 package ca.gc.aafc.dina.filter;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import java.io.Serializable;
-import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-
-import com.google.common.collect.Sets;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
+import com.google.common.collect.Sets;
 import io.crnk.core.engine.information.resource.ResourceInformation;
 import io.crnk.core.engine.query.QueryContext;
 import io.crnk.core.engine.registry.ResourceRegistry;
@@ -36,6 +16,23 @@ import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.queryspec.mapper.QuerySpecUrlMapper;
 import io.crnk.core.repository.ResourceRepository;
 import io.crnk.core.resource.list.ResourceList;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import java.io.Serializable;
+import java.time.OffsetDateTime;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class, properties = "crnk.allow-unknown-attributes=true")
@@ -203,5 +200,23 @@ public class RsqlFilterHandlerIT {
     // All 5 people have the same createdOn time:
     assertEquals(5, persons.size());
     assertEquals(personDate, persons.get(0).getCreatedOn());
+  }
+
+  @Test
+  void checkFilter_WhenUsingCustomRsqlFilter_FilterApplied() {
+    UUID personUuid = this.personRepository.findAll(new QuerySpec(PersonDTO.class)).get(0).getUuid();
+
+    // Filter by custom set filter:
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.setFilters(Collections.singletonList(
+      new FilterSpec(
+        Collections.singletonList("rsql"),
+        FilterOperator.EQ,
+        "customSearch==" + personUuid.toString())));
+
+    // The results should be filtered to the one person with that UUID and not the createdOn filter:
+    ResourceList<PersonDTO> persons = this.personRepository.findAll(querySpec);
+    assertEquals(1, persons.size());
+    assertEquals(personUuid, persons.get(0).getUuid());
   }
 }

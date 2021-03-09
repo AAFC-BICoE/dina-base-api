@@ -5,11 +5,10 @@ import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.exception.MethodNotAllowedException;
+import org.springframework.boot.info.BuildProperties;
 
 import java.io.Serializable;
 import java.util.Optional;
-
-import org.springframework.boot.info.BuildProperties;
 
 /**
  * Read-only version of {@link DinaRepository}.

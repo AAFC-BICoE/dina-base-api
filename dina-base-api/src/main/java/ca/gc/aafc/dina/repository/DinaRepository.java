@@ -28,13 +28,13 @@ import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.boot.info.BuildProperties;
 
-import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -70,7 +70,6 @@ public class DinaRepository<D, E extends DinaEntity>
   private final DinaMappingRegistry registry;
   private final boolean hasFieldAdapters;
 
-  @Inject
   public DinaRepository(
     @NonNull DinaService<E> dinaService,
     @NonNull Optional<DinaAuthorizationService> authorizationService,
@@ -78,7 +77,7 @@ public class DinaRepository<D, E extends DinaEntity>
     @NonNull DinaMapper<D, E> dinaMapper,
     @NonNull Class<D> resourceClass,
     @NonNull Class<E> entityClass,
-    @NonNull DinaFilterResolver filterResolver,
+    DinaFilterResolver filterResolver,
     ExternalResourceProvider externalResourceProvider,
     @NonNull BuildProperties buildProperties
   ) {
@@ -87,7 +86,8 @@ public class DinaRepository<D, E extends DinaEntity>
     this.auditService = auditService;
     this.resourceClass = resourceClass;
     this.entityClass = entityClass;
-    this.filterResolver = filterResolver;
+    this.filterResolver = Objects.requireNonNullElseGet(
+      filterResolver, () -> new DinaFilterResolver(null));
     this.buildProperties = buildProperties;
     if (externalResourceProvider != null) {
       this.externalMetaMap =
@@ -149,9 +149,8 @@ public class DinaRepository<D, E extends DinaEntity>
 
     List<D> dList = mappingLayer.mapEntitiesToDto(spec, fetchEntities(ids, spec, idName));
 
-    Long resourceCount = dinaService.getResourceCount(
-      entityClass,
-      (cb, root) -> filterResolver.buildPredicates(spec, cb, root, ids, idName));
+    Long resourceCount = dinaService.getResourceCount( entityClass,
+      (criteriaBuilder, root, em) -> filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idName, em));
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
@@ -192,9 +191,9 @@ public class DinaRepository<D, E extends DinaEntity>
 
     return dinaService.findAll(
       entityClass,
-      (cb, root) -> {
+      (criteriaBuilder, root, em) -> {
         DinaFilterResolver.eagerLoadRelations(root, relationsToEagerLoad);
-        return filterResolver.buildPredicates(querySpec, cb, root, ids, idName);
+        return filterResolver.buildPredicates(querySpec, criteriaBuilder, root, ids, idName, em);
       },
       (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
       Math.toIntExact(querySpec.getOffset()),

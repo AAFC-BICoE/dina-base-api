@@ -38,9 +38,6 @@ import java.util.Properties;
 public class TestDinaBaseApp {
 
   @Inject
-  private DinaFilterResolver filterResolver;
-
-  @Inject
   private Optional<GroupAuthorizationService> groupAuthService;
 
   @Bean
@@ -52,7 +49,7 @@ public class TestDinaBaseApp {
       new DinaMapper<>(DepartmentDto.class),
       DepartmentDto.class,
       Department.class,
-      filterResolver,
+      null,
       null,
       buildProperties());
   }
@@ -66,7 +63,7 @@ public class TestDinaBaseApp {
       new DinaMapper<>(EmployeeDto.class),
       EmployeeDto.class,
       Employee.class,
-      filterResolver,
+      null, 
       null,
       buildProperties());
   }
@@ -94,7 +91,7 @@ public class TestDinaBaseApp {
       dinaMapper,
       PersonDTO.class,
       Person.class,
-      filterResolver,
+      new DinaFilterResolver(new PersonRsqlAdapter()),
       null,
       buildProperties());
   }
@@ -107,7 +104,7 @@ public class TestDinaBaseApp {
       dinaMapper,
       VocabularyDto.class,
       Vocabulary.class,
-      filterResolver,
+      null,
       buildProperties());
   }
 
