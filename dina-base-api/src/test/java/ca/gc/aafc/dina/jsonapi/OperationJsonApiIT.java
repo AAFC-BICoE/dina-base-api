@@ -1,11 +1,12 @@
 package ca.gc.aafc.dina.jsonapi;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIOperationBuilder;
-import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.crnk.core.engine.http.HttpMethod;
 import io.restassured.response.ValidatableResponse;
@@ -18,15 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-
 /**
  * Integration test making sure the operation endpoint is available and working as expected.
  */
-@SpringBootTest(classes = TestDinaBaseApp.class,
-  webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-  properties = {"dev-user.enabled: true", "keycloak.enabled: false"})
+@SpringBootTest(classes = TestDinaBaseApp.class ,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = { "dev-user.enabled: true", "keycloak.enabled: false" })
 public class OperationJsonApiIT extends BaseRestAssuredTest {
 
   public OperationJsonApiIT() {
@@ -39,21 +37,21 @@ public class OperationJsonApiIT extends BaseRestAssuredTest {
   @Test
   public void operations_OnCRUDOperations_ExpectedReturnCodesReturned() {
     PersonDTO person1 = PersonDTO.builder()
-      .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
-      .name(RandomStringUtils.randomAlphabetic(4)).build();
+        .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
+        .name(RandomStringUtils.randomAlphabetic(4)).build();
     String person1Uuid = UUID.randomUUID().toString();
     PersonDTO person2 = PersonDTO.builder()
-      .nickNames(Arrays.asList("a", "w", "y").toArray(new String[0]))
-      .name(RandomStringUtils.randomAlphabetic(4)).build();
+        .nickNames(Arrays.asList("a", "w", "y").toArray(new String[0]))
+        .name(RandomStringUtils.randomAlphabetic(4)).build();
 
     List<Map<String, Object>> operationMap = JsonAPIOperationBuilder.newBuilder()
-      .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
-        .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person1), null,
-          person1Uuid)) // Crnk requires an identifier even if it's a POST
-      .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
-        .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person2), null,
-          "1234")) //the id can even be a non-uuid value
-      .buildOperation();
+        .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
+            .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person1), null,
+                person1Uuid)) // Crnk requires an identifier even if it's a POST
+        .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
+            .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person2), null,
+                "1234")) //the id can even be a non-uuid value
+        .buildOperation();
 
     ValidatableResponse operationResponse = sendOperation(operationMap);
 
@@ -64,31 +62,4 @@ public class OperationJsonApiIT extends BaseRestAssuredTest {
     assertNotEquals("Assigned id should differ from the one provided", person1Uuid, person1AssignedId);
   }
 
-  @Test
-  void checkPost_LinkRelationOnPost() {
-    DepartmentDto department = DepartmentDto.builder()
-      .location("dina hq")
-      .build();
-    String departmentID = UUID.randomUUID().toString();
-
-    PersonDTO person1 = PersonDTO.builder()
-      .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
-      .name(RandomStringUtils.randomAlphabetic(4)).build();
-
-    Map<String, Object> relationshipMap = JsonAPITestHelper
-      .toRelationshipMap(JsonAPIRelationship.of("department", "department", departmentID));
-
-    List<Map<String, Object>> operationMap = JsonAPIOperationBuilder.newBuilder()
-      .addOperation(HttpMethod.POST, "department", JsonAPITestHelper
-        .toJsonAPIMap("department", JsonAPITestHelper.toAttributeMap(department), null,
-          departmentID))
-      .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
-        .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person1), relationshipMap,
-          UUID.randomUUID().toString()))
-      .buildOperation();
-
-    ValidatableResponse operationResponse = sendOperation(operationMap);
-    assertEquals(201, operationResponse.extract().body().jsonPath().getInt("[0].status"));
-    assertEquals(201, operationResponse.extract().body().jsonPath().getInt("[1].status"));
-  }
 }
