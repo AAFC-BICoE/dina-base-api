@@ -7,7 +7,6 @@ import io.crnk.operations.server.TransactionOperationFilter;
 import io.crnk.spring.jpa.SpringTransactionRunner;
 
 import org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -88,6 +87,7 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
         = new ReloadableResourceBundleMessageSource();
       
       messageSource.setBasename("classpath:messages");
+      messageSource.setUseCodeAsDefaultMessage(true);
       messageSource.setDefaultEncoding("UTF-8");
       return messageSource;
   }
@@ -96,20 +96,7 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
   @Override
   public LocalValidatorFactoryBean getValidator() {
       LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
-      bean.setMessageInterpolator(new ResourceBundleMessageInterpolator(new MessageSourceResourceBundleLocator(messageSource())));
       bean.setValidationMessageSource(messageSource());
       return bean;
-  }
-
-  @Bean
-  public Validator validator() {
-      return getValidator();
-  }
-
-  @Bean
-  public MethodValidationPostProcessor methodValidationPostProcessor(Validator validator) {
-      MethodValidationPostProcessor methodValidationPostProcessor = new MethodValidationPostProcessor();
-      methodValidationPostProcessor.setValidator(validator);
-      return methodValidationPostProcessor;
   }
 }
