@@ -43,7 +43,7 @@ public class Department implements DinaEntity {
   @ManyToOne
   private DepartmentType departmentType;
 
-  @NotNull
+  @NotNull(message = "{test.key.location}")
   private String location;
 
   @ManyToOne

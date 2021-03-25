@@ -5,9 +5,17 @@ import io.crnk.core.queryspec.mapper.DefaultQuerySpecUrlMapper;
 import io.crnk.operations.server.OperationsModule;
 import io.crnk.operations.server.TransactionOperationFilter;
 import io.crnk.spring.jpa.SpringTransactionRunner;
+
+import org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.validation.beanvalidation.MessageSourceResourceBundleLocator;
+import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -15,6 +23,8 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 import javax.inject.Inject;
+import javax.validation.Validator;
+
 import java.util.Locale;
 
 @Configuration
@@ -72,4 +82,34 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
     registry.addInterceptor(localeChangeInterceptor());
   }
 
+  @Bean
+  public MessageSource messageSource() {
+      ReloadableResourceBundleMessageSource messageSource
+        = new ReloadableResourceBundleMessageSource();
+      
+      messageSource.setBasename("classpath:messages");
+      messageSource.setDefaultEncoding("UTF-8");
+      return messageSource;
+  }
+  
+  @Bean
+  @Override
+  public LocalValidatorFactoryBean getValidator() {
+      LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
+      bean.setMessageInterpolator(new ResourceBundleMessageInterpolator(new MessageSourceResourceBundleLocator(messageSource())));
+      bean.setValidationMessageSource(messageSource());
+      return bean;
+  }
+
+  @Bean
+  public Validator validator() {
+      return getValidator();
+  }
+
+  @Bean
+  public MethodValidationPostProcessor methodValidationPostProcessor(Validator validator) {
+      MethodValidationPostProcessor methodValidationPostProcessor = new MethodValidationPostProcessor();
+      methodValidationPostProcessor.setValidator(validator);
+      return methodValidationPostProcessor;
+  }
 }
