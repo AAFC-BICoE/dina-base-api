@@ -21,6 +21,18 @@ public class DinaServiceValidationLocaleIT {
   protected int testPort;
 
   @Test
+  void validate_OnDifferentLocale_RegularValidationUsed() {
+    newRequest()
+      .header("Accept-Language", "fr")
+      .header("lang", "fr")
+      .body(newLongNameDto())
+      .post("/department")
+      .then()
+      .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
+      .body("errors[0].detail", Matchers.endsWith("name la taille doit être comprise entre 1 et 50"));
+  }
+
+  @Test
   void validate_OnDifferentLocale_DifferentLocaleUsed() {
     newRequest()
       .header("Accept-Language", "fr")
@@ -28,7 +40,7 @@ public class DinaServiceValidationLocaleIT {
       .post("/department")
       .then()
       .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
-      .body("errors[0].detail", Matchers.endsWith("Test french translation"));
+      .body("errors[0].detail", Matchers.endsWith("location ne peut pas être nul."));
   }
 
   @Test
@@ -47,6 +59,11 @@ public class DinaServiceValidationLocaleIT {
 
   private Map<String, Object> newDto() {
     DepartmentDto dto = DepartmentDto.builder().name("dfadf").location(null).build();
+    return JsonAPITestHelper.toJsonAPIMap("department", JsonAPITestHelper.toAttributeMap(dto));
+  }
+
+  private Map<String, Object> newLongNameDto() {
+    DepartmentDto dto = DepartmentDto.builder().name("01234567890123456789012345678901234567890123456789a").location("Montreal").build();
     return JsonAPITestHelper.toJsonAPIMap("department", JsonAPITestHelper.toAttributeMap(dto));
   }
 }

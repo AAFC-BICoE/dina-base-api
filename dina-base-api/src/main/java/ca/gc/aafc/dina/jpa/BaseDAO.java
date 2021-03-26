@@ -2,6 +2,8 @@ package ca.gc.aafc.dina.jpa;
 
 import io.crnk.core.engine.information.bean.BeanInformation;
 import lombok.NonNull;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.hibernate.Session;
 import org.hibernate.SimpleNaturalIdLoadAccess;
 import org.hibernate.annotations.NaturalId;
@@ -20,6 +22,7 @@ import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 import java.io.Serializable;
 import java.util.List;
@@ -233,6 +236,7 @@ public class BaseDAO {
    * @param entity
    */
   public void create(Object entity) {
+    validateEntity(entity);
     entityManager.persist(entity);
   }
 
@@ -244,6 +248,7 @@ public class BaseDAO {
    * @return returns the managed instance the state was merged to.
    */
   public <E> E update(E entity) {
+    validateEntity(entity);
     E result = entityManager.merge(entity);
     // Flush here to throw any validation errors:
     entityManager.flush();
@@ -267,7 +272,11 @@ public class BaseDAO {
    * @return constraint violations or an empty set if none
    */
   public <T> Set<ConstraintViolation<T>> validateEntity(T entity) {
-    return validator.validate(entity);
+    Set<ConstraintViolation<T>> constraintViolations = validator.validate(entity);
+    if (CollectionUtils.isNotEmpty(constraintViolations)) {
+      throw new ConstraintViolationException(constraintViolations);
+    }
+    return constraintViolations;
   }
 
   /**

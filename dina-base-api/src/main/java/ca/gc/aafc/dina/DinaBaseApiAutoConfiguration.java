@@ -6,15 +6,12 @@ import io.crnk.operations.server.OperationsModule;
 import io.crnk.operations.server.TransactionOperationFilter;
 import io.crnk.spring.jpa.SpringTransactionRunner;
 
-import org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
-import org.springframework.validation.beanvalidation.MessageSourceResourceBundleLocator;
-import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -22,7 +19,6 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 import javax.inject.Inject;
-import javax.validation.Validator;
 
 import java.util.Locale;
 
@@ -87,7 +83,6 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
         = new ReloadableResourceBundleMessageSource();
       
       messageSource.setBasename("classpath:messages");
-      messageSource.setUseCodeAsDefaultMessage(true);
       messageSource.setDefaultEncoding("UTF-8");
       return messageSource;
   }
