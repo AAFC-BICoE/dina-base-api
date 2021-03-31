@@ -1,9 +1,12 @@
 package ca.gc.aafc.dina.exceptionmapping;
 
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.inject.Named;
+import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.validation.Path;
 
 import io.crnk.core.engine.document.ErrorData;
 import io.crnk.core.engine.error.ErrorResponse;
@@ -28,7 +31,7 @@ public class ConstraintViolationExceptionMapper
             .map(cv -> ErrorData.builder()
                 .setStatus(STATUS_ON_ERROR.toString())
                 .setTitle("Constraint violation")
-                .setDetail(String.join(" ", cv.getPropertyPath().toString(), cv.getMessage()))
+                .setDetail(String.join(" ", violationName(cv), cv.getMessage()))
                 .build())
             .collect(Collectors.toList()),
             STATUS_ON_ERROR
@@ -43,6 +46,14 @@ public class ConstraintViolationExceptionMapper
   @Override
   public boolean accepts(ErrorResponse errorResponse) {
     throw new UnsupportedOperationException("Crnk client not supported");
+  }
+
+  private String violationName(ConstraintViolation<?> cv) {
+    String name = StreamSupport.stream(cv.getPropertyPath().spliterator(), false)
+      .map(Path.Node::getName)
+      .reduce((head, tail) -> tail)
+      .orElseGet(() -> cv.getPropertyPath().toString());
+    return name;
   }
   
 }

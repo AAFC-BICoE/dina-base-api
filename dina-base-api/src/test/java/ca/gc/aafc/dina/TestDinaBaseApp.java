@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina;
 
+import ca.gc.aafc.dina.DinaUserConfig.DepartmentDinaService;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
@@ -41,9 +42,9 @@ public class TestDinaBaseApp {
   private Optional<GroupAuthorizationService> groupAuthService;
 
   @Bean
-  public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO) {
+  public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO, DepartmentDinaService departmentDinaService) {
     return new DinaRepository<>(
-      new DefaultDinaService<>(baseDAO),
+      departmentDinaService,
       Optional.empty(),
       Optional.empty(),
       new DinaMapper<>(DepartmentDto.class),
