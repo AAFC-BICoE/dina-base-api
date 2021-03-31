@@ -6,6 +6,7 @@ import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -13,6 +14,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.validation.Valid;
+
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -23,6 +26,7 @@ import java.util.function.BiFunction;
  */
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Inject)
+@Validated
 public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> {
 
   @NonNull
@@ -35,7 +39,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    * @return returns the original entity.
    */
   @Override
-  public E create(E entity) {
+  public E create(@Valid E entity) {
     preCreate(entity);
     baseDAO.create(entity);
     return entity;
@@ -48,7 +52,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    * @return returns the managed instance the state was merged to.
    */
   @Override
-  public E update(E entity) {
+  public E update(@Valid E entity) {
     preUpdate(entity);
     return baseDAO.update(entity);
   }

@@ -8,6 +8,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.validation.Valid;
+
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -25,7 +27,7 @@ public interface DinaService<E extends DinaEntity> {
    * @param entity entity to create.
    * @return a given entity with is newly assigned id.
    */
-  E create(E entity);
+  E create(@Valid E entity);
 
   /**
    * Updates and returns a given entity as it was persisted.
@@ -33,7 +35,7 @@ public interface DinaService<E extends DinaEntity> {
    * @param entity entity to update.
    * @return a given entity as it was persisted.
    */
-  E update(E entity);
+  E update(@Valid E entity);
 
   /**
    * Deletes a given entity from the data source
