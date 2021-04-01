@@ -41,9 +41,6 @@ public class BaseDAO {
   @PersistenceContext
   private EntityManager entityManager;
 
-  @Inject
-  private Validator validator;
-
   /**
    * This method can be used to inject the EntityManager into an external object.
    *
@@ -257,17 +254,6 @@ public class BaseDAO {
    */
   public void delete(Object entity) {
     entityManager.remove(entity);
-  }
-
-  /**
-   * Same as {@link Validator#validate(Object, Class...)}
-   *
-   * @param entity
-   *          the entity to validate (not null)
-   * @return constraint violations or an empty set if none
-   */
-  public <T> Set<ConstraintViolation<T>> validateEntity(T entity) {
-    return validator.validate(entity);
   }
 
   /**

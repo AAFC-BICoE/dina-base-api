@@ -13,6 +13,8 @@ import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
+import lombok.NonNull;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.Assertions;
@@ -23,6 +25,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -217,10 +220,11 @@ public class DinaMappingLayerIT {
     public DinaRepository<ProjectDTO, Project> projectRepo(
       BaseDAO baseDAO,
       ExternalResourceProvider externalResourceProvider,
-      BuildProperties buildProperties
+      BuildProperties buildProperties,
+      ProjectDinaService projectDinaService
     ) {
       return new DinaRepository<>(
-        new DefaultDinaService<>(baseDAO),
+        projectDinaService,
         Optional.empty(),
         Optional.empty(),
         new DinaMapper<>(ProjectDTO.class),
@@ -236,10 +240,11 @@ public class DinaMappingLayerIT {
     public DinaRepository<TaskDTO, Task> taskRepo(
       BaseDAO baseDAO,
       ExternalResourceProvider externalResourceProvider,
-      BuildProperties buildProperties
+      BuildProperties buildProperties,
+      TaskDinaService taskDinaService
     ) {
       return new DinaRepository<>(
-        new DefaultDinaService<>(baseDAO),
+        taskDinaService,
         Optional.empty(),
         Optional.empty(),
         new DinaMapper<>(TaskDTO.class),
@@ -249,6 +254,23 @@ public class DinaMappingLayerIT {
         externalResourceProvider,
         buildProperties
       );
+    }
+
+    @Service
+    class ProjectDinaService extends DefaultDinaService<Project> {
+  
+      public ProjectDinaService(@NonNull BaseDAO baseDAO) {
+        super(baseDAO);
+      }
+    }
+  
+    
+    @Service
+    class TaskDinaService extends DefaultDinaService<Task> {
+  
+      public TaskDinaService(@NonNull BaseDAO baseDAO) {
+        super(baseDAO);
+      }
     }
   }
 

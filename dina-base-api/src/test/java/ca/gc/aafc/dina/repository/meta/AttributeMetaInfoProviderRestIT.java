@@ -16,6 +16,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -25,6 +27,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -124,7 +127,7 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
       Function<D, AttributeMetaInfoProvider.DinaJsonMetaInfo> handler
     ) {
       super(
-        new DefaultDinaService<>(baseDAO),
+        new EntityDinaService<E>(baseDAO),
         Optional.empty(),
         Optional.empty(),
         new DinaMapper<>(resourceClass),
@@ -134,6 +137,14 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
         null,
         new BuildProperties(new Properties()));
       this.handler = handler;
+    }
+
+    @Service
+    static class EntityDinaService<E extends DinaEntity> extends DefaultDinaService<E> {
+  
+      public EntityDinaService(@NonNull BaseDAO baseDAO) {
+        super(baseDAO);
+      }
     }
 
     @Override
