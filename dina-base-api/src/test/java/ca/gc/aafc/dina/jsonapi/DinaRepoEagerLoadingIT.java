@@ -13,12 +13,15 @@ import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
+import lombok.NonNull;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Service;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import javax.inject.Inject;
@@ -148,34 +151,24 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
   @TestConfiguration
   static class DinaRepoBulkOperationITConfig {
     @Bean
-    public DinaRepository<ChainDto, Chain> chainRepo(BaseDAO baseDAO) {
+    public DinaRepository<ChainDto, Chain> chainRepo(BaseDAO baseDAO, ChainDinaService chainDinaService) {
       return new DinaRepository<>(
-        new DefaultDinaService<>(baseDAO) {
-          @Override
-          protected void preCreate(Chain entity) {
-            entity.setUuid(UUID.randomUUID());
-          }
-        },
+        chainDinaService,
         Optional.empty(),
         Optional.empty(),
         new DinaMapper<>(ChainDto.class),
         ChainDto.class,
         Chain.class,
-        null, null,
+        null, 
+        null,
         new BuildProperties(new Properties())
       );
     }
 
     @Bean
-    public DinaRepository<ChainTemplateDto, ChainTemplate> TemplateRepo(BaseDAO baseDAO) {
+    public DinaRepository<ChainTemplateDto, ChainTemplate> TemplateRepo(BaseDAO baseDAO, TemplateDinaService templateDinaService) {
       return new DinaRepository<>(
-        new DefaultDinaService<>(baseDAO) {
-          @Override
-          protected void preCreate(ChainTemplate entity) {
-            entity.setUuid(UUID.randomUUID());
-            super.preUpdate(entity);
-          }
-        },
+        templateDinaService,
         Optional.empty(),
         Optional.empty(),
         new DinaMapper<>(ChainTemplateDto.class),
@@ -185,6 +178,32 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
         null,
         new BuildProperties(new Properties())
       );
+    }
+
+    @Service
+    class ChainDinaService extends DefaultDinaService<Chain> {
+  
+      public ChainDinaService(@NonNull BaseDAO baseDAO) {
+        super(baseDAO);
+      }
+
+      @Override
+      protected void preCreate(Chain entity) {
+        entity.setUuid(UUID.randomUUID());
+      }
+    }
+  
+    @Service
+    class TemplateDinaService extends DefaultDinaService<ChainTemplate> {
+  
+      public TemplateDinaService(@NonNull BaseDAO baseDAO) {
+        super(baseDAO);
+      }
+
+      @Override
+      protected void preCreate(ChainTemplate entity) {
+        entity.setUuid(UUID.randomUUID());
+      }
     }
   }
 

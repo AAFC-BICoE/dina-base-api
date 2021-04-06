@@ -7,7 +7,6 @@ import org.hibernate.SimpleNaturalIdLoadAccess;
 import org.hibernate.annotations.NaturalId;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.NoResultException;
@@ -19,12 +18,9 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -40,9 +36,6 @@ public class BaseDAO {
 
   @PersistenceContext
   private EntityManager entityManager;
-
-  @Inject
-  private Validator validator;
 
   /**
    * This method can be used to inject the EntityManager into an external object.
@@ -257,17 +250,6 @@ public class BaseDAO {
    */
   public void delete(Object entity) {
     entityManager.remove(entity);
-  }
-
-  /**
-   * Same as {@link Validator#validate(Object, Class...)}
-   *
-   * @param entity
-   *          the entity to validate (not null)
-   * @return constraint violations or an empty set if none
-   */
-  public <T> Set<ConstraintViolation<T>> validateEntity(T entity) {
-    return validator.validate(entity);
   }
 
   /**
