@@ -203,7 +203,6 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       @Override
       protected void preCreate(ChainTemplate entity) {
         entity.setUuid(UUID.randomUUID());
-        super.preUpdate(entity);
       }
     }
   }

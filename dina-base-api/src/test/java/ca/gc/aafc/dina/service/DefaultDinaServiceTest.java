@@ -250,11 +250,28 @@ public class DefaultDinaServiceTest {
 
   @Test
   public void validationGroups_DepartmentWithNullUuidOnUpdate_ThrowException() {
-    Department result = createDepartment();
+    Department result = persistDepartment();
     result.setUuid(null);
     assertThrows(ConstraintViolationException.class, () -> {
       serviceUnderTest.update(result);
     });
+  }
+
+  @Test
+  public void validationGroups_DepartmentWithLongNameOnCreate_ThrowsException() {
+    Department result = createLongNameDepartment();
+    result.setUuid(UUID.randomUUID());
+    assertThrows(ConstraintViolationException.class, () -> {
+      serviceUnderTest.create(result);
+    });
+  }
+
+  private static Department createLongNameDepartment() {
+    return Department
+      .builder()
+      .name(RandomStringUtils.random(51))
+      .location(RandomStringUtils.random(5))
+      .build();
   }
 
 
