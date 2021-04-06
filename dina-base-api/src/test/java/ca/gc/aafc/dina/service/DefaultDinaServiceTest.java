@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.service;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -22,6 +23,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
+import javax.validation.ConstraintViolationException;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.CoreMatchers;
@@ -235,6 +237,40 @@ public class DefaultDinaServiceTest {
   @Test
   public void exists_whenRecordDoesNotExist_returnsFalse() {
     assertFalse(serviceUnderTest.exists(Department.class, UUID.randomUUID()));
+  }
+
+  @Test
+  public void validationGroups_DepartmentWithNonNullUuidOnCreate_ThrowsException() {
+    Department result = createDepartment();
+    result.setUuid(UUID.randomUUID());
+    assertThrows(ConstraintViolationException.class, () -> {
+      serviceUnderTest.create(result);
+    });
+  }
+
+  @Test
+  public void validationGroups_DepartmentWithNullUuidOnUpdate_ThrowException() {
+    Department result = persistDepartment();
+    result.setUuid(null);
+    assertThrows(ConstraintViolationException.class, () -> {
+      serviceUnderTest.update(result);
+    });
+  }
+
+  @Test
+  public void validationGroups_DepartmentWithLongNameOnCreate_ThrowException() {
+    Department result = createLongNameDepartment();
+    assertThrows(ConstraintViolationException.class, () -> {
+      serviceUnderTest.create(result);
+    });
+  }
+
+  private static Department createLongNameDepartment() {
+    return Department
+      .builder()
+      .name(RandomStringUtils.random(51))
+      .location(RandomStringUtils.random(5))
+      .build();
   }
 
   public static class DinaServiceTestImplementation extends DefaultDinaService<Department> {

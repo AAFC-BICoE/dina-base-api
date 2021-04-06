@@ -21,10 +21,9 @@ public class DinaServiceValidationLocaleIT {
   protected int testPort;
 
   @Test
-  void validate_OnDifferentLocale_RegularValidationUsed() {
+  void validate_OnDifferentLocale_DifferentLocaleRegularValidationUsed() {
     newRequest()
       .header("Accept-Language", "fr")
-      .header("lang", "fr")
       .body(newLongNameDto())
       .post("/department")
       .then()

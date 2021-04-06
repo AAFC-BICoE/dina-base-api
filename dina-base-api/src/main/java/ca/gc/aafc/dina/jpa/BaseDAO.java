@@ -9,7 +9,6 @@ import org.hibernate.SimpleNaturalIdLoadAccess;
 import org.hibernate.annotations.NaturalId;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.NoResultException;
@@ -21,13 +20,9 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validator;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -43,9 +38,6 @@ public class BaseDAO {
 
   @PersistenceContext
   private EntityManager entityManager;
-
-  @Inject
-  private Validator validator;
 
   /**
    * This method can be used to inject the EntityManager into an external object.
@@ -236,7 +228,6 @@ public class BaseDAO {
    * @param entity
    */
   public void create(Object entity) {
-    validateEntity(entity);
     entityManager.persist(entity);
   }
 
@@ -248,7 +239,6 @@ public class BaseDAO {
    * @return returns the managed instance the state was merged to.
    */
   public <E> E update(E entity) {
-    validateEntity(entity);
     E result = entityManager.merge(entity);
     // Flush here to throw any validation errors:
     entityManager.flush();
@@ -262,21 +252,6 @@ public class BaseDAO {
    */
   public void delete(Object entity) {
     entityManager.remove(entity);
-  }
-
-  /**
-   * Same as {@link Validator#validate(Object, Class...)}
-   *
-   * @param entity
-   *          the entity to validate (not null)
-   * @return constraint violations or an empty set if none
-   */
-  public <T> Set<ConstraintViolation<T>> validateEntity(T entity) {
-    Set<ConstraintViolation<T>> constraintViolations = validator.validate(entity);
-    if (CollectionUtils.isNotEmpty(constraintViolations)) {
-      throw new ConstraintViolationException(constraintViolations);
-    }
-    return constraintViolations;
   }
 
   /**

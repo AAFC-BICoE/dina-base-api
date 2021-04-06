@@ -16,6 +16,7 @@ import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIOperationBuilder;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import io.crnk.core.engine.http.HttpMethod;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
@@ -33,6 +34,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.util.Arrays;
@@ -282,10 +284,11 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     @Bean
     public DinaRepository<ProjectDTO, Project> projectRepo(
       BaseDAO baseDAO,
-      ExternalResourceProvider externalResourceProvider
+      ExternalResourceProvider externalResourceProvider,
+      ProjectDinaService projectDinaService
     ) {
       return new DinaRepository<>(
-        new DefaultDinaService<>(baseDAO),
+        projectDinaService,
         Optional.empty(),
         Optional.empty(),
         new DinaMapper<>(ProjectDTO.class),
@@ -300,10 +303,11 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     @Bean
     public DinaRepository<TaskDTO, Task> taskRepo(
       BaseDAO baseDAO,
-      ExternalResourceProvider externalResourceProvider
+      ExternalResourceProvider externalResourceProvider,
+      TaskDinaService taskDinaService
     ) {
       return new DinaRepository<>(
-        new DefaultDinaService<>(baseDAO),
+        taskDinaService,
         Optional.empty(),
         Optional.empty(),
         new DinaMapper<>(TaskDTO.class),
@@ -313,6 +317,23 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         externalResourceProvider,
         new BuildProperties(new Properties())
       );
+    }
+
+    @Service
+    class ProjectDinaService extends DefaultDinaService<Project> {
+  
+      public ProjectDinaService(@NonNull BaseDAO baseDAO) {
+        super(baseDAO);
+      }
+    }
+  
+    
+    @Service
+    class TaskDinaService extends DefaultDinaService<Task> {
+  
+      public TaskDinaService(@NonNull BaseDAO baseDAO) {
+        super(baseDAO);
+      }
     }
   }
 

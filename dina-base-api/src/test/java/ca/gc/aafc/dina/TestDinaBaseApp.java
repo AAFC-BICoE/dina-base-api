@@ -1,5 +1,8 @@
 package ca.gc.aafc.dina;
 
+import ca.gc.aafc.dina.DinaUserConfig.DepartmentDinaService;
+import ca.gc.aafc.dina.DinaUserConfig.EmployeeDinaService;
+import ca.gc.aafc.dina.DinaUserConfig.VocabularyDinaService;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
@@ -41,9 +44,9 @@ public class TestDinaBaseApp {
   private Optional<GroupAuthorizationService> groupAuthService;
 
   @Bean
-  public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO) {
+  public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO, DepartmentDinaService departmentDinaService) {
     return new DinaRepository<>(
-      new DefaultDinaService<>(baseDAO),
+      departmentDinaService,
       Optional.empty(),
       Optional.empty(),
       new DinaMapper<>(DepartmentDto.class),
@@ -55,9 +58,9 @@ public class TestDinaBaseApp {
   }
 
   @Bean
-  public DinaRepository<EmployeeDto, Employee> employeeRepository(BaseDAO baseDAO) {
+  public DinaRepository<EmployeeDto, Employee> employeeRepository(BaseDAO baseDAO, EmployeeDinaService employeeDinaService) {
     return new DinaRepository<>(
-      new DefaultDinaService<>(baseDAO),
+      employeeDinaService,
       Optional.empty(),
       Optional.empty(),
       new DinaMapper<>(EmployeeDto.class),
@@ -97,10 +100,10 @@ public class TestDinaBaseApp {
   }
 
   @Bean
-  public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(BaseDAO baseDAO) {
+  public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(BaseDAO baseDAO, VocabularyDinaService vocabularyDinaService) {
     DinaMapper<VocabularyDto, Vocabulary> dinaMapper = new DinaMapper<>(VocabularyDto.class);
     return new ReadOnlyDinaRepository<>(
-      new DefaultDinaService<>(baseDAO),
+      vocabularyDinaService,
       dinaMapper,
       VocabularyDto.class,
       Vocabulary.class,

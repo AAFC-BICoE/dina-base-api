@@ -140,17 +140,4 @@ public class BaseDAOIT {
     assertEquals(expectedLocation, result.getLocation());
   }
 
-  @Test
-  public void update_onValidationError_throwConstraintViolationException() {
-    Department dep = Department.builder().name("dep1").location("dep location").build();
-    baseDAO.create(dep);
-
-    dep.setLocation(null);
-
-    assertThrows(
-      ConstraintViolationException.class,
-      () -> baseDAO.update(dep)
-    );
-  }
-
 }
