@@ -14,10 +14,13 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.NaturalId;
 
+import ca.gc.aafc.dina.service.OnCreate;
+import ca.gc.aafc.dina.service.OnUpdate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,6 +38,8 @@ public class Department implements DinaEntity {
   private Integer id;
 
   @NaturalId
+  @Null(groups = OnCreate.class)
+  @NotNull(groups = OnUpdate.class)
   private UUID uuid;
 
   @Size(min = 1, max = 50)

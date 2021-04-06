@@ -39,6 +39,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    * @return returns the original entity.
    */
   @Override
+  @Validated(OnCreate.class)
   public E create(@Valid E entity) {
     preCreate(entity);
     baseDAO.create(entity);
@@ -52,6 +53,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    * @return returns the managed instance the state was merged to.
    */
   @Override
+  @Validated(OnUpdate.class)
   public E update(@Valid E entity) {
     preUpdate(entity);
     return baseDAO.update(entity);

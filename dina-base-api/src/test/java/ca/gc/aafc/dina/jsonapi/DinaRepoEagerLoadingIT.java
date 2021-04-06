@@ -117,23 +117,19 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       CHAIN_TEMPLATE_PATH,
       CHAIN_TEMPLATE_PATH,
       relation.getUuid().toString());
-    Map<String, Object> chainMap = JsonAPITestHelper.toAttributeMap(chainDto);
-    chainMap.remove("uuid");
     return JsonAPITestHelper.toJsonAPIMap(
       CHAIN_PATH,
-      chainMap,
+      JsonAPITestHelper.toAttributeMap(chainDto),
       JsonAPITestHelper.toRelationshipMap(relationship),
-      chainDto.getUuid().toString());
+      null);
   }
 
   private Map<String, Object> templateToMap(ChainTemplateDto template) {
-    Map<String, Object> templateMap = JsonAPITestHelper.toAttributeMap(template);
-    templateMap.remove("uuid");
     return JsonAPITestHelper.toJsonAPIMap(
       CHAIN_TEMPLATE_PATH,
-      templateMap,
+      JsonAPITestHelper.toAttributeMap(template),
       null,
-      template.getUuid().toString());
+      null);
   }
 
   private static ChainDto newChain() {
@@ -141,7 +137,6 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     chainDto.setName(RandomStringUtils.randomAlphabetic(4));
     chainDto.setGroup(RandomStringUtils.randomAlphabetic(5));
     chainDto.setCreatedBy(RandomStringUtils.randomAlphabetic(8));
-    chainDto.setUuid(UUID.randomUUID());
     return chainDto;
   }
 
@@ -150,7 +145,6 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     template.setName(RandomStringUtils.randomAlphabetic(4));
     template.setGroup(RandomStringUtils.randomAlphabetic(5));
     template.setCreatedBy(RandomStringUtils.randomAlphabetic(8));
-    template.setUuid(UUID.randomUUID());
     return template;
   }
 
@@ -192,6 +186,11 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       public ChainDinaService(@NonNull BaseDAO baseDAO) {
         super(baseDAO);
       }
+
+      @Override
+      protected void preCreate(Chain entity) {
+        entity.setUuid(UUID.randomUUID());
+      }
     }
   
     @Service
@@ -199,6 +198,12 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
   
       public TemplateDinaService(@NonNull BaseDAO baseDAO) {
         super(baseDAO);
+      }
+
+      @Override
+      protected void preCreate(ChainTemplate entity) {
+        entity.setUuid(UUID.randomUUID());
+        super.preUpdate(entity);
       }
     }
   }
