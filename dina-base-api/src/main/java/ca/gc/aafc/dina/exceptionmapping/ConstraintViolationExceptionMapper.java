@@ -22,7 +22,7 @@ public class ConstraintViolationExceptionMapper
     implements ExceptionMapper<ConstraintViolationException> {
   
   private static final Integer STATUS_ON_ERROR = HttpStatus.UNPROCESSABLE_ENTITY_422;
-  
+
   @Override
   public ErrorResponse toErrorResponse(ConstraintViolationException exception) {
     return new ErrorResponse(

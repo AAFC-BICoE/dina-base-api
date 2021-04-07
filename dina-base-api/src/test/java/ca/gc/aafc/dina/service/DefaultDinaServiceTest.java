@@ -287,7 +287,6 @@ public class DefaultDinaServiceTest {
       .build();
   }
 
-
   public static class DinaServiceTestImplementation extends DefaultDinaService<Department> {
 
     @Inject

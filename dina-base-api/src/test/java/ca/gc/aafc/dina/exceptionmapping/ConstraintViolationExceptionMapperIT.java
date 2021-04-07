@@ -62,7 +62,7 @@ public class ConstraintViolationExceptionMapperIT {
       assertEquals(2, errors.size());
       
       // Assert correct error message, status and title (@NotNull location error)
-      assertEquals("location must not be null", errors.get(0).getDetail());
+      assertEquals("location cannot be null.", errors.get(0).getDetail());
       assertEquals("422", errors.get(0).getStatus());
       assertEquals("Constraint violation", errors.get(0).getTitle());
       

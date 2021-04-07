@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.jpa;
 
 import io.crnk.core.engine.information.bean.BeanInformation;
 import lombok.NonNull;
+
 import org.hibernate.Session;
 import org.hibernate.SimpleNaturalIdLoadAccess;
 import org.hibernate.annotations.NaturalId;
