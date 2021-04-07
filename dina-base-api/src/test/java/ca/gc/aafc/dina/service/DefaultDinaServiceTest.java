@@ -243,26 +243,40 @@ public class DefaultDinaServiceTest {
   public void validationGroups_DepartmentWithNonNullUuidOnCreate_ThrowsException() {
     Department result = createDepartment();
     result.setUuid(UUID.randomUUID());
-    assertThrows(ConstraintViolationException.class, () -> {
+    ConstraintViolationException exception = assertThrows(ConstraintViolationException.class, () -> {
       serviceUnderTest.create(result);
     });
+
+    String expectedMessage = "must be null";
+    String actualMessage = exception.getMessage();
+
+    assertTrue(actualMessage.contains(expectedMessage));
   }
 
   @Test
   public void validationGroups_DepartmentWithNullUuidOnUpdate_ThrowException() {
     Department result = persistDepartment();
     result.setUuid(null);
-    assertThrows(ConstraintViolationException.class, () -> {
+    ConstraintViolationException exception =  assertThrows(ConstraintViolationException.class, () -> {
       serviceUnderTest.update(result);
     });
+
+    String expectedMessage = "must not be null";
+    String actualMessage = exception.getMessage();
+
+    assertTrue(actualMessage.contains(expectedMessage));
   }
 
   @Test
-  public void validationGroups_DepartmentWithLongNameOnCreate_ThrowException() {
+  public void validationGroups_DepartmentWithLongNameOnCreate_ThrowsException() {
     Department result = createLongNameDepartment();
-    assertThrows(ConstraintViolationException.class, () -> {
+    ConstraintViolationException exception = assertThrows(ConstraintViolationException.class, () -> {
       serviceUnderTest.create(result);
     });
+    String expectedMessage = "size must be between 1 and 50";
+    String actualMessage = exception.getMessage();
+
+    assertTrue(actualMessage.contains(expectedMessage));
   }
 
   private static Department createLongNameDepartment() {
