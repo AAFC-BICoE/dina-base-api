@@ -1,0 +1,47 @@
+= Validation
+
+== The Principles
+From dina-base 0.51 onward, we disable the automatic validation and move it to the Service layer where Spring integration is better. 
+
+Before dina-base was mostly relying on JPA level validation which worked for most application but can be difficult when we need customization (internationalization and localization) or custom validations.
+
+== Implementation
+Validation is done at the Service level. 
+
+The methods create/update's parameter are validated by the @Valid annotation. 
+
+Also, we defined two marker interfaces OnCreate and OnUpdate which allow us to use Validation Groups to validate objects differently upon creation or upon update.
+
+.Snippet of DefaultDinaService
+```java
+@Validated
+public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> {
+
+  @Override
+  @Validated(OnCreate.class)
+  public E create(@Valid E entity) {
+    //create something
+  }
+
+  @Override
+  @Validated(OnUpdate.class)
+  public E update(@Valid E entity) {
+    //update something
+  }
+
+}
+```
+
+.An example of how entity validations can be triggered under different circumstances:
+```java
+  @NaturalId
+  @Null(groups = OnCreate.class)
+  @NotNull(groups = OnUpdate.class)
+  private UUID uuid;
+```
+
+In this example, upon creation we check if the Uuid is null and upon update we check if the Uuid is non null. In both case we check if it is a NaturalId.
+
+We use validation groups here because, the entity's Uuid is set during preCreate, right after the creation validation check.
+
+===
