@@ -47,7 +47,7 @@ When possible, we should try to make our entities always-valid even if it can be
 
 === DTO
 
-Data coming from outside (command-line, web request) should but stored (upon arrival) inside a DTO. DTOs can be initially validated using Bean Validation annotations. After that, the DTO can be transferred to the Service layer. Validation should use the Notification pattern instead of throwing exceptions.
+Data coming from outside (command-line, web request) should but stored (upon arrival) inside a DTO. The DTO can be transferred to the Service layer where it is validated using Bean Validation annotations. Validation should use the Notification pattern instead of throwing exceptions.
 
 === Entities
 
@@ -57,3 +57,7 @@ We should use a Validator based on Bean Validation 2.0 specification to validate
 === DTO - Entity Mapping
 
 Once we received and validated a DTO, we have to map it to one or more entities. This process could trigger some exception leading to more validation results.
+
+=== Service
+
+Dina-base 0.51 onward, we disable the automatic validation and move it to the Service layer where Spring integration is better. As a result, DTOs are no longer validated using Bean Validation annotation, instead they are transferred to the Service layer where they will be validation upon creation/update.

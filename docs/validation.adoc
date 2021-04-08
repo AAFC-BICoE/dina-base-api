@@ -40,7 +40,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   private UUID uuid;
 ```
 
-In this example, upon creation we check if the Uuid is null and upon update we check if the Uuid is non null. In both case we check if it is a NaturalId.
+In this example, upon creation we check if the Uuid is null and upon update we check if the Uuid is non null.
 
 We use validation groups here because, the entity's Uuid is set during preCreate, right after the creation validation check.
 
