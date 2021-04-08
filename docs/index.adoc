@@ -16,6 +16,8 @@ include::authentication.adoc[]
 
 include::authorization.adoc[]
 
+include::validation.adoc[]
+
 include::auditing.adoc[]
 
 include::externalTypes.adoc[]
