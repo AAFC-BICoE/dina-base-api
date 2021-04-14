@@ -22,6 +22,7 @@ import javax.validation.Valid;
 import javax.validation.ValidationException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
@@ -236,8 +237,10 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    * @throws ValidationException if the validator returned an error
    */
   public void validateBusinessRules(E entity, Validator validator) {
+    Objects.requireNonNull(entity);
+
     Errors errors = new BeanPropertyBindingResult(entity,
-        entity != null && entity.getUuid() != null ? entity.getUuid().toString() : "");
+        entity.getUuid() != null ? entity.getUuid().toString() : "");
     validator.validate(entity, errors);
 
     if (!errors.hasErrors()) {
