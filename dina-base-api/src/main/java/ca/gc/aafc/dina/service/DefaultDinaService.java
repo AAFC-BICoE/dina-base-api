@@ -232,12 +232,12 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    * Function that validates an entity against a specific validator to check business rules.
    * Better integration will be added later so it will be called automatically on create/update.
    * @param entity
-   * @param uuid
    * @param validator business rules validator
    * @throws ValidationException if the validator returned an error
    */
-  public void validateBusinessRules(E entity, String uuid, Validator validator) {
-    Errors errors = new BeanPropertyBindingResult(entity, uuid);
+  public void validateBusinessRules(E entity, Validator validator) {
+    Errors errors = new BeanPropertyBindingResult(entity,
+        entity != null && entity.getUuid() != null ? entity.getUuid().toString() : "");
     validator.validate(entity, errors);
 
     if (!errors.hasErrors()) {
