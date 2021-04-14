@@ -24,6 +24,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
+import javax.validation.ValidationException;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.CoreMatchers;
@@ -35,6 +37,8 @@ import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.DepartmentType;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import lombok.NonNull;
+import org.springframework.validation.Validator;
+import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class)
@@ -277,6 +281,15 @@ public class DefaultDinaServiceTest {
     String actualMessage = exception.getMessage();
 
     assertTrue(actualMessage.contains(expectedMessage));
+  }
+
+  @Test
+  public void validate_InvalidEntity_ThrowsValidationException() {
+    Department d = new Department(); // not using the factory to get an empty object
+    // should be a business rule validation but for testing we are using a default validator
+    Validator defaultValidator = new SpringValidatorAdapter(Validation.buildDefaultValidatorFactory().getValidator());
+    assertThrows(ValidationException.class, () -> serviceUnderTest.validate(d, UUID.randomUUID().toString(),
+        defaultValidator));
   }
 
   private static Department createLongNameDepartment() {

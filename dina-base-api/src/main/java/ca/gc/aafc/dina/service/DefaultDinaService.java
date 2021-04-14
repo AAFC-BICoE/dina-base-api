@@ -6,6 +6,10 @@ import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.ObjectError;
+import org.springframework.validation.Validator;
 import org.springframework.validation.annotation.Validated;
 
 import javax.inject.Inject;
@@ -15,8 +19,10 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.validation.Valid;
+import javax.validation.ValidationException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 /**
@@ -211,6 +217,32 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    */
   protected void preDelete(E entity) {
     // Defaults to do nothing
+  }
+
+  /**
+   * Function that validates an entity against a specific validator.
+   * Better integration will be added later so it will be called automatically on create/update.
+   * @param entity
+   * @param uuid
+   * @param validator business rules validator
+   * @throws ValidationException if the validator returned an error
+   */
+  public void validate(E entity, String uuid, Validator validator) {
+    Errors errors = new BeanPropertyBindingResult(entity, uuid);
+    validator.validate(entity, errors);
+
+    if (!errors.hasErrors()) {
+      return;
+    }
+
+    Optional<String> errorMsg = errors.getAllErrors()
+        .stream()
+        .map(ObjectError::getDefaultMessage)
+        .findAny();
+
+    errorMsg.ifPresent(msg -> {
+      throw new ValidationException(msg);
+    });
   }
 
 }
