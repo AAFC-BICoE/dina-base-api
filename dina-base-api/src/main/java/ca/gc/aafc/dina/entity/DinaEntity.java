@@ -4,8 +4,8 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * Represents a DINA entity with an id and uuid field. The id and uuid is usually the Primary Key
- * and auto-generated.
+ * Represents a DINA entity with an id and uuid field. The id is usually the Primary Key
+ * and auto-generated while the uuid is the natural key, a unique key that is publicly visible.
  */
 public interface DinaEntity {
 
