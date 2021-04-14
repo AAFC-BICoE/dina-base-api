@@ -14,7 +14,16 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
+
+import org.hibernate.annotations.NaturalId;
+
+import ca.gc.aafc.dina.service.OnCreate;
+import ca.gc.aafc.dina.service.OnUpdate;
+
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -26,6 +35,11 @@ public class Employee implements DinaEntity {
   @Id
   @GeneratedValue
   private Integer id;
+
+  @NaturalId
+  @Null(groups = OnCreate.class)
+  @NotNull(groups = OnUpdate.class)
+  private UUID uuid;
 
   @Column(unique = true)
   private String name;
