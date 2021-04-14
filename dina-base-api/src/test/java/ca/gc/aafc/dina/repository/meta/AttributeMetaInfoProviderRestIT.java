@@ -6,8 +6,6 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.service.DefaultDinaService;
-import ca.gc.aafc.dina.service.OnCreate;
-import ca.gc.aafc.dina.service.OnUpdate;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.crnk.core.resource.annotations.JsonApiId;
@@ -21,7 +19,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import org.hamcrest.Matchers;
-import org.hibernate.annotations.NaturalId;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.info.BuildProperties;
@@ -35,15 +32,11 @@ import org.springframework.stereotype.Service;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
-
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.function.Function;
 
 @SpringBootTest(
@@ -107,11 +100,6 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
     @Id
     @GeneratedValue
     private Integer id;
-
-    @NaturalId
-    @Null(groups = OnCreate.class)
-    @NotNull(groups = OnUpdate.class)
-    private UUID uuid;
 
     private String name;
 
