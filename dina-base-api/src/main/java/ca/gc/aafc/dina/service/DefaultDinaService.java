@@ -220,14 +220,23 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
-   * Function that validates an entity against a specific validator.
+   * Validate the provided entity at the bean level.
+   * @param entity
+   */
+  @Validated
+  public void validate(@Valid E entity) {
+    // empty body since the annotations will do the work
+  }
+
+  /**
+   * Function that validates an entity against a specific validator to check business rules.
    * Better integration will be added later so it will be called automatically on create/update.
    * @param entity
    * @param uuid
    * @param validator business rules validator
    * @throws ValidationException if the validator returned an error
    */
-  public void validate(E entity, String uuid, Validator validator) {
+  public void validateBusinessRules(E entity, String uuid, Validator validator) {
     Errors errors = new BeanPropertyBindingResult(entity, uuid);
     validator.validate(entity, errors);
 
