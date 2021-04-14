@@ -32,6 +32,7 @@ public class ConstraintViolationExceptionMapper
                 .setStatus(STATUS_ON_ERROR.toString())
                 .setTitle("Constraint violation")
                 .setDetail(String.join(" ", violationName(cv), cv.getMessage()))
+                .setSourceParameter(violationName(cv))
                 .build())
             .collect(Collectors.toList()),
             STATUS_ON_ERROR
