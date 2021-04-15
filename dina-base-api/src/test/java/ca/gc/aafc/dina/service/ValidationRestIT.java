@@ -23,7 +23,7 @@ public class ValidationRestIT {
   void validate_Post() {
     newRequest()
       .body(newLongNameDto())
-      .post("/validate")
+      .post("/validation")
       .then()
       .body("errors[0].status", Matchers.equalToIgnoringCase("200"));
   }
