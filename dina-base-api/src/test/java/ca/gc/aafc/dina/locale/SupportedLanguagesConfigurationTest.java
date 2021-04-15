@@ -22,21 +22,10 @@ public class SupportedLanguagesConfigurationTest {
   @Test
   public void getStringLanguages() {
     MatcherAssert.assertThat(
-      supportedLanguagesConfiguration.getSupportedStringLanguages(),
+      supportedLanguagesConfiguration.getSupportedLanguages(),
       Matchers.contains(
         "fr",
         "en"
-      )
-    );
-  }
-
-  @Test
-  public void getLocaleLanguages() {
-    MatcherAssert.assertThat(
-      supportedLanguagesConfiguration.getSupportedLocaleLanguages(),
-      Matchers.contains(
-      Locale.FRENCH,  
-      Locale.ENGLISH
       )
     );
   }

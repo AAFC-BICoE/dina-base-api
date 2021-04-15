@@ -1,8 +1,6 @@
 package ca.gc.aafc.dina;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -16,21 +14,13 @@ import ca.gc.aafc.dina.property.YamlPropertyLoaderFactory;
 @ConfigurationProperties
 public class SupportedLanguagesConfiguration {
 
-  private final List<String> supportedStringLanguages;
+  private final List<String> supportedLanguages;
   
-  public SupportedLanguagesConfiguration(List<String> supportedStringLanguages) {
-    this.supportedStringLanguages = supportedStringLanguages;
+  public SupportedLanguagesConfiguration(List<String> supportedLanguages) {
+    this.supportedLanguages = supportedLanguages;
   }
 
-  public List<String> getSupportedStringLanguages() {
-    return supportedStringLanguages;
-  }
-  
-  public List<Locale> getSupportedLocaleLanguages() {
-    List<Locale> locales = new ArrayList<>();
-    for (String s : supportedStringLanguages) {
-      locales.add(new Locale(s));
-    }
-    return locales;
+  public List<String> getSupportedLanguages() {
+    return supportedLanguages;
   }
 }
