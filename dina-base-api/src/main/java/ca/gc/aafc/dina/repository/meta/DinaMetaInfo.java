@@ -1,6 +1,10 @@
 package ca.gc.aafc.dina.repository.meta;
 
+import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
+import ca.gc.aafc.dina.repository.validation.ValidationResourceConfiguration;
+import ca.gc.aafc.dina.service.DefaultDinaService;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
 import lombok.Getter;

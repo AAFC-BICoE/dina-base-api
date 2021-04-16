@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.service;
 import java.util.Map;
 
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 
@@ -20,6 +21,7 @@ public class ValidationRestIT {
   @LocalServerPort
   protected int testPort;
   
+  @Test
   void validate_Post() {
     newRequest()
       .body(newLongNameDto())
