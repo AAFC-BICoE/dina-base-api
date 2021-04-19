@@ -1,25 +1,30 @@
 package ca.gc.aafc.dina.repository.validation;
 
+import javax.inject.Inject;
+
 import org.springframework.stereotype.Repository;
 
 import ca.gc.aafc.dina.dto.ValidationDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
-
+import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.mapper.DinaMappingLayer;
+import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
+import ca.gc.aafc.dina.repository.DinaRepository;
 import io.crnk.core.exception.MethodNotAllowedException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepositoryBase;
 import io.crnk.core.resource.list.ResourceList;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 
 @Repository
-public class ValidationRepository<E extends DinaEntity> extends ResourceRepositoryBase<ValidationDto, String> {
+public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepositoryBase<ValidationDto, String> {
 
-  //private final DefaultDinaService<? extends DinaEntity> service;
+  @Inject
+  private ValidationResourceConfiguration<D, E> validationResourceConfiguration;
 
-  private final ValidationResourceConfiguration validationResourceConfiguration;
-
-  protected ValidationRepository(ValidationResourceConfiguration validationResourceConfiguration) {
-      super(ValidationDto.class);
-      this.validationResourceConfiguration = validationResourceConfiguration;
+  private ValidationRepository() {
+    super(ValidationDto.class);
   }
 
 /**
@@ -30,11 +35,28 @@ public class ValidationRepository<E extends DinaEntity> extends ResourceReposito
    * @return
    */
   @Override
+  @SneakyThrows
   public <S extends ValidationDto> S create(S resource) {
-    validationResourceConfiguration.getServiceForType(resource.getType())
-      .validate((E) resource.getData().get("data"));
+    String type = resource.getType();
+    Class<D> resourceClass = validationResourceConfiguration.getResourceClassForType(type);
+    Class<E> entityClass = validationResourceConfiguration.getEntityClassForType(type);
+    E entity = entityClass.getConstructor().newInstance();
+    DinaMappingLayer<D,E> mappingLayer = new DinaMappingLayer<>(
+      resourceClass,
+      new DinaMapper<>(resourceClass), 
+      validationResourceConfiguration.getServiceForType(type),
+      new DinaMappingRegistry(resourceClass));
+    mappingLayer.mapToEntity(resource, entity);
+
+  //  validationResourceConfiguration.getServiceForType(resource.getType())
+  //      .validate((entityClass) resource.getData().get("data"));
     
     return null;
+  }
+
+  private <S extends D> E resourceToValidate(S resource, E entity, DinaMappingLayer<D, E> mappingLayer) {
+    mappingLayer.mapTopEntity(resource, entity);
+    return resource;
   }
 
   /**

@@ -28,7 +28,7 @@ public class DinaUserConfig {
   }
 
   @Service
-  class DepartmentDinaService extends DefaultDinaService<Department> {
+  public class DepartmentDinaService extends DefaultDinaService<Department> {
 
     public DepartmentDinaService(@NonNull BaseDAO baseDAO) {
       super(baseDAO);
@@ -36,15 +36,14 @@ public class DinaUserConfig {
   }
 
   @Service
-  class EmployeeDinaService extends DefaultDinaService<Employee> {
-
+  public class EmployeeDinaService extends DefaultDinaService<Employee> {
     public EmployeeDinaService(@NonNull BaseDAO baseDAO) {
       super(baseDAO);
     }
   }
 
   @Service
-  class VocabularyDinaService extends DefaultDinaService<Vocabulary> {
+  public class VocabularyDinaService extends DefaultDinaService<Vocabulary> {
 
     public VocabularyDinaService(@NonNull BaseDAO baseDAO) {
       super(baseDAO);

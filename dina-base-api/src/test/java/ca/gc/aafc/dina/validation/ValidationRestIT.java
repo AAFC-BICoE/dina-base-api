@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.service;
+package ca.gc.aafc.dina.validation;
 
 import java.util.Map;
 
@@ -9,6 +9,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
+import ca.gc.aafc.dina.dto.ValidationDto;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
@@ -24,7 +25,7 @@ public class ValidationRestIT {
   @Test
   void validate_Post() {
     newRequest()
-      .body(newLongNameDto())
+      .body(newValidationDto(newLongNameDto()))
       .post("/validation")
       .then()
       .body("errors[0].status", Matchers.equalToIgnoringCase("200"));
@@ -32,6 +33,16 @@ public class ValidationRestIT {
 
   private RequestSpecification newRequest() {
     return RestAssured.given().port(this.testPort).contentType("application/vnd.api+json");
+  }
+
+  private Map<String, Object> newValidationDto(Map<String, Object> departmentDto) {
+    ValidationDto dto = ValidationDto.builder().type("department").data(departmentDto).build();
+    return JsonAPITestHelper.toJsonAPIMap("validation", JsonAPITestHelper.toAttributeMap(dto));
+  }
+  
+  private Map<String, Object> newDto() {
+    DepartmentDto dto = DepartmentDto.builder().name("dfadf").location(null).build();
+    return JsonAPITestHelper.toJsonAPIMap("department", JsonAPITestHelper.toAttributeMap(dto));
   }
 
   private Map<String, Object> newLongNameDto() {
