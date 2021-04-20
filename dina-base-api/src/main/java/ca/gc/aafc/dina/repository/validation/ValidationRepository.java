@@ -23,7 +23,7 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
   @Inject
   private ValidationResourceConfiguration<D, E> validationResourceConfiguration;
 
-  private ValidationRepository() {
+  protected ValidationRepository() {
     super(ValidationDto.class);
   }
 
@@ -46,17 +46,12 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
       new DinaMapper<>(resourceClass), 
       validationResourceConfiguration.getServiceForType(type),
       new DinaMappingRegistry(resourceClass));
-    mappingLayer.mapToEntity(resource, entity);
+    mappingLayer.mapToEntity((D) resource.getData().get("data"), entity);
 
   //  validationResourceConfiguration.getServiceForType(resource.getType())
   //      .validate((entityClass) resource.getData().get("data"));
     
     return null;
-  }
-
-  private <S extends D> E resourceToValidate(S resource, E entity, DinaMappingLayer<D, E> mappingLayer) {
-    mappingLayer.mapTopEntity(resource, entity);
-    return resource;
   }
 
   /**
