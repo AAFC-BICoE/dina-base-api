@@ -1,6 +1,10 @@
 package ca.gc.aafc.dina.repository.validation;
 
+import java.util.LinkedHashMap;
+
 import javax.inject.Inject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.stereotype.Repository;
 
@@ -9,12 +13,10 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
-import ca.gc.aafc.dina.repository.DinaRepository;
 import io.crnk.core.exception.MethodNotAllowedException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepositoryBase;
 import io.crnk.core.resource.list.ResourceList;
-import lombok.NonNull;
 import lombok.SneakyThrows;
 
 @Repository
@@ -22,6 +24,8 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
 
   @Inject
   private ValidationResourceConfiguration<D, E> validationResourceConfiguration;
+
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   protected ValidationRepository() {
     super(ValidationDto.class);
@@ -46,12 +50,14 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
       new DinaMapper<>(resourceClass), 
       validationResourceConfiguration.getServiceForType(type),
       new DinaMappingRegistry(resourceClass));
-    mappingLayer.mapToEntity((D) resource.getData().get("data"), entity);
+    String json = OBJECT_MAPPER.writeValueAsString(((LinkedHashMap) resource.getData().get("data")).get("attributes"));
+    D dto = OBJECT_MAPPER.readValue(json, resourceClass);
+    mappingLayer.mapToEntity(dto, entity);
 
-  //  validationResourceConfiguration.getServiceForType(resource.getType())
-  //      .validate((entityClass) resource.getData().get("data"));
+   validationResourceConfiguration.getServiceForType(resource.getType())
+       .validate(entity);
     
-    return null;
+    return resource;
   }
 
   /**

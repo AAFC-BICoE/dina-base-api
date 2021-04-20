@@ -23,29 +23,41 @@ public class ValidationRestIT {
   protected int testPort;
   
   @Test
-  void validate_Post() {
+  void validateLongNameDepartment_ErrorCode422() {
     newRequest()
-      .body(newValidationDto(newLongNameDto()))
+      .body(newValidationDto(newLongNameDepartmentDto(), "department"))
       .post("/validation")
       .then()
-      .body("errors[0].status", Matchers.equalToIgnoringCase("200"));
+      .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
+      .body("errors[0].detail", Matchers.endsWith("name size must be between 1 and 50"));
   }
+
+  // @Test
+  // void validateValidDepartment_Code200() {
+  //   newRequest()
+  //     .body(newValidationDto(newDepartmentDto(), "department"))
+  //     .post("/validation")
+  //     .then()
+  //     .body("errors[0].status", Matchers.equalToIgnoringCase("500"))
+  //     .body("errors[0].detail", Matchers.endsWith("name size must be between 1 and 50"));
+
+  // }
 
   private RequestSpecification newRequest() {
     return RestAssured.given().port(this.testPort).contentType("application/vnd.api+json");
   }
 
-  private Map<String, Object> newValidationDto(Map<String, Object> departmentDto) {
-    ValidationDto dto = ValidationDto.builder().type("department").data(departmentDto).build();
-    return JsonAPITestHelper.toJsonAPIMap("validation", JsonAPITestHelper.toAttributeMap(dto));
+  private Map<String, Object> newValidationDto(Map<String, Object> dto, String type) {
+    ValidationDto validationDto = ValidationDto.builder().type(type).data(dto).build();
+    return JsonAPITestHelper.toJsonAPIMap("validation", JsonAPITestHelper.toAttributeMap(validationDto));
   }
   
-  private Map<String, Object> newDto() {
-    DepartmentDto dto = DepartmentDto.builder().name("dfadf").location(null).build();
+  private Map<String, Object> newDepartmentDto() {
+    DepartmentDto dto = DepartmentDto.builder().name("dfadf").location("Montreal").build();
     return JsonAPITestHelper.toJsonAPIMap("department", JsonAPITestHelper.toAttributeMap(dto));
   }
 
-  private Map<String, Object> newLongNameDto() {
+  private Map<String, Object> newLongNameDepartmentDto() {
     DepartmentDto dto = DepartmentDto.builder().name("01234567890123456789012345678901234567890123456789a").location("Montreal").build();
     return JsonAPITestHelper.toJsonAPIMap("department", JsonAPITestHelper.toAttributeMap(dto));
   }
