@@ -16,8 +16,10 @@ import ca.gc.aafc.dina.DinaUserConfig.DepartmentDinaService;
 import ca.gc.aafc.dina.DinaUserConfig.EmployeeDinaService;
 import ca.gc.aafc.dina.DinaUserConfig.VocabularyDinaService;
 import ca.gc.aafc.dina.dto.DepartmentDto;
+import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.repository.validation.ValidationResourceConfiguration;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 
@@ -27,38 +29,40 @@ public class ValidationResourceConfigurationImplementation implements Validation
   @Inject
   private DepartmentDinaService departmentDinaService;
 
-  // @Inject
-  // private EmployeeDinaService employeeDinaService;
+  @Inject
+  private EmployeeDinaService employeeDinaService;
 
-  // @Inject
-  // private VocabularyDinaService vocabularyDinaService;
+  private static final Map<String, Class> typeToEntityClassMap = Map.ofEntries(
+    entry("department", Department.class),
+    entry("employee", Employee.class)
+  );
 
-  // public Map<String, DefaultDinaService<? extends DinaEntity>> typeToReferenceMap = Map.ofEntries(
-  //   entry("department", departmentDinaService),
-  //   entry("employee", employeeDinaService),
-  //   entry("vocabulary", vocabularyDinaService)
-  // );
-
+  private static final Map<String, Class> typeToResourceClassMap = Map.ofEntries(
+    entry("department", DepartmentDto.class),
+    entry("employee", EmployeeDto.class)
+  );  
   @Override
   public DefaultDinaService getServiceForType(String type) {
-    return departmentDinaService;
-   //return typeToReferenceMap.get(type);
+    Map<String, DefaultDinaService<? extends DinaEntity>> typeToServiceMap = Map.ofEntries(
+      entry("department", departmentDinaService),
+      entry("employee", employeeDinaService)
+    );
+    return typeToServiceMap.get(type);
   }
 
   @Override
   public Set<String> getTypes() {
-    return null;
-    //return typeToReferenceMap.keySet();
+    return typeToEntityClassMap.keySet();
   }
 
   @Override
   public Class getEntityClassForType(String type) {
-    return Department.class;
+    return typeToEntityClassMap.get(type);
   }
 
   @Override
   public Class getResourceClassForType(String type) {
-    return DepartmentDto.class;
+    return typeToResourceClassMap.get(type);
   }
   
 }

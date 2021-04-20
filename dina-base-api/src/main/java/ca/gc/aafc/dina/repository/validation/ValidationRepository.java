@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.repository.validation;
 
 import java.util.LinkedHashMap;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -13,7 +14,10 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
+import ca.gc.aafc.dina.service.AuditService;
+import io.crnk.core.engine.http.HttpStatus;
 import io.crnk.core.exception.MethodNotAllowedException;
+import io.crnk.core.exception.RequestBodyException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepositoryBase;
 import io.crnk.core.resource.list.ResourceList;
@@ -56,6 +60,9 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
 
    validationResourceConfiguration.getServiceForType(resource.getType())
        .validate(entity);
+       
+    // Crnk requires a created resource to have an ID. Create one here if the client did not provide one.
+    resource.setId(Optional.ofNullable(resource.getId()).orElse("N/A"));
     
     return resource;
   }

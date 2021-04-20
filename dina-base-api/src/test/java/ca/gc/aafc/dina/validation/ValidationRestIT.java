@@ -9,6 +9,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
+import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.ValidationDto;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.restassured.RestAssured;
@@ -32,6 +33,17 @@ public class ValidationRestIT {
       .body("errors[0].detail", Matchers.endsWith("name size must be between 1 and 50"));
   }
 
+  
+  @Test
+  void validateInvalidEmployee_ErrorCode422() {
+    newRequest()
+      .body(newValidationDto(newEmployeeDto(), "employee"))
+      .post("/validation")
+      .then()
+      .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
+      .body("errors[0].detail", Matchers.endsWith("job size must be between 1 and 50"));
+  }
+
   // @Test
   // void validateValidDepartment_Code200() {
   //   newRequest()
@@ -40,7 +52,6 @@ public class ValidationRestIT {
   //     .then()
   //     .body("errors[0].status", Matchers.equalToIgnoringCase("500"))
   //     .body("errors[0].detail", Matchers.endsWith("name size must be between 1 and 50"));
-
   // }
 
   private RequestSpecification newRequest() {
@@ -60,6 +71,11 @@ public class ValidationRestIT {
   private Map<String, Object> newLongNameDepartmentDto() {
     DepartmentDto dto = DepartmentDto.builder().name("01234567890123456789012345678901234567890123456789a").location("Montreal").build();
     return JsonAPITestHelper.toJsonAPIMap("department", JsonAPITestHelper.toAttributeMap(dto));
+  }
+
+  private Map<String, Object> newEmployeeDto() {
+    EmployeeDto dto = EmployeeDto.builder().job("01234567890123456789012345678901234567890123456789a").build();
+    return JsonAPITestHelper.toJsonAPIMap("employee", JsonAPITestHelper.toAttributeMap(dto));
   }
 
 }
