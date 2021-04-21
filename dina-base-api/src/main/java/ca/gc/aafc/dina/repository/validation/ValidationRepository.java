@@ -1,35 +1,27 @@
 package ca.gc.aafc.dina.repository.validation;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.stereotype.Repository;
 
 import ca.gc.aafc.dina.dto.ValidationDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.mapper.DinaMapper;
-import ca.gc.aafc.dina.mapper.DinaMappingLayer;
-import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
-import ca.gc.aafc.dina.service.AuditService;
-import io.crnk.core.engine.http.HttpStatus;
+import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.exception.MethodNotAllowedException;
-import io.crnk.core.exception.RequestBodyException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepositoryBase;
 import io.crnk.core.resource.list.ResourceList;
 import lombok.SneakyThrows;
 
 @Repository
-public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepositoryBase<ValidationDto, String> {
+public class ValidationRepository<E extends DinaEntity> extends ResourceRepositoryBase<ValidationDto, String> {
 
   @Inject
-  private ValidationResourceConfiguration<D, E> validationResourceConfiguration;
-
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private ValidationResourceConfiguration<E> validationResourceConfiguration;
 
   protected ValidationRepository() {
     super(ValidationDto.class);
@@ -44,19 +36,18 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
    */
   @Override
   @SneakyThrows
+  @SuppressWarnings("unchecked")
   public <S extends ValidationDto> S create(S resource) {
     String type = resource.getType();
-    Class<D> resourceClass = validationResourceConfiguration.getResourceClassForType(type);
+
     Class<E> entityClass = validationResourceConfiguration.getEntityClassForType(type);
     E entity = entityClass.getConstructor().newInstance();
-    DinaMappingLayer<D,E> mappingLayer = new DinaMappingLayer<>(
-      resourceClass,
-      new DinaMapper<>(resourceClass), 
-      validationResourceConfiguration.getServiceForType(type),
-      new DinaMappingRegistry(resourceClass));
-    String json = OBJECT_MAPPER.writeValueAsString(((LinkedHashMap) resource.getData().get("data")).get("attributes"));
-    D dto = OBJECT_MAPPER.readValue(json, resourceClass);
-    mappingLayer.mapToEntity(dto, entity);
+
+    for(Object o : ((LinkedHashMap<String, Object>)((LinkedHashMap<String, Object>) resource.getData().get("data")).get("attributes")).entrySet()) {
+      Map.Entry<String, Object> entry = (Map.Entry<String, Object>) o;
+      String key = entry.getKey();
+      PropertyUtils.setProperty(entity, key, entry.getValue());
+    }
 
    validationResourceConfiguration.getServiceForType(resource.getType())
        .validate(entity);
