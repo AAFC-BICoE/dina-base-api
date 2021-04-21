@@ -43,7 +43,7 @@ public class ValidationRepository<E extends DinaEntity> extends ResourceReposito
     Class<E> entityClass = validationResourceConfiguration.getEntityClassForType(type);
     E entity = entityClass.getConstructor().newInstance();
 
-    for(Object o : ((LinkedHashMap<String, Object>)((LinkedHashMap<String, Object>) resource.getData().get("data")).get("attributes")).entrySet()) {
+    for (Object o : ((LinkedHashMap<String, Object>)((LinkedHashMap<String, Object>) resource.getData().get("data")).get("attributes")).entrySet()) {
       Map.Entry<String, Object> entry = (Map.Entry<String, Object>) o;
       String key = entry.getKey();
       PropertyUtils.setProperty(entity, key, entry.getValue());
