@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.dto;
 
 import java.util.Map;
 
+import ca.gc.aafc.dina.entity.DinaValidationSupport;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,6 @@ public class ValidationDto {
 
   private String type;
 
-  private Map<String, Object> data;
+  private DinaValidationSupport data;
   
 }

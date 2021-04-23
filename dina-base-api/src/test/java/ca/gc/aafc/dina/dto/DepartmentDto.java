@@ -1,6 +1,8 @@
 package ca.gc.aafc.dina.dto;
 
 import ca.gc.aafc.dina.entity.Department;
+import ca.gc.aafc.dina.entity.DinaValidationSupport;
+import ca.gc.aafc.dina.entity.DinaValidationSupportImplementation;
 import ca.gc.aafc.dina.mapper.CustomFieldAdapter;
 import ca.gc.aafc.dina.mapper.DinaFieldAdapter;
 import ca.gc.aafc.dina.mapper.IgnoreDinaMapping;
@@ -32,7 +34,7 @@ import java.util.function.Supplier;
 @RelatedEntity(Department.class)
 @TypeName("department")
 @CustomFieldAdapter(adapters = DepartmentDto.DerivedAdapter.class)
-public class DepartmentDto {
+public class DepartmentDto implements DinaValidationSupportImplementation {
 
   @JsonApiId
   @Id

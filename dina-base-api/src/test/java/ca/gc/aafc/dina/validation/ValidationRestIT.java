@@ -11,6 +11,8 @@ import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.ValidationDto;
+import ca.gc.aafc.dina.entity.DinaValidationSupport;
+import ca.gc.aafc.dina.entity.DinaValidationSupportImplementation;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
@@ -57,24 +59,24 @@ public class ValidationRestIT {
     return RestAssured.given().port(this.testPort).contentType("application/vnd.api+json");
   }
 
-  private Map<String, Object> newValidationDto(Map<String, Object> dto, String type) {
+  private Map<String, Object> newValidationDto(DinaValidationSupportImplementation dto, String type) {
     ValidationDto validationDto = ValidationDto.builder().type(type).data(dto).build();
     return JsonAPITestHelper.toJsonAPIMap("validation", JsonAPITestHelper.toAttributeMap(validationDto));
   }
   
-  private Map<String, Object> newDepartmentDto() {
+  private DepartmentDto newDepartmentDto() {
     DepartmentDto dto = DepartmentDto.builder().name("dfadf").location("Montreal").build();
-    return JsonAPITestHelper.toJsonAPIMap("department", JsonAPITestHelper.toAttributeMap(dto));
+    return dto;
   }
 
-  private Map<String, Object> newLongNameDepartmentDto() {
+  private DepartmentDto newLongNameDepartmentDto() {
     DepartmentDto dto = DepartmentDto.builder().name("01234567890123456789012345678901234567890123456789a").location("Montreal").build();
-    return JsonAPITestHelper.toJsonAPIMap("department", JsonAPITestHelper.toAttributeMap(dto));
+    return dto;
   }
 
-  private Map<String, Object> newEmployeeDto() {
+  private EmployeeDto newEmployeeDto() {
     EmployeeDto dto = EmployeeDto.builder().job("01234567890123456789012345678901234567890123456789a").build();
-    return JsonAPITestHelper.toJsonAPIMap("employee", JsonAPITestHelper.toAttributeMap(dto));
+    return dto;
   }
 
 }

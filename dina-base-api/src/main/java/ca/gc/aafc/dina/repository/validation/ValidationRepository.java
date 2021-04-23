@@ -6,10 +6,13 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.stereotype.Repository;
 
 import ca.gc.aafc.dina.dto.ValidationDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.entity.DinaValidationSupport;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.exception.MethodNotAllowedException;
 import io.crnk.core.queryspec.QuerySpec;
@@ -40,20 +43,29 @@ public class ValidationRepository<E extends DinaEntity> extends ResourceReposito
   public <S extends ValidationDto> S create(S resource) {
     String type = resource.getType();
 
-    Class<E> entityClass = validationResourceConfiguration.getEntityClassForType(type);
-    E entity = entityClass.getConstructor().newInstance();
+    ObjectMapper mapper = new ObjectMapper();
 
-    for (Object o : ((LinkedHashMap<String, Object>)((LinkedHashMap<String, Object>) resource.getData().get("data")).get("attributes")).entrySet()) {
-      Map.Entry<String, Object> entry = (Map.Entry<String, Object>) o;
-      String key = entry.getKey();
-      PropertyUtils.setProperty(entity, key, entry.getValue());
-    }
+    String jsonDataString = mapper.writeValueAsString(resource.getData());
 
-   validationResourceConfiguration.getServiceForType(resource.getType())
-       .validate(entity);
+    DinaValidationSupport dinaValidationSupport = mapper.readValue(jsonDataString, DinaValidationSupport.class);
+
+    //E entity = dinaValidationSupport.get(0);
+    //E entity = mapper.readValue(jsonDataString, entityClass);
+
+    // Class<E> entityClass = validationResourceConfiguration.getEntityClassForType(type);
+    // E entity = entityClass.getConstructor().newInstance();
+
+    // for (Object o : ((LinkedHashMap<String, Object>)((LinkedHashMap<String, Object>) resource.getData().get("data")).get("attributes")).entrySet()) {
+    //   Map.Entry<String, Object> entry = (Map.Entry<String, Object>) o;
+    //   String key = entry.getKey();
+    //   PropertyUtils.setProperty(entity, key, entry.getValue());
+    // }
+
+  //  validationResourceConfiguration.getServiceForType(resource.getType())
+  //      .validate(entity);
        
-    // Crnk requires a created resource to have an ID. Create one here if the client did not provide one.
-    resource.setId(Optional.ofNullable(resource.getId()).orElse("N/A"));
+  //   // Crnk requires a created resource to have an ID. Create one here if the client did not provide one.
+  //   resource.setId(Optional.ofNullable(resource.getId()).orElse("N/A"));
     
     return resource;
   }

@@ -5,6 +5,8 @@ import org.javers.core.metamodel.annotation.Id;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
 
+import ca.gc.aafc.dina.entity.DinaValidationSupport;
+import ca.gc.aafc.dina.entity.DinaValidationSupportImplementation;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.mapper.IgnoreDinaMapping;
 import io.crnk.core.resource.annotations.JsonApiId;
@@ -22,7 +24,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @RelatedEntity(Employee.class)
 @TypeName(EmployeeDto.TYPENAME)
-public class EmployeeDto {
+public class EmployeeDto implements DinaValidationSupportImplementation {
 
   public static final String TYPENAME = "employee";
 
