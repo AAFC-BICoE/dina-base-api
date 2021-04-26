@@ -15,9 +15,9 @@ public interface ValidationResourceConfiguration<D, E extends DinaEntity> {
    */
   DefaultDinaService<E> getServiceForType(String type);
 
-  Class<E> getEntityClassForType(String type);
-
   Class<D> getResourceClassForType(String type);
+
+  Class<E> getEntityClassForType(String type);
 
   /**
    * Returns a set of the supported types

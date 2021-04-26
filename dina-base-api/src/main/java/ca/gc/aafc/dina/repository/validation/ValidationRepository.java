@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.repository.validation;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -15,10 +16,8 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
-import ca.gc.aafc.dina.service.AuditService;
-import io.crnk.core.engine.http.HttpStatus;
+import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.exception.MethodNotAllowedException;
-import io.crnk.core.exception.RequestBodyException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepositoryBase;
 import io.crnk.core.resource.list.ResourceList;
@@ -45,6 +44,7 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
    */
   @Override
   @SneakyThrows
+  @SuppressWarnings("unchecked")
   public <S extends ValidationDto> S create(S resource) {
     String type = resource.getType();
     Class<D> resourceClass = validationResourceConfiguration.getResourceClassForType(type);
@@ -56,10 +56,8 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
       validationResourceConfiguration.getServiceForType(type),
       new DinaMappingRegistry(resourceClass));
     String json = OBJECT_MAPPER.writeValueAsString(resource.getData());
-    JsonNode jNode = OBJECT_MAPPER.readTree(json);
-    JsonNode resourceNode = jNode.get("data").get("attributes");
-    String jsonResource = OBJECT_MAPPER.writeValueAsString(resourceNode);
-    D dto = OBJECT_MAPPER.readValue(jsonResource, resourceClass);
+    JsonNode jNode = OBJECT_MAPPER.readTree(json).get("data").get("attributes");
+    D dto = OBJECT_MAPPER.treeToValue(jNode, resourceClass);
     mappingLayer.mapToEntity(dto, entity);
 
    validationResourceConfiguration.getServiceForType(resource.getType())

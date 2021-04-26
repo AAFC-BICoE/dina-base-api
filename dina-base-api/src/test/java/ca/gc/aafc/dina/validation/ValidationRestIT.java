@@ -51,7 +51,6 @@ public class ValidationRestIT {
       .post("/validation")
       .then()
       .assertThat().statusCode(201);
-
   }
 
   private RequestSpecification newRequest() {

@@ -32,17 +32,18 @@ public class ValidationResourceConfigurationImplementation implements Validation
   @Inject
   private EmployeeDinaService employeeDinaService;
 
-  private static final Map<String, Class> typeToEntityClassMap = Map.ofEntries(
+  private static final Map<String, Class<?>> typeToEntityClassMap = Map.ofEntries(
     entry("department", Department.class),
     entry("employee", Employee.class)
   );
-
-  private static final Map<String, Class> typeToResourceClassMap = Map.ofEntries(
+  
+  private static final Map<String, Class<?>> typeToResourceClassMap = Map.ofEntries(
     entry("department", DepartmentDto.class),
     entry("employee", EmployeeDto.class)
-  );  
+  );
+
   @Override
-  public DefaultDinaService getServiceForType(String type) {
+  public DefaultDinaService<?> getServiceForType(String type) {
     Map<String, DefaultDinaService<? extends DinaEntity>> typeToServiceMap = Map.ofEntries(
       entry("department", departmentDinaService),
       entry("employee", employeeDinaService)
@@ -56,12 +57,12 @@ public class ValidationResourceConfigurationImplementation implements Validation
   }
 
   @Override
-  public Class getEntityClassForType(String type) {
+  public Class<?> getEntityClassForType(String type) {
     return typeToEntityClassMap.get(type);
   }
 
   @Override
-  public Class getResourceClassForType(String type) {
+  public Class<?> getResourceClassForType(String type) {
     return typeToResourceClassMap.get(type);
   }
   
