@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.stereotype.Repository;
@@ -54,8 +55,11 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
       new DinaMapper<>(resourceClass), 
       validationResourceConfiguration.getServiceForType(type),
       new DinaMappingRegistry(resourceClass));
-    String json = OBJECT_MAPPER.writeValueAsString(((LinkedHashMap) resource.getData().get("data")).get("attributes"));
-    D dto = OBJECT_MAPPER.readValue(json, resourceClass);
+    String json = OBJECT_MAPPER.writeValueAsString(resource.getData());
+    JsonNode jNode = OBJECT_MAPPER.readTree(json);
+    JsonNode resourceNode = jNode.get("data").get("attributes");
+    String jsonResource = OBJECT_MAPPER.writeValueAsString(resourceNode);
+    D dto = OBJECT_MAPPER.readValue(jsonResource, resourceClass);
     mappingLayer.mapToEntity(dto, entity);
 
    validationResourceConfiguration.getServiceForType(resource.getType())

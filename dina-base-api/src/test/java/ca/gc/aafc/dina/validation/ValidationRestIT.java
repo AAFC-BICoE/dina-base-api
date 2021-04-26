@@ -44,15 +44,15 @@ public class ValidationRestIT {
       .body("errors[0].detail", Matchers.endsWith("job size must be between 1 and 50"));
   }
 
-  // @Test
-  // void validateValidDepartment_Code200() {
-  //   newRequest()
-  //     .body(newValidationDto(newDepartmentDto(), "department"))
-  //     .post("/validation")
-  //     .then()
-  //     .body("errors[0].status", Matchers.equalToIgnoringCase("500"))
-  //     .body("errors[0].detail", Matchers.endsWith("name size must be between 1 and 50"));
-  // }
+  @Test
+  void validateValidDepartment_Code200() {
+    newRequest()
+      .body(newValidationDto(newDepartmentDto(), "department"))
+      .post("/validation")
+      .then()
+      .assertThat().statusCode(201);
+
+  }
 
   private RequestSpecification newRequest() {
     return RestAssured.given().port(this.testPort).contentType("application/vnd.api+json");
