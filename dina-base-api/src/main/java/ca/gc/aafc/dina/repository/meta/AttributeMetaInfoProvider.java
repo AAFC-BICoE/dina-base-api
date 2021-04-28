@@ -27,22 +27,36 @@ public abstract class AttributeMetaInfoProvider {
   @Builder
   public static class DinaJsonMetaInfo implements MetaInformation {
     private Map<String, Object> properties;
+    private Map<String, Object> warnings;
 
     public void setProperties(Map<String, Object> properties) {
       this.properties = properties;
     }
 
-    @JsonAnyGetter
+    public void setWarnings(Map<String, Object> warnings) {
+      this.warnings = warnings;
+    }
+
     public Map<String, Object> getProperties() {
       return properties;
     }
 
-    @JsonAnySetter
     public void setProperties(String propertyName, Object propertyValue) {
       if (properties == null) {
         properties = new HashMap<>();
       }
       this.properties.put(propertyName, propertyValue);
+    }
+
+    public Map<String, Object> getWarnings() {
+      return warnings;
+    }
+
+    public void setWarnings(String warningName, Object warningValue) {
+      if (warnings == null) {
+        warnings = new HashMap<>();
+      }
+      this.warnings.put(warningName, warningValue);
     }
   }
 

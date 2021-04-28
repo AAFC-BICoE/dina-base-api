@@ -53,6 +53,7 @@ import java.util.function.Function;
 public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
 
   public static final String KEY = "Warnings";
+  public static final String KEY_2 = "name";
   public static final String VALUE_1 = "name to long";
   public static final String VALUE_2 = "duplicate name detected";
 
@@ -65,7 +66,8 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
     ThingDTO dto = ThingDTO.builder().name("new name").build();
     ValidatableResponse response = sendPost(JsonAPITestHelper.toJsonAPIMap(
       "thing", JsonAPITestHelper.toAttributeMap(dto), null, null));
-    response.body("data.meta." + KEY, Matchers.contains(VALUE_1, VALUE_2));
+    response.body("data.meta.properties." + KEY, Matchers.contains(VALUE_1, VALUE_2));
+    response.body("data.meta.warnings." + KEY_2, Matchers.contains(VALUE_1, VALUE_2));
   }
 
   @TestConfiguration
@@ -81,6 +83,7 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
         Thing.class,
         thingDTO -> AttributeMetaInfoProvider.DinaJsonMetaInfo.builder()
           .properties(Map.of(KEY, List.of(VALUE_1, VALUE_2).toArray()))
+          .warnings(Map.of(KEY_2, List.of(VALUE_1, VALUE_2).toArray()))
           .build());
     }
   }
