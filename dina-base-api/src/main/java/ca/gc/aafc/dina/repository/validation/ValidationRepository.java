@@ -1,7 +1,5 @@
 package ca.gc.aafc.dina.repository.validation;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -16,7 +14,6 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
-import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.exception.MethodNotAllowedException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepositoryBase;
@@ -44,7 +41,6 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
    */
   @Override
   @SneakyThrows
-  @SuppressWarnings("unchecked")
   public <S extends ValidationDto> S create(S resource) {
     String type = resource.getType();
     Class<D> resourceClass = validationResourceConfiguration.getResourceClassForType(type);
@@ -60,7 +56,7 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
     D dto = OBJECT_MAPPER.treeToValue(jNode, resourceClass);
     mappingLayer.mapToEntity(dto, entity);
 
-   validationResourceConfiguration.getServiceForType(resource.getType())
+    validationResourceConfiguration.getServiceForType(resource.getType())
        .validate(entity);
        
     // Crnk requires a created resource to have an ID. Create one here if the client did not provide one.
