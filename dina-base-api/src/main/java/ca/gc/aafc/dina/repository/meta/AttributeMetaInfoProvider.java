@@ -1,8 +1,6 @@
 package ca.gc.aafc.dina.repository.meta;
 
 import ca.gc.aafc.dina.mapper.IgnoreDinaMapping;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import io.crnk.core.resource.annotations.JsonApiMetaInformation;
 import io.crnk.core.resource.meta.MetaInformation;
 import lombok.Builder;
