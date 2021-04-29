@@ -1,8 +1,6 @@
 package ca.gc.aafc.dina.repository.meta;
 
 import ca.gc.aafc.dina.mapper.IgnoreDinaMapping;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import io.crnk.core.resource.annotations.JsonApiMetaInformation;
 import io.crnk.core.resource.meta.MetaInformation;
 import lombok.Builder;
@@ -26,23 +24,21 @@ public abstract class AttributeMetaInfoProvider {
 
   @Builder
   public static class DinaJsonMetaInfo implements MetaInformation {
-    private Map<String, Object> properties;
+    private Map<String, Object> warnings;
 
-    public void setProperties(Map<String, Object> properties) {
-      this.properties = properties;
+    public void setWarnings(Map<String, Object> warnings) {
+      this.warnings = warnings;
     }
 
-    @JsonAnyGetter
-    public Map<String, Object> getProperties() {
-      return properties;
+    public Map<String, Object> getWarnings() {
+      return warnings;
     }
 
-    @JsonAnySetter
-    public void setProperties(String propertyName, Object propertyValue) {
-      if (properties == null) {
-        properties = new HashMap<>();
+    public void setWarnings(String warningKey, Object warningValue) {
+      if (warnings == null) {
+        warnings = new HashMap<>();
       }
-      this.properties.put(propertyName, propertyValue);
+      this.warnings.put(warningKey, warningValue);
     }
   }
 
