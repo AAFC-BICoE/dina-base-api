@@ -53,11 +53,10 @@ import java.util.function.Function;
 @Import(AttributeMetaInfoProviderRestIT.TestConfig.class)
 public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
 
-  public static final String KEY = "Warnings";
+  public static final String KEY = "warnings";
   public static final String KEY_A = "key";
   public static final String KEY_B = "message";
-  public static final String VALUE_1 = "name to long";
-  public static final String VALUE_2 = "duplicate name detected";
+
   public static final String VALUE_A = "duplicate_found";
   public static final String VALUE_B = "A record with title Rails is Omakase already exists";
 
@@ -70,7 +69,6 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
     ThingDTO dto = ThingDTO.builder().name("new name").build();
     ValidatableResponse response = sendPost(JsonAPITestHelper.toJsonAPIMap(
       "thing", JsonAPITestHelper.toAttributeMap(dto), null, null));
-    response.body("data.meta.properties." + KEY, Matchers.contains(VALUE_1, VALUE_2));
     response.body("data.meta.warnings", Matchers.hasEntry(KEY_A, VALUE_A));
     response.body("data.meta.warnings", Matchers.hasEntry(KEY_B, VALUE_B));
   }
@@ -83,14 +81,15 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
       BaseDAO baseDAO
     ) {
       Map<String, Object> warnings = new HashMap<>();
-      warnings.put(KEY_A, VALUE_A);
-      warnings.put(KEY_B, VALUE_B);
+      Map<String, Object> content = new HashMap<>();
+      content.put(KEY_A, VALUE_A);
+      content.put(KEY_B, VALUE_B);
+      warnings.put(KEY, content);
       return new DinaMetaInfoRepo<>(
         baseDAO,
         ThingDTO.class,
         Thing.class,
         thingDTO -> AttributeMetaInfoProvider.DinaJsonMetaInfo.builder()
-          .properties(Map.of(KEY, List.of(VALUE_1, VALUE_2).toArray()))
           .warnings(warnings)
           .build());
     }

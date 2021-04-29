@@ -10,6 +10,9 @@ import lombok.Setter;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+
 /**
  * Abstract class which can be extended by a resource to add meta information to a resource's JSON
  * response through Crnk.
@@ -24,37 +27,23 @@ public abstract class AttributeMetaInfoProvider {
 
   @Builder
   public static class DinaJsonMetaInfo implements MetaInformation {
-    private Map<String, Object> properties;
     private Map<String, Object> warnings;
-
-    public void setProperties(Map<String, Object> properties) {
-      this.properties = properties;
-    }
 
     public void setWarnings(Map<String, Object> warnings) {
       this.warnings = warnings;
     }
 
-    public Map<String, Object> getProperties() {
-      return properties;
-    }
-
-    public void setProperties(String propertyName, Object propertyValue) {
-      if (properties == null) {
-        properties = new HashMap<>();
-      }
-      this.properties.put(propertyName, propertyValue);
-    }
-
+    @JsonAnyGetter
     public Map<String, Object> getWarnings() {
       return warnings;
     }
 
-    public void setWarnings(String warningName, Object warningValue) {
+    @JsonAnySetter
+    public void setWarnings(String warningKey, Object warningValue) {
       if (warnings == null) {
         warnings = new HashMap<>();
       }
-      this.warnings.put(warningName, warningValue);
+      this.warnings.put(warningKey, warningValue);
     }
   }
 
