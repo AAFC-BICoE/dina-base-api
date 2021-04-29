@@ -1,18 +1,24 @@
 package ca.gc.aafc.dina.repository.validation;
 
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.validation.ValidationException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.ObjectError;
 
 import ca.gc.aafc.dina.dto.ValidationDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMapper;
-import ca.gc.aafc.dina.mapper.DinaMappingLayer;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import io.crnk.core.exception.MethodNotAllowedException;
 import io.crnk.core.queryspec.QuerySpec;
@@ -46,19 +52,39 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
     Class<D> resourceClass = validationResourceConfiguration.getResourceClassForType(type);
     Class<E> entityClass = validationResourceConfiguration.getEntityClassForType(type);
     E entity = entityClass.getConstructor().newInstance();
-    DinaMappingLayer<D,E> mappingLayer = new DinaMappingLayer<>(
-      resourceClass,
-      new DinaMapper<>(resourceClass), 
-      validationResourceConfiguration.getServiceForType(type),
-      new DinaMappingRegistry(resourceClass));
+
+    DinaMappingRegistry registry = new DinaMappingRegistry(resourceClass);
+    DinaMapper<D,E> mapper = new DinaMapper<>(resourceClass);
+
     String json = OBJECT_MAPPER.writeValueAsString(resource.getData());
     JsonNode jNode = OBJECT_MAPPER.readTree(json).get("data").get("attributes");
     D dto = OBJECT_MAPPER.treeToValue(jNode, resourceClass);
-    mappingLayer.mapToEntity(dto, entity);
+    
+    Set<DinaMappingRegistry.InternalRelation> mappableRelationsForClass = registry
+      .findMappableRelationsForClass(dto.getClass());
 
-    validationResourceConfiguration.getServiceForType(resource.getType())
-       .validate(entity);
-       
+    // Bean mapping
+    Set<String> relationNames = mappableRelationsForClass.stream()
+      .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());
+      mapper.applyDtoToEntity(
+      dto, entity, registry.getAttributesPerClass(), relationNames);
+    Objects.requireNonNull(entity);
+
+    Errors errors = new BeanPropertyBindingResult(entity,
+      entity.getUuid() != null ? entity.getUuid().toString() : "");
+    validationResourceConfiguration.getValidatorForType(type).validate(entity, errors);
+
+    if (errors.hasErrors()) {
+      Optional<String> errorMsg = errors.getAllErrors()
+      .stream()
+      .map(ObjectError::getDefaultMessage)
+      .findAny();
+
+      errorMsg.ifPresent(msg -> {
+        throw new ValidationException(msg);
+      });    
+    }
+
     // Crnk requires a created resource to have an ID. Create one here if the client did not provide one.
     resource.setId(Optional.ofNullable(resource.getId()).orElse("N/A"));
     

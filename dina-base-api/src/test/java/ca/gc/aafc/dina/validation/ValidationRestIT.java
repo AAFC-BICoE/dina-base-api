@@ -30,7 +30,7 @@ public class ValidationRestIT {
       .post("/validation")
       .then()
       .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
-      .body("errors[0].detail", Matchers.endsWith("name size must be between 1 and 50"));
+      .body("errors[0].detail", Matchers.endsWith("size must be between 1 and 50"));
   }
 
   
@@ -41,7 +41,7 @@ public class ValidationRestIT {
       .post("/validation")
       .then()
       .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
-      .body("errors[0].detail", Matchers.endsWith("job size must be between 1 and 50"));
+      .body("errors[0].detail", Matchers.endsWith("size must be between 1 and 50"));
   }
 
   @Test
