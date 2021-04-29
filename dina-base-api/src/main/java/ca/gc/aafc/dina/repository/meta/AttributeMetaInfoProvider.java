@@ -10,9 +10,6 @@ import lombok.Setter;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-
 /**
  * Abstract class which can be extended by a resource to add meta information to a resource's JSON
  * response through Crnk.
@@ -33,12 +30,10 @@ public abstract class AttributeMetaInfoProvider {
       this.warnings = warnings;
     }
 
-    @JsonAnyGetter
     public Map<String, Object> getWarnings() {
       return warnings;
     }
 
-    @JsonAnySetter
     public void setWarnings(String warningKey, Object warningValue) {
       if (warnings == null) {
         warnings = new HashMap<>();
