@@ -3,8 +3,6 @@ package ca.gc.aafc.dina.repository;
 import io.crnk.core.engine.document.ErrorData;
 import io.crnk.core.exception.CrnkMappableException;
 
-import java.util.Map;
-
 /**
  * Crnk Exception for HTTP 410 : GONE
  *
