@@ -34,7 +34,7 @@ public class DinaRepoSoftDeleteRestIt extends BaseRestAssuredTest {
     sendDelete(id);
 
     String auditRepoLink = sendGet("", id, HttpStatus.SC_GONE).extract()
-      .body().jsonPath().getString("errors.meta.link[0]");
+      .body().jsonPath().getString("errors.links.about[0]");
     // Assert the returned audit repo url is valid
     given().header(CRNK_HEADER).port(testPort).get(auditRepoLink)
       .then().statusCode(200);

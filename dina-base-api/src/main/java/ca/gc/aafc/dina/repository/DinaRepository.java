@@ -121,8 +121,8 @@ public class DinaRepository<D, E extends DinaEntity>
         if (service.hasTerminalSnapshot(auditInstance)) {
           throw new GoneException(
             "GONE",
-            "The Resource has been deleted but audit records remain, see the meta.link section",
-            Map.of("link", AuditSnapshotRepository.generateUrlLink(resourceType, id.toString())));
+            "The Resource has been deleted but audit records remain, see the links.about section",
+            AuditSnapshotRepository.generateUrlLink(resourceType, id.toString()));
         }
       });
       throw new ResourceNotFoundException(
