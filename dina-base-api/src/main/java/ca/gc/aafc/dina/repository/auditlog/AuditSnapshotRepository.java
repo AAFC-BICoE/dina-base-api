@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.javers.core.metamodel.object.CdoSnapshot;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -100,4 +101,10 @@ public class AuditSnapshotRepository extends ReadOnlyResourceRepositoryBase<Audi
     return map;
   }
 
+  public static String generateUrlLink(String resourceType, String id) {
+    if (StringUtils.isBlank(resourceType) || StringUtils.isBlank(id)) {
+      throw new IllegalArgumentException("A url can not be generated without a type and id");
+    }
+    return "/" + AuditSnapshotDto.TYPE_NAME + "?filter[" + INSTANCE_FILTER_VALUE + "]=" + resourceType + "/" + id;
+  }
 }
