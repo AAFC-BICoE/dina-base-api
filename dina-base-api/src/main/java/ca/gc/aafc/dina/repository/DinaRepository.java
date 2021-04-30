@@ -117,9 +117,7 @@ public class DinaRepository<D, E extends DinaEntity>
       auditService.ifPresent(service -> {
         final String resourceType = querySpec.getResourceType();
         final AuditService.AuditInstance auditInstance = AuditService.AuditInstance.builder()
-          .id(id.toString())
-          .type(resourceType)
-          .build();
+          .id(id.toString()).type(resourceType).build();
         final List<CdoSnapshot> snapshots = service.findAll(auditInstance,null, 1, 0);
         if (snapshots.size() != 0) {
           throw new GoneException("GONE", "/audit-snapshot?filter[instanceId]=" + resourceType + "/" + id);
