@@ -113,7 +113,7 @@ public class DinaRepository<D, E extends DinaEntity>
     ResourceList<D> resourceList = findAll(Collections.singletonList(id), querySpec);
 
     if (resourceList.size() == 0) {
-      auditService.ifPresent(service -> {// Past Deleted records with audit logs throw Gone.
+      auditService.ifPresent(service -> { // Past Deleted records with audit logs throw Gone.
         final String resourceType = querySpec.getResourceType();
         final AuditService.AuditInstance auditInstance = AuditService.AuditInstance.builder()
           .id(id.toString()).type(resourceType).build();
