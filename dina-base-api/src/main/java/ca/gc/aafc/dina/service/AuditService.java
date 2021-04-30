@@ -36,15 +36,11 @@ public class AuditService {
    * Returns true if the given audit instance has a terminal snapshot associated with it. Terminal snapshots
    * represent delete operations.
    *
-   * @param service       Audit service connecting to the audit database
    * @param auditInstance The audit instance to check
    * @return true if the given audit instance has a terminal snapshot associated with it
    */
-  public static boolean hasTerminalSnapshot(
-    @NonNull AuditService service,
-    @NonNull AuditInstance auditInstance
-  ) {
-    return service.findAll(auditInstance, null, Integer.MAX_VALUE, 0)
+  public boolean hasTerminalSnapshot(@NonNull AuditInstance auditInstance) {
+    return this.findAll(auditInstance, null, Integer.MAX_VALUE, 0)
       .stream()
       .anyMatch(CdoSnapshot::isTerminal);
   }

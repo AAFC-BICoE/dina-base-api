@@ -117,7 +117,7 @@ public class DinaRepository<D, E extends DinaEntity>
         final String resourceType = querySpec.getResourceType();
         final AuditService.AuditInstance auditInstance = AuditService.AuditInstance.builder()
           .id(id.toString()).type(resourceType).build();
-        if (AuditService.hasTerminalSnapshot(service, auditInstance)) {
+        if (service.hasTerminalSnapshot(auditInstance)) {
           throw new GoneException("GONE", "/audit-snapshot?filter[instanceId]=" + resourceType + "/" + id);
         }
       });
