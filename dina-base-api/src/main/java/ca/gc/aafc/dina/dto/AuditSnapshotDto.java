@@ -12,13 +12,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@JsonApiResource(type = "audit-snapshot")
+@JsonApiResource(type = AuditSnapshotDto.TYPE_NAME)
 @Data
 @SuppressFBWarnings({ "EI_EXPOSE_REP", "EI_EXPOSE_REP2" })
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuditSnapshotDto {
+
+  public static final String TYPE_NAME = "audit-snapshot";
 
   @JsonApiId
   private String id;

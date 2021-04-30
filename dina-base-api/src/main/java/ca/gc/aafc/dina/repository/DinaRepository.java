@@ -5,6 +5,7 @@ import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
+import ca.gc.aafc.dina.repository.auditlog.AuditSnapshotRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
@@ -118,7 +119,7 @@ public class DinaRepository<D, E extends DinaEntity>
         final AuditService.AuditInstance auditInstance = AuditService.AuditInstance.builder()
           .id(id.toString()).type(resourceType).build();
         if (service.hasTerminalSnapshot(auditInstance)) {
-          throw new GoneException("GONE", "/audit-snapshot?filter[instanceId]=" + resourceType + "/" + id);
+          throw new GoneException("GONE", AuditSnapshotRepository.generateUrlLink(resourceType, id.toString()));
         }
       });
       throw new ResourceNotFoundException(
