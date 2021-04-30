@@ -26,7 +26,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
-import org.javers.core.metamodel.object.CdoSnapshot;
 import org.springframework.boot.info.BuildProperties;
 
 import javax.transaction.Transactional;
@@ -114,12 +113,11 @@ public class DinaRepository<D, E extends DinaEntity>
     ResourceList<D> resourceList = findAll(Collections.singletonList(id), querySpec);
 
     if (resourceList.size() == 0) {
-      auditService.ifPresent(service -> {
+      auditService.ifPresent(service -> {// Past Deleted records with audit logs throw Gone.
         final String resourceType = querySpec.getResourceType();
         final AuditService.AuditInstance auditInstance = AuditService.AuditInstance.builder()
           .id(id.toString()).type(resourceType).build();
-        final List<CdoSnapshot> snapshots = service.findAll(auditInstance,null, 1, 0);
-        if (snapshots.size() != 0) {
+        if (AuditService.hasTerminalSnapshot(service, auditInstance)) {
           throw new GoneException("GONE", "/audit-snapshot?filter[instanceId]=" + resourceType + "/" + id);
         }
       });
