@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.jpa.BaseDAO;
-import lombok.NonNull;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 
