@@ -20,7 +20,7 @@ public abstract class ManagedAttributeService<T extends ManagedAttribute>
 
   private static final Pattern NON_ALPHANUMERICAL = Pattern.compile("[^a-z0-9]");
 
-  public ManagedAttributeService(@NonNull BaseDAO baseDAO) {
+  public ManagedAttributeService(BaseDAO baseDAO) {
     super(baseDAO);
   }
 
