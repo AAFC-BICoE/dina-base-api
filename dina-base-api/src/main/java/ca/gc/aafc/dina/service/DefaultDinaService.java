@@ -46,10 +46,10 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    * @return returns the original entity.
    */
   @Override
-  @Validated(OnCreate.class)
-  public E create(@Valid E entity) {
+  public E create(E entity) {
     preCreate(entity);
-    baseDAO.create(entity);
+    ServiceValidationHelper.callValidatedCreate(this, entity);
+    //validatedCreate(entity);
     return entity;
   }
 
@@ -60,10 +60,10 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    * @return returns the managed instance the state was merged to.
    */
   @Override
-  @Validated(OnUpdate.class)
-  public E update(@Valid E entity) {
+  public E update(E entity) {
     preUpdate(entity);
-    return baseDAO.update(entity);
+    //return ServiceValidationHelper.callValidatedUpdate(this, entity);
+    return validatedUpdate(entity);
   }
 
   /**
@@ -255,6 +255,16 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     errorMsg.ifPresent(msg -> {
       throw new ValidationException(msg);
     });
+  }
+
+  @Validated(OnCreate.class)
+  protected void validatedCreate(@Valid E entity) {
+    baseDAO.create(entity);
+  }
+
+  @Validated(OnUpdate.class)
+  protected E validatedUpdate(@Valid E entity) {
+    return baseDAO.update(entity);
   }
 
 }
