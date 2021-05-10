@@ -38,8 +38,7 @@ public class Department implements DinaEntity {
   private Integer id;
 
   @NaturalId
-  @Null(groups = OnCreate.class)
-  @NotNull(groups = OnUpdate.class)
+  @NotNull
   private UUID uuid;
 
   @Size(min = 1, max = 50)

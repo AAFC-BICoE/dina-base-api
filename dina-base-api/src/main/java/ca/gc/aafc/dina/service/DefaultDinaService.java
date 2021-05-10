@@ -62,8 +62,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public E update(E entity) {
     preUpdate(entity);
-    //return ServiceValidationHelper.callValidatedUpdate(this, entity);
-    return validatedUpdate(entity);
+    return ServiceValidationHelper.callValidatedUpdate(this, entity);
   }
 
   /**

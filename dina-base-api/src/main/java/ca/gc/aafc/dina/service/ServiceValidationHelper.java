@@ -1,7 +1,11 @@
 package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import org.springframework.stereotype.Component;
+import javax.transaction.Transactional;
 
+
+@Component
 public class ServiceValidationHelper {
 
   protected static <E extends DinaEntity> void callValidatedCreate(DefaultDinaService<E> dinaService, E entity) {

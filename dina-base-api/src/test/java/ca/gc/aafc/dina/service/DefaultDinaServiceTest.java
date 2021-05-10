@@ -244,22 +244,9 @@ public class DefaultDinaServiceTest {
   }
 
   @Test
-  public void validationGroups_DepartmentWithNonNullUuidOnCreate_ThrowsException() {
-    Department result = createDepartment();
-    result.setUuid(UUID.randomUUID());
-    ConstraintViolationException exception = assertThrows(ConstraintViolationException.class, () -> {
-      serviceUnderTest.create(result);
-    });
-
-    String expectedMessage = "must be null";
-    String actualMessage = exception.getMessage();
-
-    assertTrue(actualMessage.contains(expectedMessage));
-  }
-
-  @Test
   public void validationGroups_DepartmentWithNullUuidOnUpdate_ThrowException() {
     Department result = persistDepartment();
+    serviceUnderTest.create(result);
     result.setUuid(null);
     ConstraintViolationException exception =  assertThrows(ConstraintViolationException.class, () -> {
       serviceUnderTest.update(result);
