@@ -137,7 +137,6 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     chainDto.setName(RandomStringUtils.randomAlphabetic(4));
     chainDto.setGroup(RandomStringUtils.randomAlphabetic(5));
     chainDto.setCreatedBy(RandomStringUtils.randomAlphabetic(8));
-    chainDto.setUuid(UUID.randomUUID());
     return chainDto;
   }
 
@@ -146,7 +145,6 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     template.setName(RandomStringUtils.randomAlphabetic(4));
     template.setGroup(RandomStringUtils.randomAlphabetic(5));
     template.setCreatedBy(RandomStringUtils.randomAlphabetic(8));
-    template.setUuid(UUID.randomUUID());
     return template;
   }
 

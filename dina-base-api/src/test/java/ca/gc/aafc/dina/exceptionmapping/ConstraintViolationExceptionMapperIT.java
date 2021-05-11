@@ -41,7 +41,6 @@ public class ConstraintViolationExceptionMapperIT {
     DepartmentDto testDepartment = new DepartmentDto();
     testDepartment.setName(stringWith51Chars);
     testDepartment.setUuid(UUID.randomUUID());
-    testDepartment.setLocation(null);
     
     try {
       // Attempt the create.
