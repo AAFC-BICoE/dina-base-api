@@ -68,7 +68,7 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
       throw new BadRequestException("You must submit a valid configuration type");
     }
 
-    if (data == null || data.isNull() || data.isEmpty()) {
+    if (isBlank(data) || !data.has("data.attributes")) {
       throw new BadRequestException("You must submit a valid data block");
     }
 
@@ -135,4 +135,7 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
       .collect(Collectors.toSet());
   }
 
+  private static boolean isBlank(JsonNode data) {
+    return data == null || data.isNull() || data.isEmpty();
+  }
 }

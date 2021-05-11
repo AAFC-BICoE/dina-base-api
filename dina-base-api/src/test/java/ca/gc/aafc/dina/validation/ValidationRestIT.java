@@ -65,7 +65,7 @@ public class ValidationRestIT {
 
   @Test
   void validate_WhenDataBlank_ReturnsBadRequest() {
-    // Null data
+    // data: null
     Map<String, Object> jsonAPIMap = JsonAPITestHelper.toJsonAPIMap(
       "validation",
       JsonAPITestHelper.toAttributeMap(ValidationDto.builder().type("department").data(null).build()));
@@ -74,9 +74,17 @@ public class ValidationRestIT {
       .post("/validation")
       .then()
       .assertThat().statusCode(400);
-    // Empty data
+    // data: {}
     jsonAPIMap = JsonAPITestHelper.toJsonAPIMap("validation", JsonAPITestHelper.toAttributeMap(
       Map.of("type", "department", "data", Map.of())));
+    newRequest()
+      .body(jsonAPIMap)
+      .post("/validation")
+      .then()
+      .assertThat().statusCode(400);
+    // data: { attributes:{} }
+    jsonAPIMap = JsonAPITestHelper.toJsonAPIMap("validation", JsonAPITestHelper.toAttributeMap(
+      Map.of("type", "department", "data", Map.of("attributes", Map.of()))));
     newRequest()
       .body(jsonAPIMap)
       .post("/validation")
