@@ -25,6 +25,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import javax.validation.ValidationException;
+import javax.validation.groups.Default;
 
 import java.util.HashSet;
 import java.util.List;
@@ -43,7 +44,7 @@ import java.util.function.BiFunction;
 @Validated
 public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> {
 
-  @Autowired
+  @Inject
   private SmartValidator validator;
 
   @NonNull
@@ -58,7 +59,8 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public E create(E entity) {
     preCreate(entity);
-    validatedCreate(entity);
+    validateConstraints(entity, OnCreate.class);
+    baseDAO.create(entity);
     return entity;
   }
 
@@ -71,7 +73,8 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public E update(E entity) {
     preUpdate(entity);
-    return validatedUpdate(entity);
+    validateConstraints(entity, OnUpdate.class);
+    return baseDAO.update(entity);
   }
 
   /**
@@ -266,48 +269,23 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   @SuppressWarnings("unchecked")
-  protected void validatedCreate(E entity) {
+  protected void validateConstraints(E entity, Class<? extends Default> validationGroup) {
     Errors errors = new BeanPropertyBindingResult(entity,
       entity.getUuid() != null ? entity.getUuid().toString() : "");
 
-    validator.validate(entity, errors, OnCreate.class);
+    validator.validate(entity, errors, validationGroup);
 
     if (errors.hasErrors()) {
-
       Set<ConstraintViolation<E>> violations = new HashSet<>();
-
       for(ObjectError o : errors.getAllErrors()) {
         if (o.contains(ConstraintViolation.class)) { 
           violations.add((ConstraintViolation<E>) o.unwrap(ConstraintViolation.class));
         }
-      }      
-
+      }
       throw new ConstraintViolationException(violations);
     }
-  
-    baseDAO.create(entity);
   }
 
-  @SuppressWarnings("unchecked")
-  protected E validatedUpdate(E entity) {
-    Errors errors = new BeanPropertyBindingResult(entity,
-      entity.getUuid() != null ? entity.getUuid().toString() : "");
 
-    validator.validate(entity, errors, OnUpdate.class);
-
-    if (errors.hasErrors()) {
-      Set<ConstraintViolation<E>> violations = new HashSet<>();
-
-      for(ObjectError o : errors.getAllErrors()) {
-        if (o.contains(ConstraintViolation.class)) {
-          violations.add((ConstraintViolation<E>) o.unwrap(ConstraintViolation.class));
-        }
-      }      
-      
-      throw new ConstraintViolationException(violations);
-      }
-
-    return baseDAO.update(entity);
-  }
 
 }
