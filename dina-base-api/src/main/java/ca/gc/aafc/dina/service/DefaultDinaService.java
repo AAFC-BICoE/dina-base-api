@@ -6,7 +6,6 @@ import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
