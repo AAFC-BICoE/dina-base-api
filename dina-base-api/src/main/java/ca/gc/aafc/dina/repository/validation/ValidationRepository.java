@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ObjectError;
+import org.springframework.validation.Validator;
 
 import javax.validation.ValidationException;
 import java.util.HashMap;
@@ -43,9 +44,10 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
     validationResourceConfiguration.getTypes().forEach(type -> {
       Class<D> resourceClass = validationResourceConfiguration.getResourceClassForType(type);
       Class<E> entityClass = validationResourceConfiguration.getEntityClassForType(type);
-      if (resourceClass == null || entityClass == null) {
+      Validator validatorForType = validationConfiguration.getValidatorForType(type);
+      if (resourceClass == null || entityClass == null || validatorForType == null) {
         throw new IllegalStateException(
-          "The validation configuration must supply a resource and entity class for the given type: " + type);
+          "The validation configuration must supply a validator, resource, and entity class for the given type: " + type);
       }
       registryMap.put(type, new DinaMappingRegistry(resourceClass));
       dinaMapperMap.put(type, new DinaMapper<>(resourceClass));
