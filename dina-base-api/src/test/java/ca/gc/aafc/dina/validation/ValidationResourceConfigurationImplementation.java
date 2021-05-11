@@ -1,26 +1,19 @@
 package ca.gc.aafc.dina.validation;
 
-import java.util.Map;
-import static java.util.Map.entry;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.validation.Validation;
-
-import com.google.common.collect.ImmutableMap;
-
-import org.springframework.boot.test.context.TestConfiguration;
+import ca.gc.aafc.dina.dto.DepartmentDto;
+import ca.gc.aafc.dina.dto.EmployeeDto;
+import ca.gc.aafc.dina.entity.Department;
+import ca.gc.aafc.dina.entity.Employee;
+import ca.gc.aafc.dina.repository.validation.ValidationResourceConfiguration;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
-import ca.gc.aafc.dina.DinaUserConfig;
-import ca.gc.aafc.dina.dto.DepartmentDto;
-import ca.gc.aafc.dina.dto.EmployeeDto;
-import ca.gc.aafc.dina.entity.Department;
-import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.entity.Employee;
-import ca.gc.aafc.dina.repository.validation.ValidationResourceConfiguration;
+import javax.validation.Validation;
+import java.util.Map;
+import java.util.Set;
+
+import static java.util.Map.entry;
 
 @Component
 public class ValidationResourceConfigurationImplementation implements ValidationResourceConfiguration {
