@@ -14,6 +14,7 @@ import io.crnk.core.resource.list.ResourceList;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -28,6 +29,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
+@ConditionalOnProperty(value = "dina.validationEndpoint.enabled", havingValue = "true")
 public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepositoryBase<ValidationDto, String> {
 
   private final ValidationResourceConfiguration<D, E> validationConfiguration;

@@ -18,7 +18,7 @@ import java.util.Map;
 
 @SpringBootTest(classes = TestDinaBaseApp.class,
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-  properties = {"dev-user.enabled: true", "keycloak.enabled: false"})
+  properties = {"dev-user.enabled: true", "keycloak.enabled: false", "dina.validationEndpoint.enabled: true"})
 public class ValidationRestIT {
 
   @LocalServerPort
