@@ -10,14 +10,16 @@ import io.crnk.core.exception.MethodNotAllowedException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepositoryBase;
 import io.crnk.core.resource.list.ResourceList;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Repository;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ObjectError;
 
-import javax.inject.Inject;
 import javax.validation.ValidationException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -26,14 +28,23 @@ import java.util.stream.Collectors;
 @Repository
 public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepositoryBase<ValidationDto, String> {
 
-  @Inject
-  private ValidationResourceConfiguration<D, E> validationResourceConfiguration;
+  private final ValidationResourceConfiguration<D, E> validationResourceConfiguration;
+  private final ObjectMapper crnkMapper;
+  private final Map<String, DinaMappingRegistry> registryMap = new HashMap<>();
+  private final Map<String, DinaMapper<D, E>> dinaMapperMap = new HashMap<>();
 
-  @Inject
-  private ObjectMapper crnkMapper;
-
-  protected ValidationRepository() {
+  protected ValidationRepository(
+    @NonNull ValidationResourceConfiguration<D, E> validationResourceConfiguration,
+    @NonNull ObjectMapper crnkMapper
+  ) {
     super(ValidationDto.class);
+    this.validationResourceConfiguration = validationResourceConfiguration;
+    this.crnkMapper = crnkMapper;
+    validationResourceConfiguration.getTypes().forEach(type -> {
+      Class<D> resourceClass = validationResourceConfiguration.getResourceClassForType(type);
+      registryMap.put(type, new DinaMappingRegistry(resourceClass));
+      dinaMapperMap.put(type, new DinaMapper<>(resourceClass));
+    });
   }
 
   @Override
@@ -44,8 +55,8 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
     Class<E> entityClass = validationResourceConfiguration.getEntityClassForType(type);
     E entity = entityClass.getConstructor().newInstance();
 
-    DinaMappingRegistry registry = new DinaMappingRegistry(resourceClass);
-    DinaMapper<D, E> mapper = new DinaMapper<>(resourceClass);
+    DinaMappingRegistry registry = registryMap.get(type);
+    DinaMapper<D, E> mapper = dinaMapperMap.get(type);
 
     JsonNode data = resource.getData();
     D dto = crnkMapper.treeToValue(data.get("data").get("attributes"), resourceClass);
