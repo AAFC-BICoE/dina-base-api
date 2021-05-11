@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.52-SNAPSHOT</version>
+    <version>0.54-SNAPSHOT</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -23,7 +23,7 @@
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
-    <javers.version>5.14.0</javers.version>
+    <javers.version>6.0.1</javers.version>
   </properties>
 
   <dependencies>
@@ -100,7 +100,7 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.52-SNAPSHOT</version>
+      <version>0.54-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

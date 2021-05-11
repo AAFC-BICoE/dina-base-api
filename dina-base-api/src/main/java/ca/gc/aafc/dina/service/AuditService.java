@@ -33,6 +33,19 @@ public class AuditService {
   public static final String ANONYMOUS = "anonymous";
 
   /**
+   * Returns true if the given audit instance has a terminal snapshot associated with it. Terminal snapshots
+   * represent delete operations.
+   *
+   * @param auditInstance The audit instance to check
+   * @return true if the given audit instance has a terminal snapshot associated with it
+   */
+  public boolean hasTerminalSnapshot(@NonNull AuditInstance auditInstance) {
+    return this.findAll(auditInstance, null, Integer.MAX_VALUE, 0)
+      .stream()
+      .anyMatch(CdoSnapshot::isTerminal);
+  }
+
+  /**
    * Returns a list of Audit snapshots filtered by a given instance and author.
    * Author and instance can be null for un-filtered results.
    *

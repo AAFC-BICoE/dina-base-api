@@ -12,11 +12,16 @@ public class GoneException extends CrnkMappableException {
   private static final long serialVersionUID = 2658981047986565140L;
 
   public GoneException(String title, String message) {
+    this(title, message, null);
+  }
+
+  public GoneException(String title, String message, String link) {
     super(410, ErrorData.builder()
-        .setTitle(title)
-        .setDetail(message)
-        .setStatus("410")
-        .build());
+      .setTitle(title)
+      .setDetail(message)
+      .setStatus("410")
+      .setAboutLink(link)
+      .build());
   }
 
 }

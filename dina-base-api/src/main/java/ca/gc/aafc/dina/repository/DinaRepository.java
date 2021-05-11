@@ -5,6 +5,7 @@ import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
+import ca.gc.aafc.dina.repository.auditlog.AuditSnapshotRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
@@ -113,6 +114,17 @@ public class DinaRepository<D, E extends DinaEntity>
     ResourceList<D> resourceList = findAll(Collections.singletonList(id), querySpec);
 
     if (resourceList.size() == 0) {
+      auditService.ifPresent(service -> { // Past Deleted records with audit logs throw Gone.
+        final String resourceType = querySpec.getResourceType();
+        final AuditService.AuditInstance auditInstance = AuditService.AuditInstance.builder()
+          .id(id.toString()).type(resourceType).build();
+        if (service.hasTerminalSnapshot(auditInstance)) {
+          throw new GoneException(
+            "GONE",
+            "The Resource has been deleted but audit records remain, see the links.about section",
+            AuditSnapshotRepository.generateUrlLink(resourceType, id.toString()));
+        }
+      });
       throw new ResourceNotFoundException(
         resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
