@@ -5,10 +5,13 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ObjectError;
+import org.springframework.validation.SmartValidator;
 import org.springframework.validation.Validator;
 import org.springframework.validation.annotation.Validated;
 
@@ -18,12 +21,16 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import javax.validation.ValidationException;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
@@ -35,6 +42,9 @@ import java.util.function.BiFunction;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 @Validated
 public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> {
+
+  @Autowired
+  private SmartValidator validator;
 
   @NonNull
   private final BaseDAO baseDAO;
@@ -48,8 +58,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public E create(E entity) {
     preCreate(entity);
-    ServiceValidationHelper.callValidatedCreate(this, entity);
-    //validatedCreate(entity);
+    validatedCreate(entity);
     return entity;
   }
 
@@ -62,7 +71,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public E update(E entity) {
     preUpdate(entity);
-    return ServiceValidationHelper.callValidatedUpdate(this, entity);
+    return validatedUpdate(entity);
   }
 
   /**
@@ -256,13 +265,48 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     });
   }
 
-  @Validated(OnCreate.class)
-  protected void validatedCreate(@Valid E entity) {
+  @SuppressWarnings("unchecked")
+  protected void validatedCreate(E entity) {
+    Errors errors = new BeanPropertyBindingResult(entity,
+      entity.getUuid() != null ? entity.getUuid().toString() : "");
+
+    validator.validate(entity, errors, OnCreate.class);
+
+    if (errors.hasErrors()) {
+
+      Set<ConstraintViolation<E>> violations = new HashSet<>();
+
+      for(ObjectError o : errors.getAllErrors()) {
+        if (o.contains(ConstraintViolation.class)) { 
+          violations.add((ConstraintViolation<E>) o.unwrap(ConstraintViolation.class));
+        }
+      }      
+
+      throw new ConstraintViolationException(violations);
+    }
+  
     baseDAO.create(entity);
   }
 
-  @Validated(OnUpdate.class)
-  protected E validatedUpdate(@Valid E entity) {
+  @SuppressWarnings("unchecked")
+  protected E validatedUpdate(E entity) {
+    Errors errors = new BeanPropertyBindingResult(entity,
+      entity.getUuid() != null ? entity.getUuid().toString() : "");
+
+    validator.validate(entity, errors, OnUpdate.class);
+
+    if (errors.hasErrors()) {
+      Set<ConstraintViolation<E>> violations = new HashSet<>();
+
+      for(ObjectError o : errors.getAllErrors()) {
+        if (o.contains(ConstraintViolation.class)) {
+          violations.add((ConstraintViolation<E>) o.unwrap(ConstraintViolation.class));
+        }
+      }      
+      
+      throw new ConstraintViolationException(violations);
+      }
+
     return baseDAO.update(entity);
   }
 

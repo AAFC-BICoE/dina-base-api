@@ -47,6 +47,7 @@ import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 
+@TestConfiguration
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
