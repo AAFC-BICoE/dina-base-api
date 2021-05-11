@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.validation;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
+import ca.gc.aafc.dina.dto.ValidationDto;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
@@ -57,6 +58,25 @@ public class ValidationRestIT {
   void validate_WhenTypeBlank_ReturnsBadRequest() {
     newRequest()
       .body(newValidationDto(newDepartmentDto(), ""))
+      .post("/validation")
+      .then()
+      .assertThat().statusCode(400);
+  }
+
+  @Test
+  void validate_WhenDataBlank_ReturnsBadRequest() {
+    Map<String, Object> jsonAPIMap = JsonAPITestHelper.toJsonAPIMap(
+      "validation",
+      JsonAPITestHelper.toAttributeMap(ValidationDto.builder().type("department").data(null).build()));
+    newRequest()
+      .body(jsonAPIMap)
+      .post("/validation")
+      .then()
+      .assertThat().statusCode(400);
+    jsonAPIMap = JsonAPITestHelper.toJsonAPIMap("validation", JsonAPITestHelper.toAttributeMap(
+      Map.of("type", "department", "data", Map.of())));
+    newRequest()
+      .body(jsonAPIMap)
       .post("/validation")
       .then()
       .assertThat().statusCode(400);

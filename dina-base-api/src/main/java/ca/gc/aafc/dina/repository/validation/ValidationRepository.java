@@ -4,6 +4,7 @@ import ca.gc.aafc.dina.dto.ValidationDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.crnk.core.exception.BadRequestException;
 import io.crnk.core.exception.MethodNotAllowedException;
@@ -58,16 +59,21 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
   @SneakyThrows
   public <S extends ValidationDto> S create(S resource) {
     final String type = resource.getType();
+    final JsonNode data = resource.getData();
 
     if (StringUtils.isBlank(type) || !validationConfiguration.getTypes().contains(type)) {
       throw new BadRequestException("You must submit a valid configuration type");
+    }
+
+    if (data == null || data.isNull() || data.isEmpty()) {
+      throw new BadRequestException("You must submit a valid data block");
     }
 
     final DinaMappingRegistry registry = registryMap.get(type);
     final DinaMapper<D, E> mapper = dinaMapperMap.get(type);
     final E entity = validationConfiguration.getEntityClassForType(type).getConstructor().newInstance();
     final D dto = crnkMapper.treeToValue(
-      resource.getData().get("data").get("attributes"),
+      data.get("data").get("attributes"),
       validationConfiguration.getResourceClassForType(type));
 
     // Bean mapping
