@@ -21,14 +21,18 @@ import java.util.Map;
   properties = {"dev-user.enabled: true", "keycloak.enabled: false", "dina.validationEndpoint.enabled: true"})
 public class ValidationRestIT {
 
+  public static final String VALIDATION_TYPE = "validation";
+  public static final String VALIDATION_ENDPOINT = "/validation";
+  public static final String DEPARTMENT_TYPE = "department";
+  public static final String EMPLOYEE_TYPE = "employee";
   @LocalServerPort
   protected int testPort;
 
   @Test
   void validateLongNameDepartment_ErrorCode422() {
     newRequest()
-      .body(newValidationDto(newLongNameDepartmentDto(), "department"))
-      .post("/validation")
+      .body(newValidationDto(newLongNameDepartmentDto(), DEPARTMENT_TYPE))
+      .post(VALIDATION_ENDPOINT)
       .then()
       .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
       .body("errors[0].detail", Matchers.endsWith("size must be between 1 and 50"));
@@ -37,8 +41,8 @@ public class ValidationRestIT {
   @Test
   void validateInvalidEmployee_ErrorCode422() {
     newRequest()
-      .body(newValidationDto(newEmployeeDto(), "employee"))
-      .post("/validation")
+      .body(newValidationDto(newEmployeeDto(), EMPLOYEE_TYPE))
+      .post(VALIDATION_ENDPOINT)
       .then()
       .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
       .body("errors[0].detail", Matchers.endsWith("size must be between 1 and 50"));
@@ -47,8 +51,8 @@ public class ValidationRestIT {
   @Test
   void validateValidDepartment_Code200() {
     newRequest()
-      .body(newValidationDto(newDepartmentDto(), "department"))
-      .post("/validation")
+      .body(newValidationDto(newDepartmentDto(), DEPARTMENT_TYPE))
+      .post(VALIDATION_ENDPOINT)
       .then()
       .assertThat().statusCode(201);
   }
@@ -58,7 +62,7 @@ public class ValidationRestIT {
   void validate_WhenTypeBlank_ReturnsBadRequest() {
     newRequest()
       .body(newValidationDto(newDepartmentDto(), ""))
-      .post("/validation")
+      .post(VALIDATION_ENDPOINT)
       .then()
       .assertThat().statusCode(400);
   }
@@ -67,27 +71,27 @@ public class ValidationRestIT {
   void validate_WhenDataBlank_ReturnsBadRequest() {
     // data: null
     Map<String, Object> jsonAPIMap = JsonAPITestHelper.toJsonAPIMap(
-      "validation",
-      JsonAPITestHelper.toAttributeMap(ValidationDto.builder().type("department").data(null).build()));
+      VALIDATION_TYPE,
+      JsonAPITestHelper.toAttributeMap(ValidationDto.builder().type(DEPARTMENT_TYPE).data(null).build()));
     newRequest()
       .body(jsonAPIMap)
-      .post("/validation")
+      .post(VALIDATION_ENDPOINT)
       .then()
       .assertThat().statusCode(400);
     // data: {}
-    jsonAPIMap = JsonAPITestHelper.toJsonAPIMap("validation", JsonAPITestHelper.toAttributeMap(
-      Map.of("type", "department", "data", Map.of())));
+    jsonAPIMap = JsonAPITestHelper.toJsonAPIMap(VALIDATION_TYPE, JsonAPITestHelper.toAttributeMap(
+      Map.of("type", DEPARTMENT_TYPE, "data", Map.of())));
     newRequest()
       .body(jsonAPIMap)
-      .post("/validation")
+      .post(VALIDATION_ENDPOINT)
       .then()
       .assertThat().statusCode(400);
     // data: { attributes:{} }
-    jsonAPIMap = JsonAPITestHelper.toJsonAPIMap("validation", JsonAPITestHelper.toAttributeMap(
-      Map.of("type", "department", "data", Map.of("attributes", Map.of()))));
+    jsonAPIMap = JsonAPITestHelper.toJsonAPIMap(VALIDATION_TYPE, JsonAPITestHelper.toAttributeMap(
+      Map.of("type", DEPARTMENT_TYPE, "data", Map.of("attributes", Map.of()))));
     newRequest()
       .body(jsonAPIMap)
-      .post("/validation")
+      .post(VALIDATION_ENDPOINT)
       .then()
       .assertThat().statusCode(400);
   }
@@ -97,13 +101,13 @@ public class ValidationRestIT {
   }
 
   private Map<String, Object> newValidationDto(Map<String, Object> dto, String type) {
-    return JsonAPITestHelper.toJsonAPIMap("validation", JsonAPITestHelper.toAttributeMap(
+    return JsonAPITestHelper.toJsonAPIMap(VALIDATION_TYPE, JsonAPITestHelper.toAttributeMap(
       Map.of("type", type, "data", JsonAPITestHelper.toAttributeMap(dto).get("data"))));
   }
 
   private Map<String, Object> newDepartmentDto() {
     DepartmentDto dto = DepartmentDto.builder().name("dfadf").location("Montreal").build();
-    return JsonAPITestHelper.toJsonAPIMap("department", JsonAPITestHelper.toAttributeMap(dto));
+    return JsonAPITestHelper.toJsonAPIMap(DEPARTMENT_TYPE, JsonAPITestHelper.toAttributeMap(dto));
   }
 
   private Map<String, Object> newLongNameDepartmentDto() {
@@ -111,14 +115,14 @@ public class ValidationRestIT {
       .name("01234567890123456789012345678901234567890123456789a")
       .location("Montreal")
       .build();
-    return JsonAPITestHelper.toJsonAPIMap("department", JsonAPITestHelper.toAttributeMap(dto));
+    return JsonAPITestHelper.toJsonAPIMap(DEPARTMENT_TYPE, JsonAPITestHelper.toAttributeMap(dto));
   }
 
   private Map<String, Object> newEmployeeDto() {
     EmployeeDto dto = EmployeeDto.builder()
       .job("01234567890123456789012345678901234567890123456789a")
       .build();
-    return JsonAPITestHelper.toJsonAPIMap("employee", JsonAPITestHelper.toAttributeMap(dto));
+    return JsonAPITestHelper.toJsonAPIMap(EMPLOYEE_TYPE, JsonAPITestHelper.toAttributeMap(dto));
   }
 
 }
