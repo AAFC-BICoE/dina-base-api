@@ -13,7 +13,7 @@ import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 import javax.validation.Validation;
 import java.util.Set;
 
-class ValidationConfigurationTest {
+class ValidationConfigurationInitTest {
 
   private final static ObjectMapper mapper = new ObjectMapper();
 
