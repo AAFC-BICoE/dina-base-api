@@ -42,6 +42,11 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
     this.crnkMapper = crnkMapper;
     validationResourceConfiguration.getTypes().forEach(type -> {
       Class<D> resourceClass = validationResourceConfiguration.getResourceClassForType(type);
+      Class<E> entityClass = validationResourceConfiguration.getEntityClassForType(type);
+      if (resourceClass == null || entityClass == null) {
+        throw new IllegalStateException(
+          "The validation configuration must supply a resource and entity class for the given type: " + type);
+      }
       registryMap.put(type, new DinaMappingRegistry(resourceClass));
       dinaMapperMap.put(type, new DinaMapper<>(resourceClass));
     });
