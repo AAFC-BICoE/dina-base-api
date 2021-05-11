@@ -88,7 +88,7 @@ public class ValidationRestIT {
     newRequest()
       .body(jsonAPIMap)
       .post("/validation")
-      .then().log().all(true)
+      .then()
       .assertThat().statusCode(400);
   }
 
