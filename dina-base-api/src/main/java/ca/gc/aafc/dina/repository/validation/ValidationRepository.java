@@ -4,7 +4,6 @@ import ca.gc.aafc.dina.dto.ValidationDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.crnk.core.exception.MethodNotAllowedException;
 import io.crnk.core.queryspec.QuerySpec;
@@ -27,7 +26,7 @@ import java.util.stream.Collectors;
 @Repository
 public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepositoryBase<ValidationDto, String> {
 
-  private final ValidationResourceConfiguration<D, E> validationResourceConfiguration;
+  private final ValidationResourceConfiguration<D, E> validationConfiguration;
   private final ObjectMapper crnkMapper;
   private final Map<String, DinaMappingRegistry> registryMap = new HashMap<>();
   private final Map<String, DinaMapper<D, E>> dinaMapperMap = new HashMap<>();
@@ -37,7 +36,7 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
     @NonNull ObjectMapper crnkMapper
   ) {
     super(ValidationDto.class);
-    this.validationResourceConfiguration = validationResourceConfiguration;
+    this.validationConfiguration = validationResourceConfiguration;
     this.crnkMapper = crnkMapper;
     validationResourceConfiguration.getTypes().forEach(type -> {
       Class<D> resourceClass = validationResourceConfiguration.getResourceClassForType(type);
@@ -49,37 +48,24 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
   @Override
   @SneakyThrows
   public <S extends ValidationDto> S create(S resource) {
-    String type = resource.getType();
-    Class<D> resourceClass = validationResourceConfiguration.getResourceClassForType(type);
-    Class<E> entityClass = validationResourceConfiguration.getEntityClassForType(type);
-    E entity = entityClass.getConstructor().newInstance();
-
-    DinaMappingRegistry registry = registryMap.get(type);
-    DinaMapper<D, E> mapper = dinaMapperMap.get(type);
-
-    JsonNode data = resource.getData();
-    D dto = crnkMapper.treeToValue(data.get("data").get("attributes"), resourceClass);
+    final String type = resource.getType();
+    final DinaMappingRegistry registry = registryMap.get(type);
+    final DinaMapper<D, E> mapper = dinaMapperMap.get(type);
+    final E entity = validationConfiguration.getEntityClassForType(type).getConstructor().newInstance();
+    final D dto = crnkMapper.treeToValue(
+      resource.getData().get("data").get("attributes"),
+      validationConfiguration.getResourceClassForType(type));
 
     // Bean mapping
-    Set<String> relationNames = findRelationNames(registry, dto.getClass());
+    final Set<String> relationNames = findRelationNames(registry, dto.getClass());
     mapper.applyDtoToEntity(dto, entity, registry.getAttributesPerClass(), relationNames);
 
-    Errors errors = findValidationErrors(type, entity);
-
-    if (errors.hasErrors()) {
-      Optional<String> errorMsg = errors.getAllErrors()
-        .stream()
-        .map(ObjectError::getDefaultMessage)
-        .findAny();
-
-      errorMsg.ifPresent(msg -> {
-        throw new ValidationException(msg);
-      });
-    }
+    // Error validating
+    final Errors errors = findValidationErrors(type, entity);
+    validateErrors(errors);
 
     // Crnk requires a created resource to have an ID. Create one here if the client did not provide one.
     resource.setId(Optional.ofNullable(resource.getId()).orElse("N/A"));
-
     return resource;
   }
 
@@ -99,10 +85,23 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
     return null;
   }
 
+  private static void validateErrors(Errors errors) {
+    if (errors.hasErrors()) {
+      Optional<String> errorMsg = errors.getAllErrors()
+        .stream()
+        .map(ObjectError::getDefaultMessage)
+        .findAny();
+
+      errorMsg.ifPresent(msg -> {
+        throw new ValidationException(msg);
+      });
+    }
+  }
+
   private Errors findValidationErrors(String type, E entity) {
     Errors errors = new BeanPropertyBindingResult(
       entity, entity.getUuid() != null ? entity.getUuid().toString() : "");
-    validationResourceConfiguration.getValidatorForType(type).validate(entity, errors);
+    validationConfiguration.getValidatorForType(type).validate(entity, errors);
     return errors;
   }
 
