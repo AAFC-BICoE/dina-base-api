@@ -8,6 +8,8 @@ import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 
@@ -48,6 +50,16 @@ public class ValidationRestIT {
       .post("/validation")
       .then()
       .assertThat().statusCode(201);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "  ", "\t", "\n", "adfadfadfajdlfk", "null"})
+  void validate_WhenTypeBlank_ReturnsBadRequest() {
+    newRequest()
+      .body(newValidationDto(newDepartmentDto(), ""))
+      .post("/validation")
+      .then()
+      .assertThat().statusCode(400);
   }
 
   private RequestSpecification newRequest() {
