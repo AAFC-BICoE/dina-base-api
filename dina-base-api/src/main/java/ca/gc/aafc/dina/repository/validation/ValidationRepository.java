@@ -102,8 +102,7 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
 
   @Override
   public ResourceList<ValidationDto> findAll(QuerySpec arg0) {
-    // TODO Auto-generated method 
-    return null;
+    throw new MethodNotAllowedException("GET");
   }
 
   private static void validateErrors(Errors errors) {
