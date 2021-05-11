@@ -29,7 +29,8 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
   @Inject
   private ValidationResourceConfiguration<D, E> validationResourceConfiguration;
 
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  @Inject
+  private ObjectMapper crnkMapper;
 
   protected ValidationRepository() {
     super(ValidationDto.class);
@@ -47,7 +48,7 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
     DinaMapper<D, E> mapper = new DinaMapper<>(resourceClass);
 
     JsonNode data = resource.getData();
-    D dto = OBJECT_MAPPER.treeToValue(data.get("data").get("attributes"), resourceClass);
+    D dto = crnkMapper.treeToValue(data.get("data").get("attributes"), resourceClass);
 
     Set<DinaMappingRegistry.InternalRelation> mappableRelationsForClass = registry.findMappableRelationsForClass(
       dto.getClass());
