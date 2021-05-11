@@ -50,8 +50,9 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
         throw new IllegalStateException(
           "The validation configuration must supply a validator, resource, and entity class for the given type: " + type);
       }
-      registryMap.put(type, new DinaMappingRegistry(resourceClass));
-      dinaMapperMap.put(type, new DinaMapper<>(resourceClass));
+      DinaMappingRegistry registry = new DinaMappingRegistry(resourceClass);
+      registryMap.put(type, registry);
+      dinaMapperMap.put(type, new DinaMapper<>(resourceClass, registry));
     });
   }
 
