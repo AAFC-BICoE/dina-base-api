@@ -47,7 +47,7 @@ public class DinaRepoAuditingIT {
 
   @Test
   public void create_SnapShotsPersisted() {
-    DepartmentDto department = DepartmentDto.builder().location("loc").build();
+    DepartmentDto department = DepartmentDto.builder().location("loc").uuid(UUID.randomUUID()).build();
     department.setUuid(departmentRepository.create(department).getUuid());
 
     PersonDTO personDto = createPersonDto();
@@ -61,7 +61,7 @@ public class DinaRepoAuditingIT {
 
   @Test
   public void update_SnapShotsPersisted() {
-    DepartmentDto department = DepartmentDto.builder().location("loc").build();
+    DepartmentDto department = DepartmentDto.builder().location("loc").uuid(UUID.randomUUID()).build();
     department.setUuid(departmentRepository.create(department).getUuid());
 
     UUID id = dinaRepository.create(createPersonDto()).getUuid();

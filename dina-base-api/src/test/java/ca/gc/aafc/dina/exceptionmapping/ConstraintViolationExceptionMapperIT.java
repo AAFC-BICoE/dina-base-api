@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -39,6 +40,7 @@ public class ConstraintViolationExceptionMapperIT {
     // Create the department
     DepartmentDto testDepartment = new DepartmentDto();
     testDepartment.setName(stringWith51Chars);
+    testDepartment.setUuid(UUID.randomUUID());
     testDepartment.setLocation(null);
     
     try {

@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 
 import java.util.Map;
+import java.util.UUID;
 
 @SpringBootTest(classes = TestDinaBaseApp.class,
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -57,12 +58,12 @@ public class DinaServiceValidationLocaleIT {
   }
 
   private Map<String, Object> newDto() {
-    DepartmentDto dto = DepartmentDto.builder().name("dfadf").location(null).build();
+    DepartmentDto dto = DepartmentDto.builder().name("dfadf").location(null).uuid(UUID.randomUUID()).build();
     return JsonAPITestHelper.toJsonAPIMap("department", JsonAPITestHelper.toAttributeMap(dto));
   }
 
   private Map<String, Object> newLongNameDto() {
-    DepartmentDto dto = DepartmentDto.builder().name("01234567890123456789012345678901234567890123456789a").location("Montreal").build();
+    DepartmentDto dto = DepartmentDto.builder().uuid(UUID.randomUUID()).name("01234567890123456789012345678901234567890123456789a").location("Montreal").build();
     return JsonAPITestHelper.toJsonAPIMap("department", JsonAPITestHelper.toAttributeMap(dto));
   }
 }

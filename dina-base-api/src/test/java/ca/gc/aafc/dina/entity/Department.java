@@ -12,15 +12,11 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.NaturalId;
 
-import ca.gc.aafc.dina.service.OnCreate;
-import ca.gc.aafc.dina.service.OnUpdate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -64,11 +60,6 @@ public class Department implements DinaEntity {
 
   public String toString() {
     return super.toString();
-  }
-
-  @PrePersist
-  public void initUuid() {
-    this.uuid = UUID.randomUUID();
   }
 
 }
