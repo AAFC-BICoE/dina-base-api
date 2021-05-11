@@ -13,6 +13,7 @@ import io.crnk.core.repository.ResourceRepositoryBase;
 import io.crnk.core.resource.list.ResourceList;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -38,13 +39,17 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
   private final Map<String, DinaMappingRegistry> registryMap = new HashMap<>();
   private final Map<String, DinaMapper<D, E>> dinaMapperMap = new HashMap<>();
 
-  protected ValidationRepository(
+  public ValidationRepository(
     @NonNull ValidationResourceConfiguration<D, E> validationResourceConfiguration,
     @NonNull ObjectMapper crnkMapper
   ) {
     super(ValidationDto.class);
     this.validationConfiguration = validationResourceConfiguration;
     this.crnkMapper = crnkMapper;
+    if (CollectionUtils.isEmpty(validationResourceConfiguration.getTypes())) {
+      throw new IllegalStateException("The validation configuration must return a set of types, " +
+        "if no types require validation consider using dina.validationEndpoint.enabled: false");
+    }
     validationResourceConfiguration.getTypes().forEach(type -> {
       Class<D> resourceClass = validationResourceConfiguration.getResourceClassForType(type);
       Class<E> entityClass = validationResourceConfiguration.getEntityClassForType(type);
