@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina;
 
+import java.util.UUID;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,11 @@ public class DinaUserConfig {
 
     public DepartmentDinaService(@NonNull BaseDAO baseDAO) {
       super(baseDAO);
+    }
+
+    @Override
+    protected void preCreate(Department entity) {
+      entity.setUuid(UUID.randomUUID());
     }
   }
 

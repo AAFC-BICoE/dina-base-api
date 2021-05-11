@@ -1,8 +1,5 @@
 package ca.gc.aafc.dina.entity;
 
-import ca.gc.aafc.dina.service.OnCreate;
-import ca.gc.aafc.dina.service.OnUpdate;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +14,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
 import javax.validation.constraints.Size;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -44,8 +40,7 @@ public class ChainTemplate implements DinaEntity {
   private Integer id;
 
   @Getter(onMethod = @__({
-    @NotNull(groups = OnUpdate.class),
-    @Null(groups = OnCreate.class),
+    @NotNull,
     @NaturalId
     }))
   private UUID uuid;
