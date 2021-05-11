@@ -20,7 +20,6 @@ import org.springframework.validation.ObjectError;
 import javax.validation.ValidationException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -61,18 +60,11 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
     JsonNode data = resource.getData();
     D dto = crnkMapper.treeToValue(data.get("data").get("attributes"), resourceClass);
 
-    Set<DinaMappingRegistry.InternalRelation> mappableRelationsForClass = registry.findMappableRelationsForClass(
-      dto.getClass());
-
     // Bean mapping
-    Set<String> relationNames = mappableRelationsForClass.stream()
-      .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());
+    Set<String> relationNames = findRelationNames(registry, dto.getClass());
     mapper.applyDtoToEntity(dto, entity, registry.getAttributesPerClass(), relationNames);
-    Objects.requireNonNull(entity);
 
-    Errors errors = new BeanPropertyBindingResult(
-      entity, entity.getUuid() != null ? entity.getUuid().toString() : "");
-    validationResourceConfiguration.getValidatorForType(type).validate(entity, errors);
+    Errors errors = findValidationErrors(type, entity);
 
     if (errors.hasErrors()) {
       Optional<String> errorMsg = errors.getAllErrors()
@@ -105,6 +97,21 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
   public ResourceList<ValidationDto> findAll(QuerySpec arg0) {
     // TODO Auto-generated method 
     return null;
+  }
+
+  private Errors findValidationErrors(String type, E entity) {
+    Errors errors = new BeanPropertyBindingResult(
+      entity, entity.getUuid() != null ? entity.getUuid().toString() : "");
+    validationResourceConfiguration.getValidatorForType(type).validate(entity, errors);
+    return errors;
+  }
+
+  private static Set<String> findRelationNames(DinaMappingRegistry registry, Class<?> aClass) {
+    return registry
+      .findMappableRelationsForClass(aClass)
+      .stream()
+      .map(DinaMappingRegistry.InternalRelation::getName)
+      .collect(Collectors.toSet());
   }
 
 }
