@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 @ConditionalOnProperty(value = "dina.validationEndpoint.enabled", havingValue = "true")
 public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepositoryBase<ValidationDto, String> {
 
+  public static final String ATTRIBUTES_KEY = "attributes";
   private final ValidationResourceConfiguration<D, E> validationConfiguration;
   private final ObjectMapper crnkMapper;
   private final Map<String, DinaMappingRegistry> registryMap = new HashMap<>();
@@ -68,7 +69,7 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
       throw new BadRequestException("You must submit a valid configuration type");
     }
 
-    if (isBlank(data) || !data.has("data.attributes")) {
+    if (isBlank(data) || !data.has(ATTRIBUTES_KEY) || isBlank(data.get(ATTRIBUTES_KEY))) {
       throw new BadRequestException("You must submit a valid data block");
     }
 
@@ -76,7 +77,7 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
     final DinaMapper<D, E> mapper = dinaMapperMap.get(type);
     final E entity = validationConfiguration.getEntityClassForType(type).getConstructor().newInstance();
     final D dto = crnkMapper.treeToValue(
-      data.get("data").get("attributes"),
+      data.get(ATTRIBUTES_KEY),
       validationConfiguration.getResourceClassForType(type));
 
     // Bean mapping

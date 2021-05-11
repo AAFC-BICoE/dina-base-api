@@ -88,7 +88,7 @@ public class ValidationRestIT {
     newRequest()
       .body(jsonAPIMap)
       .post("/validation")
-      .then()
+      .then().log().all(true)
       .assertThat().statusCode(400);
   }
 
@@ -98,7 +98,7 @@ public class ValidationRestIT {
 
   private Map<String, Object> newValidationDto(Map<String, Object> dto, String type) {
     return JsonAPITestHelper.toJsonAPIMap("validation", JsonAPITestHelper.toAttributeMap(
-      Map.of("type", type, "data", JsonAPITestHelper.toAttributeMap(dto))));
+      Map.of("type", type, "data", JsonAPITestHelper.toAttributeMap(dto).get("data"))));
   }
 
   private Map<String, Object> newDepartmentDto() {
