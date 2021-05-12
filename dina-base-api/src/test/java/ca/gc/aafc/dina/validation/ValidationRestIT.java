@@ -101,13 +101,14 @@ public class ValidationRestIT {
   }
 
   private Map<String, Object> newValidationDto(Map<String, Object> dto, String type) {
-    return JsonAPITestHelper.toJsonAPIMap(VALIDATION_TYPE, JsonAPITestHelper.toAttributeMap(
-      Map.of("type", type, "data", JsonAPITestHelper.toAttributeMap(dto).get("data"))));
+    return JsonAPITestHelper.toJsonAPIMap(
+      VALIDATION_TYPE,
+      Map.of("type", type, "data", Map.of("attributes", JsonAPITestHelper.toAttributeMap(dto))));
   }
 
   private Map<String, Object> newDepartmentDto() {
     DepartmentDto dto = DepartmentDto.builder().name("dfadf").location("Montreal").build();
-    return JsonAPITestHelper.toJsonAPIMap(DEPARTMENT_TYPE, JsonAPITestHelper.toAttributeMap(dto));
+    return JsonAPITestHelper.toAttributeMap(dto);
   }
 
   private Map<String, Object> newLongNameDepartmentDto() {
@@ -115,14 +116,14 @@ public class ValidationRestIT {
       .name("01234567890123456789012345678901234567890123456789a")
       .location("Montreal")
       .build();
-    return JsonAPITestHelper.toJsonAPIMap(DEPARTMENT_TYPE, JsonAPITestHelper.toAttributeMap(dto));
+    return JsonAPITestHelper.toAttributeMap(dto);
   }
 
   private Map<String, Object> newEmployeeDto() {
     EmployeeDto dto = EmployeeDto.builder()
       .job("01234567890123456789012345678901234567890123456789a")
       .build();
-    return JsonAPITestHelper.toJsonAPIMap(EMPLOYEE_TYPE, JsonAPITestHelper.toAttributeMap(dto));
+    return JsonAPITestHelper.toAttributeMap(dto);
   }
 
 }

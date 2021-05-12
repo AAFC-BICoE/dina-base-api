@@ -74,7 +74,7 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     final String type = resource.getType();
     final JsonNode data = resource.getData();
     validateIncomingRequest(type, data);
-
+    System.out.println(data.toPrettyString());
     @SuppressWarnings("unchecked") // Mapper is cast for type compliance from wildcard ? to object
     final DinaMapper<Object, DinaEntity> mapper = (DinaMapper<Object, DinaEntity>) dinaMapperMap.get(type);
     final DinaMappingRegistry registry = registryMap.get(type);
