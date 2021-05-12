@@ -285,6 +285,4 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     }
   }
 
-
-
 }
