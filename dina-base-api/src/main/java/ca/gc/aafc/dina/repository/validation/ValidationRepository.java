@@ -73,7 +73,6 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
   public <S extends ValidationDto> S create(S resource) {
     final String type = resource.getType();
     final JsonNode data = resource.getData();
-
     validateIncomingRequest(type, data);
 
     @SuppressWarnings("unchecked") // Mapper is cast for type compliance from wildcard ? to object
