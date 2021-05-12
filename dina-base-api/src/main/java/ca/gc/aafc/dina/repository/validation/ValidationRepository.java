@@ -46,6 +46,10 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     super(ValidationDto.class);
     this.validationConfiguration = validationResourceConfiguration;
     this.crnkMapper = crnkMapper;
+    initMaps(validationResourceConfiguration);
+  }
+
+  private void initMaps(ValidationResourceConfiguration validationResourceConfiguration) {
     if (CollectionUtils.isEmpty(validationResourceConfiguration.getTypes())) {
       throw new IllegalStateException("The validation configuration must return a set of types, " +
         "if no types require validation consider using dina.validationEndpoint.enabled: false");
