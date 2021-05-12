@@ -96,7 +96,7 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     return resource;
   }
 
-  private void validateIncomingRequest(@NonNull String type, @NonNull JsonNode data) {
+  private void validateIncomingRequest(String type, JsonNode data) {
     if (StringUtils.isBlank(type) || !validationConfiguration.getTypes().contains(type)) {
       throw new BadRequestException("You must submit a valid configuration type");
     }
