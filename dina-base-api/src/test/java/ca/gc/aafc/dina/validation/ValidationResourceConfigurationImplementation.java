@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.validation;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.entity.Department;
+import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.repository.validation.ValidationResourceConfiguration;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,7 @@ import static java.util.Map.entry;
 @Component
 public class ValidationResourceConfigurationImplementation implements ValidationResourceConfiguration {
 
-  private static final Map<String, Class<?>> typeToEntityClassMap = Map.ofEntries(
+  private static final Map<String, Class<? extends DinaEntity>> typeToEntityClassMap = Map.ofEntries(
     entry("department", Department.class),
     entry("employee", Employee.class)
   );
@@ -34,7 +35,7 @@ public class ValidationResourceConfigurationImplementation implements Validation
   }
 
   @Override
-  public Class<?> getEntityClassForType(String type) {
+  public Class<? extends DinaEntity> getEntityClassForType(String type) {
     return typeToEntityClassMap.get(type);
   }
 
@@ -48,5 +49,5 @@ public class ValidationResourceConfigurationImplementation implements Validation
   public Validator getValidatorForType(String type) {
     return new SpringValidatorAdapter(Validation.buildDefaultValidatorFactory().getValidator());
   }
-  
+
 }

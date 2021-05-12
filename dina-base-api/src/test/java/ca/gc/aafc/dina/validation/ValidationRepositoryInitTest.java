@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.validation;
 
 import ca.gc.aafc.dina.dto.EmployeeDto;
+import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.repository.validation.ValidationRepository;
 import ca.gc.aafc.dina.repository.validation.ValidationResourceConfiguration;
@@ -49,7 +50,7 @@ class ValidationRepositoryInitTest {
     }
 
     @Override
-    public Class<?> getEntityClassForType(String type) {
+    public Class<? extends DinaEntity> getEntityClassForType(String type) {
       return Employee.class;
     }
 
@@ -72,7 +73,7 @@ class ValidationRepositoryInitTest {
     }
 
     @Override
-    public Class<?> getEntityClassForType(String type) {
+    public Class<? extends DinaEntity> getEntityClassForType(String type) {
       return Employee.class;
     }
 
@@ -95,7 +96,7 @@ class ValidationRepositoryInitTest {
     }
 
     @Override
-    public Class<?> getEntityClassForType(String type) {
+    public Class<? extends DinaEntity> getEntityClassForType(String type) {
       return Employee.class;
     }
 
@@ -118,7 +119,7 @@ class ValidationRepositoryInitTest {
     }
 
     @Override
-    public Class<?> getEntityClassForType(String type) {
+    public Class<? extends DinaEntity> getEntityClassForType(String type) {
       return Employee.class;
     }
 
@@ -141,7 +142,7 @@ class ValidationRepositoryInitTest {
     }
 
     @Override
-    public Class<?> getEntityClassForType(String type) {
+    public Class<? extends DinaEntity> getEntityClassForType(String type) {
       return null;
     }
 

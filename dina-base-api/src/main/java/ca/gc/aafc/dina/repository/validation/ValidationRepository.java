@@ -31,16 +31,16 @@ import java.util.stream.Collectors;
 
 @Repository
 @ConditionalOnProperty(value = "dina.validationEndpoint.enabled", havingValue = "true")
-public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepositoryBase<ValidationDto, String> {
+public class ValidationRepository<D> extends ResourceRepositoryBase<ValidationDto, String> {
 
   public static final String ATTRIBUTES_KEY = "attributes";
-  private final ValidationResourceConfiguration<D, E> validationConfiguration;
+  private final ValidationResourceConfiguration validationConfiguration;
   private final ObjectMapper crnkMapper;
   private final Map<String, DinaMappingRegistry> registryMap = new HashMap<>();
-  private final Map<String, DinaMapper<D, E>> dinaMapperMap = new HashMap<>();
+  private final Map<String, DinaMapper<D, DinaEntity>> dinaMapperMap = new HashMap<>();
 
   public ValidationRepository(
-    @NonNull ValidationResourceConfiguration<D, E> validationResourceConfiguration,
+    @NonNull ValidationResourceConfiguration validationResourceConfiguration,
     @NonNull ObjectMapper crnkMapper
   ) {
     super(ValidationDto.class);
@@ -52,7 +52,7 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
     }
     validationResourceConfiguration.getTypes().forEach(type -> {
       Class<D> resourceClass = validationResourceConfiguration.getResourceClassForType(type);
-      Class<E> entityClass = validationResourceConfiguration.getEntityClassForType(type);
+      Class<? extends DinaEntity> entityClass = validationResourceConfiguration.getEntityClassForType(type);
       Validator validatorForType = validationConfiguration.getValidatorForType(type);
       if (resourceClass == null || entityClass == null || validatorForType == null) {
         throw new IllegalStateException(
@@ -79,8 +79,8 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
     }
 
     final DinaMappingRegistry registry = registryMap.get(type);
-    final DinaMapper<D, E> mapper = dinaMapperMap.get(type);
-    final E entity = validationConfiguration.getEntityClassForType(type).getConstructor().newInstance();
+    final DinaMapper<D, DinaEntity> mapper = dinaMapperMap.get(type);
+    final DinaEntity entity = validationConfiguration.getEntityClassForType(type).getConstructor().newInstance();
     final D dto = crnkMapper.treeToValue(
       data.get(ATTRIBUTES_KEY),
       validationConfiguration.getResourceClassForType(type));
@@ -126,7 +126,7 @@ public class ValidationRepository<D, E extends DinaEntity> extends ResourceRepos
     }
   }
 
-  private Errors findValidationErrors(String type, E entity) {
+  private Errors findValidationErrors(String type, DinaEntity entity) {
     Errors errors = new BeanPropertyBindingResult(
       entity, entity.getUuid() != null ? entity.getUuid().toString() : "");
     validationConfiguration.getValidatorForType(type).validate(entity, errors);
