@@ -70,15 +70,9 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     final String type = resource.getType();
     final JsonNode data = resource.getData();
 
-    if (StringUtils.isBlank(type) || !validationConfiguration.getTypes().contains(type)) {
-      throw new BadRequestException("You must submit a valid configuration type");
-    }
+    validateIncomingRequest(type, data);
 
-    if (isBlank(data) || !data.has(ATTRIBUTES_KEY) || isBlank(data.get(ATTRIBUTES_KEY))) {
-      throw new BadRequestException("You must submit a valid data block");
-    }
-
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // Mapper is cast for type compliance from wildcard ? to object
     final DinaMapper<Object, DinaEntity> mapper = (DinaMapper<Object, DinaEntity>) dinaMapperMap.get(type);
     final DinaMappingRegistry registry = registryMap.get(type);
     final DinaEntity entity = validationConfiguration.getEntityClassForType(type).getConstructor().newInstance();
@@ -99,19 +93,14 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     return resource;
   }
 
-  @Override
-  public <S extends ValidationDto> S save(S resource) {
-    throw new MethodNotAllowedException("PUT/PATCH");
-  }
+  private void validateIncomingRequest(@NonNull String type, @NonNull JsonNode data) {
+    if (StringUtils.isBlank(type) || !validationConfiguration.getTypes().contains(type)) {
+      throw new BadRequestException("You must submit a valid configuration type");
+    }
 
-  @Override
-  public void delete(String id) {
-    throw new MethodNotAllowedException("DELETE");
-  }
-
-  @Override
-  public ResourceList<ValidationDto> findAll(QuerySpec arg0) {
-    throw new MethodNotAllowedException("GET");
+    if (isBlank(data) || !data.has(ATTRIBUTES_KEY) || isBlank(data.get(ATTRIBUTES_KEY))) {
+      throw new BadRequestException("You must submit a valid data block");
+    }
   }
 
   private static void validateErrors(Errors errors) {
@@ -145,4 +134,20 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
   private static boolean isBlank(JsonNode data) {
     return data == null || data.isNull() || data.isEmpty();
   }
+
+  @Override
+  public <S extends ValidationDto> S save(S resource) {
+    throw new MethodNotAllowedException("PUT/PATCH");
+  }
+
+  @Override
+  public void delete(String id) {
+    throw new MethodNotAllowedException("DELETE");
+  }
+
+  @Override
+  public ResourceList<ValidationDto> findAll(QuerySpec arg0) {
+    throw new MethodNotAllowedException("GET");
+  }
+
 }
