@@ -1,7 +1,11 @@
 package ca.gc.aafc.dina.validation;
 
+import ca.gc.aafc.dina.dto.ChainDto;
+import ca.gc.aafc.dina.dto.ChainTemplateDto;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
+import ca.gc.aafc.dina.entity.Chain;
+import ca.gc.aafc.dina.entity.ChainTemplate;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.Employee;
@@ -21,12 +25,16 @@ public class ValidationResourceConfigurationImplementation implements Validation
 
   private static final Map<String, Class<? extends DinaEntity>> typeToEntityClassMap = Map.ofEntries(
     entry("department", Department.class),
-    entry("employee", Employee.class)
+    entry("employee", Employee.class),
+    entry("chain", Chain.class),
+    entry("chainTemplate", ChainTemplate.class)
   );
   
   private static final Map<String, Class<?>> typeToResourceClassMap = Map.ofEntries(
     entry("department", DepartmentDto.class),
-    entry("employee", EmployeeDto.class)
+    entry("employee", EmployeeDto.class),
+    entry("chain", ChainDto.class),
+    entry("chainTemplate", ChainTemplateDto.class)
   );
 
   @Override
