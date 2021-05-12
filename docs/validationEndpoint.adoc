@@ -1,0 +1,55 @@
+= Validation Endpoint
+
+== Set the configuration properties
+
+To activate the validation endpoint, the configuration property `dina.validationEndpoint.enabled: true` will need to be added to the application.yml.
+
+== Create a Validation Resource Configuration
+
+You will need to create a component implementing the `ValidationResourceConfiguration` interface to supply the validation endpoint with the appropriate types to validate.
+
+== Using the Endpoint
+
+When the application starts you will have access to the validation endpoint at `/validation`.
+
+You can send a request to validate the attributes of a resource.
+
+.Example Request Body
+```json
+{
+  "data": {
+    "type": "validation",
+    "attributes": {
+      "type": "department",
+      "data": {
+        "attributes": {
+          "name": "dfadf",
+          "location": "Montreal"
+        }
+      },
+    },
+  }
+}
+```
+
+.Example Response Body
+```json
+{
+    "data": {
+        "id": "N/A",
+        "type": "validation",
+        "links": {
+            "self": "http://localhost:44329/validation/N/A"
+        },
+        "attributes": {
+            "type": "department",
+            "data": {
+                "attributes": {
+                    "name": "dfadf",
+                    "location": "Montreal"
+                }
+            }
+        }
+    }
+}
+```
