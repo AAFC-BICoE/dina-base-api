@@ -53,3 +53,16 @@ You can send a request to validate the attributes of a resource.
     }
 }
 ```
+
+.Example failed Validation
+```json
+{
+    "errors": [
+        {
+            "status": "422",
+            "title": "Validation error",
+            "detail": "size must be between 1 and 50"
+        }
+    ]
+}
+```

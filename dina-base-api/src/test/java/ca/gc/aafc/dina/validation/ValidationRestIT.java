@@ -7,12 +7,14 @@ import ca.gc.aafc.dina.dto.ValidationDto;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
+import lombok.SneakyThrows;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 
@@ -43,17 +45,20 @@ public class ValidationRestIT {
     newRequest()
       .body(newValidationDto(newEmployeeDto(), EMPLOYEE_TYPE))
       .post(VALIDATION_ENDPOINT)
-      .then()
+      .then().log().all(true)
       .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
       .body("errors[0].detail", Matchers.endsWith("size must be between 1 and 50"));
   }
 
+  @SneakyThrows
   @Test
   void validateValidDepartment_Code200() {
+    Map<String, Object> o = newValidationDto(newDepartmentDto(), DEPARTMENT_TYPE);
+    System.out.println(new ObjectMapper().writeValueAsString(o));
     newRequest()
-      .body(newValidationDto(newDepartmentDto(), DEPARTMENT_TYPE))
+      .body(o)
       .post(VALIDATION_ENDPOINT)
-      .then()
+      .then().log().all(true)
       .assertThat().statusCode(201);
   }
 
