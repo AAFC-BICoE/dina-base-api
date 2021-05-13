@@ -240,6 +240,18 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
+   * Check for the existence of a record based on a property and a value
+   * 
+   * @param clazz
+   * @param property
+   * @param value
+   * @return
+   */
+  public boolean existsByProperty(Class<E> clazz, String property, Object value) {
+    return baseDAO.existsByProperty(clazz, property, value);
+  }
+
+  /**
    * Function that validates an entity against a specific validator to check business rules.
    * Better integration will be added later so it will be called automatically on create/update.
    * @param entity
