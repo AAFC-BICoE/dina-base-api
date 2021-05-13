@@ -115,12 +115,15 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
 
   @SneakyThrows
   private void setRelation(Object dto, Set<String> relationNames, Map.Entry<String, JsonNode> relation) {
-    Optional<Object> relationInstance = newRelationInstance(relation);
     String relationFieldName = relation.getKey();
     if (StringUtils.isNotBlank(relationFieldName)
-      && relationNames.stream().anyMatch(relationFieldName::equalsIgnoreCase)
-      && relationInstance.isPresent()) {
-      PropertyUtils.setProperty(dto, relationFieldName, relationInstance.get());
+      && relationNames.stream().anyMatch(relationFieldName::equalsIgnoreCase)) {
+      Optional<Object> newRelationInstance = newRelationInstance(relation.getValue());
+      if (newRelationInstance.isPresent()) {
+        PropertyUtils.setProperty(dto, relationFieldName, newRelationInstance.get());
+      } else {
+        PropertyUtils.setProperty(dto, relationFieldName, null);
+      }
     } else {
       throw new BadRequestException(
         "A relation with field name: " + relationFieldName + " does not exist for class: "
@@ -129,10 +132,9 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
   }
 
   @SneakyThrows
-  private Optional<Object> newRelationInstance(Map.Entry<String, JsonNode> relation) {
-    JsonNode value = relation.getValue();
-    if (value != null && value.has(DATA_KEY) && !isBlank(value.get(DATA_KEY))) {
-      JsonNode idNode = value.get(DATA_KEY);
+  private Optional<Object> newRelationInstance(JsonNode relationNode) {
+    if (!isBlank(relationNode) && relationNode.has(DATA_KEY) && !isBlank(relationNode.get(DATA_KEY))) {
+      JsonNode idNode = relationNode.get(DATA_KEY);
       ResourceIdentifier relationIdentifier = crnkMapper.treeToValue(idNode, ResourceIdentifier.class);
       Object relationInstance = validationConfiguration
         .getResourceClassForType(relationIdentifier.getType())
