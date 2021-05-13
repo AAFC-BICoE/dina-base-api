@@ -6,7 +6,7 @@ public interface MetadataManagedAttribute extends DinaEntity {
   
   ManagedAttribute getManagedAttribute();
 
-  Map.Entry<String,String> getMetaData();
+  Map.Entry<String,String> getMetadata();
 
   String getAssignedValue();
 }
