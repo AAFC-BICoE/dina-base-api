@@ -54,7 +54,7 @@ public class ValidationRestIT {
   }
 
   @Test
-  void validateValidDepartment_Code200() {
+  void validateValidDepartment_Code201() {
     newRequest()
       .body(newValidationDto(DEPARTMENT_TYPE, newDepartmentDto(), null))
       .post(VALIDATION_ENDPOINT)
@@ -63,7 +63,7 @@ public class ValidationRestIT {
   }
 
   @Test
-  void validate_WithRelation() {
+  void validate_WithRequiredRelation_Returns201() {
     ChainDto chainDto = new ChainDto();
     chainDto.setGroup("d");
     chainDto.setName("name");
@@ -74,7 +74,19 @@ public class ValidationRestIT {
         List.of(JsonAPIRelationship.of("chainTemplate", "chainTemplate", "1"))))
       .post(VALIDATION_ENDPOINT)
       .then().log().all(true)
-      .assertThat().statusCode(400);
+      .assertThat().statusCode(201);
+  }
+
+  @Test
+  void validate_WithNoRequiredRelation_Returns422() {
+    ChainDto chainDto = new ChainDto();
+    chainDto.setGroup("d");
+    chainDto.setName("name");
+    newRequest()
+      .body(newValidationDto("chain", JsonAPITestHelper.toAttributeMap(chainDto), null))
+      .post(VALIDATION_ENDPOINT)
+      .then().log().all(true)
+      .assertThat().statusCode(422);
   }
 
   @ParameterizedTest
