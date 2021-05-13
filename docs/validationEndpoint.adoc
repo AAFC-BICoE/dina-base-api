@@ -18,18 +18,36 @@ You can send a request to validate the attributes of a resource.
 ```json
 {
   "data": {
-    "type": "validation",
     "attributes": {
-      "type": "department",
+      "type": "validation",
       "data": {
+        "type": "chain",
         "attributes": {
-          "name": "dfadf",
-          "location": "Montreal"
+          "group": "d",
+          "name": "name"
+        },
+        "relationships": {
+          "chainTemplate": {
+            "data": {
+              "id": "1",
+              "type": "chainTemplate"
+            }
+          }
         }
-      },
-    },
+      }
+    }
   }
 }
+```
+
+.Example Response Headers
+```
+HTTP/1.1 201
+Content-Type: application/vnd.api+json;charset=utf-8
+Content-Length: 255
+Date: Thu, 13 May 2021 15:10:35 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
 ```
 
 .Example Response Body
@@ -39,14 +57,22 @@ You can send a request to validate the attributes of a resource.
         "id": "N/A",
         "type": "validation",
         "links": {
-            "self": "http://localhost:44329/validation/N/A"
+            "self": "http://localhost:35227/validation/N/A"
         },
         "attributes": {
-            "type": "department",
+            "type": "chain",
             "data": {
+                "relationships": {
+                    "chainTemplate": {
+                        "data": {
+                            "id": "1",
+                            "type": "chainTemplate"
+                        }
+                    }
+                },
                 "attributes": {
-                    "name": "dfadf",
-                    "location": "Montreal"
+                    "group": "d",
+                    "name": "name"
                 }
             }
         }
