@@ -102,7 +102,7 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
   }
 
   private void setRelations(JsonNode data, Object dto, Set<String> relationNames) {
-    if (data.has(RELATIONSHIPS_KEY) && !isBlank(data.get(RELATIONSHIPS_KEY))) {
+    if (!isBlank(data) && data.has(RELATIONSHIPS_KEY) && !isBlank(data.get(RELATIONSHIPS_KEY))) {
       JsonNode relations = data.get(RELATIONSHIPS_KEY);
       if (relations.isObject()) {
         ObjectNode toObjNode = relations.deepCopy();
