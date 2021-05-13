@@ -89,11 +89,10 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     final DinaEntity entity = validationConfiguration.getEntityClassForType(type)
       .getConstructor().newInstance();
     final Object dto = crnkMapper.treeToValue(data.get(ATTRIBUTES_KEY), resourceClass);
-    setRelations(data, dto, relationNames);
 
+    setRelations(data, dto, relationNames);
     mapper.applyDtoToEntity(dto, entity, registry.getAttributesPerClass(), relationNames);
 
-    // Error validating
     final Errors errors = findValidationErrors(type, entity);
     validateErrors(errors);
 

@@ -48,7 +48,7 @@ public class ValidationRestIT {
     newRequest()
       .body(newValidationDto(EMPLOYEE_TYPE, newEmployeeDto(), null))
       .post(VALIDATION_ENDPOINT)
-      .then().log().all(true)
+      .then()
       .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
       .body("errors[0].detail", Matchers.endsWith("size must be between 1 and 50"));
   }
@@ -58,7 +58,7 @@ public class ValidationRestIT {
     newRequest()
       .body(newValidationDto(DEPARTMENT_TYPE, newDepartmentDto(), null))
       .post(VALIDATION_ENDPOINT)
-      .then().log().all(true)
+      .then()
       .assertThat().statusCode(201);
   }
 
@@ -73,7 +73,7 @@ public class ValidationRestIT {
         JsonAPITestHelper.toAttributeMap(chainDto),
         List.of(JsonAPIRelationship.of("chainTemplate", "chainTemplate", "1"))))
       .post(VALIDATION_ENDPOINT)
-      .then().log().all(true)
+      .then()
       .assertThat().statusCode(201);
   }
 
@@ -85,7 +85,7 @@ public class ValidationRestIT {
     newRequest()
       .body(newValidationDto("chain", JsonAPITestHelper.toAttributeMap(chainDto), null))
       .post(VALIDATION_ENDPOINT)
-      .then().log().all(true)
+      .then()
       .assertThat().statusCode(422);
   }
 
