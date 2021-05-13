@@ -83,16 +83,12 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     @SuppressWarnings("unchecked") // Mapper is cast for type compliance from wildcard ? to object
     final DinaMapper<Object, DinaEntity> mapper = (DinaMapper<Object, DinaEntity>) dinaMapperMap.get(type);
     final DinaMappingRegistry registry = registryMap.get(type);
+    final Class<?> resourceClass = validationConfiguration.getResourceClassForType(type);
+    final Set<String> relationNames = findRelationNames(registry, resourceClass);
+
     final DinaEntity entity = validationConfiguration.getEntityClassForType(type)
-      .getConstructor()
-      .newInstance();
-
-    final Object dto = crnkMapper.treeToValue(
-      data.get(ATTRIBUTES_KEY),
-      validationConfiguration.getResourceClassForType(type));
-
-    final Set<String> relationNames = findRelationNames(registry, dto.getClass());
-
+      .getConstructor().newInstance();
+    final Object dto = crnkMapper.treeToValue(data.get(ATTRIBUTES_KEY), resourceClass);
     setRelations(data, dto, relationNames);
 
     mapper.applyDtoToEntity(dto, entity, registry.getAttributesPerClass(), relationNames);
