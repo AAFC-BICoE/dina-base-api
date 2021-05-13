@@ -11,7 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 
 import java.util.Map;
-import java.util.UUID;
 
 @SpringBootTest(classes = TestDinaBaseApp.class,
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
