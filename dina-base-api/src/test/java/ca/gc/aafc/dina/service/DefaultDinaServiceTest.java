@@ -280,6 +280,26 @@ public class DefaultDinaServiceTest {
     assertThrows(ConstraintViolationException.class, () -> serviceUnderTest.validate(d));
   }
 
+  @Test
+  public void existsByProperty_onValidProperty_existsReturnCorrectValue() {
+    Department dep1 = Department.builder()
+      .name("dep1")
+      .location("dep location")
+      .build();
+    serviceUnderTest.create(dep1);
+
+    Department dep2 = Department.builder()
+      .name("dep2")
+      .location("dep location 2")
+      .build();
+    serviceUnderTest.create(dep2);
+
+    assertTrue(serviceUnderTest.existsByProperty(Department.class, "name", "dep1"));
+    assertTrue(serviceUnderTest.existsByProperty(Department.class, "location", "dep location 2"));
+    assertFalse(serviceUnderTest.existsByProperty(Department.class, "name", "dep3"));
+
+  }
+
   private static Department createLongNameDepartment() {
     return Department
       .builder()

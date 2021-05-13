@@ -18,7 +18,6 @@ import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
 import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
 import ca.gc.aafc.dina.service.AuditService;
-import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.service.DefaultDinaServiceTest.DinaServiceTestImplementation;
 import ca.gc.aafc.dina.service.GroupAuthorizationService;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
