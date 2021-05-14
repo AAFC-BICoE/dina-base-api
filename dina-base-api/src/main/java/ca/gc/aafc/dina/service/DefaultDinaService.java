@@ -252,6 +252,19 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
+   * Find an entity by a specific property. The method assumes that the property
+   * is unique.
+   * 
+   * @param clazz
+   * @param property
+   * @param value
+   * @return the entity or null if not found
+   */
+  public E findOneByProperty(Class<E> clazz, String property, Object value) {
+    return baseDAO.findByProperty(clazz, property, value).get(0);
+  }
+
+  /**
    * Function that validates an entity against a specific validator to check business rules.
    * Better integration will be added later so it will be called automatically on create/update.
    * @param entity
