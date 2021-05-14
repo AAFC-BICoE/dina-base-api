@@ -21,6 +21,8 @@ import ca.gc.aafc.dina.entity.ManagedAttribute.ManagedAttributeType;
 public class ManagedAttributeValueValidator implements Validator {
 
   private final MessageSource messageSource;
+
+  private static final String VALID_ASSIGNED_VALUE = "assignedValue.invalid";
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
   public ManagedAttributeValueValidator(MessageSource messageSource) {
@@ -55,9 +57,9 @@ public class ManagedAttributeValueValidator implements Validator {
       }
     }
     if (!assignedValueIsValid) {
-      String errorMessage = messageSource.getMessage("assignedValue.invalid", new String[] { assignedValue },
+      String errorMessage = messageSource.getMessage(VALID_ASSIGNED_VALUE, new String[] { assignedValue },
           LocaleContextHolder.getLocale());
-      errors.rejectValue("assignedValue", "assignedValue.invalid", new String[] { assignedValue }, errorMessage);
+      errors.rejectValue("assignedValue", VALID_ASSIGNED_VALUE, new String[] { assignedValue }, errorMessage);
     }
   }
   
