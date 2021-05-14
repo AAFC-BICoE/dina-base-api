@@ -2,11 +2,9 @@ package ca.gc.aafc.dina.entity;
 
 import java.util.Map;
 
-public interface MetadataManagedAttribute extends DinaEntity {
+public interface ManagedAttributeValue extends DinaEntity {
   
   ManagedAttribute getManagedAttribute();
 
   Map.Entry<String,String> getMetadata();
-
-  String getAssignedValue();
 }

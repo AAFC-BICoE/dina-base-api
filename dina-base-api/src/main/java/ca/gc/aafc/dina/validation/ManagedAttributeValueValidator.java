@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.validation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -13,28 +14,30 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import ca.gc.aafc.dina.entity.ManagedAttribute;
-import ca.gc.aafc.dina.entity.MetadataManagedAttribute;
+import ca.gc.aafc.dina.entity.ManagedAttributeValue;
 import ca.gc.aafc.dina.entity.ManagedAttribute.ManagedAttributeType;
 
 @Component
-public class MetadataManagedAttributeValidator implements Validator {
+public class ManagedAttributeValueValidator implements Validator {
 
   private final MessageSource messageSource;
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
-  public MetadataManagedAttributeValidator(MessageSource messageSource) {
+  public ManagedAttributeValueValidator(MessageSource messageSource) {
     this.messageSource = messageSource;
   }
   @Override
   public boolean supports(Class<?> clazz) {
-    return MetadataManagedAttribute.class.isAssignableFrom(clazz);
+    return ManagedAttributeValue.class.isAssignableFrom(clazz);
   }
 
   @Override
   public void validate(Object target, Errors errors) {
-    MetadataManagedAttribute mav = (MetadataManagedAttribute) target;
+    ManagedAttributeValue mav = (ManagedAttributeValue) target;
     ManagedAttribute ma = mav.getManagedAttribute();
-    String assignedValue = mav.getAssignedValue();
+    Map.Entry<String,String> map = mav.getMetadata();
+
+    String assignedValue = map.getValue();
     List<String> acceptedValues = ma.getAcceptedValues() == null ? Collections.emptyList()
       : Arrays.stream(ma.getAcceptedValues()).map(String::toUpperCase).collect(Collectors.toList());
     
