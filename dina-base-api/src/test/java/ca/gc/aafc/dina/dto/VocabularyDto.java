@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.dto;
 
-import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.entity.Vocabulary;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiResource;

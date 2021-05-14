@@ -1,7 +1,5 @@
 package ca.gc.aafc.dina.locale;
 
-import java.util.Locale;
-
 import javax.inject.Inject;
 
 import org.hamcrest.MatcherAssert;
