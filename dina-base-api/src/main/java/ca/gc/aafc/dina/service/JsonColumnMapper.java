@@ -12,7 +12,7 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface JsonColumnMapper {
     // This query is checking if the the key name exist as a top-level key within the JSON value
-    String sql = "SELECT COUNT(${columnName}) FROM ${tableName}" +
+    String postgreSql = "SELECT COUNT(${columnName}) FROM ${tableName}" +
             " WHERE ${columnName} ?? #{keyName}";
     // RE: WHERE ${columnName} ?? #{keyName}
     // we need to keep such question marks in a SQL statement from being interpreted as positional parameters
@@ -26,7 +26,7 @@ public interface JsonColumnMapper {
      * @param keyName Key name which will be searched
      * @return Integer, number of records containing specified key exist as a top-level key within the JSON value
      */
-    @Select(sql)
+    @Select(postgreSql)
     Integer countFirstLevelKeys (
             @Param("tableName") String tableName,
             @Param("columnName") String colName,
