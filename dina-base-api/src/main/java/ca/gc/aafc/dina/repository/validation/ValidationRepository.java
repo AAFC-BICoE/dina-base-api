@@ -4,7 +4,6 @@ import ca.gc.aafc.dina.dto.ValidationDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
-import ca.gc.aafc.dina.service.DinaService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -22,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -36,38 +34,26 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
   public static final String ATTRIBUTES_KEY = "attributes";
   public static final String RELATIONSHIPS_KEY = "relationships";
   public static final String DATA_KEY = "data";
-  private final ValidationResourceConfiguration validationConfiguration;
+  private ValidationRegistry validationRegistry;
   private final ObjectMapper crnkMapper;
-  private final Map<String, DinaMappingRegistry> registryMap = new HashMap<>();
-  private final Map<String, DinaMapper<?, DinaEntity>> dinaMapperMap = new HashMap<>();
 
   public ValidationRepository(
     @NonNull ValidationResourceConfiguration validationResourceConfiguration,
     @NonNull ObjectMapper crnkMapper
   ) {
     super(ValidationDto.class);
-    this.validationConfiguration = validationResourceConfiguration;
     this.crnkMapper = crnkMapper;
-    initMaps(validationResourceConfiguration);
+    initRegistry(validationResourceConfiguration);
   }
 
-  private void initMaps(ValidationResourceConfiguration validationResourceConfiguration) {
+  private void initRegistry(ValidationResourceConfiguration validationResourceConfiguration) {
     if (CollectionUtils.isEmpty(validationResourceConfiguration.getTypes())) {
       throw new IllegalStateException("The validation configuration must return a set of types, " +
         "if no types require validation consider using dina.validationEndpoint.enabled: false");
     }
-    validationResourceConfiguration.getTypes().forEach(type -> {
-      Class<?> resourceClass = validationResourceConfiguration.getResourceClassForType(type);
-      Class<? extends DinaEntity> entityClass = validationResourceConfiguration.getEntityClassForType(type);
-      DinaService<? extends DinaEntity> validatorForType = validationConfiguration.getServiceForType(type);
-      if (resourceClass == null || entityClass == null || validatorForType == null) {
-        throw new IllegalStateException(
-          "The validation configuration must supply a validator, resource, and entity class for the given type: " + type);
-      }
-      DinaMappingRegistry registry = new DinaMappingRegistry(resourceClass);
-      registryMap.put(type, registry);
-      dinaMapperMap.put(type, new DinaMapper<>(resourceClass, registry));
-    });
+    validationRegistry = new ValidationRegistry(
+      validationResourceConfiguration.getTypes(),
+      validationResourceConfiguration);
   }
 
   @Override
@@ -77,21 +63,22 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     final JsonNode data = resource.getData();
     validateIncomingRequest(type, data);
 
+    final ValidationRegistry.ValidationEntry validationEntry = validationRegistry.getEntryForType(type);
+
     @SuppressWarnings("unchecked") // Mapper is cast for type compliance from wildcard ? to object
-    final DinaMapper<Object, DinaEntity> mapper = (DinaMapper<Object, DinaEntity>) dinaMapperMap.get(type);
-    final DinaMappingRegistry registry = registryMap.get(type);
-    final Class<?> resourceClass = validationConfiguration.getResourceClassForType(type);
+    final DinaMapper<Object, DinaEntity> mapper = (DinaMapper<Object, DinaEntity>) validationEntry.getMapper();
+    final DinaMappingRegistry registry = validationEntry.getMappingRegistry();
+    final Class<?> resourceClass = validationEntry.getResourceClass();
     final Set<String> relationNames = findRelationNames(registry, resourceClass);
 
-    final DinaEntity entity = validationConfiguration.getEntityClassForType(type)
-      .getConstructor().newInstance();
+    final DinaEntity entity = validationEntry.getEntityClass().getConstructor().newInstance();
     final Object dto = crnkMapper.treeToValue(data.get(ATTRIBUTES_KEY), resourceClass);
 
     setRelations(data, dto, relationNames);
     mapper.applyDtoToEntity(dto, entity, registry.getAttributesPerClass(), relationNames);
     entity.setUuid(UUID.randomUUID()); // Random id to avoid validating generated value.
 
-    validationConfiguration.getServiceForType(type).validate(entity);
+    validationEntry.getDinaService().validate(entity);
 
     // Crnk requires a created resource to have an ID. Create one here if the client did not provide one.
     resource.setId(Optional.ofNullable(resource.getId()).orElse("N/A"));
@@ -133,8 +120,8 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     if (!isBlank(relationNode) && relationNode.has(DATA_KEY) && !isBlank(relationNode.get(DATA_KEY))) {
       JsonNode idNode = relationNode.get(DATA_KEY);
       ResourceIdentifier relationIdentifier = crnkMapper.treeToValue(idNode, ResourceIdentifier.class);
-      Object relationInstance = validationConfiguration
-        .getResourceClassForType(relationIdentifier.getType())
+      Object relationInstance = validationRegistry.getEntryForType(relationIdentifier.getType())
+        .getResourceClass()
         .getConstructor()
         .newInstance();
       return Optional.of(relationInstance);
@@ -143,7 +130,7 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
   }
 
   private void validateIncomingRequest(String type, JsonNode data) {
-    if (StringUtils.isBlank(type) || !validationConfiguration.getTypes().contains(type)) {
+    if (StringUtils.isBlank(type) || !validationRegistry.hasType(type)) {
       throw new BadRequestException("You must submit a valid configuration type");
     }
 
