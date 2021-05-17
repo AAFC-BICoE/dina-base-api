@@ -12,6 +12,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,13 +30,27 @@ public class ValidationRegistry {
 
   private void initMaps(ValidationResourceConfiguration configuration) {
     configuration.getTypes().forEach(r -> {
+
       RelatedEntity relatedEntity = r.getAnnotation(RelatedEntity.class);
+      if (relatedEntity == null) {
+        throw new IllegalArgumentException("The provided resource must have a valid related entity");
+      }
+
       JsonApiResource jsonApiResource = r.getAnnotation(JsonApiResource.class);
-      DinaMappingRegistry registry = new DinaMappingRegistry(r);
-      DinaMapper<?, DinaEntity> mapper = new DinaMapper<>(r, registry);
+      if (jsonApiResource == null || StringUtils.isBlank(jsonApiResource.type())) {
+        throw new IllegalArgumentException(
+          "The provided resource must have a valid JsonApiResource annotation");
+      }
 
       String type = jsonApiResource.type();
+
       DinaService<? extends DinaEntity> dinaService = configuration.getServiceForType(type);
+      if (dinaService == null) {
+        throw new IllegalArgumentException("The provided configuration must supply a dina service for type: " + type);
+      }
+
+      DinaMappingRegistry registry = new DinaMappingRegistry(r);
+      DinaMapper<?, DinaEntity> mapper = new DinaMapper<>(r, registry);
 
       typesToEntryMap.put(type, ValidationEntry.builder()
         .typeName(type)
