@@ -78,6 +78,19 @@ public class ManagedAttributeValueValidatorTest {
 
     assertTrue(errors.getAllErrors().get(0).getCode().contains("val3"));
   }
+
+  @Test
+  public void assignedKeyDoesNotExist_validationFails() throws Exception {
+
+    Map.Entry<String, String> mav = new AbstractMap.SimpleEntry<>("key_x", "val3");
+
+    Errors errors = new BeanPropertyBindingResult(mav, "mav");
+    validatorUnderTest.validate(mav, errors);
+    assertEquals(1, errors.getErrorCount());
+    List<ObjectError> f = errors.getAllErrors();
+
+    assertTrue(errors.getAllErrors().get(0).getCode().contains("key not found"));
+  }
   
   @TestConfiguration
   @EntityScan(basePackageClasses = ManagedAttributeConfig.TestManagedAttribute.class)

@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
@@ -33,8 +32,9 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
   public ManagedAttributeValueValidator(
+    MessageSource messageSource,
     @NonNull DefaultDinaService<E> dinaService) {
-    this.messageSource = messageSource();
+    this.messageSource = messageSource;
     this.dinaService = dinaService;
   }
   @Override
@@ -49,7 +49,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     String key = map.getKey();
     String assignedValue = map.getValue();
 
-    Class<E> clazz = ((Class<E>) GenericTypeResolver.resolveTypeArgument(dinaService.getClass(), DefaultDinaService.class));
+    Class<E> clazz = (Class<E>) GenericTypeResolver.resolveTypeArgument(dinaService.getClass(), DefaultDinaService.class);
 
     List<E> maList = dinaService.findByProperty(clazz, "key", key);
     if (maList.isEmpty()) {
