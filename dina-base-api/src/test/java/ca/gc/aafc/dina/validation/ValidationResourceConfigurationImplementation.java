@@ -8,28 +8,31 @@ import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.repository.validation.ValidationResourceConfiguration;
 import ca.gc.aafc.dina.service.DinaService;
+import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
+import java.util.HashMap;
 import java.util.Set;
 
 @Component
 public class ValidationResourceConfigurationImplementation implements ValidationResourceConfiguration {
 
-  @Inject
-  DinaUserConfig.DepartmentDinaService departmentDinaService;
+  private final HashMap<Class<?>, DinaService<? extends DinaEntity>> dinaServiceHashMap = new HashMap<>();
+
+  public ValidationResourceConfigurationImplementation(@NonNull DinaUserConfig.DepartmentDinaService departmentDinaService) {
+    dinaServiceHashMap.put(DepartmentDto.class, departmentDinaService);
+    dinaServiceHashMap.put(EmployeeDto.class, departmentDinaService);
+    dinaServiceHashMap.put(ChainDto.class, departmentDinaService);
+    dinaServiceHashMap.put(ChainTemplateDto.class, departmentDinaService);
+  }
 
   @Override
-  public DinaService<? extends DinaEntity> getServiceForType(String type) {
-    return departmentDinaService;
+  public DinaService<? extends DinaEntity> getServiceForType(Class<?> type) {
+    return dinaServiceHashMap.get(type);
   }
 
   @Override
   public Set<Class<?>> getTypes() {
-    return Set.of(
-      DepartmentDto.class,
-      EmployeeDto.class,
-      ChainDto.class,
-      ChainTemplateDto.class);
+    return dinaServiceHashMap.keySet();
   }
 }

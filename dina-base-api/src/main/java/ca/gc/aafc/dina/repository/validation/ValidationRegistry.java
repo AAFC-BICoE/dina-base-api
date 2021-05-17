@@ -45,7 +45,7 @@ public class ValidationRegistry {
 
       String type = jsonApiResource.type();
 
-      DinaService<? extends DinaEntity> dinaService = configuration.getServiceForType(type);
+      DinaService<? extends DinaEntity> dinaService = configuration.getServiceForType(r);
       if (dinaService == null) {
         throw new IllegalArgumentException("The provided configuration must supply a dina service for type: " + type);
       }
