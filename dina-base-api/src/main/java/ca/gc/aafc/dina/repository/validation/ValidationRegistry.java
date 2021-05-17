@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class ValidationRegistry {
   private final Map<String, ValidationEntry> typesToEntryMap = new HashMap<>();
@@ -63,12 +64,12 @@ public class ValidationRegistry {
     });
   }
 
-  public ValidationEntry getEntryForType(String type) {
-    return typesToEntryMap.get(type);
+  public Optional<ValidationEntry> getEntryForType(@NonNull String type) {
+    return Optional.ofNullable(typesToEntryMap.get(type));
   }
 
-  public boolean hasType(String type) {
-    return typesToEntryMap.keySet().stream().anyMatch(e -> e.equalsIgnoreCase(type));
+  public boolean hasEntryForType(@NonNull String type) {
+    return typesToEntryMap.containsKey(type);
   }
 
   @Builder

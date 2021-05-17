@@ -52,7 +52,8 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     final JsonNode data = resource.getData();
     validateIncomingRequest(type, data);
 
-    final ValidationRegistry.ValidationEntry validationEntry = validationRegistry.getEntryForType(type);
+    final ValidationRegistry.ValidationEntry validationEntry = validationRegistry.getEntryForType(type)
+      .orElseThrow(ValidationRepository::getInvalidTypeException);
 
     @SuppressWarnings("unchecked") // Mapper is cast for type compliance from wildcard ? to object
     final DinaMapper<Object, DinaEntity> mapper = (DinaMapper<Object, DinaEntity>) validationEntry.getMapper();
@@ -110,6 +111,7 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
       JsonNode idNode = relationNode.get(DATA_KEY);
       ResourceIdentifier relationIdentifier = crnkMapper.treeToValue(idNode, ResourceIdentifier.class);
       Object relationInstance = validationRegistry.getEntryForType(relationIdentifier.getType())
+        .orElseThrow(ValidationRepository::getInvalidTypeException)
         .getResourceClass()
         .getConstructor()
         .newInstance();
@@ -119,8 +121,8 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
   }
 
   private void validateIncomingRequest(String type, JsonNode data) {
-    if (StringUtils.isBlank(type) || !validationRegistry.hasType(type)) {
-      throw new BadRequestException("You must submit a valid configuration type");
+    if (StringUtils.isBlank(type) || !validationRegistry.hasEntryForType(type)) {
+      throw getInvalidTypeException();
     }
 
     if (isBlank(data) || !data.has(ATTRIBUTES_KEY) || isBlank(data.get(ATTRIBUTES_KEY))) {
@@ -138,6 +140,10 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
 
   private static boolean isBlank(JsonNode data) {
     return data == null || data.isNull() || data.isEmpty();
+  }
+
+  private static BadRequestException getInvalidTypeException() {
+    return new BadRequestException("You must submit a valid configuration type");
   }
 
   @Override
