@@ -234,8 +234,9 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    * Validate the provided entity at the bean level.
    * @param entity
    */
+  @Override
   @Validated
-  public void validate(@Valid E entity) {
+  public void validate(@Valid Object entity) {
     // empty body since the annotations will do the work
   }
 

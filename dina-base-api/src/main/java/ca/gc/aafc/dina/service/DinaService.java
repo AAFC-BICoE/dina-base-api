@@ -3,11 +3,13 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import lombok.NonNull;
+import org.springframework.validation.annotation.Validated;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.validation.Valid;
 
 import java.util.List;
 import java.util.function.BiFunction;
@@ -127,4 +129,6 @@ public interface DinaService<E extends DinaEntity> {
    */
   boolean exists(Class<?> entityClass, Object naturalId);
 
+  @Validated
+  void validate(@Valid Object entity);
 }
