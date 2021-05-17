@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
 import java.util.AbstractMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -19,21 +20,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ValidationUtils;
+import org.springframework.validation.ObjectError;
 
-import ca.gc.aafc.dina.DinaBaseApiAutoConfiguration;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
-import ca.gc.aafc.dina.entity.ManagedAttributeValue;
 import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
 import ca.gc.aafc.dina.validation.ManagedAttributeValueValidatorTest.ManagedAttributeConfig.TestManagedAttribute;
 import groovy.transform.builder.Builder;
@@ -47,9 +42,6 @@ public class ManagedAttributeValueValidatorTest {
   @Inject
   private ManagedAttributeService<TestManagedAttribute> testManagedAttributeService;
 
-  @Inject
-  private MessageSource messageSource;
-  
   @Inject
   private ManagedAttributeValueValidator<TestManagedAttribute> validatorUnderTest; //= new ManagedAttributeValueValidator(messageSource, testManagedAttributeService);
 
@@ -82,10 +74,9 @@ public class ManagedAttributeValueValidatorTest {
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
     validatorUnderTest.validate(mav, errors);
     assertEquals(1, errors.getErrorCount());
-    assertTrue(errors.hasFieldErrors("assignedValue"));
-    FieldError field_error = errors.getFieldError("assignedValue");
-    assertTrue(field_error.getCode().equals("assignedValue.invalid"));
-    assertTrue(field_error.getDefaultMessage().contains("val3"));
+    List<ObjectError> f = errors.getAllErrors();
+
+    assertTrue(errors.getAllErrors().get(0).getCode().contains("val3"));
   }
   
   @TestConfiguration

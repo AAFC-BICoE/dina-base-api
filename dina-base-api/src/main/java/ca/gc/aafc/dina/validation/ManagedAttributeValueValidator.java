@@ -1,7 +1,5 @@
 package ca.gc.aafc.dina.validation;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -10,23 +8,17 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.persistence.criteria.Predicate;
-
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.GenericTypeResolver;
-import org.springframework.core.ResolvableType;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
-import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
-import ca.gc.aafc.dina.entity.ManagedAttributeValue;
 import ca.gc.aafc.dina.entity.ManagedAttribute.ManagedAttributeType;
 import ca.gc.aafc.dina.service.DefaultDinaService;
-import ca.gc.aafc.dina.service.ManagedAttributeService;
 import lombok.NonNull;
 
 @Component
@@ -41,9 +33,8 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
   public ManagedAttributeValueValidator(
-    MessageSource messageSource, 
     @NonNull DefaultDinaService<E> dinaService) {
-    this.messageSource = messageSource;
+    this.messageSource = messageSource();
     this.dinaService = dinaService;
   }
   @Override
@@ -64,7 +55,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     if (maList.isEmpty()) {
       String errorMessage = messageSource.getMessage(VALID_ASSIGNED_VALUE_KEY, null,
         LocaleContextHolder.getLocale());
-      errors.rejectValue("assignedValue", errorMessage);
+      errors.reject(errorMessage);
       return;
     }
 
@@ -90,7 +81,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     if (!assignedValueIsValid) {
       String errorMessage = messageSource.getMessage(VALID_ASSIGNED_VALUE, new String[] { assignedValue },
           LocaleContextHolder.getLocale());
-      errors.rejectValue("assignedValue", VALID_ASSIGNED_VALUE, new String[] { assignedValue }, errorMessage);
+      errors.reject(errorMessage);
     }
   }
   
