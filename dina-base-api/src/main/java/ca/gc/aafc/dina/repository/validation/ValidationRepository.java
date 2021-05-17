@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Repository
@@ -92,6 +93,7 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
 
     setRelations(data, dto, relationNames);
     mapper.applyDtoToEntity(dto, entity, registry.getAttributesPerClass(), relationNames);
+    entity.setUuid(UUID.randomUUID()); // Random id to avoid validating generated value.
 
     final Errors errors = findValidationErrors(type, entity);
     validateErrors(errors);
