@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.validation;
 
+import ca.gc.aafc.dina.DinaUserConfig;
 import ca.gc.aafc.dina.dto.ChainDto;
 import ca.gc.aafc.dina.dto.ChainTemplateDto;
 import ca.gc.aafc.dina.dto.DepartmentDto;
@@ -10,11 +11,10 @@ import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.repository.validation.ValidationResourceConfiguration;
+import ca.gc.aafc.dina.service.DinaService;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.Validator;
-import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
-import javax.validation.Validation;
+import javax.inject.Inject;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,13 +23,16 @@ import static java.util.Map.entry;
 @Component
 public class ValidationResourceConfigurationImplementation implements ValidationResourceConfiguration {
 
+  @Inject
+  DinaUserConfig.DepartmentDinaService departmentDinaService;
+
   private static final Map<String, Class<? extends DinaEntity>> typeToEntityClassMap = Map.ofEntries(
     entry("department", Department.class),
     entry("employee", Employee.class),
     entry("chain", Chain.class),
     entry("chainTemplate", ChainTemplate.class)
   );
-  
+
   private static final Map<String, Class<?>> typeToResourceClassMap = Map.ofEntries(
     entry("department", DepartmentDto.class),
     entry("employee", EmployeeDto.class),
@@ -48,14 +51,13 @@ public class ValidationResourceConfigurationImplementation implements Validation
   }
 
   @Override
-  public Class<?> getResourceClassForType(String type) {
-    return typeToResourceClassMap.get(type);
+  public DinaService<? extends DinaEntity> getServiceForType(String type) {
+    return departmentDinaService;
   }
 
-  // If there is no custom validator, return default Validator
   @Override
-  public Validator getValidatorForType(String type) {
-    return new SpringValidatorAdapter(Validation.buildDefaultValidatorFactory().getValidator());
+  public Class<?> getResourceClassForType(String type) {
+    return typeToResourceClassMap.get(type);
   }
 
 }

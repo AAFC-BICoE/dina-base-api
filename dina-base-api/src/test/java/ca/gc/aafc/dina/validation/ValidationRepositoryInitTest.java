@@ -1,19 +1,23 @@
 package ca.gc.aafc.dina.validation;
 
+import ca.gc.aafc.dina.DinaUserConfig;
+import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.repository.validation.ValidationRepository;
 import ca.gc.aafc.dina.repository.validation.ValidationResourceConfiguration;
+import ca.gc.aafc.dina.service.DinaService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.validation.Validator;
-import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
+import org.springframework.boot.test.context.SpringBootTest;
 
-import javax.validation.Validation;
+import javax.inject.Inject;
 import java.util.Set;
 
+@SpringBootTest(classes = TestDinaBaseApp.class,
+  properties = {"dev-user.enabled: true", "keycloak.enabled: false", "dina.validationEndpoint.enabled: true"})
 class ValidationRepositoryInitTest {
 
   private final static ObjectMapper mapper = new ObjectMapper();
@@ -38,10 +42,12 @@ class ValidationRepositoryInitTest {
   }
 
   static class NullTypes implements ValidationResourceConfiguration {
+    @Inject
+    DinaUserConfig.DepartmentDinaService departmentDinaService;
 
     @Override
-    public Validator getValidatorForType(String type) {
-      return new SpringValidatorAdapter(Validation.buildDefaultValidatorFactory().getValidator());
+    public DinaService<? extends DinaEntity> getServiceForType(String type) {
+      return departmentDinaService;
     }
 
     @Override
@@ -62,9 +68,12 @@ class ValidationRepositoryInitTest {
 
   static class BlankTypes implements ValidationResourceConfiguration {
 
+    @Inject
+    DinaUserConfig.DepartmentDinaService departmentDinaService;
+
     @Override
-    public Validator getValidatorForType(String type) {
-      return new SpringValidatorAdapter(Validation.buildDefaultValidatorFactory().getValidator());
+    public DinaService<? extends DinaEntity> getServiceForType(String type) {
+      return departmentDinaService;
     }
 
     @Override
@@ -86,7 +95,7 @@ class ValidationRepositoryInitTest {
   static class MissingValidator implements ValidationResourceConfiguration {
 
     @Override
-    public Validator getValidatorForType(String type) {
+    public DinaService<? extends DinaEntity> getServiceForType(String type) {
       return null;
     }
 
@@ -108,9 +117,12 @@ class ValidationRepositoryInitTest {
 
   static class MissingResourceClass implements ValidationResourceConfiguration {
 
+    @Inject
+    DinaUserConfig.DepartmentDinaService departmentDinaService;
+
     @Override
-    public Validator getValidatorForType(String type) {
-      return new SpringValidatorAdapter(Validation.buildDefaultValidatorFactory().getValidator());
+    public DinaService<? extends DinaEntity> getServiceForType(String type) {
+      return departmentDinaService;
     }
 
     @Override
@@ -132,8 +144,8 @@ class ValidationRepositoryInitTest {
   static class MissingEntityClass implements ValidationResourceConfiguration {
 
     @Override
-    public Validator getValidatorForType(String type) {
-      return new SpringValidatorAdapter(Validation.buildDefaultValidatorFactory().getValidator());
+    public DinaService<? extends DinaEntity> getServiceForType(String type) {
+      return null;
     }
 
     @Override
