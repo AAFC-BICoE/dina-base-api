@@ -244,22 +244,9 @@ public class DefaultDinaServiceTest {
   }
 
   @Test
-  public void validationGroups_DepartmentWithNonNullUuidOnCreate_ThrowsException() {
-    Department result = createDepartment();
-    result.setUuid(UUID.randomUUID());
-    ConstraintViolationException exception = assertThrows(ConstraintViolationException.class, () -> {
-      serviceUnderTest.create(result);
-    });
-
-    String expectedMessage = "must be null";
-    String actualMessage = exception.getMessage();
-
-    assertTrue(actualMessage.contains(expectedMessage));
-  }
-
-  @Test
   public void validationGroups_DepartmentWithNullUuidOnUpdate_ThrowException() {
     Department result = persistDepartment();
+    serviceUnderTest.create(result);
     result.setUuid(null);
     ConstraintViolationException exception =  assertThrows(ConstraintViolationException.class, () -> {
       serviceUnderTest.update(result);
@@ -291,6 +278,26 @@ public class DefaultDinaServiceTest {
     assertThrows(ValidationException.class, () -> serviceUnderTest.validateBusinessRules(d, defaultValidator));
 
     assertThrows(ConstraintViolationException.class, () -> serviceUnderTest.validate(d));
+  }
+
+  @Test
+  public void existsByProperty_onValidProperty_existsReturnCorrectValue() {
+    Department dep1 = Department.builder()
+      .name("dep1")
+      .location("dep location")
+      .build();
+    serviceUnderTest.create(dep1);
+
+    Department dep2 = Department.builder()
+      .name("dep2")
+      .location("dep location 2")
+      .build();
+    serviceUnderTest.create(dep2);
+
+    assertTrue(serviceUnderTest.existsByProperty(Department.class, "name", "dep1"));
+    assertTrue(serviceUnderTest.existsByProperty(Department.class, "location", "dep location 2"));
+    assertFalse(serviceUnderTest.existsByProperty(Department.class, "name", "dep3"));
+
   }
 
   private static Department createLongNameDepartment() {

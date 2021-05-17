@@ -6,8 +6,6 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.service.DefaultDinaService;
-import ca.gc.aafc.dina.service.OnCreate;
-import ca.gc.aafc.dina.service.OnUpdate;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.crnk.core.resource.annotations.JsonApiId;
@@ -36,11 +34,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
 
 import java.time.OffsetDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -73,17 +69,32 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
   static class TestConfig {
     @Bean
     public DinaRepository<ThingDTO, Thing> projectRepo(
-      BaseDAO baseDAO
+      BaseDAO baseDAO,
+      ThingDinaService dinaService
     ) {
       Map<String, Object> warnings = new HashMap<>();
       warnings.put(KEY, VALUE);
       return new DinaMetaInfoRepo<>(
         baseDAO,
+        dinaService,
         ThingDTO.class,
         Thing.class,
         thingDTO -> AttributeMetaInfoProvider.DinaJsonMetaInfo.builder()
           .warnings(warnings)
           .build());
+    }
+
+    @Service
+    public class ThingDinaService extends DefaultDinaService<Thing> {
+  
+      public ThingDinaService(@NonNull BaseDAO baseDAO) {
+        super(baseDAO);
+      }
+  
+      @Override
+      protected void preCreate(Thing entity) {
+        entity.setUuid(UUID.randomUUID());
+      }
     }
   }
 
@@ -111,8 +122,7 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
     private Integer id;
 
     @NaturalId
-    @Null(groups = OnCreate.class)
-    @NotNull(groups = OnUpdate.class)
+    @NotNull
     private UUID uuid;
 
     private String name;
@@ -136,12 +146,13 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
 
     public DinaMetaInfoRepo(
       BaseDAO baseDAO,
+      DefaultDinaService<E> dinaService,
       Class<D> resourceClass,
       Class<E> entityClass,
       Function<D, AttributeMetaInfoProvider.DinaJsonMetaInfo> handler
     ) {
       super(
-        new EntityDinaService<E>(baseDAO),
+        dinaService,
         Optional.empty(),
         Optional.empty(),
         new DinaMapper<>(resourceClass),
@@ -151,14 +162,6 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
         null,
         new BuildProperties(new Properties()));
       this.handler = handler;
-    }
-
-    @Service
-    static class EntityDinaService<E extends DinaEntity> extends DefaultDinaService<E> {
-  
-      public EntityDinaService(@NonNull BaseDAO baseDAO) {
-        super(baseDAO);
-      }
     }
 
     @Override

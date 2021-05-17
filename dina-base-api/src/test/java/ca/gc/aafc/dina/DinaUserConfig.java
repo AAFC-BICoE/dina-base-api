@@ -1,15 +1,13 @@
 package ca.gc.aafc.dina;
 
+import java.util.UUID;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 
-import ca.gc.aafc.dina.entity.Chain;
-import ca.gc.aafc.dina.entity.ChainTemplate;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
-import ca.gc.aafc.dina.entity.Project;
-import ca.gc.aafc.dina.entity.Task;
 import ca.gc.aafc.dina.entity.Vocabulary;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
@@ -32,6 +30,11 @@ public class DinaUserConfig {
 
     public DepartmentDinaService(@NonNull BaseDAO baseDAO) {
       super(baseDAO);
+    }
+
+    @Override
+    protected void preCreate(Department entity) {
+      entity.setUuid(UUID.randomUUID());
     }
   }
 
