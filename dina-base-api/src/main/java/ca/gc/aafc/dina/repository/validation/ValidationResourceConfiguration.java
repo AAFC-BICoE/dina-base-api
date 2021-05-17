@@ -1,19 +1,19 @@
 package ca.gc.aafc.dina.repository.validation;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
-import org.springframework.validation.Validator;
+import ca.gc.aafc.dina.service.DinaService;
 
 import java.util.Set;
 
 public interface ValidationResourceConfiguration {
 
   /**
-   * Returns a validator to a given type
+   * Returns a service to a given type
    *
-   * @param type - type to map to a Validator
-   * @return a validator to a given type
+   * @param type - type to map to a service
+   * @return a service to a given type
    */
-  Validator getValidatorForType(String type);
+    DinaService<? extends DinaEntity> getServiceForType(String type);
 
   /**
    * Returns a Resource Class to a given type

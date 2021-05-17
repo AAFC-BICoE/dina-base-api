@@ -4,6 +4,7 @@ import ca.gc.aafc.dina.dto.ValidationDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
+import ca.gc.aafc.dina.service.DinaService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -20,12 +21,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
-import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.validation.Errors;
-import org.springframework.validation.ObjectError;
-import org.springframework.validation.Validator;
 
-import javax.validation.ValidationException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -63,7 +59,7 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     validationResourceConfiguration.getTypes().forEach(type -> {
       Class<?> resourceClass = validationResourceConfiguration.getResourceClassForType(type);
       Class<? extends DinaEntity> entityClass = validationResourceConfiguration.getEntityClassForType(type);
-      Validator validatorForType = validationConfiguration.getValidatorForType(type);
+      DinaService<? extends DinaEntity> validatorForType = validationConfiguration.getServiceForType(type);
       if (resourceClass == null || entityClass == null || validatorForType == null) {
         throw new IllegalStateException(
           "The validation configuration must supply a validator, resource, and entity class for the given type: " + type);
@@ -95,8 +91,7 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     mapper.applyDtoToEntity(dto, entity, registry.getAttributesPerClass(), relationNames);
     entity.setUuid(UUID.randomUUID()); // Random id to avoid validating generated value.
 
-    final Errors errors = findValidationErrors(type, entity);
-    validateErrors(errors);
+    validationConfiguration.getServiceForType(type).validate(entity);
 
     // Crnk requires a created resource to have an ID. Create one here if the client did not provide one.
     resource.setId(Optional.ofNullable(resource.getId()).orElse("N/A"));
@@ -155,26 +150,6 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     if (isBlank(data) || !data.has(ATTRIBUTES_KEY) || isBlank(data.get(ATTRIBUTES_KEY))) {
       throw new BadRequestException("You must submit a valid data block");
     }
-  }
-
-  private static void validateErrors(Errors errors) {
-    if (errors.hasErrors()) {
-      Optional<String> errorMsg = errors.getAllErrors()
-        .stream()
-        .map(ObjectError::getDefaultMessage)
-        .findAny();
-
-      errorMsg.ifPresent(msg -> {
-        throw new ValidationException(msg);
-      });
-    }
-  }
-
-  private Errors findValidationErrors(String type, DinaEntity entity) {
-    Errors errors = new BeanPropertyBindingResult(
-      entity, entity.getUuid() != null ? entity.getUuid().toString() : "");
-    validationConfiguration.getValidatorForType(type).validate(entity, errors);
-    return errors;
   }
 
   private static Set<String> findRelationNames(DinaMappingRegistry registry, Class<?> aClass) {
