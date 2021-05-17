@@ -16,7 +16,6 @@ import io.crnk.core.resource.list.ResourceList;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -34,7 +33,7 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
   public static final String ATTRIBUTES_KEY = "attributes";
   public static final String RELATIONSHIPS_KEY = "relationships";
   public static final String DATA_KEY = "data";
-  private ValidationRegistry validationRegistry;
+  private final ValidationRegistry validationRegistry;
   private final ObjectMapper crnkMapper;
 
   public ValidationRepository(
@@ -43,17 +42,7 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
   ) {
     super(ValidationDto.class);
     this.crnkMapper = crnkMapper;
-    initRegistry(validationResourceConfiguration);
-  }
-
-  private void initRegistry(ValidationResourceConfiguration validationResourceConfiguration) {
-    if (CollectionUtils.isEmpty(validationResourceConfiguration.getTypes())) {
-      throw new IllegalStateException("The validation configuration must return a set of types, " +
-        "if no types require validation consider using dina.validationEndpoint.enabled: false");
-    }
-    validationRegistry = new ValidationRegistry(
-      validationResourceConfiguration.getTypes(),
-      validationResourceConfiguration);
+    this.validationRegistry = new ValidationRegistry(validationResourceConfiguration);
   }
 
   @Override

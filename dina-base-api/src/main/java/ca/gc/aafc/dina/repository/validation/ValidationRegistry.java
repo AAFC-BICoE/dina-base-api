@@ -15,23 +15,20 @@ import org.apache.commons.collections.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class ValidationRegistry {
   private final Map<String, ValidationEntry> typesToEntryMap = new HashMap<>();
 
-  public ValidationRegistry(@NonNull Set<Class<?>> resources, @NonNull ValidationResourceConfiguration configuration) {
-    if (CollectionUtils.isEmpty(resources)) {
-      throw new IllegalArgumentException("You must supply a list of dina resources");
+  public ValidationRegistry(@NonNull ValidationResourceConfiguration configuration) {
+    if (CollectionUtils.isEmpty(configuration.getTypes())) {
+      throw new IllegalArgumentException("The validation configuration must return a set of types, " +
+        "if no types require validation consider using dina.validationEndpoint.enabled: false");
     }
-    initMaps(resources, configuration);
+    initMaps(configuration);
   }
 
-  private void initMaps(
-    Set<Class<?>> resources,
-    ValidationResourceConfiguration configuration
-  ) {
-    resources.forEach(r -> {
+  private void initMaps(ValidationResourceConfiguration configuration) {
+    configuration.getTypes().forEach(r -> {
       RelatedEntity relatedEntity = r.getAnnotation(RelatedEntity.class);
       JsonApiResource jsonApiResource = r.getAnnotation(JsonApiResource.class);
       DinaMappingRegistry registry = new DinaMappingRegistry(r);
