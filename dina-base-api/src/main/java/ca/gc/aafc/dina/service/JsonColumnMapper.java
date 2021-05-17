@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Select;
 
 /**
  * Base Managed Json Column Mapper Service based on mybatis (supports only PostgreSQL 9+)
+ * RE: https://redmine.biodiversity.agr.gc.ca/issues/22488
  * The service check if key exist as a top-level key within the JSON value
  * Returns total count of records which use the key in json column
  */
