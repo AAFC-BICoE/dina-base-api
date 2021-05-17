@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.ComplexObject;
+import ca.gc.aafc.dina.entity.DinaEntity;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,12 +14,14 @@ import org.hibernate.proxy.HibernateProxy;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -474,7 +477,7 @@ public class DinaMapperTest {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
-  public static class Student {
+  public static class Student implements DinaEntity {
 
     private String name;
 
@@ -494,13 +497,37 @@ public class DinaMapperTest {
     // Many to - Relation to test
     private List<Student> classMates;
 
+    @Override
+    public Integer getId() {
+      return null;
+    }
+
+    @Override
+    public UUID getUuid() {
+      return null;
+    }
+
+    @Override
+    public void setUuid(UUID uuid) {
+
+    }
+
+    @Override
+    public String getCreatedBy() {
+      return null;
+    }
+
+    @Override
+    public OffsetDateTime getCreatedOn() {
+      return null;
+    }
   }
 
   @Data
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
-  public static final class NestedResolverRelation {
+  public static final class NestedResolverRelation implements DinaEntity{
 
     // Custom Resolved Field to test
     private ComplexObject name;
@@ -510,6 +537,30 @@ public class DinaMapperTest {
      */
     private int customField;
 
+    @Override
+    public Integer getId() {
+      return null;
+    }
+
+    @Override
+    public UUID getUuid() {
+      return null;
+    }
+
+    @Override
+    public void setUuid(UUID uuid) {
+
+    }
+
+    @Override
+    public String getCreatedBy() {
+      return null;
+    }
+
+    @Override
+    public OffsetDateTime getCreatedOn() {
+      return null;
+    }
   }
 
   @Data
