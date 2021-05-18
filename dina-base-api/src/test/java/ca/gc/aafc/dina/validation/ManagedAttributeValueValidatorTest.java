@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.validation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
@@ -23,8 +24,6 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
@@ -74,7 +73,6 @@ public class ManagedAttributeValueValidatorTest {
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
     validatorUnderTest.validate(mav, errors);
     assertEquals(1, errors.getErrorCount());
-    List<ObjectError> f = errors.getAllErrors();
 
     assertTrue(errors.getAllErrors().get(0).getCode().contains("val3"));
   }
@@ -85,11 +83,7 @@ public class ManagedAttributeValueValidatorTest {
     Map.Entry<String, String> mav = new AbstractMap.SimpleEntry<>("key_x", "val3");
 
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
-    validatorUnderTest.validate(mav, errors);
-    assertEquals(1, errors.getErrorCount());
-    List<ObjectError> f = errors.getAllErrors();
-
-    assertTrue(errors.getAllErrors().get(0).getCode().contains("key not found"));
+    assertThrows(IllegalArgumentException.class, () -> validatorUnderTest.validate(mav, errors)); 
   }
   
   @TestConfiguration

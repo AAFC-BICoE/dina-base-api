@@ -43,6 +43,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void validate(Object target, Errors errors) {
     Map.Entry<String,String> map = (Entry) target;
 
@@ -55,8 +56,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     if (maList.isEmpty()) {
       String errorMessage = messageSource.getMessage(VALID_ASSIGNED_VALUE_KEY, null,
         LocaleContextHolder.getLocale());
-      errors.reject(errorMessage);
-      return;
+      throw new IllegalArgumentException(errorMessage);
     }
 
     // Assuming that keys are unique, there should only be one managedAttribute
