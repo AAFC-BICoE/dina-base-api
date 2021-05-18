@@ -18,6 +18,7 @@ import org.springframework.validation.Validator;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.entity.ManagedAttribute.ManagedAttributeType;
 import ca.gc.aafc.dina.service.DefaultDinaService;
+import ca.gc.aafc.dina.service.ManagedAttributeService;
 import lombok.NonNull;
 
 import javax.inject.Named;
@@ -25,7 +26,7 @@ import javax.inject.Named;
 @Component
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
 
-  private DefaultDinaService<E> dinaService;
+  private ManagedAttributeService<E> dinaService;
 
   private final MessageSource messageSource;
 
@@ -35,7 +36,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
   public ManagedAttributeValueValidator(
       @Named("validationMessageSource") MessageSource messageSource,
-    @NonNull DefaultDinaService<E> dinaService) {
+    @NonNull ManagedAttributeService<E> dinaService) {
     this.messageSource = messageSource;
     this.dinaService = dinaService;
   }
@@ -52,7 +53,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     String key = map.getKey();
     String assignedValue = map.getValue();
 
-    Class<E> clazz = (Class<E>) GenericTypeResolver.resolveTypeArgument(dinaService.getClass(), DefaultDinaService.class);
+    Class<E> clazz = (Class<E>) GenericTypeResolver.resolveTypeArgument(dinaService.getClass(), ManagedAttributeService.class);
 
     List<E> maList = dinaService.findByProperty(clazz, "key", key);
     if (maList.isEmpty()) {

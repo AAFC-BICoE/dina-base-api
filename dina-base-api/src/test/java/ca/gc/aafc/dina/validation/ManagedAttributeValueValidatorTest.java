@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -30,6 +31,7 @@ import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
 import ca.gc.aafc.dina.validation.ManagedAttributeValueValidatorTest.ManagedAttributeConfig.TestManagedAttribute;
+import ca.gc.aafc.dina.validation.ManagedAttributeValueValidatorTest.ManagedAttributeConfig.TestManagedAttributeService;
 import groovy.transform.builder.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -42,7 +44,7 @@ public class ManagedAttributeValueValidatorTest {
   private ManagedAttributeService<TestManagedAttribute> testManagedAttributeService;
 
   @Inject
-  private ManagedAttributeValueValidator<TestManagedAttribute> validatorUnderTest; //= new ManagedAttributeValueValidator(messageSource, testManagedAttributeService);
+  private ManagedAttributeValueValidator<TestManagedAttribute> validatorUnderTest;
 
   private TestManagedAttribute testManagedAttribute;
 
@@ -79,7 +81,6 @@ public class ManagedAttributeValueValidatorTest {
 
   @Test
   public void assignedKeyDoesNotExist_validationFails() throws Exception {
-
     Map.Entry<String, String> mav = new AbstractMap.SimpleEntry<>("key_x", "val3");
 
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
@@ -107,7 +108,7 @@ public class ManagedAttributeValueValidatorTest {
     }
 
     @Service
-    static class TestManagedAttributeService extends ManagedAttributeService<TestManagedAttribute> {
+    class TestManagedAttributeService extends ManagedAttributeService<TestManagedAttribute> {
       public TestManagedAttributeService(@NonNull BaseDAO baseDAO) {
         super(baseDAO);
       }
