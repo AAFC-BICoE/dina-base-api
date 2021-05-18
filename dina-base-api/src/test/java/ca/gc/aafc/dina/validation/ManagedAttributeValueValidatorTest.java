@@ -83,7 +83,37 @@ public class ManagedAttributeValueValidatorTest {
     Map.Entry<String, String> mav = new AbstractMap.SimpleEntry<>("key_x", "val3");
 
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
-    assertThrows(IllegalArgumentException.class, () -> validatorUnderTest.validate(mav, errors)); 
+    IllegalArgumentException exception = 
+      assertThrows(IllegalArgumentException.class, () -> validatorUnderTest.validate(mav, errors)); 
+
+    String expected = "assignedValue key not found.";
+    String actual = exception.getLocalizedMessage();
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void duplicateAssignedKeyInconsistentManagedAttributeType_validationFails() throws Exception {
+    TestManagedAttribute testManagedAttributeA = new TestManagedAttribute();
+    testManagedAttributeA.setName("sameKey");
+    testManagedAttributeA.setAcceptedValues(new String[] {"val1", "val2"});
+    testManagedAttributeA.setManagedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER);
+    testManagedAttributeService.create(testManagedAttributeA);
+
+    TestManagedAttribute testManagedAttributeB = new TestManagedAttribute();
+    testManagedAttributeB.setName("sameKey");
+    testManagedAttributeB.setAcceptedValues(new String[] {"val1", "val3"});
+    testManagedAttributeB.setManagedAttributeType(ManagedAttribute.ManagedAttributeType.STRING);
+    testManagedAttributeService.create(testManagedAttributeB);
+
+    Map.Entry<String, String> mav = new AbstractMap.SimpleEntry<>("same_key", "val3");
+
+    Errors errors = new BeanPropertyBindingResult(mav, "mav");
+    IllegalArgumentException exception = 
+      assertThrows(IllegalArgumentException.class, () -> validatorUnderTest.validate(mav, errors)); 
+      
+    String expected = "managed attribute validation type is inconsistent.";
+    String actual = exception.getLocalizedMessage();
+    assertEquals(expected, actual);
   }
   
   @TestConfiguration
