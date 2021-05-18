@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Select;
  * Returns total count of records which use the key in json column
  */
 @Mapper
-public interface JsonColumnMapper {
+public interface PostgresJsonbService {
     /**
      * Return number of records in the table if specified key exist as a top-level key within the JSON value
      *
