@@ -20,6 +20,8 @@ import ca.gc.aafc.dina.entity.ManagedAttribute.ManagedAttributeType;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import lombok.NonNull;
 
+import javax.inject.Named;
+
 @Component
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
 
@@ -32,7 +34,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
   public ManagedAttributeValueValidator(
-    MessageSource messageSource,
+      @Named("validationMessageSource") MessageSource messageSource,
     @NonNull DefaultDinaService<E> dinaService) {
     this.messageSource = messageSource;
     this.dinaService = dinaService;

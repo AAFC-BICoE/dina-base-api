@@ -19,6 +19,7 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import java.util.Locale;
 
@@ -78,13 +79,22 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
   }
 
   @Bean
+  @Named("validationMessageSource")
+  public MessageSource baseValidationMessageSource() {
+    ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+
+    messageSource.setBasename("classpath:base-validation-messages");
+    messageSource.setDefaultEncoding("UTF-8");
+    return messageSource;
+  }
+
+  @Bean
   public MessageSource messageSource() {
-      ReloadableResourceBundleMessageSource messageSource
-        = new ReloadableResourceBundleMessageSource();
-      
-      messageSource.setBasename("classpath:validation-messages");
-      messageSource.setDefaultEncoding("UTF-8");
-      return messageSource;
+    ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+
+    messageSource.setBasename("classpath:validation-messages");
+    messageSource.setDefaultEncoding("UTF-8");
+    return messageSource;
   }
   
   @Bean
