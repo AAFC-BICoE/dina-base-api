@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.GenericTypeResolver;
@@ -17,7 +18,6 @@ import org.springframework.validation.Validator;
 
 import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.entity.ManagedAttribute.ManagedAttributeType;
-import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
 import lombok.NonNull;
 
@@ -36,7 +36,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
   public ManagedAttributeValueValidator(
       @Named("validationMessageSource") MessageSource messageSource,
-    @NonNull ManagedAttributeService<E> dinaService) {
+    @NonNull @Qualifier("managedAttributeService") ManagedAttributeService<E> dinaService) {
     this.messageSource = messageSource;
     this.dinaService = dinaService;
   }

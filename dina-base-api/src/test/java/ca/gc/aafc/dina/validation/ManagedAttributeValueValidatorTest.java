@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
 import java.util.AbstractMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,10 +17,11 @@ import javax.persistence.Id;
 import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -31,7 +31,6 @@ import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
 import ca.gc.aafc.dina.validation.ManagedAttributeValueValidatorTest.ManagedAttributeConfig.TestManagedAttribute;
-import ca.gc.aafc.dina.validation.ManagedAttributeValueValidatorTest.ManagedAttributeConfig.TestManagedAttributeService;
 import groovy.transform.builder.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -108,6 +107,8 @@ public class ManagedAttributeValueValidatorTest {
     }
 
     @Service
+    @Primary
+    @Qualifier("managedAttributeService")
     class TestManagedAttributeService extends ManagedAttributeService<TestManagedAttribute> {
       public TestManagedAttributeService(@NonNull BaseDAO baseDAO) {
         super(baseDAO);

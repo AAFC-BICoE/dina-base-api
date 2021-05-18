@@ -38,7 +38,7 @@ import java.util.function.BiFunction;
  *
  * @param <E> - Type of {@link DinaEntity}
  */
-@Component
+@Component("dinaService")
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 @Validated
 public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> {
