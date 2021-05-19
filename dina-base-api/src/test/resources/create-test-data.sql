@@ -3,8 +3,8 @@
 -- DROP TABLE public.dina_test_table;
 
 /*
- This is a test table for ca.gc.aafc.dina.service.JsonColumnMapper
- JsonColumnMapper can not be tested against H2 in-memory database
+ This is a test table for ca.gc.aafc.dina.service.PostgresJsonbService
+ PostgresJsonbService can not be tested against H2 in-memory database
  Need to populate a dummy table with some dummy rows
  */
 CREATE TABLE public.dina_test_table
