@@ -110,7 +110,6 @@ limitations under the License.
       <!-- How much spaces a tab is worth  -->
       <property name="tabWidth" value="2"/>
 
-      <!-- severity is at ignore until we fix the other issues -->
       <module name="Indentation">
         <property name="basicOffset" value="2"/>
         <property name="braceAdjustment" value="0"/>
@@ -118,7 +117,7 @@ limitations under the License.
         <property name="throwsIndent" value="4"/>
         <property name="lineWrappingIndentation" value="4"/>
         <property name="arrayInitIndent" value="2"/>
-        <property name="severity" value="ignore"/>
+        <property name="severity" value="warning"/>
       </module>
 
       <!--
@@ -178,7 +177,7 @@ limitations under the License.
 
 
         <!-- javadoc doesn't need one @param, @return, @throws tags -->
-        <property name="scope" value="public"/>
+        <property name="accessModifiers" value="public"/>
         <property name="allowMissingParamTags" value="true"/>
         <property name="allowMissingReturnTag" value="true"/>
 
