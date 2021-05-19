@@ -10,11 +10,9 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.GenericTypeResolver;
-import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
@@ -25,11 +23,9 @@ import lombok.NonNull;
 
 import javax.inject.Named;
 
-@Component
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
 
-  private ManagedAttributeService<E> dinaService;
-
+  private final ManagedAttributeService<E> dinaService;
   private final MessageSource messageSource;
 
   private static final String VALID_ASSIGNED_VALUE = "assignedValue.invalid";
@@ -39,10 +35,11 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
   public ManagedAttributeValueValidator(
       @Named("validationMessageSource") MessageSource messageSource,
-    @NonNull @Qualifier("managedAttributeService") ManagedAttributeService<E> dinaService) {
+      @NonNull ManagedAttributeService<E> dinaService) {
     this.messageSource = messageSource;
     this.dinaService = dinaService;
   }
+
   @Override
   public boolean supports(Class<?> clazz) {
     return Entry.class.isAssignableFrom(clazz);

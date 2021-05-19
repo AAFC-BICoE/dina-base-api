@@ -42,7 +42,6 @@ import java.util.UUID;
 public class DinaMappingLayerIT {
 
   @Inject
-  @Qualifier("dinaService")
   private DefaultDinaService<Task> service;
 
   private DinaMappingLayer<ProjectDTO, Project> mappingLayer;
