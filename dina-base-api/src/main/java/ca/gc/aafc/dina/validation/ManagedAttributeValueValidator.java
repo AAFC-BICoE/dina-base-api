@@ -2,10 +2,8 @@ package ca.gc.aafc.dina.validation;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -30,7 +28,6 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
   private static final String VALID_ASSIGNED_VALUE = "assignedValue.invalid";
   private static final String VALID_ASSIGNED_VALUE_KEY = "assignedValue.key.invalid";
-  private static final String VALID_MANAGED_ATTRIBUTE_TYPE = "validation.managedAttributeType.inconsistent";
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
   public ManagedAttributeValueValidator(
@@ -59,30 +56,21 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     if (maList.isEmpty()) {
       String errorMessage = messageSource.getMessage(VALID_ASSIGNED_VALUE_KEY, null,
         LocaleContextHolder.getLocale());
-      throw new IllegalArgumentException(errorMessage);
-    }
+        errors.reject(errorMessage);
+        return;
+      }
 
-    Set<String> acceptedValues = new HashSet<>();
-    Set<ManagedAttributeType> maType = new HashSet<>();
-    for (E ma : maList) {
-      List<String> acceptedValuesList = ma.getAcceptedValues() == null ? Collections.emptyList()
-        : Arrays.stream(ma.getAcceptedValues()).map(String::toUpperCase).collect(Collectors.toList());
-      acceptedValues.addAll(acceptedValuesList);
-      maType.add(ma.getManagedAttributeType());
-    }
+    E ma = maList.get(0);
 
-    // Inconsistent ManagedAttributeType
-    if (maType.size() > 1) {
-      String errorMessage = messageSource.getMessage(VALID_MANAGED_ATTRIBUTE_TYPE, null,
-        LocaleContextHolder.getLocale());
-      throw new IllegalArgumentException(errorMessage);
-    }
-    
+    List<String> acceptedValues = ma.getAcceptedValues() == null ? Collections.emptyList()
+      : Arrays.stream(ma.getAcceptedValues()).map(String::toUpperCase).collect(Collectors.toList());
+
+    ManagedAttributeType maType = ma.getManagedAttributeType();
     
     boolean assignedValueIsValid = true;
 
     if (acceptedValues.isEmpty()) {
-      if (maType.iterator().next() == ManagedAttributeType.INTEGER && !INTEGER_PATTERN.matcher(assignedValue).matches()) {
+      if (maType == ManagedAttributeType.INTEGER && !INTEGER_PATTERN.matcher(assignedValue).matches()) {
         assignedValueIsValid = false;
       }
     } else {
