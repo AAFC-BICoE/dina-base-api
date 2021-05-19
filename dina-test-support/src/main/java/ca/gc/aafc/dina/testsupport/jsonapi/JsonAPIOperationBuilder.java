@@ -30,10 +30,10 @@ public final class JsonAPIOperationBuilder {
    */
   public JsonAPIOperationBuilder addOperation(HttpMethod method, String path, Map<String, Object> values) {
     Map<String, Object> operationsMap = Map.of(
-      "op", method.name(),
-      "path", path,
-      // since toJsonAPIMap returns the value under "data" we remove it if present
-      "value", values.getOrDefault("data", values)
+        "op", method.name(),
+        "path", path,
+        // since toJsonAPIMap returns the value under "data" we remove it if present
+        "value", values.getOrDefault("data", values)
     );
 
     operations.add(operationsMap);

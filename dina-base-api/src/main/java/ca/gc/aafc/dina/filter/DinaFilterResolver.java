@@ -67,9 +67,9 @@ public class DinaFilterResolver {
    * @return a new List of filter specs resolved from the given filters
    */
   public static List<FilterSpec> resolveFilterAdapters(
-    @NonNull Class<?> resource,
-    @NonNull List<FilterSpec> filters,
-    @NonNull DinaMappingRegistry registry
+      @NonNull Class<?> resource,
+      @NonNull List<FilterSpec> filters,
+      @NonNull DinaMappingRegistry registry
   ) {
     List<FilterSpec> newFilters = new ArrayList<>();
     for (FilterSpec filterSpec : filters) {
@@ -79,9 +79,9 @@ public class DinaFilterResolver {
 
       if (CollectionUtils.isNotEmpty(path) && registry.getFieldAdaptersPerClass().containsKey(dtoClass)) {
         registry.getFieldAdaptersPerClass().get(dtoClass).findFilterSpec(path.get(path.size() - 1))
-          .ifPresentOrElse(
-            specs -> newFilters.addAll(resolveSpecs(filterSpec, specs)),
-            () -> newFilters.add(filterSpec));
+            .ifPresentOrElse(
+              specs -> newFilters.addAll(resolveSpecs(filterSpec, specs)),
+              () -> newFilters.add(filterSpec));
       } else {
         newFilters.add(filterSpec);
       }
@@ -97,8 +97,8 @@ public class DinaFilterResolver {
    * @return a list of resolved filter specs.
    */
   private static List<FilterSpec> resolveSpecs(
-    @NonNull FilterSpec applyValue,
-    @NonNull Function<FilterSpec, FilterSpec[]> specs
+      @NonNull FilterSpec applyValue,
+      @NonNull Function<FilterSpec, FilterSpec[]> specs
   ) {
     List<String> path = applyValue.getAttributePath();
     List<String> pathPrefix = new ArrayList<>(path.subList(0, path.size() - 1));
@@ -106,8 +106,8 @@ public class DinaFilterResolver {
       .map(fs -> {
         // Resolve filter spec path with generated spec paths
         List<String> newPath = Stream
-          .concat(pathPrefix.stream(), fs.getAttributePath().stream())
-          .collect(Collectors.toList());
+            .concat(pathPrefix.stream(), fs.getAttributePath().stream())
+            .collect(Collectors.toList());
         return PathSpec.of(newPath).filter(fs.getOperator(), fs.getValue());
       })
       .collect(Collectors.toList());
@@ -126,12 +126,12 @@ public class DinaFilterResolver {
    * @return - array of predicates
    */
   public <E> Predicate[] buildPredicates(
-    @NonNull QuerySpec querySpec,
-    @NonNull CriteriaBuilder cb,
-    @NonNull Root<E> root,
-    Collection<Serializable> ids,
-    String idFieldName,
-    @NonNull EntityManager em
+      @NonNull QuerySpec querySpec,
+      @NonNull CriteriaBuilder cb,
+      @NonNull Root<E> root,
+      Collection<Serializable> ids,
+      String idFieldName,
+      @NonNull EntityManager em
   ) {
     final List<Predicate> restrictions = new ArrayList<>();
 

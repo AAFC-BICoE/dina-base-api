@@ -79,19 +79,19 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
 
   @Bean
   public MessageSource messageSource() {
-      ReloadableResourceBundleMessageSource messageSource
-        = new ReloadableResourceBundleMessageSource();
+    ReloadableResourceBundleMessageSource messageSource
+          = new ReloadableResourceBundleMessageSource();
       
-      messageSource.setBasename("classpath:validation-messages");
-      messageSource.setDefaultEncoding("UTF-8");
-      return messageSource;
+    messageSource.setBasename("classpath:validation-messages");
+    messageSource.setDefaultEncoding("UTF-8");
+    return messageSource;
   }
   
   @Bean
   @Override
   public LocalValidatorFactoryBean getValidator() {
-      LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
-      bean.setValidationMessageSource(messageSource());
-      return bean;
+    LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
+    bean.setValidationMessageSource(messageSource());
+    return bean;
   }
 }

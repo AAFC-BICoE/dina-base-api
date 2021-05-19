@@ -35,10 +35,10 @@ public final class SimpleFilterHandler {
    * @return Generates a predicate for a given crnk filter.
    */
   public static Predicate getRestriction(
-    @NonNull QuerySpec querySpec,
-    @NonNull From<?, ?> root,
-    @NonNull CriteriaBuilder cb,
-    @NonNull ArgumentParser argumentParser
+      @NonNull QuerySpec querySpec,
+      @NonNull From<?, ?> root,
+      @NonNull CriteriaBuilder cb,
+      @NonNull ArgumentParser argumentParser
   ) {
     List<FilterSpec> filterSpecs = querySpec.getFilters();
     List<Predicate> predicates = new ArrayList<>();
@@ -70,15 +70,15 @@ public final class SimpleFilterHandler {
    * @return a predicate for a given crnk filter spec
    */
   private static Predicate generatePredicate(
-    @NonNull FilterSpec filter,
-    @NonNull Expression<?> attributePath,
-    @NonNull CriteriaBuilder cb,
-    @NonNull ArgumentParser argumentParser
+      @NonNull FilterSpec filter,
+      @NonNull Expression<?> attributePath,
+      @NonNull CriteriaBuilder cb,
+      @NonNull ArgumentParser argumentParser
   ) {
     // Convert the value to the target type:
     Object value = argumentParser.parse(
-      Optional.ofNullable(filter.getValue()).map(Object::toString).orElse(null),
-      attributePath.getJavaType()
+        Optional.ofNullable(filter.getValue()).map(Object::toString).orElse(null),
+        attributePath.getJavaType()
     );
     if (value == null) {
       return filter.getOperator() == FilterOperator.NEQ

@@ -51,7 +51,7 @@ public class AuditSnapshotRepository extends ReadOnlyResourceRepositoryBase<Audi
     AuditInstance instance = AuditInstance.fromString(instanceFilter).orElse(null);
 
     List<AuditSnapshotDto> dtos = service.findAll(instance, authorFilter, limit, skip)
-      .stream().map(AuditSnapshotRepository::toDto).collect(Collectors.toList());
+        .stream().map(AuditSnapshotRepository::toDto).collect(Collectors.toList());
 
     Long count = service.getResouceCount(authorFilter, instance);
     DefaultPagedMetaInformation meta = new DefaultPagedMetaInformation();
@@ -93,10 +93,10 @@ public class AuditSnapshotRepository extends ReadOnlyResourceRepositoryBase<Audi
   private static Map<String, String> getFilterMap(QuerySpec qs) {
     Map<String, String> map = new HashMap<>();
     qs.getFilters().forEach(
-      it -> map.put(
-        it.getPath().toString(),
-        it.getValue().toString()
-      )
+        it -> map.put(
+            it.getPath().toString(),
+            it.getValue().toString()
+        )
     );
     return map;
   }

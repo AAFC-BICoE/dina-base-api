@@ -117,7 +117,7 @@ limitations under the License.
         <property name="throwsIndent" value="4"/>
         <property name="lineWrappingIndentation" value="4"/>
         <property name="arrayInitIndent" value="2"/>
-        <property name="severity" value="warning"/>
+        <property name="severity" value="error"/>
       </module>
 
       <!--

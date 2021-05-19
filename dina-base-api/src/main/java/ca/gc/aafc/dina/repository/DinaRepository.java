@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
  */
 @Transactional
 public class DinaRepository<D, E extends DinaEntity>
-  implements ResourceRepository<D, Serializable>, MetaRepository<D> {
+    implements ResourceRepository<D, Serializable>, MetaRepository<D> {
 
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
@@ -72,15 +72,15 @@ public class DinaRepository<D, E extends DinaEntity>
   private final boolean hasFieldAdapters;
 
   public DinaRepository(
-    @NonNull DinaService<E> dinaService,
-    @NonNull Optional<DinaAuthorizationService> authorizationService,
-    @NonNull Optional<AuditService> auditService,
-    @NonNull DinaMapper<D, E> dinaMapper,
-    @NonNull Class<D> resourceClass,
-    @NonNull Class<E> entityClass,
-    DinaFilterResolver filterResolver,
-    ExternalResourceProvider externalResourceProvider,
-    @NonNull BuildProperties buildProperties
+      @NonNull DinaService<E> dinaService,
+      @NonNull Optional<DinaAuthorizationService> authorizationService,
+      @NonNull Optional<AuditService> auditService,
+      @NonNull DinaMapper<D, E> dinaMapper,
+      @NonNull Class<D> resourceClass,
+      @NonNull Class<E> entityClass,
+      DinaFilterResolver filterResolver,
+      ExternalResourceProvider externalResourceProvider,
+      @NonNull BuildProperties buildProperties
   ) {
     this.dinaService = dinaService;
     this.authorizationService = authorizationService;
@@ -117,7 +117,7 @@ public class DinaRepository<D, E extends DinaEntity>
       auditService.ifPresent(service -> { // Past Deleted records with audit logs throw Gone.
         final String resourceType = querySpec.getResourceType();
         final AuditService.AuditInstance auditInstance = AuditService.AuditInstance.builder()
-          .id(id.toString()).type(resourceType).build();
+            .id(id.toString()).type(resourceType).build();
         if (service.hasTerminalSnapshot(auditInstance)) {
           throw new GoneException(
             "GONE",
@@ -162,7 +162,7 @@ public class DinaRepository<D, E extends DinaEntity>
     List<D> dList = mappingLayer.mapEntitiesToDto(spec, fetchEntities(ids, spec, idName));
 
     Long resourceCount = dinaService.getResourceCount( entityClass,
-      (criteriaBuilder, root, em) -> filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idName, em));
+        (criteriaBuilder, root, em) -> filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idName, em));
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
@@ -181,7 +181,7 @@ public class DinaRepository<D, E extends DinaEntity>
     if (hasFieldAdapters) {
       QuerySpec spec = querySpec.clone();
       spec.setFilters(
-        DinaFilterResolver.resolveFilterAdapters(resourceClass, querySpec.getFilters(), registry));
+          DinaFilterResolver.resolveFilterAdapters(resourceClass, querySpec.getFilters(), registry));
       return spec;
     }
     return querySpec;
@@ -189,17 +189,17 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName) {
     List<IncludeRelationSpec> relationsToEagerLoad = querySpec.getIncludedRelations().stream()
-      .filter(ir -> {
+        .filter(ir -> {
         // Skip eager loading on JsonApiExternalRelation-marked fields:
-        Class<?> dtoClass = querySpec.getResourceClass();
-        for (String attr : ir.getAttributePath()) {
-          if (isExternalRelation(dtoClass, attr)) {
-            return false;
+          Class<?> dtoClass = querySpec.getResourceClass();
+          for (String attr : ir.getAttributePath()) {
+            if (isExternalRelation(dtoClass, attr)) {
+              return false;
+            }
+            dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
           }
-          dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
-        }
-        return true;
-      }).collect(Collectors.toList());
+          return true;
+        }).collect(Collectors.toList());
 
     return dinaService.findAll(
       entityClass,
@@ -242,7 +242,7 @@ public class DinaRepository<D, E extends DinaEntity>
     dinaService.create(entity);
 
     D dto = findOne(
-      (Serializable) PropertyUtils.getProperty(entity, findIdFieldName(resourceClass)),
+        (Serializable) PropertyUtils.getProperty(entity, findIdFieldName(resourceClass)),
       new QuerySpec(resourceClass));
     auditService.ifPresent(service -> service.audit(dto));
     return (S) dto;
@@ -259,12 +259,12 @@ public class DinaRepository<D, E extends DinaEntity>
     dinaService.delete(entity);
 
     auditService.ifPresent(service -> service.auditDeleteEvent(mappingLayer.toDtoSimpleMapping(
-      entity)));
+        entity)));
   }
 
   @Override
   public DinaMetaInfo getMetaInformation(
-    Collection<D> collection, QuerySpec querySpec, MetaInformation metaInformation
+      Collection<D> collection, QuerySpec querySpec, MetaInformation metaInformation
   ) {
     DinaMetaInfo metaInfo = new DinaMetaInfo();
     // Set External types
