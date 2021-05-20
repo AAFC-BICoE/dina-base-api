@@ -1,25 +1,22 @@
 package ca.gc.aafc.dina.validation;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
+import ca.gc.aafc.dina.entity.ManagedAttribute;
+import ca.gc.aafc.dina.entity.ManagedAttribute.ManagedAttributeType;
+import ca.gc.aafc.dina.service.ManagedAttributeService;
+import lombok.NonNull;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
-import ca.gc.aafc.dina.entity.ManagedAttribute;
-import ca.gc.aafc.dina.entity.ManagedAttribute.ManagedAttributeType;
-import ca.gc.aafc.dina.service.ManagedAttributeService;
-import lombok.NonNull;
-
 import javax.inject.Named;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
 
