@@ -38,51 +38,53 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   }
 
   @Override
-  public boolean supports(Class<?> clazz) {
-    return Entry.class.isAssignableFrom(clazz);
+  public boolean supports(@NonNull Class<?> clazz) {
+    return Map.class.isAssignableFrom(clazz);
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public void validate(Object target, Errors errors) {
-    Map.Entry<String,String> map = (Entry) target;
-
-    String key = map.getKey();
-    String assignedValue = map.getValue();
-
-    Class<E> clazz = (Class<E>) GenericTypeResolver.resolveTypeArgument(dinaService.getClass(), ManagedAttributeService.class);
-
-    List<E> maList = dinaService.findByProperty(clazz, "key", key);
-    if (maList.isEmpty()) {
-      String errorMessage = messageSource.getMessage(VALID_ASSIGNED_VALUE_KEY, null,
-        LocaleContextHolder.getLocale());
-        errors.reject(errorMessage);
-        return;
-      }
-
-    E ma = maList.get(0);
-
-    List<String> acceptedValues = ma.getAcceptedValues() == null ? Collections.emptyList()
-      : Arrays.stream(ma.getAcceptedValues()).map(String::toUpperCase).collect(Collectors.toList());
-
-    ManagedAttributeType maType = ma.getManagedAttributeType();
-    
-    boolean assignedValueIsValid = true;
-
-    if (acceptedValues.isEmpty()) {
-      if (maType == ManagedAttributeType.INTEGER && !INTEGER_PATTERN.matcher(assignedValue).matches()) {
-        assignedValueIsValid = false;
-      }
-    } else {
-      if (!acceptedValues.contains(assignedValue.toUpperCase())) {
-        assignedValueIsValid = false;
-      }
+  public void validate(@NonNull Object target, @NonNull Errors errors) {
+    if (!supports(target.getClass())) {
+      throw new IllegalArgumentException("this validator can only validate the type: " + Map.class.getSimpleName());
     }
-    if (!assignedValueIsValid) {
-      String errorMessage = messageSource.getMessage(VALID_ASSIGNED_VALUE, new String[] { assignedValue },
+
+    ((Map<String, String>) target).forEach((key, assignedValue) -> {
+
+      Class<E> clazz = (Class<E>) GenericTypeResolver.resolveTypeArgument(dinaService.getClass(), ManagedAttributeService.class);
+
+      List<E> maList = dinaService.findByProperty(clazz, "key", key);
+      if (maList.isEmpty()) {
+        String errorMessage = messageSource.getMessage(VALID_ASSIGNED_VALUE_KEY, null,
           LocaleContextHolder.getLocale());
-      errors.reject(errorMessage);
-    }
+          errors.reject(errorMessage);
+          return;
+        }
+
+      E ma = maList.get(0);
+
+      List<String> acceptedValues = ma.getAcceptedValues() == null ? Collections.emptyList()
+        : Arrays.stream(ma.getAcceptedValues()).map(String::toUpperCase).collect(Collectors.toList());
+
+      ManagedAttributeType maType = ma.getManagedAttributeType();
+
+      boolean assignedValueIsValid = true;
+
+      if (acceptedValues.isEmpty()) {
+        if (maType == ManagedAttributeType.INTEGER && !INTEGER_PATTERN.matcher(assignedValue).matches()) {
+          assignedValueIsValid = false;
+        }
+      } else {
+        if (!acceptedValues.contains(assignedValue.toUpperCase())) {
+          assignedValueIsValid = false;
+        }
+      }
+      if (!assignedValueIsValid) {
+        String errorMessage = messageSource.getMessage(VALID_ASSIGNED_VALUE, new String[] { assignedValue },
+            LocaleContextHolder.getLocale());
+        errors.reject(errorMessage);
+      }
+    });
   }
   
 }

@@ -33,12 +33,12 @@ public class ManagedAttributeValueValidatorTest {
   private ManagedAttributeServiceIT.TestManagedAttribute testManagedAttribute;
 
   @Test
-  public void assignedValueContainedInAcceptedValues_validationPasses() throws Exception {
+  public void assignedValueContainedInAcceptedValues_validationPasses() {
     testManagedAttribute =  ManagedAttributeServiceIT.TestManagedAttribute.builder().
         name("key1").acceptedValues(new String[] {"val1", "val2"}).build();
     testManagedAttributeService.create(testManagedAttribute);
 
-    Map.Entry<String, String> mav = new AbstractMap.SimpleEntry<>("key_1", "val1");
+    Map<String, String> mav =Map.of("key_1", "val1");
 
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
     validatorUnderTest.validate(mav, errors);
@@ -47,12 +47,12 @@ public class ManagedAttributeValueValidatorTest {
   }
 
   @Test
-  public void assignedValueNotContainedInAcceptedValues_validationFails() throws Exception {
+  public void assignedValueNotContainedInAcceptedValues_validationFails() {
     testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
         name("key2").acceptedValues(new String[] { "val1", "val2" }).build();
     testManagedAttributeService.create(testManagedAttribute);
 
-    Map.Entry<String, String> mav = new AbstractMap.SimpleEntry<>("key_2", "val3");
+    Map<String, String> mav =Map.of("key_2", "val3");
 
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
     validatorUnderTest.validate(mav, errors);
@@ -62,8 +62,8 @@ public class ManagedAttributeValueValidatorTest {
   }
 
   @Test
-  public void assignedKeyDoesNotExist_validationFails() throws Exception {
-    Map.Entry<String, String> mav = new AbstractMap.SimpleEntry<>("key_x", "val3");
+  public void assignedKeyDoesNotExist_validationFails() {
+    Map<String, String> mav =Map.of("key_x", "val3");
 
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
     validatorUnderTest.validate(mav, errors);
