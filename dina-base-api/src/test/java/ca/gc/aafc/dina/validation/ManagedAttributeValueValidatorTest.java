@@ -71,4 +71,13 @@ public class ManagedAttributeValueValidatorTest {
 
     assertTrue(errors.getAllErrors().get(0).getCode().contains("assignedValue key not found."));
   }
+
+  @Test
+  public void validate_whenEmpty_NoErrors() {
+    Map<String, String> mav =Map.of();
+    Errors errors = new BeanPropertyBindingResult(mav, "mav");
+    validatorUnderTest.validate(mav, errors);
+    assertFalse(errors.hasFieldErrors());
+    assertFalse(errors.hasErrors());
+  }
 }
