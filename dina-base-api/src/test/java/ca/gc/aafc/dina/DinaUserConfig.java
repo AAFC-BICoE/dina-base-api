@@ -47,6 +47,7 @@ public class DinaUserConfig {
   }
 
   @Service
+
   class VocabularyDinaService extends DefaultDinaService<Vocabulary> {
 
     public VocabularyDinaService(@NonNull BaseDAO baseDAO) {
