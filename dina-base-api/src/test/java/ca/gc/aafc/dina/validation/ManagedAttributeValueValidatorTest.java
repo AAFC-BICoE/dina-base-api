@@ -1,7 +1,6 @@
 package ca.gc.aafc.dina.validation;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
 import ca.gc.aafc.dina.service.ManagedAttributeServiceIT;
 import org.junit.jupiter.api.Test;
@@ -11,13 +10,9 @@ import org.springframework.validation.Errors;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import java.util.AbstractMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 @Transactional
