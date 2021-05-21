@@ -14,7 +14,6 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, ManagedAttributeServiceIT.ManagedAttributeConfig.class})
 public class ManagedAttributeValueValidatorTest {
@@ -29,11 +28,11 @@ public class ManagedAttributeValueValidatorTest {
 
   @Test
   public void assignedValueContainedInAcceptedValues_validationPasses() {
-    testManagedAttribute =  ManagedAttributeServiceIT.TestManagedAttribute.builder().
-        name("key1").acceptedValues(new String[] {"val1", "val2"}).build();
+    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
+      name("My special Attribute").acceptedValues(new String[]{"val1", "val2"}).build();
     testManagedAttributeService.create(testManagedAttribute);
 
-    Map<String, String> mav =Map.of("key_1", "val1");
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), "val1");
 
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
     validatorUnderTest.validate(mav, errors);
@@ -44,10 +43,10 @@ public class ManagedAttributeValueValidatorTest {
   @Test
   public void assignedValueNotContainedInAcceptedValues_validationFails() {
     testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
-        name("key2").acceptedValues(new String[] { "val1", "val2" }).build();
+      name("key2").acceptedValues(new String[]{"val1", "val2"}).build();
     testManagedAttributeService.create(testManagedAttribute);
 
-    Map<String, String> mav =Map.of("key_2", "val3");
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), "val3");
 
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
     validatorUnderTest.validate(mav, errors);
@@ -58,7 +57,7 @@ public class ManagedAttributeValueValidatorTest {
 
   @Test
   public void assignedKeyDoesNotExist_validationFails() {
-    Map<String, String> mav =Map.of("key_x", "val3");
+    Map<String, String> mav = Map.of("key_x", "val3");
 
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
     validatorUnderTest.validate(mav, errors);
@@ -69,7 +68,7 @@ public class ManagedAttributeValueValidatorTest {
 
   @Test
   public void validate_whenEmpty_NoErrors() {
-    Map<String, String> mav =Map.of();
+    Map<String, String> mav = Map.of();
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
     validatorUnderTest.validate(mav, errors);
     assertFalse(errors.hasFieldErrors());
