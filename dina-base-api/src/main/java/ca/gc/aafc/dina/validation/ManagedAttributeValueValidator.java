@@ -5,6 +5,7 @@ import ca.gc.aafc.dina.entity.ManagedAttribute.ManagedAttributeType;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
 import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.Errors;
@@ -68,9 +69,8 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
         errors.reject(getMessageForKey(VALID_ASSIGNED_VALUE), assignedValue);
       }
 
-      Set<String> acceptedValues = Arrays.stream(ma.getAcceptedValues()).collect(Collectors.toSet());
-      if (CollectionUtils.isNotEmpty(acceptedValues)
-        && acceptedValues.stream().noneMatch(assignedValue::equalsIgnoreCase)) {
+      String[] acceptedValues = ma.getAcceptedValues();
+      if (isNotAnAcceptedValue(assignedValue, acceptedValues)) {
         errors.reject(getMessageForKey(VALID_ASSIGNED_VALUE, assignedValue));
       }
     });
@@ -99,6 +99,12 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
       },
       null, 0, Integer.MAX_VALUE
     ).stream().collect(Collectors.toMap(ManagedAttribute::getKey, Function.identity()));
+  }
+
+  private static boolean isNotAnAcceptedValue(@NonNull String assignedValue, String[] acceptedValues) {
+    return ArrayUtils.isNotEmpty(acceptedValues)
+      && Arrays.stream(acceptedValues).collect(Collectors.toSet()).stream()
+      .noneMatch(assignedValue::equalsIgnoreCase);
   }
 
   private String getMessageForKey(String key, Object... objects) {

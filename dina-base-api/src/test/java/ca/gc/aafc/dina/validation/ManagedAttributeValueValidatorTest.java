@@ -1,12 +1,14 @@
 package ca.gc.aafc.dina.validation;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
 import ca.gc.aafc.dina.service.ManagedAttributeServiceIT;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
+import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -25,6 +27,22 @@ public class ManagedAttributeValueValidatorTest {
   private ManagedAttributeValueValidator<ManagedAttributeServiceIT.TestManagedAttribute> validatorUnderTest;
 
   private ManagedAttributeServiceIT.TestManagedAttribute testManagedAttribute;
+
+  @Test
+  void validate_WhenValidIntegerType() {
+    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
+      name(RandomStringUtils.randomAlphabetic(6))
+      .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
+      .build();
+    testManagedAttributeService.create(testManagedAttribute);
+
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), "1");
+
+    Errors errors = new BeanPropertyBindingResult(mav, "mav");
+    validatorUnderTest.validate(mav, errors);
+    assertFalse(errors.hasFieldErrors());
+    assertFalse(errors.hasErrors());
+  }
 
   @Test
   public void assignedValueContainedInAcceptedValues_validationPasses() {
