@@ -122,4 +122,22 @@ public class ManagedAttributeValueValidatorTest {
     validatorUnderTest.validate(mav, errors);
     assertFalse(errors.hasErrors());
   }
+
+  @Test
+  void validate_IllegalParameters() {
+    String wrongType = "wrong type";
+    Map<String, Integer> wrongValueType = Map.of("string", 2);
+    Map<Integer, String> wrongKeyType = Map.of(2, "");
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> validatorUnderTest.validate(wrongType, new BeanPropertyBindingResult(wrongType, "mav")));
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> validatorUnderTest.validate(
+        wrongValueType,
+        new BeanPropertyBindingResult(wrongValueType, "mav")));
+    assertThrows(
+      IllegalArgumentException.class,
+      () -> validatorUnderTest.validate(wrongKeyType, new BeanPropertyBindingResult(wrongKeyType, "mav")));
+  }
 }
