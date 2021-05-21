@@ -51,7 +51,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   public void validate(@NonNull Object target, @NonNull Errors errors) {
     checkIncomingParameter(target);
 
-    @SuppressWarnings({"unchecked"}) // We check with validateMapType()
+    @SuppressWarnings({"unchecked"}) // We check with checkIncomingParameter()
     final Map<String, String> map = (Map<String, String>) target;
     Map<String, E> attributesPerKey = findAttributesForKeys(map.keySet(), maClass);
 
