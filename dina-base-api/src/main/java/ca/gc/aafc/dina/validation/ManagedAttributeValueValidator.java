@@ -52,7 +52,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   public void validate(@NonNull Object target, @NonNull Errors errors) {
     checkIncomingParameter(target);
 
-    @SuppressWarnings({"unchecked"}) // We check with checkIncomingParameter()
+    @SuppressWarnings("unchecked") // We check with checkIncomingParameter()
     final Map<String, String> map = (Map<String, String>) target;
     Map<String, E> attributesPerKey = findAttributesForKeys(map.keySet(), maClass);
 
@@ -82,7 +82,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     }
     ((Map<?, ?>) target).forEach((o, o2) -> {
       if (!String.class.isAssignableFrom(o.getClass()) || !String.class.isAssignableFrom(o2.getClass())) {
-        throw new IllegalArgumentException(("This validator can only validate maps with keys and values as strings"));
+        throw new IllegalArgumentException("This validator can only validate maps with keys and values as strings");
       }
     });
   }
