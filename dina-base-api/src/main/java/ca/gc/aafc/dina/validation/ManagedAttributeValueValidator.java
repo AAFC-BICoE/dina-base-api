@@ -77,7 +77,6 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
       }
 
       Set<String> acceptedValues = Arrays.stream(ma.getAcceptedValues()).collect(Collectors.toSet());
-
       if (acceptedValues.stream().noneMatch(assignedValue::equalsIgnoreCase)) {
         errors.reject(getMessageForKey(VALID_ASSIGNED_VALUE, assignedValue));
       }
