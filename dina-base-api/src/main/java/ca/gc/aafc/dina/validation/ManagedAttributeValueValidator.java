@@ -53,13 +53,12 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     }
 
     Map<String, String> map = (Map<String, String>) target;
-    Set<String> keySet = map.keySet();
 
     Class<E> clazz = (Class<E>) GenericTypeResolver.resolveTypeArgument(
       dinaService.getClass(),
       ManagedAttributeService.class);
 
-    Map<String, E> attributesPerKey = findAttributesForKeys(keySet, clazz);
+    Map<String, E> attributesPerKey = findAttributesForKeys(map.keySet(), clazz);
 
     Collection<String> difference = CollectionUtils.disjunction(map.keySet(), attributesPerKey.keySet());
     if (!difference.isEmpty()) {
@@ -77,7 +76,8 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
       }
 
       Set<String> acceptedValues = Arrays.stream(ma.getAcceptedValues()).collect(Collectors.toSet());
-      if (acceptedValues.stream().noneMatch(assignedValue::equalsIgnoreCase)) {
+      if (CollectionUtils.isNotEmpty(acceptedValues)
+        && acceptedValues.stream().noneMatch(assignedValue::equalsIgnoreCase)) {
         errors.reject(getMessageForKey(VALID_ASSIGNED_VALUE, assignedValue));
       }
     });
