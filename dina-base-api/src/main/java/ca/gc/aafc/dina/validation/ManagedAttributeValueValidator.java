@@ -49,7 +49,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
   @Override
   public void validate(@NonNull Object target, @NonNull Errors errors) {
-    validateMapType(target);
+    checkIncomingParameter(target);
 
     @SuppressWarnings({"unchecked"}) // We check with validateMapType()
     final Map<String, String> map = (Map<String, String>) target;
@@ -78,7 +78,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     });
   }
 
-  private void validateMapType(Object target) {
+  private void checkIncomingParameter(Object target) {
     if (!supports(target.getClass())) {
       throw new IllegalArgumentException("this validator can only validate the type: " + Map.class.getSimpleName());
     }
