@@ -12,35 +12,27 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import javax.inject.Named;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Predicate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
 
-  private static final String KEY = "key";
   private final ManagedAttributeService<E> dinaService;
   private final MessageSource messageSource;
 
   private static final String VALID_ASSIGNED_VALUE = "assignedValue.invalid";
   private static final String VALID_ASSIGNED_VALUE_KEY = "assignedValue.key.invalid";
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
-  private final Class<E> maClass;
 
   public ManagedAttributeValueValidator(
     @Named("validationMessageSource") MessageSource messageSource,
-    @NonNull ManagedAttributeService<E> dinaService,
-    @NonNull Class<E> managedAttributeClass
+    @NonNull ManagedAttributeService<E> dinaService
   ) {
     this.messageSource = messageSource;
     this.dinaService = dinaService;
-    this.maClass = managedAttributeClass;
   }
 
   @Override
@@ -54,7 +46,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
     @SuppressWarnings("unchecked") // We check with checkIncomingParameter()
     final Map<String, String> map = (Map<String, String>) target;
-    Map<String, E> attributesPerKey = findAttributesForKeys(map.keySet(), maClass);
+    Map<String, E> attributesPerKey = dinaService.findAttributesForKeys(map.keySet());
 
     Collection<?> difference = CollectionUtils.disjunction(map.keySet(), attributesPerKey.keySet());
     if (!difference.isEmpty()) {
@@ -82,23 +74,10 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     }
     ((Map<?, ?>) target).forEach((o, o2) -> {
       if (!String.class.isAssignableFrom(o.getClass()) || !String.class.isAssignableFrom(o2.getClass())) {
-        throw new IllegalArgumentException("This validator can only validate maps with keys and values as strings");
+        throw new IllegalArgumentException(
+          "This validator can only validate maps with keys and values as strings");
       }
     });
-  }
-
-  private Map<String, E> findAttributesForKeys(Set<String> keySet, Class<E> clazz) {
-    if (CollectionUtils.isEmpty(keySet) || clazz == null) {
-      return Map.of();
-    }
-    return dinaService.findAll(
-      clazz, (criteriaBuilder, eRoot) -> {
-        CriteriaBuilder.In<String> in = criteriaBuilder.in(eRoot.get(KEY));
-        keySet.forEach(in::value);
-        return new Predicate[]{in};
-      },
-      null, 0, Integer.MAX_VALUE
-    ).stream().collect(Collectors.toMap(ManagedAttribute::getKey, Function.identity()));
   }
 
   private static boolean isNotAnAcceptedValue(@NonNull String assignedValue, String[] acceptedValues) {

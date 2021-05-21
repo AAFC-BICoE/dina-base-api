@@ -46,9 +46,8 @@ public class ManagedAttributeServiceIT {
   public static class ManagedAttributeConfig {
 
     @Bean
-    public ManagedAttributeService<TestManagedAttribute> managedAttributeService(
-        BaseDAO baseDAO) {
-      return new ManagedAttributeService<>(baseDAO) {
+    public ManagedAttributeService<TestManagedAttribute> managedAttributeService(BaseDAO baseDAO) {
+      return new ManagedAttributeService<>(baseDAO , TestManagedAttribute.class) {
       };
     }
 
@@ -56,7 +55,7 @@ public class ManagedAttributeServiceIT {
     public ManagedAttributeValueValidator<TestManagedAttribute> managedAttributeValueValidator(
         @Named("validationMessageSource") MessageSource messageSource,
         @NonNull ManagedAttributeService<TestManagedAttribute> dinaService) {
-      return new ManagedAttributeValueValidator<>(messageSource, dinaService, TestManagedAttribute.class);
+      return new ManagedAttributeValueValidator<>(messageSource, dinaService);
     }
   }
 
