@@ -58,7 +58,6 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     Collection<?> difference = CollectionUtils.disjunction(map.keySet(), attributesPerKey.keySet());
     if (!difference.isEmpty()) {
       errors.reject(getMessageForKey(VALID_ASSIGNED_VALUE_KEY));
-      return;
     }
 
     attributesPerKey.forEach((key, ma) -> {
@@ -67,7 +66,6 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
       if (maType == ManagedAttributeType.INTEGER && !INTEGER_PATTERN.matcher(assignedValue).matches()) {
         errors.reject(getMessageForKey(VALID_ASSIGNED_VALUE), assignedValue);
-        return;
       }
 
       Set<String> acceptedValues = Arrays.stream(ma.getAcceptedValues()).collect(Collectors.toSet());
