@@ -31,6 +31,21 @@ public class ManagedAttributeValueValidatorTest {
   private ManagedAttributeServiceIT.TestManagedAttribute testManagedAttribute;
 
   @Test
+  void validate_WhenValidStringType() {
+    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
+      name(RandomStringUtils.randomAlphabetic(6))
+      .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
+      .build();
+    testManagedAttributeService.create(testManagedAttribute);
+
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), "new string value");
+
+    Errors errors = new BeanPropertyBindingResult(mav, "mav");
+    validatorUnderTest.validate(mav, errors);
+    assertFalse(errors.hasErrors());
+  }
+
+  @Test
   void validate_WhenValidIntegerType() {
     testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
       name(RandomStringUtils.randomAlphabetic(6))
