@@ -13,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -57,7 +56,7 @@ public class ManagedAttributeServiceIT {
     public ManagedAttributeValueValidator<TestManagedAttribute> managedAttributeValueValidator(
         @Named("validationMessageSource") MessageSource messageSource,
         @NonNull ManagedAttributeService<TestManagedAttribute> dinaService) {
-      return new ManagedAttributeValueValidator<>(messageSource, dinaService);
+      return new ManagedAttributeValueValidator<>(messageSource, dinaService, TestManagedAttribute.class);
     }
   }
 

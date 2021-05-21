@@ -7,7 +7,6 @@ import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.core.GenericTypeResolver;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
@@ -31,13 +30,16 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   private static final String VALID_ASSIGNED_VALUE = "assignedValue.invalid";
   private static final String VALID_ASSIGNED_VALUE_KEY = "assignedValue.key.invalid";
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
+  private final Class<E> maClass;
 
   public ManagedAttributeValueValidator(
     @Named("validationMessageSource") MessageSource messageSource,
-    @NonNull ManagedAttributeService<E> dinaService
+    @NonNull ManagedAttributeService<E> dinaService,
+    @NonNull Class<E> managedAttributeClass
   ) {
     this.messageSource = messageSource;
     this.dinaService = dinaService;
+    this.maClass = managedAttributeClass;
   }
 
   @Override
@@ -46,21 +48,14 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public void validate(@NonNull Object target, @NonNull Errors errors) {
     if (!supports(target.getClass())) {
       throw new IllegalArgumentException("this validator can only validate the type: " + Map.class.getSimpleName());
     }
-
     Map<String, String> map = (Map<String, String>) target;
+    Map<String, E> attributesPerKey = findAttributesForKeys(map.keySet(), maClass);
 
-    Class<E> clazz = (Class<E>) GenericTypeResolver.resolveTypeArgument(
-      dinaService.getClass(),
-      ManagedAttributeService.class);
-
-    Map<String, E> attributesPerKey = findAttributesForKeys(map.keySet(), clazz);
-
-    Collection<String> difference = CollectionUtils.disjunction(map.keySet(), attributesPerKey.keySet());
+    Collection<?> difference = CollectionUtils.disjunction(map.keySet(), attributesPerKey.keySet());
     if (!difference.isEmpty()) {
       errors.reject(getMessageForKey(VALID_ASSIGNED_VALUE_KEY));
       return;
