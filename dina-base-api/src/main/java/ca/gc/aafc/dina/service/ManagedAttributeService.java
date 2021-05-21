@@ -28,7 +28,7 @@ public abstract class ManagedAttributeService<T extends ManagedAttribute>
   private static final Pattern NON_ALPHANUMERICAL = Pattern.compile("[^a-z0-9]");
   private final Class<T> maClass;
 
-  public ManagedAttributeService(@NonNull BaseDAO baseDAO, @NonNull Class<T> managedAttributeClass) {
+  public ManagedAttributeService(BaseDAO baseDAO, @NonNull Class<T> managedAttributeClass) {
     super(baseDAO);
     this.maClass = managedAttributeClass;
   }
