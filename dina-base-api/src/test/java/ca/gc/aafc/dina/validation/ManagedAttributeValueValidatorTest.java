@@ -5,6 +5,8 @@ import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
 import ca.gc.aafc.dina.service.ManagedAttributeServiceIT;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -40,8 +42,23 @@ public class ManagedAttributeValueValidatorTest {
 
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
     validatorUnderTest.validate(mav, errors);
-    assertFalse(errors.hasFieldErrors());
     assertFalse(errors.hasErrors());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"1.2", "", "  ", "\t", "\n", "a"})
+  void validate_WhenInvalidIntegerType(String value) {
+    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
+      name(RandomStringUtils.randomAlphabetic(6))
+      .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
+      .build();
+    testManagedAttributeService.create(testManagedAttribute);
+
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), value);
+
+    Errors errors = new BeanPropertyBindingResult(mav, "mav");
+    validatorUnderTest.validate(mav, errors);
+    assertTrue(errors.hasErrors());
   }
 
   @Test
@@ -54,7 +71,6 @@ public class ManagedAttributeValueValidatorTest {
 
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
     validatorUnderTest.validate(mav, errors);
-    assertFalse(errors.hasFieldErrors());
     assertFalse(errors.hasErrors());
   }
 
@@ -89,7 +105,6 @@ public class ManagedAttributeValueValidatorTest {
     Map<String, String> mav = Map.of();
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
     validatorUnderTest.validate(mav, errors);
-    assertFalse(errors.hasFieldErrors());
     assertFalse(errors.hasErrors());
   }
 }
