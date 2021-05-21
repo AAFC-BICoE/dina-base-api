@@ -49,10 +49,10 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
   @Override
   public void validate(@NonNull Object target, @NonNull Errors errors) {
-    if (!supports(target.getClass())) {
-      throw new IllegalArgumentException("this validator can only validate the type: " + Map.class.getSimpleName());
-    }
-    Map<String, String> map = (Map<String, String>) target;
+    validateMapType(target);
+
+    @SuppressWarnings({"unchecked"}) // We check with validateMapType()
+    final Map<String, String> map = (Map<String, String>) target;
     Map<String, E> attributesPerKey = findAttributesForKeys(map.keySet(), maClass);
 
     Collection<?> difference = CollectionUtils.disjunction(map.keySet(), attributesPerKey.keySet());
@@ -74,6 +74,17 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
       if (CollectionUtils.isNotEmpty(acceptedValues)
         && acceptedValues.stream().noneMatch(assignedValue::equalsIgnoreCase)) {
         errors.reject(getMessageForKey(VALID_ASSIGNED_VALUE, assignedValue));
+      }
+    });
+  }
+
+  private void validateMapType(Object target) {
+    if (!supports(target.getClass())) {
+      throw new IllegalArgumentException("this validator can only validate the type: " + Map.class.getSimpleName());
+    }
+    ((Map<?, ?>) target).forEach((o, o2) -> {
+      if (!String.class.isAssignableFrom(o.getClass()) || !String.class.isAssignableFrom(o2.getClass())) {
+        throw new IllegalArgumentException(("This validator can only validate maps with keys and values as strings"));
       }
     });
   }
