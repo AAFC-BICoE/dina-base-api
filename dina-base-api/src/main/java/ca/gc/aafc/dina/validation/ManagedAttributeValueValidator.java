@@ -1,25 +1,22 @@
 package ca.gc.aafc.dina.validation;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.core.GenericTypeResolver;
-import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
-
 import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.entity.ManagedAttribute.ManagedAttributeType;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
 import lombok.NonNull;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 
 import javax.inject.Named;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
 
@@ -31,58 +28,66 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
   public ManagedAttributeValueValidator(
-      @Named("validationMessageSource") MessageSource messageSource,
-      @NonNull ManagedAttributeService<E> dinaService) {
+    @Named("validationMessageSource") MessageSource messageSource,
+    @NonNull ManagedAttributeService<E> dinaService
+  ) {
     this.messageSource = messageSource;
     this.dinaService = dinaService;
   }
 
   @Override
-  public boolean supports(Class<?> clazz) {
-    return Entry.class.isAssignableFrom(clazz);
+  public boolean supports(@NonNull Class<?> clazz) {
+    return Map.class.isAssignableFrom(clazz);
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public void validate(Object target, Errors errors) {
-    Map.Entry<String,String> map = (Entry) target;
+  public void validate(@NonNull Object target, @NonNull Errors errors) {
+    checkIncomingParameter(target);
 
-    String key = map.getKey();
-    String assignedValue = map.getValue();
+    @SuppressWarnings("unchecked") // We check with checkIncomingParameter()
+    final Map<String, String> map = (Map<String, String>) target;
+    Map<String, E> attributesPerKey = dinaService.findAttributesForKeys(map.keySet());
 
-    Class<E> clazz = (Class<E>) GenericTypeResolver.resolveTypeArgument(dinaService.getClass(), ManagedAttributeService.class);
+    Collection<?> difference = CollectionUtils.disjunction(map.keySet(), attributesPerKey.keySet());
+    if (!difference.isEmpty()) {
+      errors.reject(getMessageForKey(VALID_ASSIGNED_VALUE_KEY));
+    }
 
-    List<E> maList = dinaService.findByProperty(clazz, "key", key);
-    if (maList.isEmpty()) {
-      String errorMessage = messageSource.getMessage(VALID_ASSIGNED_VALUE_KEY, null,
-        LocaleContextHolder.getLocale());
-        errors.reject(errorMessage);
-        return;
-      }
+    attributesPerKey.forEach((key, ma) -> {
+      ManagedAttributeType maType = ma.getManagedAttributeType();
+      String assignedValue = map.get(key);
 
-    E ma = maList.get(0);
-
-    List<String> acceptedValues = ma.getAcceptedValues() == null ? Collections.emptyList()
-      : Arrays.stream(ma.getAcceptedValues()).map(String::toUpperCase).collect(Collectors.toList());
-
-    ManagedAttributeType maType = ma.getManagedAttributeType();
-    
-    boolean assignedValueIsValid = true;
-
-    if (acceptedValues.isEmpty()) {
       if (maType == ManagedAttributeType.INTEGER && !INTEGER_PATTERN.matcher(assignedValue).matches()) {
-        assignedValueIsValid = false;
+        errors.reject(getMessageForKey(VALID_ASSIGNED_VALUE), assignedValue);
       }
-    } else {
-      if (!acceptedValues.contains(assignedValue.toUpperCase())) {
-        assignedValueIsValid = false;
+
+      String[] acceptedValues = ma.getAcceptedValues();
+      if (isNotAnAcceptedValue(assignedValue, acceptedValues)) {
+        errors.reject(getMessageForKey(VALID_ASSIGNED_VALUE, assignedValue));
       }
-    }
-    if (!assignedValueIsValid) {
-      String errorMessage = messageSource.getMessage(VALID_ASSIGNED_VALUE, new String[] { assignedValue },
-          LocaleContextHolder.getLocale());
-      errors.reject(errorMessage);
-    }
+    });
   }
-  
+
+  private void checkIncomingParameter(Object target) {
+    if (!supports(target.getClass())) {
+      throw new IllegalArgumentException("this validator can only validate the type: " + Map.class.getSimpleName());
+    }
+    ((Map<?, ?>) target).forEach((o, o2) -> {
+      if (!String.class.isAssignableFrom(o.getClass()) || !String.class.isAssignableFrom(o2.getClass())) {
+        throw new IllegalArgumentException(
+          "This validator can only validate maps with keys and values as strings");
+      }
+    });
+  }
+
+  private static boolean isNotAnAcceptedValue(@NonNull String assignedValue, String[] acceptedValues) {
+    return ArrayUtils.isNotEmpty(acceptedValues)
+      && Arrays.stream(acceptedValues).collect(Collectors.toSet()).stream()
+      .noneMatch(assignedValue::equalsIgnoreCase);
+  }
+
+  private String getMessageForKey(String key, Object... objects) {
+    return messageSource.getMessage(key, objects, LocaleContextHolder.getLocale());
+  }
+
 }

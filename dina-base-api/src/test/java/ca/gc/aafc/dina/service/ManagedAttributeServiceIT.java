@@ -13,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -47,9 +46,8 @@ public class ManagedAttributeServiceIT {
   public static class ManagedAttributeConfig {
 
     @Bean
-    public ManagedAttributeService<TestManagedAttribute> managedAttributeService(
-        BaseDAO baseDAO) {
-      return new ManagedAttributeService<>(baseDAO) {
+    public ManagedAttributeService<TestManagedAttribute> managedAttributeService(BaseDAO baseDAO) {
+      return new ManagedAttributeService<>(baseDAO , TestManagedAttribute.class) {
       };
     }
 
