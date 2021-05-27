@@ -42,8 +42,7 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, DinaAdminOnlyAuthTest.DinaAdminOnlyTestConfig.class},
@@ -80,10 +79,22 @@ public class DinaAdminOnlyAuthTest {
   }
 
   @Test
+  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
+  void update_WhenAdmin_AccessAccepted() {
+    assertDoesNotThrow(() -> testRepo.save(ItemDto.builder().uuid(persisted.uuid).build()));
+  }
+
+  @Test
   @WithMockKeycloakUser(groupRole = {"CNC:CNC:COLLECTION_MANAGER", "GNG:CNC:STAFF", "BNB:CNC:STUDENT"})
   public void update_WhenNotAdmin_AccessDenied() {
     ItemDto dto = ItemDto.builder().uuid(UUID.randomUUID()).group("g").build();
     assertThrows(AccessDeniedException.class, () -> testRepo.save(dto));
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
+  public void delete_WhenAdmin_AccessAccepted() {
+    assertDoesNotThrow(() -> testRepo.delete(persisted.getUuid()));
   }
 
   @Test
