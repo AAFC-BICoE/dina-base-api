@@ -11,12 +11,13 @@ import java.util.Optional;
 /**
  * Collections of helper methods to work with validation errors and exceptions.
  */
-public class ValidationErrorsHelper {
+public final class ValidationErrorsHelper {
 
   /**
    * Utility class
    */
-  private ValidationErrorsHelper(){}
+  private ValidationErrorsHelper() {
+  }
 
   /**
    * Create a new Errors object with the DinaEntity as object name.
@@ -36,7 +37,7 @@ public class ValidationErrorsHelper {
    */
   public static void errorsToValidationException(Errors errors) {
 
-    if (errors ==null || !errors.hasErrors()) {
+    if (errors == null || !errors.hasErrors()) {
       return;
     }
 
