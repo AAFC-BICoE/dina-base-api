@@ -45,6 +45,13 @@ public class OpenAPI3AssertionsTest {
   }
 
   @Test
+  public void assertSchema_WhenAttributeMissing() throws IOException {
+    URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
+    String responseJson = TestResourceHelper.readContentAsString("missingAttribute.json");
+    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson);
+  }
+
+  @Test
   public void assertRealRemoteSchemaTest() throws IOException {
     String responseJson = TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json");
     OpenAPI3Assertions.assertRemoteSchema(
