@@ -41,7 +41,7 @@ public abstract class ManagedAttributeService<T extends ManagedAttribute>
   }
 
   @Override
-  public void delete(T entity){
+  public void delete(T entity) {
     throw new UnsupportedOperationException("DELETE");
   }
 
