@@ -21,6 +21,7 @@ import lombok.NonNull;
 import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.info.BuildProperties;
@@ -50,7 +51,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class DinaAdminOnlyAuthTest {
 
   @Inject
+  private DefaultDinaService<Item> defaultService;
+
+  public Item persisted;
+
+  @Inject
   private DinaRepository<ItemDto, Item> testRepo;
+
+  @BeforeEach
+  void setUp() {
+    persisted = Item.builder().uuid(UUID.randomUUID()).group("group").build();
+    defaultService.create(persisted);
+  }
 
   @Test
   @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
@@ -65,6 +77,19 @@ public class DinaAdminOnlyAuthTest {
   public void create_WhenNotAdmin_AccessDenied() {
     ItemDto dto = ItemDto.builder().uuid(UUID.randomUUID()).group("g").build();
     assertThrows(AccessDeniedException.class, () -> testRepo.create(dto));
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = {"CNC:CNC:COLLECTION_MANAGER", "GNG:CNC:STAFF", "BNB:CNC:STUDENT"})
+  public void update_WhenNotAdmin_AccessDenied() {
+    ItemDto dto = ItemDto.builder().uuid(UUID.randomUUID()).group("g").build();
+    assertThrows(AccessDeniedException.class, () -> testRepo.save(dto));
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = {"CNC:CNC:COLLECTION_MANAGER", "GNG:CNC:STAFF", "BNB:CNC:STUDENT"})
+  public void delete_WhenNotAdmin_AccessDenied() {
+    assertThrows(AccessDeniedException.class, () -> testRepo.delete(persisted.getUuid()));
   }
 
   @TestConfiguration
