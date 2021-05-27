@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jpa.PredicateSupplier;
+import ca.gc.aafc.dina.validation.ValidationErrorsHelper;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -274,28 +275,15 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   public void validateBusinessRules(E entity, Validator validator) {
     Objects.requireNonNull(entity);
 
-    Errors errors = new BeanPropertyBindingResult(entity,
-        entity.getUuid() != null ? entity.getUuid().toString() : "");
+    Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
     validator.validate(entity, errors);
 
-    if (!errors.hasErrors()) {
-      return;
-    }
-
-    Optional<String> errorMsg = errors.getAllErrors()
-        .stream()
-        .map(ObjectError::getDefaultMessage)
-        .findAny();
-
-    errorMsg.ifPresent(msg -> {
-      throw new ValidationException(msg);
-    });
+    ValidationErrorsHelper.errorsToValidationException(errors);
   }
 
   @SuppressWarnings("unchecked")
   protected void validateConstraints(E entity, Class<? extends Default> validationGroup) {
-    Errors errors = new BeanPropertyBindingResult(entity,
-      entity.getUuid() != null ? entity.getUuid().toString() : "");
+    Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
 
     validator.validate(entity, errors, validationGroup);
 
