@@ -61,7 +61,7 @@ public class DinaAdminOnlyAuthTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:CNC:COLLECTION_MANAGER"})
+  @WithMockKeycloakUser(groupRole = {"CNC:CNC:COLLECTION_MANAGER", "GNG:CNC:STAFF", "BNB:CNC:STUDENT"})
   public void create_WhenNotAdmin_AccessDenied() {
     ItemDto dto = ItemDto.builder().uuid(UUID.randomUUID()).group("g").build();
     assertThrows(AccessDeniedException.class, () -> testRepo.create(dto));
