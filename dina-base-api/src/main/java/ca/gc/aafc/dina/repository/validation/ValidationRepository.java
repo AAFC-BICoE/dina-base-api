@@ -66,7 +66,6 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
 
     setRelations(data, dto, relationNames);
     mapper.applyDtoToEntity(dto, entity, registry.getAttributesPerClass(), relationNames);
-    entity.setUuid(UUID.randomUUID()); // Random id to avoid validating generated value.
 
     validationEntry.getDinaService().validate(entity);
 

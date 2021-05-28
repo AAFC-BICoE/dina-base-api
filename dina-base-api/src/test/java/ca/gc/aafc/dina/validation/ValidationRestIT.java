@@ -20,6 +20,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @SpringBootTest(classes = TestDinaBaseApp.class,
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -66,6 +67,7 @@ public class ValidationRestIT {
   void validate_WithRequiredRelation_Returns201() {
     ChainDto chainDto = new ChainDto();
     chainDto.setGroup("d");
+    chainDto.setUuid(UUID.randomUUID());
     chainDto.setName("name");
     newRequest()
       .body(newValidationDto(
@@ -146,13 +148,14 @@ public class ValidationRestIT {
   }
 
   private Map<String, Object> newDepartmentDto() {
-    DepartmentDto dto = DepartmentDto.builder().name("dfadf").location("Montreal").build();
+    DepartmentDto dto = DepartmentDto.builder().uuid(UUID.randomUUID()).name("dfadf").location("Montreal").build();
     return JsonAPITestHelper.toAttributeMap(dto);
   }
 
   private Map<String, Object> newLongNameDepartmentDto() {
     DepartmentDto dto = DepartmentDto.builder()
       .name("01234567890123456789012345678901234567890123456789a")
+      .uuid(UUID.randomUUID())
       .location("Montreal")
       .build();
     return JsonAPITestHelper.toAttributeMap(dto);
