@@ -3,11 +3,11 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jpa.PredicateSupplier;
+import ca.gc.aafc.dina.validation.ValidationErrorsHelper;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Component;
-import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.SmartValidator;
@@ -29,7 +29,6 @@ import javax.validation.groups.Default;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 
@@ -253,6 +252,19 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
+   * Find an entity by a specific property. 
+   * 
+   * @param clazz
+   * @param property
+   * @param value
+   * @return the entity or null if not found
+   */
+  public List<E> findByProperty(Class<E> clazz, String property, Object value) {
+    return baseDAO.findByProperty(clazz, property, value);
+  
+  }
+
+  /**
    * Function that validates an entity against a specific validator to check business rules.
    * Better integration will be added later so it will be called automatically on create/update.
    * @param entity
@@ -262,28 +274,15 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   public void validateBusinessRules(E entity, Validator validator) {
     Objects.requireNonNull(entity);
 
-    Errors errors = new BeanPropertyBindingResult(entity,
-        entity.getUuid() != null ? entity.getUuid().toString() : "");
+    Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
     validator.validate(entity, errors);
 
-    if (!errors.hasErrors()) {
-      return;
-    }
-
-    Optional<String> errorMsg = errors.getAllErrors()
-        .stream()
-        .map(ObjectError::getDefaultMessage)
-        .findAny();
-
-    errorMsg.ifPresent(msg -> {
-      throw new ValidationException(msg);
-    });
+    ValidationErrorsHelper.errorsToValidationException(errors);
   }
 
   @SuppressWarnings("unchecked")
   protected void validateConstraints(E entity, Class<? extends Default> validationGroup) {
-    Errors errors = new BeanPropertyBindingResult(entity,
-      entity.getUuid() != null ? entity.getUuid().toString() : "");
+    Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
 
     validator.validate(entity, errors, validationGroup);
 
@@ -297,7 +296,5 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
       throw new ConstraintViolationException(violations);
     }
   }
-
-
 
 }

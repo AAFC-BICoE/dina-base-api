@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.55-SNAPSHOT</version>
+    <version>0.56-SNAPSHOT</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -24,6 +24,7 @@
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
     <javers.version>6.0.1</javers.version>
+    <mybatis.version>2.1.4</mybatis.version>
   </properties>
 
   <dependencies>
@@ -100,7 +101,19 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.55-SNAPSHOT</version>
+      <version>0.56-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Spring mybatis -->
+    <dependency>
+      <groupId>org.mybatis.spring.boot</groupId>
+      <artifactId>mybatis-spring-boot-starter</artifactId>
+      <version>${mybatis.version}</version>
+    </dependency>
+    <!-- postgresql for testing in the postgresql docker conatiner -->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

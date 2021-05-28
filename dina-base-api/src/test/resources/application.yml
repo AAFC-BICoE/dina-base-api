@@ -1,0 +1,12 @@
+# Enable to use a postgres Docker container in tests that use the PostgresTestContainerInitializer.
+spring:
+  datasource:
+    # Use the default username and password for the embedded postgres container:
+    username: sa
+    password: sa
+keycloak.enabled: false
+embedded.postgresql:
+  enabled: true
+  # Need to specify the version the same as in Production
+  image: postgres:10
+  init-script-file: create-test-data.sql
