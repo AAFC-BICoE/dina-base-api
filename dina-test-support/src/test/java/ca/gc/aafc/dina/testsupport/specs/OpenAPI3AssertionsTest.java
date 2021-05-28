@@ -56,6 +56,15 @@ public class OpenAPI3AssertionsTest {
   }
 
   @Test
+  public void assertSchema_WhenNonRequiredRelationMissing() throws IOException {
+    URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
+    String responseJson = TestResourceHelper.readContentAsString("missingRelation.json");
+    Assertions.assertThrows(
+      AssertionFailedError.class,
+      () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson));
+  }
+
+  @Test
   public void assertRealRemoteSchemaTest() throws IOException {
     String responseJson = TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json");
     OpenAPI3Assertions.assertRemoteSchema(
