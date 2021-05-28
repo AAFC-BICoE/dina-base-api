@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.validation;
 
+import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.entity.ManagedAttribute.ManagedAttributeType;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
@@ -66,6 +67,19 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
         errors.reject(getMessageForKey(VALID_ASSIGNED_VALUE, assignedValue));
       }
     });
+  }
+
+  /**
+   * Validates the managedAttributes attached to the provided entity.
+   * @param entity
+   * @param managedAttributes
+   * @param <D>
+   * @throws javax.validation.ValidationException
+   */
+  public <D extends DinaEntity> void validate(D entity, Map<String, String> managedAttributes) {
+    Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
+    validate(managedAttributes, errors);
+    ValidationErrorsHelper.errorsToValidationException(errors);
   }
 
   private void checkIncomingParameter(Object target) {
