@@ -154,6 +154,11 @@ public final class OpenAPI3Assertions {
         Schema attributes = data.getProperties().get("attributes");
         attributes.setRequiredFields(new ArrayList<>(attributes.getProperties().keySet()));
       }
+      if (data != null && data.getProperties() != null && data.getProperties().containsKey("relationships")) {
+        data.addRequiredField("relationships");
+        Schema relations = data.getProperties().get("relationships");
+        relations.setRequiredFields(new ArrayList<>(relations.getProperties().keySet()));
+      }
     }
   }
 
