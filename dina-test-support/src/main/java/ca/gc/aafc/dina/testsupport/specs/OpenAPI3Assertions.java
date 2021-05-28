@@ -1,18 +1,9 @@
 package ca.gc.aafc.dina.testsupport.specs;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.openapi4j.core.exception.EncodeException;
 import org.openapi4j.core.exception.ResolutionException;
@@ -28,10 +19,16 @@ import org.openapi4j.schema.validator.ValidationData;
 import org.openapi4j.schema.validator.v3.SchemaValidator;
 import org.springframework.http.HttpMethod;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import lombok.extern.log4j.Log4j2;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Collections of utility test methods related to OpenAPI 3 specifications and
