@@ -6,10 +6,13 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.openapi4j.core.exception.EncodeException;
 import org.openapi4j.core.exception.ResolutionException;
@@ -49,7 +52,7 @@ public final class OpenAPI3Assertions {
    * Same as {@link #assertSchema(URL, String, String)} but the assertion can be
    * skipped by setting the System property
    * {@link #SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY} to true.
-   * 
+   *
    * @param specsUrl
    * @param schemaName
    * @param apiResponse
@@ -65,7 +68,7 @@ public final class OpenAPI3Assertions {
   /**
    * Assert an API response against an OpenAPI 3 Specification located at
    * specsUrl.
-   * 
+   *
    * @param specsUrl
    * @param schemaName
    * @param apiResponse
@@ -74,14 +77,14 @@ public final class OpenAPI3Assertions {
     Objects.requireNonNull(specsUrl, "specsUrl shall be provided");
     Objects.requireNonNull(schemaName, "schemaName shall be provided");
     Objects.requireNonNull(apiResponse, "apiResponse shall be provided");
-    
+
     OpenApi3 openApi3 = innerParseAndValidateOpenAPI3Specs(specsUrl) ;
     assertSchema(openApi3, schemaName, apiResponse);
   }
 
   /**
    * Assert an API response against the provided OpenAPI 3 Specification.
-   * 
+   *
    * @param openApi
    * @param schemaName
    * @param apiResponse
@@ -119,7 +122,7 @@ public final class OpenAPI3Assertions {
 
   /**
    * Load a schema inside an OpenApi3 object.
-   * 
+   *
    * @param openApi
    * @param schemaName
    * @return the schema as {@link JsonNode}
@@ -133,6 +136,7 @@ public final class OpenAPI3Assertions {
     if (openApi.getComponents() != null) {
       Schema schema = openApi.getComponents().getSchema(schemaName);
       if (schema != null) {
+        setAllFieldsRequired(schema);
         return schema.toNode();
       }
     }
@@ -140,6 +144,17 @@ public final class OpenAPI3Assertions {
     // then, try to reach it be refs from the paths
     Set<String> filenamesFromPathRefs = getFilenamesFromPathRefs(openApi);
     return loadFirstFoundSchema(openApi, filenamesFromPathRefs, schemaName);
+  }
+
+  private static void setAllFieldsRequired(@NonNull Schema schema) {
+    Map<String, Schema> properties = schema.getProperties();
+    if (properties != null && properties.containsKey("data")) {
+      Schema data = properties.get("data");
+      if (data != null && data.getProperties() != null && data.getProperties().containsKey("attributes")) {
+        Schema attributes = data.getProperties().get("attributes");
+        attributes.setRequiredFields(new ArrayList<>(attributes.getProperties().keySet()));
+      }
+    }
   }
 
   /**
@@ -178,7 +193,7 @@ public final class OpenAPI3Assertions {
 
   /**
    * Parse and validate the OpenAPI 3 specifications at the provided URL.
-   * 
+   *
    * @param specsURL
    * @return the OpenApi3 as {@link OpenApi3}
    * @throws ValidationException
@@ -189,11 +204,11 @@ public final class OpenAPI3Assertions {
     OpenApi3Validator.instance().validate(api);
     return api;
   }
-  
+
   /**
    * Checking the given path is existing in Open API 3 spec
    * and the path contains the provided http method
-   * 
+   *
    * @param specsUrl Specs URL to check endpoints against
    * @param path     path of endpoint
    * @param method   method at the endpoint path
@@ -208,7 +223,7 @@ public final class OpenAPI3Assertions {
     }
     fail("Failed find " + method.name() + " " + path + " in OpenAPI 3 specs");
   }
-  
+
   private static OpenApi3 innerParseAndValidateOpenAPI3Specs(URL specsUrl) {
     try {
       return parseAndValidateOpenAPI3Specs(specsUrl);

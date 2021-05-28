@@ -8,6 +8,8 @@ import java.net.URL;
 import java.net.UnknownHostException;
 
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.opentest4j.AssertionFailedError;
 import org.springframework.http.HttpMethod;
 
 import ca.gc.aafc.dina.testsupport.TestResourceHelper;
@@ -45,10 +47,12 @@ public class OpenAPI3AssertionsTest {
   }
 
   @Test
-  public void assertSchema_WhenAttributeMissing() throws IOException {
+  public void assertSchema_WhenNonRequiredAttributeMissing() throws IOException {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     String responseJson = TestResourceHelper.readContentAsString("missingAttribute.json");
-    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson);
+    Assertions.assertThrows(
+      AssertionFailedError.class,
+      () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson));
   }
 
   @Test
@@ -64,6 +68,6 @@ public class OpenAPI3AssertionsTest {
   public void assertEndPointTest() throws IOException {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     OpenAPI3Assertions.assertEndpoint(specsUrl, "/v1/managed-attribute", HttpMethod.GET);
-  }  
+  }
 
 }
