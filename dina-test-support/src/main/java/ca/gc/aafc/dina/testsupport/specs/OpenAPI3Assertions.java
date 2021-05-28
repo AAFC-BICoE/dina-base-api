@@ -150,11 +150,12 @@ public final class OpenAPI3Assertions {
     Map<String, Schema> properties = schema.getProperties();
     if (properties != null && properties.containsKey("data")) {
       Schema data = properties.get("data");
-      if (data != null && data.getProperties() != null && data.getProperties().containsKey("attributes")) {
+      boolean hasProperties = data != null && data.getProperties() != null;
+      if (hasProperties && data.getProperties().containsKey("attributes")) {
         Schema attributes = data.getProperties().get("attributes");
         attributes.setRequiredFields(new ArrayList<>(attributes.getProperties().keySet()));
       }
-      if (data != null && data.getProperties() != null && data.getProperties().containsKey("relationships")) {
+      if (hasProperties && data.getProperties().containsKey("relationships")) {
         data.addRequiredField("relationships");
         Schema relations = data.getProperties().get("relationships");
         relations.setRequiredFields(new ArrayList<>(relations.getProperties().keySet()));
