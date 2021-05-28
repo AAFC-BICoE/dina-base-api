@@ -281,7 +281,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   @SuppressWarnings("unchecked")
-  protected void validateConstraints(E entity, Class<? extends Default> validationGroup) {
+  public void validateConstraints(DinaEntity entity, Class<? extends Default> validationGroup) {
     Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
 
     validator.validate(entity, errors, validationGroup);

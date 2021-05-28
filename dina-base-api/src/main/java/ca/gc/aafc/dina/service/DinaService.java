@@ -10,6 +10,7 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.validation.Valid;
+import javax.validation.groups.Default;
 
 import java.util.List;
 import java.util.function.BiFunction;
@@ -131,4 +132,6 @@ public interface DinaService<E extends DinaEntity> {
 
   @Validated
   void validate(@Valid Object entity);
+
+  void validateConstraints(DinaEntity entity, Class<? extends Default> validationGroup);
 }

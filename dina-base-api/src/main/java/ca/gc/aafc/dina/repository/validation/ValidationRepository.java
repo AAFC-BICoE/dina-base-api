@@ -67,7 +67,7 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     setRelations(data, dto, relationNames);
     mapper.applyDtoToEntity(dto, entity, registry.getAttributesPerClass(), relationNames);
 
-    validationEntry.getDinaService().validate(entity);
+    validationEntry.getDinaService().validateConstraints(entity, null);
 
     // Crnk requires a created resource to have an ID. Create one here if the client did not provide one.
     resource.setId(Optional.ofNullable(resource.getId()).orElse("N/A"));
