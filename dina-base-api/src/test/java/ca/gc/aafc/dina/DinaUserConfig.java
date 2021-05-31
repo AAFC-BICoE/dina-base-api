@@ -36,12 +36,22 @@ public class DinaUserConfig {
     protected void preCreate(Department entity) {
       entity.setUuid(UUID.randomUUID());
     }
+
+    @Override
+    public void validate(Department entity) {
+      validateConstraints(entity,null);
+    }
   }
 
   @Service
   public class EmployeeDinaService extends DefaultDinaService<Employee> {
     public EmployeeDinaService(@NonNull BaseDAO baseDAO) {
       super(baseDAO);
+    }
+
+    @Override
+    public void validate(Employee entity) {
+      validateConstraints(entity,null);
     }
   }
 
@@ -51,5 +61,6 @@ public class DinaUserConfig {
     public VocabularyDinaService(@NonNull BaseDAO baseDAO) {
       super(baseDAO);
     }
+
   }
 }

@@ -1,7 +1,7 @@
 package ca.gc.aafc.dina.repository.validation;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.service.DinaService;
+import ca.gc.aafc.dina.repository.DinaRepository;
 
 import java.util.Set;
 
@@ -13,7 +13,7 @@ public interface ValidationResourceConfiguration {
    * @param type - type to map to a service
    * @return a service to a given type
    */
-  DinaService<? extends DinaEntity> getServiceForType(Class<?> type);
+  DinaRepository<?, ? extends DinaEntity> getServiceForType(Class<?> type);
 
   /**
    * Returns a set of the supported resource types

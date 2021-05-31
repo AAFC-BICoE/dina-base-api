@@ -4,7 +4,7 @@ import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
-import ca.gc.aafc.dina.service.DinaService;
+import ca.gc.aafc.dina.repository.DinaRepository;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,9 +45,9 @@ public class ValidationRegistry {
 
       String type = jsonApiResource.type();
 
-      DinaService<? extends DinaEntity> dinaService = configuration.getServiceForType(r);
-      if (dinaService == null) {
-        throw new IllegalArgumentException("The provided configuration must supply a dina service for type: " + type);
+      DinaRepository<?, ? extends DinaEntity> dinaRepo = configuration.getServiceForType(r);
+      if (dinaRepo == null) {
+        throw new IllegalArgumentException("The provided configuration must supply a dina repo for type: " + type);
       }
 
       DinaMappingRegistry registry = new DinaMappingRegistry(r);
@@ -59,7 +59,7 @@ public class ValidationRegistry {
         .mapper(mapper)
         .entityClass(relatedEntity.value())
         .resourceClass(r)
-        .dinaService(dinaService)
+        .dinaRepo(dinaRepo)
         .build());
     });
   }
@@ -82,6 +82,6 @@ public class ValidationRegistry {
     private final DinaMapper<?, DinaEntity> mapper;
     private final Class<? extends DinaEntity> entityClass;
     private final Class<?> resourceClass;
-    private final DinaService<? extends DinaEntity> dinaService;
+    private final DinaRepository<?, ? extends DinaEntity> dinaRepo;
   }
 }

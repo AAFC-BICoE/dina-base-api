@@ -282,6 +282,10 @@ public class DinaRepository<D, E extends DinaEntity>
     return metaInfo;
   }
 
+  public void validate(DinaEntity object) {
+    dinaService.validate((E) object);
+  }
+
   /**
    * Returns true if the given class has a given field with an annotation of a given type.
    *

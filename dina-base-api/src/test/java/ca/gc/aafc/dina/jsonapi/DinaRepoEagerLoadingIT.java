@@ -14,7 +14,6 @@ import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.info.BuildProperties;
@@ -149,7 +148,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
   }
 
   @TestConfiguration
-  static class DinaRepoBulkOperationITConfig {
+  public static class DinaRepoBulkOperationITConfig {
     @Bean
     public DinaRepository<ChainDto, Chain> chainRepo(BaseDAO baseDAO, ChainDinaService chainDinaService) {
       return new DinaRepository<>(
@@ -191,11 +190,16 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       protected void preCreate(Chain entity) {
         entity.setUuid(UUID.randomUUID());
       }
+
+      @Override
+      public void validate(Chain entity) {
+        validateConstraints(entity, null);
+      }
     }
-  
+
     @Service
     class TemplateDinaService extends DefaultDinaService<ChainTemplate> {
-  
+
       public TemplateDinaService(@NonNull BaseDAO baseDAO) {
         super(baseDAO);
       }
@@ -204,7 +208,13 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       protected void preCreate(ChainTemplate entity) {
         entity.setUuid(UUID.randomUUID());
       }
+
+      @Override
+      public void validate(ChainTemplate entity) {
+        validateConstraints(entity, null);
+      }
     }
+
   }
 
 }
