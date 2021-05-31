@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.repository.validation;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import io.crnk.core.resource.annotations.JsonApiResource;
@@ -51,13 +50,10 @@ public class ValidationRegistry {
       }
 
       DinaMappingRegistry registry = new DinaMappingRegistry(r);
-      DinaMapper<?, DinaEntity> mapper = new DinaMapper<>(r, registry);
 
       typesToEntryMap.put(type, ValidationEntry.builder()
         .typeName(type)
         .mappingRegistry(registry)
-        .mapper(mapper)
-        .entityClass(relatedEntity.value())
         .resourceClass(r)
         .dinaRepo(dinaRepo)
         .build());
@@ -79,8 +75,6 @@ public class ValidationRegistry {
   public static class ValidationEntry {
     private final String typeName;
     private final DinaMappingRegistry mappingRegistry;
-    private final DinaMapper<?, DinaEntity> mapper;
-    private final Class<? extends DinaEntity> entityClass;
     private final Class<?> resourceClass;
     private final DinaRepository<?, ? extends DinaEntity> dinaRepo;
   }
