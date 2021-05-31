@@ -13,7 +13,7 @@ public interface ValidationResourceConfiguration {
    * @param type - type to map to a service
    * @return a service to a given type
    */
-  DinaRepository<?, ? extends DinaEntity> getServiceForType(Class<?> type);
+  DinaRepository<?, ? extends DinaEntity> getRepoForType(Class<?> type);
 
   /**
    * Returns a set of the supported resource types

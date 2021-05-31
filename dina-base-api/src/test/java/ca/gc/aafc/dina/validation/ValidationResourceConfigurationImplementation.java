@@ -35,7 +35,7 @@ public class ValidationResourceConfigurationImplementation implements Validation
   }
 
   @Override
-  public DinaRepository<?, ? extends DinaEntity> getServiceForType(Class<?> type) {
+  public DinaRepository<?, ? extends DinaEntity> getRepoForType(Class<?> type) {
     return dinaServiceHashMap.get(type);
   }
 

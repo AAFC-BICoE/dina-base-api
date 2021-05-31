@@ -44,7 +44,7 @@ public class ValidationRegistry {
 
       String type = jsonApiResource.type();
 
-      DinaRepository<?, ? extends DinaEntity> dinaRepo = configuration.getServiceForType(r);
+      DinaRepository<?, ? extends DinaEntity> dinaRepo = configuration.getRepoForType(r);
       if (dinaRepo == null) {
         throw new IllegalArgumentException("The provided configuration must supply a dina repo for type: " + type);
       }
@@ -52,7 +52,6 @@ public class ValidationRegistry {
       DinaMappingRegistry registry = new DinaMappingRegistry(r);
 
       typesToEntryMap.put(type, ValidationEntry.builder()
-        .typeName(type)
         .mappingRegistry(registry)
         .resourceClass(r)
         .dinaRepo(dinaRepo)
@@ -73,7 +72,6 @@ public class ValidationRegistry {
   @Setter
   @RequiredArgsConstructor
   public static class ValidationEntry {
-    private final String typeName;
     private final DinaMappingRegistry mappingRegistry;
     private final Class<?> resourceClass;
     private final DinaRepository<?, ? extends DinaEntity> dinaRepo;
