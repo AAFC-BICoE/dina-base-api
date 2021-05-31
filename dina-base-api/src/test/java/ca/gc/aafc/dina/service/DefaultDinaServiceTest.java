@@ -335,6 +335,10 @@ public class DefaultDinaServiceTest {
       entity.setLocation(null);
     }
 
+    @Override
+    public void validate(Department entity) {
+      validateConstraints(entity,null);
+    }
   }
 
 }
