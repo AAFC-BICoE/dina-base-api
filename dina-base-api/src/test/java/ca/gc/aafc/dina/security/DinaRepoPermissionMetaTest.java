@@ -21,10 +21,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.info.BuildProperties;
@@ -52,17 +53,33 @@ public class DinaRepoPermissionMetaTest {
   @Inject
   private DinaRepository<DinaRepoPermissionMetaTest.ItemDto, DinaRepoPermissionMetaTest.Item> testRepo;
 
+  @Inject
+  private DefaultDinaService<DinaRepoPermissionMetaTest.Item> itemService;
+
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
-  void permissionsTest() {
-    DinaRepoPermissionMetaTest.ItemDto dto = DinaRepoPermissionMetaTest.ItemDto.builder()
-      .uuid(UUID.randomUUID())
+  void name() {
+    Item persisted = Item.builder()
       .group("g")
       .build();
-    testRepo.create(dto);
+    itemService.create(persisted);
+  }
 
+  @Test
+  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
+  void permissionsTest_WhenHasPermissions_PermissionsReturned() {
     ResourceList<DinaRepoPermissionMetaTest.ItemDto> all = testRepo.findAll(new QuerySpec(ItemDto.class));
-    all.forEach(result -> Assertions.assertNotNull(result.getMeta()));
+    all.forEach(result -> MatcherAssert.assertThat(
+      result.getMeta().getPermissions(),
+      Matchers.hasItems("create", "update", "delete")));
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = {"CNC:STAFF"})
+  void permissionsTest() {
+    ResourceList<DinaRepoPermissionMetaTest.ItemDto> all = testRepo.findAll(new QuerySpec(ItemDto.class));
+    all.forEach(result -> MatcherAssert.assertThat(
+      result.getMeta().getPermissions(),
+      Matchers.empty()));
   }
 
   @TestConfiguration

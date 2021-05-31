@@ -35,11 +35,12 @@ import javax.transaction.Transactional;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -179,24 +180,18 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private void setPermissions(List<AttributeMetaInfoProvider> providerList) {//TODO placeholder implementation
     authorizationService.ifPresent(as -> {
-      Map<String, String> permissions = new HashMap<>();
+      Set<String> permissions = new HashSet<>();
       providerList.forEach(p -> {
         if (ifAccess(() -> as.authorizeCreate(p))) {
-          permissions.put("create", "true");
-        } else {
-          permissions.put("create", "false");
+          permissions.add("create");
         }
         if (ifAccess(() -> as.authorizeDelete(p))) {
-          permissions.put("delete", "true");
-        } else {
-          permissions.put("delete", "false");
+          permissions.add("delete");
         }
         if (ifAccess(() -> as.authorizeUpdate(p))) {
-          permissions.put("update", "true");
-        } else {
-          permissions.put("update", "false");
+          permissions.add("update");
         }
-        p.setMeta(AttributeMetaInfoProvider.DinaJsonMetaInfo.builder().groupPermissions(permissions).build());
+        p.setMeta(AttributeMetaInfoProvider.DinaJsonMetaInfo.builder().permissions(permissions).build());
       });
     });
   }
