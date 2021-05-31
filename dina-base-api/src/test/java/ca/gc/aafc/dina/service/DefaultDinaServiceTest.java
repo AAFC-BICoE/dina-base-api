@@ -271,6 +271,16 @@ public class DefaultDinaServiceTest {
   }
 
   @Test
+  public void validate_InvalidEntity_ThrowsValidationException() {
+    Department d = new Department(); // not using the factory to get an empty object
+    // should be a business rule validation but for testing we are using a default validator
+    Validator defaultValidator = new SpringValidatorAdapter(Validation.buildDefaultValidatorFactory().getValidator());
+    assertThrows(ValidationException.class, () -> serviceUnderTest.validateBusinessRules(d, defaultValidator));
+
+    assertThrows(ConstraintViolationException.class, () -> serviceUnderTest.validate(d));
+  }
+
+  @Test
   public void existsByProperty_onValidProperty_existsReturnCorrectValue() {
     Department dep1 = Department.builder()
       .name("dep1")
