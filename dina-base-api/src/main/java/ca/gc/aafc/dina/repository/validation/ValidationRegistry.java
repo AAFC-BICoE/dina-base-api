@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.repository.validation;
 
-import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import ca.gc.aafc.dina.repository.DinaRepository;
@@ -30,12 +29,6 @@ public class ValidationRegistry {
 
   private void initMaps(ValidationResourceConfiguration configuration) {
     configuration.getTypes().forEach(r -> {
-
-      RelatedEntity relatedEntity = r.getAnnotation(RelatedEntity.class);
-      if (relatedEntity == null) {
-        throw new IllegalArgumentException("The provided resource must have a valid related entity");
-      }
-
       JsonApiResource jsonApiResource = r.getAnnotation(JsonApiResource.class);
       if (jsonApiResource == null || StringUtils.isBlank(jsonApiResource.type())) {
         throw new IllegalArgumentException(
