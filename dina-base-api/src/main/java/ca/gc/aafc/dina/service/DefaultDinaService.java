@@ -22,7 +22,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import javax.validation.Valid;
 import javax.validation.ValidationException;
 import javax.validation.groups.Default;
 
@@ -230,13 +229,12 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
-   * Validate the provided entity at the bean level.
+   * Validate the provided entity including business rules.
    * @param entity
    */
   @Override
-  @Validated
-  public void validate(@Valid Object entity) {
-    // empty body since the annotations will do the work
+  public void validate(E entity) {
+    // empty by default
   }
 
   /**
