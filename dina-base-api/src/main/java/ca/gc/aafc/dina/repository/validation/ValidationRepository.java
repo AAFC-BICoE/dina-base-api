@@ -1,8 +1,6 @@
 package ca.gc.aafc.dina.repository.validation;
 
 import ca.gc.aafc.dina.dto.ValidationDto;
-import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,19 +52,11 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     final ValidationRegistry.ValidationEntry validationEntry = validationRegistry.getEntryForType(type)
       .orElseThrow(ValidationRepository::getInvalidTypeException);
 
-    @SuppressWarnings("unchecked") // Mapper is cast for type compliance from wildcard ? to object
-    final DinaMapper<Object, DinaEntity> mapper = (DinaMapper<Object, DinaEntity>) validationEntry.getMapper();
-    final DinaMappingRegistry registry = validationEntry.getMappingRegistry();
     final Class<?> resourceClass = validationEntry.getResourceClass();
-    final Set<String> relationNames = findRelationNames(registry, resourceClass);
-
-    final DinaEntity entity = validationEntry.getEntityClass().getConstructor().newInstance();
     final Object dto = crnkMapper.treeToValue(data.get(ATTRIBUTES_KEY), resourceClass);
 
-    setRelations(data, dto, relationNames);
-    mapper.applyDtoToEntity(dto, entity, registry.getAttributesPerClass(), relationNames);
-
-    validationEntry.getDinaRepo().validate(entity);
+    setRelations(data, dto, findRelationNames(validationEntry.getMappingRegistry(), resourceClass));
+    validationEntry.getDinaRepo().validate(dto);
 
     // Crnk requires a created resource to have an ID. Create one here if the client did not provide one.
     resource.setId(Optional.ofNullable(resource.getId()).orElse("N/A"));

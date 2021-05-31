@@ -282,8 +282,16 @@ public class DinaRepository<D, E extends DinaEntity>
     return metaInfo;
   }
 
-  public void validate(DinaEntity object) {
-    dinaService.validate((E) object);
+  @SneakyThrows
+  public void validate(Object resource) {
+    E entity = entityClass.getConstructor().newInstance();
+    if (!resourceClass.isAssignableFrom(resource.getClass())) {
+      throw new IllegalArgumentException("resource must be of type: " + resourceClass.getSimpleName());
+    }
+    @SuppressWarnings("unchecked")
+    D dto = (D) resource;
+    mappingLayer.toEntitySimpleMapping(dto, entity);
+    dinaService.validate(entity);
   }
 
   /**

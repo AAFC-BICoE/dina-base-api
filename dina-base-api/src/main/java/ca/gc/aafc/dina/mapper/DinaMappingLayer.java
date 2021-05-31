@@ -93,16 +93,20 @@ public class DinaMappingLayer<D, E> {
   public <S extends D> void mapToEntity(@NonNull S dto, @NonNull E entity) {
     Set<DinaMappingRegistry.InternalRelation> mappableRelationsForClass = registry
       .findMappableRelationsForClass(dto.getClass());
-
     // Bean mapping
-    Set<String> relationNames = mappableRelationsForClass.stream()
-      .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());
-    dinaMapper.applyDtoToEntity(
-      dto, entity, registry.getAttributesPerClass(), relationNames);
+    toEntitySimpleMapping(dto, entity);
     // Link relations to Database backed resources
     linkRelations(entity, mappableRelationsForClass);
     // Map External Relations
     mapExternalRelationsToEntity(dto, entity);
+  }
+
+  public <S extends D> void toEntitySimpleMapping(S dto, E entity) {
+    Set<String> relationNames = registry
+      .findMappableRelationsForClass(dto.getClass()).stream()
+      .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());
+    dinaMapper.applyDtoToEntity(
+      dto, entity, registry.getAttributesPerClass(), relationNames);
   }
 
   /**
