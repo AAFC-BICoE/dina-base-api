@@ -7,6 +7,7 @@ import ca.gc.aafc.dina.mapper.DinaMappingLayer;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import ca.gc.aafc.dina.repository.auditlog.AuditSnapshotRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
+import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.service.AuditService;
@@ -28,11 +29,13 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.security.access.AccessDeniedException;
 
 import javax.transaction.Transactional;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -161,12 +164,50 @@ public class DinaRepository<D, E extends DinaEntity>
 
     List<D> dList = mappingLayer.mapEntitiesToDto(spec, fetchEntities(ids, spec, idName));
 
+    if(AttributeMetaInfoProvider.class.isAssignableFrom(resourceClass)){//TODO use a new service possibly
+      List<AttributeMetaInfoProvider> providerList = ( List<AttributeMetaInfoProvider> ) dList;
+      setPermissions(providerList);
+    }
+
     Long resourceCount = dinaService.getResourceCount( entityClass,
       (criteriaBuilder, root, em) -> filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idName, em));
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
     return new DefaultResourceList<>(dList, metaInformation, NO_LINK_INFORMATION);
+  }
+
+  private void setPermissions(List<AttributeMetaInfoProvider> providerList) {//TODO placeholder implementation
+    authorizationService.ifPresent(as -> {
+      Map<String, String> permissions = new HashMap<>();
+      providerList.forEach(p -> {
+        if (ifAccess(() -> as.authorizeCreate(p))) {
+          permissions.put("create", "true");
+        } else {
+          permissions.put("create", "false");
+        }
+        if (ifAccess(() -> as.authorizeDelete(p))) {
+          permissions.put("delete", "true");
+        } else {
+          permissions.put("delete", "false");
+        }
+        if (ifAccess(() -> as.authorizeUpdate(p))) {
+          permissions.put("update", "true");
+        } else {
+          permissions.put("update", "false");
+        }
+        p.setMeta(AttributeMetaInfoProvider.DinaJsonMetaInfo.builder().groupPermissions(permissions).build());
+      });
+    });
+  }
+
+  private boolean ifAccess(Runnable r) {//TODO placeholder implementation
+    try {
+      r.run();
+    } catch (AccessDeniedException e) {
+      return false;
+    }
+    return true;
   }
 
   /**
