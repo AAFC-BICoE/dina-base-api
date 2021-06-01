@@ -94,14 +94,22 @@ public class DinaMappingLayer<D, E> {
     Set<DinaMappingRegistry.InternalRelation> mappableRelationsForClass = registry
       .findMappableRelationsForClass(dto.getClass());
     // Bean mapping
-    toEntitySimpleMapping(dto, entity);
+    applyToSimpleMappingToEntity(dto, entity);
     // Link relations to Database backed resources
     linkRelations(entity, mappableRelationsForClass);
     // Map External Relations
     mapExternalRelationsToEntity(dto, entity);
   }
 
-  public <S extends D> void toEntitySimpleMapping(S dto, E entity) {
+  /**
+   * Maps a given dto to a given entity, this method will only provides a simple mapping of the resources attributes and
+   * relationships.
+   *
+   * @param dto    - source of the mapping
+   * @param entity - target of the mapping
+   * @param <S>    dto type
+   */
+  public <S extends D> void applyToSimpleMappingToEntity(S dto, E entity) {
     Set<String> relationNames = registry
       .findMappableRelationsForClass(dto.getClass()).stream()
       .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());

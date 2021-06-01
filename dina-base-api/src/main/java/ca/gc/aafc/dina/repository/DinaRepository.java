@@ -290,7 +290,7 @@ public class DinaRepository<D, E extends DinaEntity>
     }
     @SuppressWarnings("unchecked")
     D dto = (D) resource;
-    mappingLayer.toEntitySimpleMapping(dto, entity);
+    mappingLayer.applyToSimpleMappingToEntity(dto, entity);
     dinaService.validate(entity);
   }
 
