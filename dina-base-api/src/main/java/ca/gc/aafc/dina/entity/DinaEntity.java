@@ -13,8 +13,6 @@ public interface DinaEntity {
 
   UUID getUuid();
 
-  void setUuid(UUID uuid);
-
   /**
    * The group represents the group owning the entity. group is optional and null
    * is return if an entity doesn't support it.
