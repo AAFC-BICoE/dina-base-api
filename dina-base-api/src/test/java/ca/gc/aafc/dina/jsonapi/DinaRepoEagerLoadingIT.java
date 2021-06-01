@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.jsonapi;
 
+import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
 import ca.gc.aafc.dina.dto.ChainDto;
 import ca.gc.aafc.dina.dto.ChainTemplateDto;
 import ca.gc.aafc.dina.entity.Chain;
@@ -7,6 +8,7 @@ import ca.gc.aafc.dina.entity.ChainTemplate;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
@@ -20,6 +22,7 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
@@ -148,9 +151,14 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
   }
 
   @TestConfiguration
+  @Import(ExternalResourceProviderImplementation.class)
   public static class DinaRepoBulkOperationITConfig {
     @Bean
-    public DinaRepository<ChainDto, Chain> chainRepo(BaseDAO baseDAO, ChainDinaService chainDinaService) {
+    public DinaRepository<ChainDto, Chain> chainRepo(
+      BaseDAO baseDAO,
+      ChainDinaService chainDinaService,
+      ExternalResourceProvider externalResourceProvider
+      ) {
       return new DinaRepository<>(
         chainDinaService,
         Optional.empty(),
@@ -159,7 +167,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
         ChainDto.class,
         Chain.class,
         null, 
-        null,
+        externalResourceProvider,
         new BuildProperties(new Properties())
       );
     }

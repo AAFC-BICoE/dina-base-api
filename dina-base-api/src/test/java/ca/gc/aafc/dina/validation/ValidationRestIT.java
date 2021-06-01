@@ -4,6 +4,7 @@ import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.ChainDto;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
+import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.ValidationDto;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
@@ -69,6 +70,7 @@ public class ValidationRestIT {
     chainDto.setGroup("d");
     chainDto.setUuid(UUID.randomUUID());
     chainDto.setName("name");
+    chainDto.setAgent(ExternalRelationDto.builder().type("agent").id(UUID.randomUUID().toString()).build());
     newRequest()
       .body(newValidationDto(
         "chain",
@@ -86,6 +88,22 @@ public class ValidationRestIT {
     chainDto.setName("name");
     newRequest()
       .body(newValidationDto("chain", JsonAPITestHelper.toAttributeMap(chainDto), null))
+      .post(VALIDATION_ENDPOINT)
+      .then()
+      .assertThat().statusCode(422);
+  }
+
+  @Test
+  void validate_WithNoRequiredExternalRelation_Returns422() {
+    ChainDto chainDto = new ChainDto();
+    chainDto.setGroup("d");
+    chainDto.setUuid(UUID.randomUUID());
+    chainDto.setName("name");
+    newRequest()
+      .body(newValidationDto(
+        "chain",
+        JsonAPITestHelper.toAttributeMap(chainDto),
+        List.of(JsonAPIRelationship.of("chainTemplate", "chainTemplate", "1"))))
       .post(VALIDATION_ENDPOINT)
       .then()
       .assertThat().statusCode(422);
@@ -148,7 +166,11 @@ public class ValidationRestIT {
   }
 
   private Map<String, Object> newDepartmentDto() {
-    DepartmentDto dto = DepartmentDto.builder().uuid(UUID.randomUUID()).name("dfadf").location("Montreal").build();
+    DepartmentDto dto = DepartmentDto.builder()
+      .uuid(UUID.randomUUID())
+      .name("dfadf")
+      .location("Montreal")
+      .build();
     return JsonAPITestHelper.toAttributeMap(dto);
   }
 

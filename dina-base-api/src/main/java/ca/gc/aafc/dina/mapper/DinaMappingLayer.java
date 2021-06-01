@@ -97,13 +97,11 @@ public class DinaMappingLayer<D, E> {
     applySimpleMappingToEntity(dto, entity);
     // Link relations to Database backed resources
     linkRelations(entity, mappableRelationsForClass);
-    // Map External Relations
-    mapExternalRelationsToEntity(dto, entity);
   }
 
   /**
-   * Maps a given dto to a given entity, this method will only provides a mapping of the resources attributes and
-   * relationships.
+   * Maps a given dto to a given entity, this method will only provides a mapping of the resources attributes
+   * and relationships (internal and external relations).
    *
    * @param dto    - source of the mapping
    * @param entity - target of the mapping
@@ -115,6 +113,8 @@ public class DinaMappingLayer<D, E> {
       .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());
     dinaMapper.applyDtoToEntity(
       dto, entity, registry.getAttributesPerClass(), relationNames);
+    // Map External Relations
+    mapExternalRelationsToEntity(dto, entity);
   }
 
   /**

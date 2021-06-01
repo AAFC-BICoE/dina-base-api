@@ -70,4 +70,7 @@ public class Chain implements DinaEntity {
     }))
   private ChainTemplate chainTemplate;
 
+  @NotNull
+  private UUID agent;
+
 }
