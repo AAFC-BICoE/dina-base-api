@@ -94,7 +94,7 @@ public class DinaMappingLayer<D, E> {
     Set<DinaMappingRegistry.InternalRelation> mappableRelationsForClass = registry
       .findMappableRelationsForClass(dto.getClass());
     // Bean mapping
-    applyToSimpleMappingToEntity(dto, entity);
+    applySimpleMappingToEntity(dto, entity);
     // Link relations to Database backed resources
     linkRelations(entity, mappableRelationsForClass);
     // Map External Relations
@@ -109,7 +109,7 @@ public class DinaMappingLayer<D, E> {
    * @param entity - target of the mapping
    * @param <S>    dto type
    */
-  public <S extends D> void applyToSimpleMappingToEntity(S dto, E entity) {
+  public <S extends D> void applySimpleMappingToEntity(S dto, E entity) {
     Set<String> relationNames = registry
       .findMappableRelationsForClass(dto.getClass()).stream()
       .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());
