@@ -28,6 +28,7 @@ import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import javax.inject.Inject;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -37,6 +38,7 @@ import java.util.UUID;
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
+@Import(DinaRepoEagerLoadingIT.TestConfig.class)
 public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
 
   public static final String CHAIN_TEMPLATE_PATH = "chainTemplate";
@@ -119,10 +121,11 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       CHAIN_TEMPLATE_PATH,
       CHAIN_TEMPLATE_PATH,
       relation.getUuid().toString());
+    JsonAPIRelationship agent = JsonAPIRelationship.of("agent", "agent", UUID.randomUUID().toString());
     return JsonAPITestHelper.toJsonAPIMap(
       CHAIN_PATH,
       JsonAPITestHelper.toAttributeMap(chainDto),
-      JsonAPITestHelper.toRelationshipMap(relationship),
+      JsonAPITestHelper.toRelationshipMap(List.of(relationship, agent)),
       null);
   }
 
@@ -152,7 +155,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
 
   @TestConfiguration
   @Import(ExternalResourceProviderImplementation.class)
-  public static class DinaRepoBulkOperationITConfig {
+  public static class TestConfig {
     @Bean
     public DinaRepository<ChainDto, Chain> chainRepo(
       BaseDAO baseDAO,

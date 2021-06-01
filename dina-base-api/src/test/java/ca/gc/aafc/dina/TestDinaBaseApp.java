@@ -39,7 +39,7 @@ import java.util.Properties;
  */
 @SpringBootApplication
 @EntityScan(basePackageClasses = Department.class)
-@Import(DinaRepoEagerLoadingIT.DinaRepoBulkOperationITConfig.class)
+@Import(DinaRepoEagerLoadingIT.TestConfig.class)
 public class TestDinaBaseApp {
 
   @Inject
