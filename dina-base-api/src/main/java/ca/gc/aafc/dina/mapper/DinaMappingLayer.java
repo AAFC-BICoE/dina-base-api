@@ -102,7 +102,7 @@ public class DinaMappingLayer<D, E> {
   }
 
   /**
-   * Maps a given dto to a given entity, this method will only provides a simple mapping of the resources attributes and
+   * Maps a given dto to a given entity, this method will only provides a mapping of the resources attributes and
    * relationships.
    *
    * @param dto    - source of the mapping
