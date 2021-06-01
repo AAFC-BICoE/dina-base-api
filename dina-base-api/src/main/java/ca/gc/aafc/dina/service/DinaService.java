@@ -130,5 +130,4 @@ public interface DinaService<E extends DinaEntity> {
 
   void validate(E entity);
 
-  void validateConstraints(DinaEntity entity, Class<? extends Default> validationGroup);
 }
