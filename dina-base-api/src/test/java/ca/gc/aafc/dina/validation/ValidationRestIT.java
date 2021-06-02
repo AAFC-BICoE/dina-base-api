@@ -97,7 +97,6 @@ public class ValidationRestIT {
   void validate_WithNoRequiredExternalRelation_Returns422() {
     ChainDto chainDto = new ChainDto();
     chainDto.setGroup("d");
-    chainDto.setUuid(UUID.randomUUID());
     chainDto.setName("name");
     newRequest()
       .body(newValidationDto(

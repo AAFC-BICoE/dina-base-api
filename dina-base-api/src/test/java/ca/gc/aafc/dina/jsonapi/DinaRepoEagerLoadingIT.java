@@ -10,6 +10,7 @@ import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.service.DefaultDinaService;
+import ca.gc.aafc.dina.service.OnCreate;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
@@ -204,7 +205,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
 
       @Override
       public void validate(Chain entity) {
-        validateConstraints(entity, null);
+        validateConstraints(entity, OnCreate.class);
       }
     }
 
