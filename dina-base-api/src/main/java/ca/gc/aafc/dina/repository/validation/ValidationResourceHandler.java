@@ -5,16 +5,15 @@ import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * ValidationResourceHandler can validate a json node representation of it's assigned resource type.
@@ -58,7 +57,7 @@ public class ValidationResourceHandler<D> {
     }
 
     D dto = crnkMapper.treeToValue(node.get(ValidationNodeHelper.ATTRIBUTES_KEY), resourceClass);
-    setRelations(node, dto, findRelationNames(this.mappingRegistry, resourceClass));
+    setRelations(node, dto, this.mappingRegistry.findMappableRelationsForClass(resourceClass));
     dinaRepo.validate(dto);
   }
 
@@ -75,46 +74,40 @@ public class ValidationResourceHandler<D> {
     return this.typeName.equalsIgnoreCase(typeName);
   }
 
-  private void setRelations(JsonNode data, Object dto, Set<String> relationNames) {
-    boolean hasValidRelationBlock = !ValidationNodeHelper.isBlank(data)
-      && data.has(ValidationNodeHelper.RELATIONSHIPS_KEY)
+  private void setRelations(
+    JsonNode data,
+    Object dto,
+    Set<DinaMappingRegistry.InternalRelation> mappableRelationsForClass
+  ) {
+    boolean hasValidRelationBlock = !ValidationNodeHelper.isBlank(data) && data.has(ValidationNodeHelper.RELATIONSHIPS_KEY)
       && !ValidationNodeHelper.isBlank(data.get(ValidationNodeHelper.RELATIONSHIPS_KEY));
     if (hasValidRelationBlock) {
       JsonNode relations = data.get(ValidationNodeHelper.RELATIONSHIPS_KEY);
       if (relations.isObject()) {
-        ObjectNode toObjNode = relations.deepCopy();
-        toObjNode.fields().forEachRemaining(relation -> setRelation(dto, relationNames, relation));
+        relations.deepCopy().fields().forEachRemaining(relation -> {
+          String relationFieldName = relation.getKey();
+          if (StringUtils.isNotBlank(relationFieldName)) {
+            findInternalRelation(mappableRelationsForClass, relationFieldName).ifPresent(internalRelation ->
+              setRelation(dto, relationFieldName, internalRelation.getElementType()));
+          }
+        });
       }
     }
   }
 
-  private static Set<String> findRelationNames(DinaMappingRegistry registry, Class<?> aClass) {
-    return registry
-      .findMappableRelationsForClass(aClass)
-      .stream()
-      .map(DinaMappingRegistry.InternalRelation::getName)
-      .collect(Collectors.toSet());
-  }
-
-  private void setRelation(Object dto, Set<String> relationNames, Map.Entry<String, JsonNode> relation) {
-    String relationFieldName = relation.getKey();
-    if (StringUtils.isNotBlank(relationFieldName) &&
-      relationNames.stream().anyMatch(relationFieldName::equalsIgnoreCase)) {
-      this.mappingRegistry.findMappableRelationsForClass(this.resourceClass)
-        .stream()
-        .findFirst()
-        .ifPresent(internalRelation -> setRelationObj(dto, relationFieldName, internalRelation));
-    }
-  }
-
   @SneakyThrows
-  private void setRelationObj(
-    Object dto,
-    String relationFieldName,
-    DinaMappingRegistry.InternalRelation internalRelation
-  ) {
-    PropertyUtils.setProperty(
-      dto, relationFieldName, internalRelation.getElementType().getConstructor().newInstance());
+  private static void setRelation(Object dto, String relationName, Class<?> resourceType) {
+    PropertyUtils.setProperty(dto, relationName, resourceType.getConstructor().newInstance());
   }
 
+  private static Optional<DinaMappingRegistry.InternalRelation> findInternalRelation(
+    Set<DinaMappingRegistry.InternalRelation> relations,
+    String relationFieldName
+  ) {
+    if (StringUtils.isBlank(relationFieldName) || CollectionUtils.isEmpty(relations)) {
+      return Optional.empty();
+    }
+    return relations.stream().filter(ir -> ir.getName().equalsIgnoreCase(relationFieldName))
+      .findFirst();
+  }
 }
