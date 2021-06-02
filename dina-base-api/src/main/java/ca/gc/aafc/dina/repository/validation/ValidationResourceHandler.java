@@ -6,7 +6,6 @@ import ca.gc.aafc.dina.repository.DinaRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.crnk.core.exception.BadRequestException;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -51,7 +50,7 @@ public class ValidationResourceHandler<D> {
     dinaRepo.validate(dto);
   }
 
-  public boolean isSupported(@NonNull String typeName) {
+  public boolean isSupported(String typeName) {
     if (StringUtils.isBlank(typeName)) {
       return false;
     }
@@ -67,8 +66,6 @@ public class ValidationResourceHandler<D> {
       if (relations.isObject()) {
         ObjectNode toObjNode = relations.deepCopy();
         toObjNode.fields().forEachRemaining(relation -> setRelation(dto, relationNames, relation));
-      } else {
-        throw new BadRequestException("You did not submit a valid relationship block");
       }
     }
   }
@@ -81,7 +78,6 @@ public class ValidationResourceHandler<D> {
       .collect(Collectors.toSet());
   }
 
-  @SneakyThrows
   private void setRelation(Object dto, Set<String> relationNames, Map.Entry<String, JsonNode> relation) {
     String relationFieldName = relation.getKey();
     if (StringUtils.isNotBlank(relationFieldName) &&
@@ -90,10 +86,6 @@ public class ValidationResourceHandler<D> {
         .stream()
         .findFirst()
         .ifPresent(internalRelation -> setRelationObj(dto, relationFieldName, internalRelation));
-    } else {
-      throw new BadRequestException(
-        "A relation with field name: " + relationFieldName + " does not exist for class: "
-          + dto.getClass().getSimpleName());
     }
   }
 
