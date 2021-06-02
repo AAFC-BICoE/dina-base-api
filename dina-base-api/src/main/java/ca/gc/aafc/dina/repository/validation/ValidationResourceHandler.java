@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.crnk.core.exception.BadRequestException;
 import io.crnk.core.resource.annotations.JsonApiResource;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +23,10 @@ public class ValidationResourceHandler<D> {
   private final DinaRepository<D, ? extends DinaEntity> dinaRepo;
   private final String typeName;
 
-  public ValidationResourceHandler(Class<D> resourceClass, DinaRepository<D, ? extends DinaEntity> dinaRepo) {
+  public ValidationResourceHandler(
+    @NonNull Class<D> resourceClass,
+    @NonNull DinaRepository<D, ? extends DinaEntity> dinaRepo
+  ) {
     this.resourceClass = resourceClass;
 
     JsonApiResource jsonApiResource = resourceClass.getAnnotation(JsonApiResource.class);
@@ -34,27 +38,24 @@ public class ValidationResourceHandler<D> {
     this.typeName = jsonApiResource.type();
     this.dinaRepo = dinaRepo;
     this.mappingRegistry = new DinaMappingRegistry(resourceClass);
-
   }
 
   @SneakyThrows
-  public void validate(JsonNode node, ObjectMapper crnkMapper) {
-    checkValidNode(node);
+  public void validate(@NonNull JsonNode node, @NonNull ObjectMapper crnkMapper) {
+    if (ValidationNodeHelper.isInvalidDataBlock(node)) {
+      throw new IllegalArgumentException("You must submit a valid data block");
+    }
+
     D dto = crnkMapper.treeToValue(node.get(ValidationNodeHelper.ATTRIBUTES_KEY), resourceClass);
     setRelations(node, dto, findRelationNames(this.mappingRegistry, resourceClass));
     dinaRepo.validate(dto);
   }
 
-  public boolean isSupported(String typeName) {
-    return this.typeName.equalsIgnoreCase(typeName);
-  }
-
-  private void checkValidNode(JsonNode data) {
-    boolean isInvalidDataBlock = ValidationNodeHelper.isBlank(data) || !data.has(ValidationNodeHelper.ATTRIBUTES_KEY)
-      || ValidationNodeHelper.isBlank(data.get(ValidationNodeHelper.ATTRIBUTES_KEY));
-    if (isInvalidDataBlock) {
-      throw new BadRequestException("You must submit a valid data block");
+  public boolean isSupported(@NonNull String typeName) {
+    if (StringUtils.isBlank(typeName)) {
+      return false;
     }
+    return this.typeName.equalsIgnoreCase(typeName);
   }
 
   private void setRelations(JsonNode data, Object dto, Set<String> relationNames) {

@@ -61,17 +61,15 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
       throw new BadRequestException("You must submit a valid configuration type");
     }
 
-    if (isInvalidDataBlock(data)) {
+    if (ValidationNodeHelper.isInvalidDataBlock(data)) {
       throw new BadRequestException("You must submit a valid data block");
     }
   }
 
-  private static boolean isInvalidDataBlock(JsonNode data) {
-    return ValidationNodeHelper.isBlank(data) || !data.has(ValidationNodeHelper.ATTRIBUTES_KEY)
-      || ValidationNodeHelper.isBlank(data.get(ValidationNodeHelper.ATTRIBUTES_KEY));
-  }
-
   private boolean hasNoSupportedType(String type) {
+    if (StringUtils.isBlank(type) || CollectionUtils.isEmpty(validators)) {
+      return false;
+    }
     return validators.stream().noneMatch(v -> v.isSupported(type));
   }
 

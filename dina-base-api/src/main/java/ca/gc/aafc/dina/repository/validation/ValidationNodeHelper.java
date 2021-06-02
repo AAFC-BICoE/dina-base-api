@@ -14,4 +14,8 @@ public final class ValidationNodeHelper {
     return data == null || data.isNull() || data.isEmpty();
   }
 
+  public static boolean isInvalidDataBlock(JsonNode data) {
+    return isBlank(data) || !data.has(ATTRIBUTES_KEY) || isBlank(data.get(ATTRIBUTES_KEY));
+  }
+
 }
