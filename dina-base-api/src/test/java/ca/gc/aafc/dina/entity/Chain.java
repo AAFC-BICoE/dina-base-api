@@ -49,7 +49,6 @@ public class Chain implements DinaEntity {
   @Getter(onMethod = @__({
     @NotNull(groups = OnUpdate.class),
     @NaturalId,
-    @Null(groups = OnCreate.class)
     }))
   private UUID uuid;
 
