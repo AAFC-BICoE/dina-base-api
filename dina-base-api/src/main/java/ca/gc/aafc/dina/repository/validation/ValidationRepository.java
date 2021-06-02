@@ -9,7 +9,6 @@ import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepositoryBase;
 import io.crnk.core.resource.list.ResourceList;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -31,7 +30,7 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
   ) {
     super(ValidationDto.class);
     if (CollectionUtils.isEmpty(validationResourceConfiguration.getValidationHandlers())) {
-      throw new IllegalArgumentException("The validation configuration must return a set of types, " +
+      throw new IllegalArgumentException("There are no validation handlers. " +
         "if no types require validation consider using dina.validationEndpoint.enabled: false");
     }
     this.validators = validationResourceConfiguration.getValidationHandlers();
@@ -39,7 +38,6 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
   }
 
   @Override
-  @SneakyThrows
   public <S extends ValidationDto> S create(S resource) {
     final String type = resource.getType();
     final JsonNode data = resource.getData();
