@@ -22,8 +22,6 @@ import java.util.Optional;
 @ConditionalOnProperty(value = "dina.validationEndpoint.enabled", havingValue = "true")
 public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, String> {
 
-  public static final String ATTRIBUTES_KEY = "attributes";
-  public static final String RELATIONSHIPS_KEY = "relationships";
   private final List<ValidationResourceHandler<?>> validators;
   private final ObjectMapper crnkMapper;
 
@@ -60,24 +58,21 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
 
   private void validateIncomingRequest(String type, JsonNode data) {
     if (StringUtils.isBlank(type) || hasNoSupportedType(type)) {
-      throw getInvalidTypeException();
+      throw new BadRequestException("You must submit a valid configuration type");
     }
 
-    if (isBlank(data) || !data.has(ATTRIBUTES_KEY) || isBlank(data.get(ATTRIBUTES_KEY))) {
+    if (isInvalidDataBlock(data)) {
       throw new BadRequestException("You must submit a valid data block");
     }
   }
 
+  private static boolean isInvalidDataBlock(JsonNode data) {
+    return ValidationNodeHelper.isBlank(data) || !data.has(ValidationNodeHelper.ATTRIBUTES_KEY)
+      || ValidationNodeHelper.isBlank(data.get(ValidationNodeHelper.ATTRIBUTES_KEY));
+  }
+
   private boolean hasNoSupportedType(String type) {
     return validators.stream().noneMatch(v -> v.isSupported(type));
-  }
-
-  public static boolean isBlank(JsonNode data) {
-    return data == null || data.isNull() || data.isEmpty();
-  }
-
-  private static BadRequestException getInvalidTypeException() {
-    return new BadRequestException("You must submit a valid configuration type");
   }
 
   @Override

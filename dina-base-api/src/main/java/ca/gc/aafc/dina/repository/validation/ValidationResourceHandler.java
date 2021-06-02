@@ -39,7 +39,8 @@ public class ValidationResourceHandler<D> {
 
   @SneakyThrows
   public void validate(JsonNode node, ObjectMapper crnkMapper) {
-    D dto = crnkMapper.treeToValue(node.get(ValidationRepository.ATTRIBUTES_KEY), resourceClass);
+    checkValidNode(node);
+    D dto = crnkMapper.treeToValue(node.get(ValidationNodeHelper.ATTRIBUTES_KEY), resourceClass);
     setRelations(node, dto, findRelationNames(this.mappingRegistry, resourceClass));
     dinaRepo.validate(dto);
   }
@@ -48,10 +49,20 @@ public class ValidationResourceHandler<D> {
     return this.typeName.equalsIgnoreCase(typeName);
   }
 
+  private void checkValidNode(JsonNode data) {
+    boolean isInvalidDataBlock = ValidationNodeHelper.isBlank(data) || !data.has(ValidationNodeHelper.ATTRIBUTES_KEY)
+      || ValidationNodeHelper.isBlank(data.get(ValidationNodeHelper.ATTRIBUTES_KEY));
+    if (isInvalidDataBlock) {
+      throw new BadRequestException("You must submit a valid data block");
+    }
+  }
+
   private void setRelations(JsonNode data, Object dto, Set<String> relationNames) {
-    if (!ValidationRepository.isBlank(data) && data.has(ValidationRepository.RELATIONSHIPS_KEY) && !ValidationRepository
-      .isBlank(data.get(ValidationRepository.RELATIONSHIPS_KEY))) {
-      JsonNode relations = data.get(ValidationRepository.RELATIONSHIPS_KEY);
+    boolean hasValidRelationBlock = !ValidationNodeHelper.isBlank(data)
+      && data.has(ValidationNodeHelper.RELATIONSHIPS_KEY)
+      && !ValidationNodeHelper.isBlank(data.get(ValidationNodeHelper.RELATIONSHIPS_KEY));
+    if (hasValidRelationBlock) {
+      JsonNode relations = data.get(ValidationNodeHelper.RELATIONSHIPS_KEY);
       if (relations.isObject()) {
         ObjectNode toObjNode = relations.deepCopy();
         toObjNode.fields().forEachRemaining(relation -> setRelation(dto, relationNames, relation));
