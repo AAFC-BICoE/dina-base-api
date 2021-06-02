@@ -49,7 +49,7 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     final JsonNode data = resource.getData();
     validateIncomingRequest(type, data);
 
-    final ValidationRegistry.ValidationEntry validationEntry = validationRegistry.getEntryForType(type)
+    final ValidationRegistry.ValidationEntry<Object> validationEntry = validationRegistry.getEntryForType(type)
       .orElseThrow(ValidationRepository::getInvalidTypeException);
 
     final Class<?> resourceClass = validationEntry.getResourceClass();

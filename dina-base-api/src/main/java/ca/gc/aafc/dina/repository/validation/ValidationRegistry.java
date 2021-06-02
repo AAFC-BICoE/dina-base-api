@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class ValidationRegistry {
-  private final Map<String, ValidationEntry> typesToEntryMap = new HashMap<>();
+  private final Map<String, ValidationEntry<Object>> typesToEntryMap = new HashMap<>();
 
   public ValidationRegistry(@NonNull ValidationResourceConfiguration configuration) {
     if (CollectionUtils.isEmpty(configuration.getTypes())) {
@@ -46,13 +46,13 @@ public class ValidationRegistry {
 
       typesToEntryMap.put(type, ValidationEntry.builder()
         .mappingRegistry(registry)
-        .resourceClass(r)
-        .dinaRepo(dinaRepo)
+        .resourceClass((Class<Object>) r)
+        .dinaRepo((DinaRepository<Object, ? extends DinaEntity>) dinaRepo)
         .build());
     });
   }
 
-  public Optional<ValidationEntry> getEntryForType(@NonNull String type) {
+  public Optional<ValidationEntry<Object>> getEntryForType(@NonNull String type) {
     return Optional.ofNullable(typesToEntryMap.get(type));
   }
 
@@ -64,9 +64,9 @@ public class ValidationRegistry {
   @Getter
   @Setter
   @RequiredArgsConstructor
-  public static class ValidationEntry {
+  public static class ValidationEntry<D> {
     private final DinaMappingRegistry mappingRegistry;
-    private final Class<?> resourceClass;
-    private final DinaRepository<?, ? extends DinaEntity> dinaRepo;
+    private final Class<D> resourceClass;
+    private final DinaRepository<D, ? extends DinaEntity> dinaRepo;
   }
 }
