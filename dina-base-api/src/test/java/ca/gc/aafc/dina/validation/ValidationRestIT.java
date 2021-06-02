@@ -68,7 +68,6 @@ public class ValidationRestIT {
   void validate_WithRequiredRelation_Returns201() {
     ChainDto chainDto = new ChainDto();
     chainDto.setGroup("d");
-    chainDto.setUuid(UUID.randomUUID());
     chainDto.setName("name");
     chainDto.setAgent(ExternalRelationDto.builder().type("agent").id(UUID.randomUUID().toString()).build());
     newRequest()
