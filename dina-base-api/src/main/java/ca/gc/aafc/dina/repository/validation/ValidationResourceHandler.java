@@ -16,6 +16,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * ValidationResourceHandler can validate a json node representation of it's assigned resource type.
+ *
+ * @param <D> resource type
+ */
 public class ValidationResourceHandler<D> {
   private final DinaMappingRegistry mappingRegistry;
   private final Class<D> resourceClass;
@@ -39,6 +44,13 @@ public class ValidationResourceHandler<D> {
     this.mappingRegistry = new DinaMappingRegistry(resourceClass);
   }
 
+  /**
+   * Validates a given json node representation of handlers assigned resource type. Validation is run against
+   * the assigned resources repository.validate() method.
+   *
+   * @param node       json node representation to validate
+   * @param crnkMapper Object Mapper use to map Json to Objects
+   */
   @SneakyThrows
   public void validate(@NonNull JsonNode node, @NonNull ObjectMapper crnkMapper) {
     if (ValidationNodeHelper.isInvalidDataBlock(node)) {
@@ -50,6 +62,12 @@ public class ValidationResourceHandler<D> {
     dinaRepo.validate(dto);
   }
 
+  /**
+   * Returns true if the given type name is supported by this handler.
+   *
+   * @param typeName type name to evaluate
+   * @return true if the given type name is supported by this handler.
+   */
   public boolean isSupported(String typeName) {
     if (StringUtils.isBlank(typeName)) {
       return false;
