@@ -7,10 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.crnk.core.exception.BadRequestException;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.SneakyThrows;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -19,21 +16,36 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Builder
-@Getter
-@Setter
-@RequiredArgsConstructor
 public class ValidationResourceHandler<D> {
   private final DinaMappingRegistry mappingRegistry;
   private final Class<D> resourceClass;
   private final DinaRepository<D, ? extends DinaEntity> dinaRepo;
-  private final ObjectMapper crnkMapper;
+  private final String typeName;
+
+  public ValidationResourceHandler(Class<D> resourceClass, DinaRepository<D, ? extends DinaEntity> dinaRepo) {
+    this.resourceClass = resourceClass;
+
+    JsonApiResource jsonApiResource = resourceClass.getAnnotation(JsonApiResource.class);
+    if (jsonApiResource == null || StringUtils.isBlank(jsonApiResource.type())) {
+      throw new IllegalArgumentException(
+        "The provided resource must have a valid JsonApiResource annotation");
+    }
+
+    this.typeName = jsonApiResource.type();
+    this.dinaRepo = dinaRepo;
+    this.mappingRegistry = new DinaMappingRegistry(resourceClass);
+
+  }
 
   @SneakyThrows
-  public void validate(JsonNode node) {
+  public void validate(JsonNode node, ObjectMapper crnkMapper) {
     D dto = crnkMapper.treeToValue(node.get(ValidationRepository.ATTRIBUTES_KEY), resourceClass);
-    setRelations(node, dto, findRelationNames(this.getMappingRegistry(), resourceClass));
+    setRelations(node, dto, findRelationNames(this.mappingRegistry, resourceClass));
     dinaRepo.validate(dto);
+  }
+
+  public boolean isSupported(String typeName) {
+    return this.typeName.equalsIgnoreCase(typeName);
   }
 
   private void setRelations(JsonNode data, Object dto, Set<String> relationNames) {

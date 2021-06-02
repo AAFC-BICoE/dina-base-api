@@ -10,10 +10,12 @@ import io.crnk.core.repository.ResourceRepositoryBase;
 import io.crnk.core.resource.list.ResourceList;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -22,15 +24,20 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
 
   public static final String ATTRIBUTES_KEY = "attributes";
   public static final String RELATIONSHIPS_KEY = "relationships";
-  public static final String DATA_KEY = "data";
-  private final ValidationRegistry validationRegistry;
+  private final List<ValidationResourceHandler<?>> validators;
+  private final ObjectMapper crnkMapper;
 
   public ValidationRepository(
     @NonNull ValidationResourceConfiguration validationResourceConfiguration,
     @NonNull ObjectMapper crnkMapper
   ) {
     super(ValidationDto.class);
-    this.validationRegistry = new ValidationRegistry(validationResourceConfiguration, crnkMapper);
+    if (CollectionUtils.isEmpty(validationResourceConfiguration.getValidationHandlers())) {
+      throw new IllegalArgumentException("The validation configuration must return a set of types, " +
+        "if no types require validation consider using dina.validationEndpoint.enabled: false");
+    }
+    this.validators = validationResourceConfiguration.getValidationHandlers();
+    this.crnkMapper = crnkMapper;
   }
 
   @Override
@@ -40,10 +47,11 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     final JsonNode data = resource.getData();
     validateIncomingRequest(type, data);
 
-    final ValidationResourceHandler<Object> validationEntry = validationRegistry.getEntryForType(type)
-      .orElseThrow(ValidationRepository::getInvalidTypeException);
-
-    validationEntry.validate(data);
+    validators.forEach(validator -> {
+      if (validator.isSupported(type)) {
+        validator.validate(data, crnkMapper);
+      }
+    });
 
     // Crnk requires a created resource to have an ID. Create one here if the client did not provide one.
     resource.setId(Optional.ofNullable(resource.getId()).orElse("N/A"));
@@ -51,13 +59,17 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
   }
 
   private void validateIncomingRequest(String type, JsonNode data) {
-    if (StringUtils.isBlank(type) || !validationRegistry.hasEntryForType(type)) {
+    if (StringUtils.isBlank(type) || hasNoSupportedType(type)) {
       throw getInvalidTypeException();
     }
 
     if (isBlank(data) || !data.has(ATTRIBUTES_KEY) || isBlank(data.get(ATTRIBUTES_KEY))) {
       throw new BadRequestException("You must submit a valid data block");
     }
+  }
+
+  private boolean hasNoSupportedType(String type) {
+    return validators.stream().noneMatch(v -> v.isSupported(type));
   }
 
   public static boolean isBlank(JsonNode data) {
