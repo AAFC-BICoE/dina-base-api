@@ -16,6 +16,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
+import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.NaturalId;
 
@@ -44,6 +45,7 @@ public class Employee implements DinaEntity {
   @Column(unique = true)
   private String name;
 
+  @Size(min = 1, max = 50)
   private String job;
 
   @OneToOne(cascade = CascadeType.ALL)

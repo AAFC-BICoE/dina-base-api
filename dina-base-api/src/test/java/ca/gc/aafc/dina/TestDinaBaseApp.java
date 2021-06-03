@@ -13,6 +13,7 @@ import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.entity.Vocabulary;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.jsonapi.DinaRepoEagerLoadingIT;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
@@ -26,6 +27,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -37,6 +39,7 @@ import java.util.Properties;
  */
 @SpringBootApplication
 @EntityScan(basePackageClasses = Department.class)
+@Import(DinaRepoEagerLoadingIT.TestConfig.class)
 public class TestDinaBaseApp {
 
   @Inject

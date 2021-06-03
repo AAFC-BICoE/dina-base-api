@@ -282,6 +282,13 @@ public class DinaRepository<D, E extends DinaEntity>
     return metaInfo;
   }
 
+  @SneakyThrows
+  public void validate(D resource) {
+    E entity = entityClass.getConstructor().newInstance();
+    mappingLayer.applySimpleMappingToEntity(resource, entity);
+    dinaService.validate(entity);
+  }
+
   /**
    * Returns true if the given class has a given field with an annotation of a given type.
    *

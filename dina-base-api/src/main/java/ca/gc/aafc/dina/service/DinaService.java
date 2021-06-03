@@ -8,7 +8,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -126,5 +125,7 @@ public interface DinaService<E extends DinaEntity> {
    * Check for the existence of a record by natural id.
    */
   boolean exists(Class<?> entityClass, Object naturalId);
+
+  void validate(E entity);
 
 }

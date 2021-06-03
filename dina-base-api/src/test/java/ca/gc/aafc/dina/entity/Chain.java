@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.entity;
 
+import ca.gc.aafc.dina.service.OnCreate;
+import ca.gc.aafc.dina.service.OnUpdate;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +20,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import javax.validation.constraints.Size;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -44,8 +47,8 @@ public class Chain implements DinaEntity {
   private Integer id;
 
   @Getter(onMethod = @__({
-    @NotNull,
-    @NaturalId
+    @NotNull(groups = OnUpdate.class),
+    @NaturalId,
     }))
   private UUID uuid;
 
@@ -69,5 +72,8 @@ public class Chain implements DinaEntity {
     @JoinColumn(name = "chaintemplateid")
     }))
   private ChainTemplate chainTemplate;
+
+  @NotNull
+  private UUID agent;
 
 }

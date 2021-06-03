@@ -26,7 +26,7 @@ public class DinaUserConfig {
   }
 
   @Service
-  class DepartmentDinaService extends DefaultDinaService<Department> {
+  public class DepartmentDinaService extends DefaultDinaService<Department> {
 
     public DepartmentDinaService(@NonNull BaseDAO baseDAO) {
       super(baseDAO);
@@ -36,22 +36,31 @@ public class DinaUserConfig {
     protected void preCreate(Department entity) {
       entity.setUuid(UUID.randomUUID());
     }
-  }
 
-  @Service
-  class EmployeeDinaService extends DefaultDinaService<Employee> {
-
-    public EmployeeDinaService(@NonNull BaseDAO baseDAO) {
-      super(baseDAO);
+    @Override
+    public void validate(Department entity) {
+      validateConstraints(entity,null);
     }
   }
 
   @Service
+  public class EmployeeDinaService extends DefaultDinaService<Employee> {
+    public EmployeeDinaService(@NonNull BaseDAO baseDAO) {
+      super(baseDAO);
+    }
 
-  class VocabularyDinaService extends DefaultDinaService<Vocabulary> {
+    @Override
+    public void validate(Employee entity) {
+      validateConstraints(entity,null);
+    }
+  }
+
+  @Service
+  public class VocabularyDinaService extends DefaultDinaService<Vocabulary> {
 
     public VocabularyDinaService(@NonNull BaseDAO baseDAO) {
       super(baseDAO);
     }
+
   }
 }

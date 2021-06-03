@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.jsonapi;
 
+import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
 import ca.gc.aafc.dina.dto.ChainDto;
 import ca.gc.aafc.dina.dto.ChainTemplateDto;
 import ca.gc.aafc.dina.entity.Chain;
@@ -7,25 +8,28 @@ import ca.gc.aafc.dina.entity.ChainTemplate;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.service.DefaultDinaService;
+import ca.gc.aafc.dina.service.OnCreate;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import javax.inject.Inject;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -35,6 +39,7 @@ import java.util.UUID;
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
+@Import(DinaRepoEagerLoadingIT.TestConfig.class)
 public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
 
   public static final String CHAIN_TEMPLATE_PATH = "chainTemplate";
@@ -117,10 +122,11 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       CHAIN_TEMPLATE_PATH,
       CHAIN_TEMPLATE_PATH,
       relation.getUuid().toString());
+    JsonAPIRelationship agent = JsonAPIRelationship.of("agent", "agent", UUID.randomUUID().toString());
     return JsonAPITestHelper.toJsonAPIMap(
       CHAIN_PATH,
       JsonAPITestHelper.toAttributeMap(chainDto),
-      JsonAPITestHelper.toRelationshipMap(relationship),
+      JsonAPITestHelper.toRelationshipMap(List.of(relationship, agent)),
       null);
   }
 
@@ -149,9 +155,14 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
   }
 
   @TestConfiguration
-  static class DinaRepoBulkOperationITConfig {
+  @Import(ExternalResourceProviderImplementation.class)
+  public static class TestConfig {
     @Bean
-    public DinaRepository<ChainDto, Chain> chainRepo(BaseDAO baseDAO, ChainDinaService chainDinaService) {
+    public DinaRepository<ChainDto, Chain> chainRepo(
+      BaseDAO baseDAO,
+      ChainDinaService chainDinaService,
+      ExternalResourceProvider externalResourceProvider
+      ) {
       return new DinaRepository<>(
         chainDinaService,
         Optional.empty(),
@@ -160,7 +171,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
         ChainDto.class,
         Chain.class,
         null, 
-        null,
+        externalResourceProvider,
         new BuildProperties(new Properties())
       );
     }
@@ -191,11 +202,16 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       protected void preCreate(Chain entity) {
         entity.setUuid(UUID.randomUUID());
       }
+
+      @Override
+      public void validate(Chain entity) {
+        validateConstraints(entity, OnCreate.class);
+      }
     }
-  
+
     @Service
     class TemplateDinaService extends DefaultDinaService<ChainTemplate> {
-  
+
       public TemplateDinaService(@NonNull BaseDAO baseDAO) {
         super(baseDAO);
       }
@@ -204,7 +220,13 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       protected void preCreate(ChainTemplate entity) {
         entity.setUuid(UUID.randomUUID());
       }
+
+      @Override
+      public void validate(ChainTemplate entity) {
+        validateConstraints(entity, null);
+      }
     }
+
   }
 
 }
