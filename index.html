@@ -490,30 +490,37 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_implementation">7.2. Implementation</a></li>
 </ul>
 </li>
-<li><a href="#_setting_up_your_dina_repo_for_auditing">8. Setting up your Dina Repo for auditing</a>
+<li><a href="#_validation_endpoint">8. Validation Endpoint</a>
 <ul class="sectlevel2">
-<li><a href="#_prepare_your_dto">8.1. Prepare your DTO</a></li>
-<li><a href="#_pass_the_auditing_service_bean_to_your_dina_repo">8.2. Pass the Auditing service bean to your Dina repo</a></li>
-<li><a href="#_accessing_the_auditing_endpoint">8.3. Accessing the Auditing Endpoint</a></li>
+<li><a href="#_set_the_configuration_properties">8.1. Set the configuration properties</a></li>
+<li><a href="#_create_a_validation_resource_configuration">8.2. Create a Validation Resource Configuration</a></li>
+<li><a href="#_using_the_endpoint">8.3. Using the Endpoint</a></li>
 </ul>
 </li>
-<li><a href="#_external_types_guide">9. External Types Guide</a>
+<li><a href="#_setting_up_your_dina_repo_for_auditing">9. Setting up your Dina Repo for auditing</a>
 <ul class="sectlevel2">
-<li><a href="#_set_up_your_entity">9.1. Set up your entity</a></li>
-<li><a href="#_set_up_your_dto">9.2. Set up your DTO</a></li>
-<li><a href="#_set_up_your_external_resource_provider_component">9.3. Set up your External Resource Provider Component</a></li>
+<li><a href="#_prepare_your_dto">9.1. Prepare your DTO</a></li>
+<li><a href="#_pass_the_auditing_service_bean_to_your_dina_repo">9.2. Pass the Auditing service bean to your Dina repo</a></li>
+<li><a href="#_accessing_the_auditing_endpoint">9.3. Accessing the Auditing Endpoint</a></li>
 </ul>
 </li>
-<li><a href="#_releasing_dina_base_api">10. Releasing dina-base-api</a></li>
-<li><a href="#_field_adapters">11. Field adapters</a>
+<li><a href="#_external_types_guide">10. External Types Guide</a>
 <ul class="sectlevel2">
-<li><a href="#_implement_a_dina_field_adapter_for_the_field">11.1. Implement a Dina Field Adapter for the field.</a></li>
-<li><a href="#_annotate_your_field">11.2. Annotate your field</a></li>
+<li><a href="#_set_up_your_entity">10.1. Set up your entity</a></li>
+<li><a href="#_set_up_your_dto">10.2. Set up your DTO</a></li>
+<li><a href="#_set_up_your_external_resource_provider_component">10.3. Set up your External Resource Provider Component</a></li>
 </ul>
 </li>
-<li><a href="#_custom_rsql_filtering">12. Custom Rsql Filtering</a>
+<li><a href="#_releasing_dina_base_api">11. Releasing dina-base-api</a></li>
+<li><a href="#_field_adapters">12. Field adapters</a>
 <ul class="sectlevel2">
-<li><a href="#_current_specs">12.1. Current Specs</a></li>
+<li><a href="#_implement_a_dina_field_adapter_for_the_field">12.1. Implement a Dina Field Adapter for the field.</a></li>
+<li><a href="#_annotate_your_field">12.2. Annotate your field</a></li>
+</ul>
+</li>
+<li><a href="#_custom_rsql_filtering">13. Custom Rsql Filtering</a>
+<ul class="sectlevel2">
+<li><a href="#_current_specs">13.1. Current Specs</a></li>
 </ul>
 </li>
 </ul>
@@ -1073,7 +1080,116 @@ public class DefaultDinaService&lt;E extends DinaEntity&gt; implements DinaServi
 </div>
 </div>
 <div class="sect1">
-<h2 id="_setting_up_your_dina_repo_for_auditing">8. Setting up your Dina Repo for auditing</h2>
+<h2 id="_validation_endpoint">8. Validation Endpoint</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_set_the_configuration_properties">8.1. Set the configuration properties</h3>
+<div class="paragraph">
+<p>To activate the validation endpoint, the configuration property <code>dina.validationEndpoint.enabled: true</code> will need to be added to the application.yml.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_create_a_validation_resource_configuration">8.2. Create a Validation Resource Configuration</h3>
+<div class="paragraph">
+<p>You will need to create a component implementing the <code>ValidationResourceConfiguration</code> interface to supply the validation endpoint with the appropriate types to validate.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_the_endpoint">8.3. Using the Endpoint</h3>
+<div class="paragraph">
+<p>When the application starts you will have access to the validation endpoint at <code>/validation</code>.</p>
+</div>
+<div class="paragraph">
+<p>You can send a request to validate the attributes of a resource.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example Request Body</div>
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "data": {
+    "attributes": {
+      "type": "validation",
+      "data": {
+        "type": "chain",
+        "attributes": {
+          "group": "d",
+          "name": "name"
+        },
+        "relationships": {
+          "chainTemplate": {
+            "data": {
+              "id": "1",
+              "type": "chainTemplate"
+            }
+          }
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Example Response Headers</div>
+<div class="content">
+<pre class="highlight"><code>HTTP/1.1 201
+Content-Type: application/vnd.api+json;charset=utf-8
+Content-Length: 255
+Date: Thu, 13 May 2021 15:10:35 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Example Response Body</div>
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+    "data": {
+        "id": "N/A",
+        "type": "validation",
+        "links": {
+            "self": "http://localhost:35227/validation/N/A"
+        },
+        "attributes": {
+            "type": "chain",
+            "data": {
+                "relationships": {
+                    "chainTemplate": {
+                        "data": {
+                            "id": "1",
+                            "type": "chainTemplate"
+                        }
+                    }
+                },
+                "attributes": {
+                    "group": "d",
+                    "name": "name"
+                }
+            }
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Example failed Validation</div>
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+    "errors": [
+        {
+            "status": "422",
+            "title": "Validation error",
+            "detail": "size must be between 1 and 50"
+        }
+    ]
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_setting_up_your_dina_repo_for_auditing">9. Setting up your Dina Repo for auditing</h2>
 <div class="sectionbody">
 <div class="literalblock">
 <div class="content">
@@ -1081,7 +1197,7 @@ public class DefaultDinaService&lt;E extends DinaEntity&gt; implements DinaServi
 </div>
 </div>
 <div class="sect2">
-<h3 id="_prepare_your_dto">8.1. Prepare your DTO</h3>
+<h3 id="_prepare_your_dto">9.1. Prepare your DTO</h3>
 <div class="paragraph">
 <p>Your DTO must be prepared with specific annotations specifically @TypeName, @Id, @PropertyName.</p>
 </div>
@@ -1113,7 +1229,7 @@ public class PersonDTO {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_pass_the_auditing_service_bean_to_your_dina_repo">8.2. Pass the Auditing service bean to your Dina repo</h3>
+<h3 id="_pass_the_auditing_service_bean_to_your_dina_repo">9.2. Pass the Auditing service bean to your Dina repo</h3>
 <div class="paragraph">
 <p>When the application runs with the property <code>dina.auditing.enabled = true</code>, an AuditService bean is available in the application context.</p>
 </div>
@@ -1122,7 +1238,7 @@ public class PersonDTO {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_accessing_the_auditing_endpoint">8.3. Accessing the Auditing Endpoint</h3>
+<h3 id="_accessing_the_auditing_endpoint">9.3. Accessing the Auditing Endpoint</h3>
 <div class="paragraph">
 <p>When the application runs with the property <code>dina.auditing.enabled = true</code>, the audit endpoint automatically starts.</p>
 </div>
@@ -1153,10 +1269,10 @@ public class PersonDTO {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_external_types_guide">9. External Types Guide</h2>
+<h2 id="_external_types_guide">10. External Types Guide</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_set_up_your_entity">9.1. Set up your entity</h3>
+<h3 id="_set_up_your_entity">10.1. Set up your entity</h3>
 <div class="paragraph">
 <p>Your entity needs to hold the identifier of the resource in a field.</p>
 </div>
@@ -1167,7 +1283,7 @@ public class PersonDTO {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_set_up_your_dto">9.2. Set up your DTO</h3>
+<h3 id="_set_up_your_dto">10.2. Set up your DTO</h3>
 <div class="paragraph">
 <p>Your Dto needs to declare the type of the field as a <code>ExternalRelationDto</code> and provide the needed annotations. The <code>JsonApiExternalRelation</code> type is the name of the resource type.</p>
 </div>
@@ -1180,7 +1296,7 @@ public class PersonDTO {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_set_up_your_external_resource_provider_component">9.3. Set up your External Resource Provider Component</h3>
+<h3 id="_set_up_your_external_resource_provider_component">10.3. Set up your External Resource Provider Component</h3>
 <div class="paragraph">
 <p>You need to create a component implementing an <code>ExternalResourceProvider</code>. A simple example would look like the following.</p>
 </div>
@@ -1224,7 +1340,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releasing_dina_base_api">10. Releasing dina-base-api</h2>
+<h2 id="_releasing_dina_base_api">11. Releasing dina-base-api</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The process of releasing dina-base-api is partially automated.</p>
@@ -1294,7 +1410,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect1">
-<h2 id="_field_adapters">11. Field adapters</h2>
+<h2 id="_field_adapters">12. Field adapters</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Field adapters allow you to provide custom mappings between fields.</p>
@@ -1306,7 +1422,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 <p>We will need to provide a custom mapping.</p>
 </div>
 <div class="sect2">
-<h3 id="_implement_a_dina_field_adapter_for_the_field">11.1. Implement a Dina Field Adapter for the field.</h3>
+<h3 id="_implement_a_dina_field_adapter_for_the_field">12.1. Implement a Dina Field Adapter for the field.</h3>
 <div class="paragraph">
 <p>Example Implementation:</p>
 </div>
@@ -1345,7 +1461,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect2">
-<h3 id="_annotate_your_field">11.2. Annotate your field</h3>
+<h3 id="_annotate_your_field">12.2. Annotate your field</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -1363,15 +1479,15 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect1">
-<h2 id="_custom_rsql_filtering">12. Custom Rsql Filtering</h2>
+<h2 id="_custom_rsql_filtering">13. Custom Rsql Filtering</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_current_specs">12.1. Current Specs</h3>
+<h3 id="_current_specs">13.1. Current Specs</h3>
 <div class="paragraph">
 <p>You can add custom rsql filtering for your resource in order to manipulate how Rsql filters will be processed.</p>
 </div>
 <div class="sect3">
-<h4 id="_step_1_create_a_rsqlfilteradapter_for_your_class">12.1.1. Step 1: Create a RsqlFilterAdapter for your class.</h4>
+<h4 id="_step_1_create_a_rsqlfilteradapter_for_your_class">13.1.1. Step 1: Create a RsqlFilterAdapter for your class.</h4>
 <div class="paragraph">
 <p>This is a simple Functional interface which will provide the entry point to run your business logic to process the Rsql filters.</p>
 </div>
@@ -1385,7 +1501,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect3">
-<h4 id="_step_2_pass_your_filter_adapter_to_the_dina_filter_resolver">12.1.2. Step 2: Pass your filter adapter to the Dina filter resolver.</h4>
+<h4 id="_step_2_pass_your_filter_adapter_to_the_dina_filter_resolver">13.1.2. Step 2: Pass your filter adapter to the Dina filter resolver.</h4>
 <div class="paragraph">
 <p>The DinaFilterResolver will allow you to pass your adapter to the resolver in the constructor.</p>
 </div>
@@ -1405,7 +1521,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-25 12:51:25 UTC
+Last updated 2021-06-03 16:32:38 UTC
 </div>
 </div>
 </body>
