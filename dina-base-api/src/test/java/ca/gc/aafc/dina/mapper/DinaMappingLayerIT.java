@@ -25,6 +25,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -258,8 +259,8 @@ public class DinaMappingLayerIT {
     @Service
     class ProjectDinaService extends DefaultDinaService<Project> {
   
-      public ProjectDinaService(@NonNull BaseDAO baseDAO) {
-        super(baseDAO);
+      public ProjectDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+        super(baseDAO, sv);
       }
     }
   
@@ -267,8 +268,8 @@ public class DinaMappingLayerIT {
     @Service
     class TaskDinaService extends DefaultDinaService<Task> {
   
-      public TaskDinaService(@NonNull BaseDAO baseDAO) {
-        super(baseDAO);
+      public TaskDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+        super(baseDAO, sv);
       }
     }
   }

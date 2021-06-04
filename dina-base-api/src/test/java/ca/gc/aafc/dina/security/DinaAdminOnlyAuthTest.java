@@ -31,6 +31,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
 import javax.persistence.Column;
@@ -169,8 +170,8 @@ public class DinaAdminOnlyAuthTest {
 
   @Service
   public static class ItemService extends DefaultDinaService<Item> {
-    public ItemService(@NonNull BaseDAO baseDAO) {
-      super(baseDAO);
+    public ItemService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+      super(baseDAO, sv);
     }
   }
 

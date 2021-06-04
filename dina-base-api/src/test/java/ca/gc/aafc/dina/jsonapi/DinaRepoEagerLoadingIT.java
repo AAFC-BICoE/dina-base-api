@@ -25,6 +25,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.SmartValidator;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import javax.inject.Inject;
@@ -194,8 +195,8 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     @Service
     class ChainDinaService extends DefaultDinaService<Chain> {
   
-      public ChainDinaService(@NonNull BaseDAO baseDAO) {
-        super(baseDAO);
+      public ChainDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+        super(baseDAO, sv);
       }
 
       @Override
@@ -204,7 +205,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       }
 
       @Override
-      public void validate(Chain entity) {
+      public void validateBusinessRules(Chain entity) {
         validateConstraints(entity, OnCreate.class);
       }
     }
@@ -212,8 +213,8 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     @Service
     class TemplateDinaService extends DefaultDinaService<ChainTemplate> {
 
-      public TemplateDinaService(@NonNull BaseDAO baseDAO) {
-        super(baseDAO);
+      public TemplateDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+        super(baseDAO, sv);
       }
 
       @Override
@@ -222,7 +223,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       }
 
       @Override
-      public void validate(ChainTemplate entity) {
+      public void validateBusinessRules(ChainTemplate entity) {
         validateConstraints(entity, null);
       }
     }

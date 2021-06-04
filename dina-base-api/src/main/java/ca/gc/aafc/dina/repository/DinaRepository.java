@@ -286,7 +286,10 @@ public class DinaRepository<D, E extends DinaEntity>
   public void validate(D resource) {
     E entity = entityClass.getConstructor().newInstance();
     mappingLayer.applySimpleMappingToEntity(resource, entity);
-    dinaService.validate(entity);
+
+    // validation group should probably be set here
+    dinaService.validateConstraints(entity, null);
+    dinaService.validateBusinessRules(entity);
   }
 
   /**
