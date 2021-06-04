@@ -272,7 +272,8 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
 
 
   @Override
-  public void validateBusinessRules(E entity) {}
+  public void validateBusinessRules(E entity) {
+  }
 
   @SuppressWarnings("unchecked")
   @Override
