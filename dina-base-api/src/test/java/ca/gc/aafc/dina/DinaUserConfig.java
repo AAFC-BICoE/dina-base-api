@@ -13,6 +13,7 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import lombok.NonNull;
+import org.springframework.validation.SmartValidator;
 
 /** When you need an Authenticated user bean */
 @Configuration
@@ -28,8 +29,8 @@ public class DinaUserConfig {
   @Service
   public class DepartmentDinaService extends DefaultDinaService<Department> {
 
-    public DepartmentDinaService(@NonNull BaseDAO baseDAO) {
-      super(baseDAO);
+    public DepartmentDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+      super(baseDAO, sv);
     }
 
     @Override
@@ -38,19 +39,19 @@ public class DinaUserConfig {
     }
 
     @Override
-    public void validate(Department entity) {
+    public void validateBusinessRules(Department entity) {
       validateConstraints(entity,null);
     }
   }
 
   @Service
   public class EmployeeDinaService extends DefaultDinaService<Employee> {
-    public EmployeeDinaService(@NonNull BaseDAO baseDAO) {
-      super(baseDAO);
+    public EmployeeDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+      super(baseDAO, sv);
     }
 
     @Override
-    public void validate(Employee entity) {
+    public void validateBusinessRules(Employee entity) {
       validateConstraints(entity,null);
     }
   }
@@ -58,8 +59,8 @@ public class DinaUserConfig {
   @Service
   public class VocabularyDinaService extends DefaultDinaService<Vocabulary> {
 
-    public VocabularyDinaService(@NonNull BaseDAO baseDAO) {
-      super(baseDAO);
+    public VocabularyDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+      super(baseDAO, sv);
     }
 
   }

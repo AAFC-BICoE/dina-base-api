@@ -8,6 +8,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.validation.groups.Default;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -126,6 +127,13 @@ public interface DinaService<E extends DinaEntity> {
    */
   boolean exists(Class<?> entityClass, Object naturalId);
 
-  void validate(E entity);
+  void validateConstraints(E entity, Class<? extends Default> validationGroup);
+
+  /**
+   * Function that validates an entity against all the business rules defined by a concrete
+   * service.
+   * @param entity
+   */
+  void validateBusinessRules(E entity);
 
 }

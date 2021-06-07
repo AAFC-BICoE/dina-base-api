@@ -35,6 +35,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
 import java.util.Arrays;
@@ -323,8 +324,8 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     @Service
     class ProjectDinaService extends DefaultDinaService<Project> {
   
-      public ProjectDinaService(@NonNull BaseDAO baseDAO) {
-        super(baseDAO);
+      public ProjectDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+        super(baseDAO, sv);
       }
     }
   
@@ -332,8 +333,8 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     @Service
     class TaskDinaService extends DefaultDinaService<Task> {
   
-      public TaskDinaService(@NonNull BaseDAO baseDAO) {
-        super(baseDAO);
+      public TaskDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+        super(baseDAO, sv);
       }
     }
   }

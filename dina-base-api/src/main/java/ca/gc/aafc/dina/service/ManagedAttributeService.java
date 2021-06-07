@@ -6,6 +6,7 @@ import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.validation.SmartValidator;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
@@ -28,8 +29,8 @@ public abstract class ManagedAttributeService<T extends ManagedAttribute>
   private static final Pattern NON_ALPHANUMERICAL = Pattern.compile("[^a-z0-9]");
   private final Class<T> maClass;
 
-  public ManagedAttributeService(BaseDAO baseDAO, @NonNull Class<T> managedAttributeClass) {
-    super(baseDAO);
+  public ManagedAttributeService(BaseDAO baseDAO, SmartValidator smartValidator, @NonNull Class<T> managedAttributeClass) {
+    super(baseDAO, smartValidator);
     this.maClass = managedAttributeClass;
   }
 

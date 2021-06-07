@@ -29,6 +29,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.SmartValidator;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -87,8 +88,8 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
     @Service
     public class ThingDinaService extends DefaultDinaService<Thing> {
   
-      public ThingDinaService(@NonNull BaseDAO baseDAO) {
-        super(baseDAO);
+      public ThingDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+        super(baseDAO, sv);
       }
   
       @Override
