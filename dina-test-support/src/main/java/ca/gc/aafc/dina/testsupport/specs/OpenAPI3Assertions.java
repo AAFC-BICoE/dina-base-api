@@ -53,10 +53,12 @@ public final class OpenAPI3Assertions {
    * @param specsUrl
    * @param schemaName
    * @param apiResponse
+   * @param strictMode strict mode will make all the fields from the schema required to make sure a
+   *                   complete api response is valid.
    */
-  public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse) {
+  public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse, boolean strictMode) {
     if (!Boolean.valueOf(System.getProperty(SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY))) {
-      assertSchema(specsUrl, schemaName, apiResponse);
+      assertSchema(specsUrl, schemaName, apiResponse, strictMode);
     } else {
       log.warn("Skipping schema validation." + "System property testing.skip-remote-schema-validation set to true.");
     }
@@ -69,14 +71,16 @@ public final class OpenAPI3Assertions {
    * @param specsUrl
    * @param schemaName
    * @param apiResponse
+   * @param strictMode strict mode will make all the fields from the schema required to make sure a
+   *                   complete api response is valid.
    */
-  public static void assertSchema(URL specsUrl, String schemaName, String apiResponse) {
+  public static void assertSchema(URL specsUrl, String schemaName, String apiResponse, boolean strictMode) {
     Objects.requireNonNull(specsUrl, "specsUrl shall be provided");
     Objects.requireNonNull(schemaName, "schemaName shall be provided");
     Objects.requireNonNull(apiResponse, "apiResponse shall be provided");
 
     OpenApi3 openApi3 = innerParseAndValidateOpenAPI3Specs(specsUrl) ;
-    assertSchema(openApi3, schemaName, apiResponse);
+    assertSchema(openApi3, schemaName, apiResponse, strictMode);
   }
 
   /**
@@ -85,13 +89,15 @@ public final class OpenAPI3Assertions {
    * @param openApi
    * @param schemaName
    * @param apiResponse
+   * @param strictMode strict mode will make all the fields from the schema required to make sure a
+   *                   complete api response is valid.
    */
-  public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse) {
+  public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse, boolean strictMode) {
 
     SchemaValidator schemaValidator;
     try {
       ValidationContext<OAI3> context = new ValidationContext<>(openApi.getContext());
-      JsonNode schemaNode = loadSchemaAsJsonNode(openApi, schemaName);
+      JsonNode schemaNode = loadSchemaAsJsonNode(openApi, schemaName, strictMode);
       if (schemaNode == null ) {
         fail("can't find schema " + schemaName);
       }
@@ -122,18 +128,21 @@ public final class OpenAPI3Assertions {
    *
    * @param openApi
    * @param schemaName
+   * @param strictMode strict mode will make all the fields from the schema required to make sure a
+   *                   complete api response is valid.
    * @return the schema as {@link JsonNode}
    * @throws EncodeException
-   * @throws ResolutionException
    */
-  private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName)
+  private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName, boolean strictMode)
       throws EncodeException {
 
     // try to locate the schema in the main OpenAPI3 file
     if (openApi.getComponents() != null) {
       Schema schema = openApi.getComponents().getSchema(schemaName);
       if (schema != null) {
-        setAllFieldsRequired(schema);
+        if (strictMode) {
+          setAllFieldsRequired(schema);
+        }
         return schema.toNode();
       }
     }
@@ -147,18 +156,25 @@ public final class OpenAPI3Assertions {
     Map<String, Schema> properties = schema.getProperties();
     if (properties != null && properties.containsKey("data")) {
       Schema data = properties.get("data");
-      boolean hasProperties = data != null && data.getProperties() != null;
-      if (hasProperties && data.getProperties().containsKey("attributes")) {
+
+      // if nothing to set just exit
+      if (data == null || data.getProperties() == null) {
+        return;
+      }
+
+      if (data.getProperties().containsKey("attributes")) {
         Schema attributes = data.getProperties().get("attributes");
         attributes.setAdditionalPropertiesAllowed(false);
         attributes.setRequiredFields(new ArrayList<>(attributes.getProperties().keySet()));
       }
-      if (hasProperties && data.getProperties().containsKey("relationships")) {
+
+      if (data.getProperties().containsKey("relationships")) {
         data.addRequiredField("relationships");
         Schema relations = data.getProperties().get("relationships");
         relations.setAdditionalPropertiesAllowed(false);
         relations.setRequiredFields(new ArrayList<>(relations.getProperties().keySet()));
       }
+
     }
   }
 
