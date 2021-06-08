@@ -1,15 +1,9 @@
 package ca.gc.aafc.dina.testsupport.specs;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.openapi4j.core.exception.EncodeException;
 import org.openapi4j.core.exception.ResolutionException;
@@ -25,15 +19,19 @@ import org.openapi4j.schema.validator.ValidationData;
 import org.openapi4j.schema.validator.v3.SchemaValidator;
 import org.springframework.http.HttpMethod;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import lombok.extern.log4j.Log4j2;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * Collections of utility test methods related to OpenAPI 3 specifications and
- * schemas.
- *
+ * Collections of utility test methods related to OpenAPI 3 specifications and schemas.
  */
 @Log4j2
 public final class OpenAPI3Assertions {
@@ -46,52 +44,93 @@ public final class OpenAPI3Assertions {
   }
 
   /**
-   * Same as {@link #assertSchema(URL, String, String)} but the assertion can be
-   * skipped by setting the System property
-   * {@link #SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY} to true.
-   * 
-   * @param specsUrl
-   * @param schemaName
-   * @param apiResponse
+   * Same as {@link #assertSchema(URL, String, String, boolean)} but the assertion can be skipped by setting
+   * the System property {@link #SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY} to true. Strict mode will be enabled,
+   * see {@link #assertRemoteSchema(URL, String, String, boolean)}
+   *
+   * @param specsUrl    location of the spec
+   * @param schemaName  schema name
+   * @param apiResponse the api response to assert
    */
   public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse) {
+    assertRemoteSchema(specsUrl, schemaName, apiResponse, true);
+  }
+
+  /**
+   * Same as {@link #assertSchema(URL, String, String, boolean)} but the assertion can be skipped by setting
+   * the System property {@link #SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY} to true.
+   *
+   * @param specsUrl    location of the spec
+   * @param schemaName  schema name
+   * @param apiResponse the api response to assert
+   * @param strictMode  strict mode will make all the fields from the schema required to make sure a complete
+   *                    api response is valid.
+   */
+  public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse, boolean strictMode) {
     if (!Boolean.valueOf(System.getProperty(SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY))) {
-      assertSchema(specsUrl, schemaName, apiResponse);
+      assertSchema(specsUrl, schemaName, apiResponse, strictMode);
     } else {
       log.warn("Skipping schema validation." + "System property testing.skip-remote-schema-validation set to true.");
     }
   }
 
   /**
-   * Assert an API response against an OpenAPI 3 Specification located at
-   * specsUrl.
-   * 
-   * @param specsUrl
-   * @param schemaName
-   * @param apiResponse
+   * Assert an API response against an OpenAPI 3 Specification located at specsUrl with strict mode on. See
+   * {@link #assertSchema(OpenApi3, String, String, boolean)}
+   *
+   * @param specsUrl    location of the spec
+   * @param schemaName  schema name
+   * @param apiResponse the api response to assert
    */
   public static void assertSchema(URL specsUrl, String schemaName, String apiResponse) {
+    assertSchema(specsUrl, schemaName, apiResponse, true);
+  }
+
+  /**
+   * Assert an API response against an OpenAPI 3 Specification located at specsUrl.
+   *
+   * @param specsUrl    location of the spec
+   * @param schemaName  schema name
+   * @param apiResponse the api response to assert
+   * @param strictMode strict mode will make all the fields from the schema required to make sure a
+   *                   complete api response is valid.
+   */
+  public static void assertSchema(URL specsUrl, String schemaName, String apiResponse, boolean strictMode) {
     Objects.requireNonNull(specsUrl, "specsUrl shall be provided");
     Objects.requireNonNull(schemaName, "schemaName shall be provided");
     Objects.requireNonNull(apiResponse, "apiResponse shall be provided");
-    
+
     OpenApi3 openApi3 = innerParseAndValidateOpenAPI3Specs(specsUrl) ;
-    assertSchema(openApi3, schemaName, apiResponse);
+    assertSchema(openApi3, schemaName, apiResponse, strictMode);
+  }
+
+  /**
+   * Assert an API response against the provided OpenAPI 3 Specification with strict mode on. See {@link
+   * #assertSchema(OpenApi3, String, String, boolean)}
+   *
+   * @param openApi     provided specification
+   * @param schemaName  schema name
+   * @param apiResponse the api response to assert
+   */
+  public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse) {
+    assertSchema(openApi, schemaName, apiResponse, true);
   }
 
   /**
    * Assert an API response against the provided OpenAPI 3 Specification.
-   * 
-   * @param openApi
-   * @param schemaName
-   * @param apiResponse
+   *
+   * @param openApi     provided specification
+   * @param schemaName  schema name
+   * @param apiResponse the api response to assert
+   * @param strictMode  strict mode will make all the fields from the schema required to make sure a complete
+   *                    api response is valid.
    */
-  public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse) {
+  public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse, boolean strictMode) {
 
     SchemaValidator schemaValidator;
     try {
       ValidationContext<OAI3> context = new ValidationContext<>(openApi.getContext());
-      JsonNode schemaNode = loadSchemaAsJsonNode(openApi, schemaName);
+      JsonNode schemaNode = loadSchemaAsJsonNode(openApi, schemaName, strictMode);
       if (schemaNode == null ) {
         fail("can't find schema " + schemaName);
       }
@@ -119,20 +158,24 @@ public final class OpenAPI3Assertions {
 
   /**
    * Load a schema inside an OpenApi3 object.
-   * 
+   *
    * @param openApi
    * @param schemaName
+   * @param strictMode strict mode will make all the fields from the schema required to make sure a
+   *                   complete api response is valid.
    * @return the schema as {@link JsonNode}
    * @throws EncodeException
-   * @throws ResolutionException
    */
-  private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName)
+  private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName, boolean strictMode)
       throws EncodeException {
 
     // try to locate the schema in the main OpenAPI3 file
     if (openApi.getComponents() != null) {
       Schema schema = openApi.getComponents().getSchema(schemaName);
       if (schema != null) {
+        if (strictMode) {
+          setAllFieldsRequired(schema);
+        }
         return schema.toNode();
       }
     }
@@ -140,6 +183,32 @@ public final class OpenAPI3Assertions {
     // then, try to reach it be refs from the paths
     Set<String> filenamesFromPathRefs = getFilenamesFromPathRefs(openApi);
     return loadFirstFoundSchema(openApi, filenamesFromPathRefs, schemaName);
+  }
+
+  private static void setAllFieldsRequired(@NonNull Schema schema) {
+    Map<String, Schema> properties = schema.getProperties();
+    if (properties != null && properties.containsKey("data")) {
+      Schema data = properties.get("data");
+
+      // if nothing to set just exit
+      if (data == null || data.getProperties() == null) {
+        return;
+      }
+
+      if (data.getProperties().containsKey("attributes")) {
+        Schema attributes = data.getProperties().get("attributes");
+        attributes.setAdditionalPropertiesAllowed(false);
+        attributes.setRequiredFields(new ArrayList<>(attributes.getProperties().keySet()));
+      }
+
+      if (data.getProperties().containsKey("relationships")) {
+        data.addRequiredField("relationships");
+        Schema relations = data.getProperties().get("relationships");
+        relations.setAdditionalPropertiesAllowed(false);
+        relations.setRequiredFields(new ArrayList<>(relations.getProperties().keySet()));
+      }
+
+    }
   }
 
   /**
@@ -178,7 +247,7 @@ public final class OpenAPI3Assertions {
 
   /**
    * Parse and validate the OpenAPI 3 specifications at the provided URL.
-   * 
+   *
    * @param specsURL
    * @return the OpenApi3 as {@link OpenApi3}
    * @throws ValidationException
@@ -189,11 +258,11 @@ public final class OpenAPI3Assertions {
     OpenApi3Validator.instance().validate(api);
     return api;
   }
-  
+
   /**
    * Checking the given path is existing in Open API 3 spec
    * and the path contains the provided http method
-   * 
+   *
    * @param specsUrl Specs URL to check endpoints against
    * @param path     path of endpoint
    * @param method   method at the endpoint path
@@ -208,7 +277,7 @@ public final class OpenAPI3Assertions {
     }
     fail("Failed find " + method.name() + " " + path + " in OpenAPI 3 specs");
   }
-  
+
   private static OpenApi3 innerParseAndValidateOpenAPI3Specs(URL specsUrl) {
     try {
       return parseAndValidateOpenAPI3Specs(specsUrl);
