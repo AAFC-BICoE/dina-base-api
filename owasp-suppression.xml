@@ -4,10 +4,7 @@
         <cpe>cpe:/a:pivotal_software:spring_security:5.4.5</cpe>
     </suppress>
     <suppress>
-        <!--   https://access.redhat.com/security/cve/cve-2020-14389
-             Keycloak before version 12.0.0 would permit a user with only view-profile role to manage the resources
-             in the new account console, allowing access and modification of data the user was not intended to have.-->
-        <notes>file name: keycloak-core-11.0.2.jar</notes>
-        <cve>CVE-2020-14389</cve>
+        <notes>Keycloak 12</notes>
+        <cve>CVE-2021-20195</cve>
     </suppress>
 </suppressions>

@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.validation;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
 import ca.gc.aafc.dina.service.ManagedAttributeServiceIT;
@@ -14,7 +15,9 @@ import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.validation.ValidationException;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -74,6 +77,18 @@ public class ManagedAttributeValueValidatorTest {
     Errors errors = new BeanPropertyBindingResult(mav, "mav");
     validatorUnderTest.validate(mav, errors);
     assertTrue(errors.hasErrors());
+  }
+
+  @Test
+  void validate_WhenInvalidIntegerTypeExceptionThrown() {
+    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
+        name(RandomStringUtils.randomAlphabetic(6))
+        .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
+        .build();
+    testManagedAttributeService.create(testManagedAttribute);
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), "1.2");
+
+    assertThrows(ValidationException.class, () -> validatorUnderTest.validate(Department.builder().uuid(UUID.randomUUID()).build(), mav));
   }
 
   @Test
