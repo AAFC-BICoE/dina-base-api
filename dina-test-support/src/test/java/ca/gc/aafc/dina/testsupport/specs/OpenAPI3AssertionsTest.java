@@ -1,18 +1,17 @@
 package ca.gc.aafc.dina.testsupport.specs;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import ca.gc.aafc.dina.testsupport.TestResourceHelper;
+import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.opentest4j.AssertionFailedError;
+import org.springframework.http.HttpMethod;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.UnknownHostException;
 
-import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
-import org.opentest4j.AssertionFailedError;
-import org.springframework.http.HttpMethod;
-
-import ca.gc.aafc.dina.testsupport.TestResourceHelper;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Test making sure we can parse, validate and assert a know OpenAPI 3 specification with a
