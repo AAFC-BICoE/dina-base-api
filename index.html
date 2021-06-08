@@ -1029,52 +1029,23 @@ public class CustomAuthorizationService implements DinaAuthorizationService {
 <div class="sect2">
 <h3 id="_implementation">7.2. Implementation</h3>
 <div class="paragraph">
-<p>Validation is done at the Service level.</p>
+<p>Validation is done at the Service level and is automatically handled by <code>DefaultDinaService</code>.</p>
 </div>
 <div class="paragraph">
-<p>The methods create/update&#8217;s parameter are validated by the @Valid annotation.</p>
+<p>There is 2 types of validation at the Service level :</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Constraints validation (automatic checks that will use the constraint annotations on the Entity)</p>
+</li>
+<li>
+<p>Business rule(s) validation (must be implemented by the concrete Service by overriding the <code>validateBusinessRules</code> method)</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>Also, we defined two marker interfaces OnCreate and OnUpdate which allow us to use Validation Groups to validate objects differently upon creation or upon update.</p>
-</div>
-<div class="listingblock">
-<div class="title">Snippet of DefaultDinaService</div>
-<div class="content">
-<pre class="highlight"><code class="language-java" data-lang="java">@Validated
-public class DefaultDinaService&lt;E extends DinaEntity&gt; implements DinaService&lt;E&gt; {
-
-  @Override
-  @Validated(OnCreate.class)
-  public E create(@Valid E entity) {
-    //create something
-  }
-
-  @Override
-  @Validated(OnUpdate.class)
-  public E update(@Valid E entity) {
-    //update something
-  }
-
-}</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title">An example of how entity validations can be triggered under different circumstances:</div>
-<div class="content">
-<pre class="highlight"><code class="language-java" data-lang="java">  @NaturalId
-  @Null(groups = OnCreate.class)
-  @NotNull(groups = OnUpdate.class)
-  private UUID uuid;</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>In this example, upon creation we check if the Uuid is null and upon update we check if the Uuid is non null.</p>
-</div>
-<div class="paragraph">
-<p>We use validation groups here because, the entity&#8217;s Uuid is set during preCreate, right after the creation validation check.</p>
-</div>
-<div class="paragraph">
-<p>===</p>
+<p>Constraint validation also supports validation group <code>OnCreate</code> and <code>OnUpdate</code>.</p>
 </div>
 </div>
 </div>
@@ -1521,7 +1492,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-03 16:32:38 UTC
+Last updated 2021-06-08 13:44:56 UTC
 </div>
 </div>
 </body>
