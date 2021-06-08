@@ -31,9 +31,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * Collections of utility test methods related to OpenAPI 3 specifications and
- * schemas.
- *
+ * Collections of utility test methods related to OpenAPI 3 specifications and schemas.
  */
 @Log4j2
 public final class OpenAPI3Assertions {
@@ -46,15 +44,27 @@ public final class OpenAPI3Assertions {
   }
 
   /**
-   * Same as {@link #assertSchema(URL, String, String)} but the assertion can be
-   * skipped by setting the System property
-   * {@link #SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY} to true.
+   * Same as {@link #assertSchema(URL, String, String, boolean)} but the assertion can be skipped by setting
+   * the System property {@link #SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY} to true. Strict mode will be enabled,
+   * see {@link #assertRemoteSchema(URL, String, String, boolean)}
    *
-   * @param specsUrl
-   * @param schemaName
-   * @param apiResponse
-   * @param strictMode strict mode will make all the fields from the schema required to make sure a
-   *                   complete api response is valid.
+   * @param specsUrl    location of the spec
+   * @param schemaName  schema name
+   * @param apiResponse the api response to assert
+   */
+  public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse) {
+    assertRemoteSchema(specsUrl, schemaName, apiResponse, true);
+  }
+
+  /**
+   * Same as {@link #assertSchema(URL, String, String, boolean)} but the assertion can be skipped by setting
+   * the System property {@link #SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY} to true.
+   *
+   * @param specsUrl    location of the spec
+   * @param schemaName  schema name
+   * @param apiResponse the api response to assert
+   * @param strictMode  strict mode will make all the fields from the schema required to make sure a complete
+   *                    api response is valid.
    */
   public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse, boolean strictMode) {
     if (!Boolean.valueOf(System.getProperty(SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY))) {
@@ -65,12 +75,23 @@ public final class OpenAPI3Assertions {
   }
 
   /**
-   * Assert an API response against an OpenAPI 3 Specification located at
-   * specsUrl.
+   * Assert an API response against an OpenAPI 3 Specification located at specsUrl with strict mode on. See
+   * {@link #assertSchema(OpenApi3, String, String, boolean)}
    *
-   * @param specsUrl
-   * @param schemaName
-   * @param apiResponse
+   * @param specsUrl    location of the spec
+   * @param schemaName  schema name
+   * @param apiResponse the api response to assert
+   */
+  public static void assertSchema(URL specsUrl, String schemaName, String apiResponse) {
+    assertSchema(specsUrl, schemaName, apiResponse, true);
+  }
+
+  /**
+   * Assert an API response against an OpenAPI 3 Specification located at specsUrl.
+   *
+   * @param specsUrl    location of the spec
+   * @param schemaName  schema name
+   * @param apiResponse the api response to assert
    * @param strictMode strict mode will make all the fields from the schema required to make sure a
    *                   complete api response is valid.
    */
@@ -84,13 +105,25 @@ public final class OpenAPI3Assertions {
   }
 
   /**
+   * Assert an API response against the provided OpenAPI 3 Specification with strict mode on. See {@link
+   * #assertSchema(OpenApi3, String, String, boolean)}
+   *
+   * @param openApi     provided specification
+   * @param schemaName  schema name
+   * @param apiResponse the api response to assert
+   */
+  public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse) {
+    assertSchema(openApi, schemaName, apiResponse, true);
+  }
+
+  /**
    * Assert an API response against the provided OpenAPI 3 Specification.
    *
-   * @param openApi
-   * @param schemaName
-   * @param apiResponse
-   * @param strictMode strict mode will make all the fields from the schema required to make sure a
-   *                   complete api response is valid.
+   * @param openApi     provided specification
+   * @param schemaName  schema name
+   * @param apiResponse the api response to assert
+   * @param strictMode  strict mode will make all the fields from the schema required to make sure a complete
+   *                    api response is valid.
    */
   public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse, boolean strictMode) {
 
