@@ -32,6 +32,7 @@ import org.hamcrest.Matchers;
 import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -77,7 +78,7 @@ public class DinaRepoPermissionMetaTest {
   @Test
   @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
   void permissionsTest_WhenHasPermissions_PermissionsReturned() {
-    mockHttpHeader();
+    mockHttpHeader(Set.of(DinaRepository.PERMISSION_META_HEADER_KEY));
     ResourceList<DinaRepoPermissionMetaTest.ItemDto> all = testRepo.findAll(new QuerySpec(ItemDto.class));
     all.forEach(result -> MatcherAssert.assertThat(
       result.getMeta().getPermissions(),
@@ -85,16 +86,30 @@ public class DinaRepoPermissionMetaTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:STAFF"})
-  void permissionsTest() {
-    mockHttpHeader();
+  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
+  void permissionsTest_WhenNoContext_PermissionsNotReturned() {
     ResourceList<DinaRepoPermissionMetaTest.ItemDto> all = testRepo.findAll(new QuerySpec(ItemDto.class));
-    all.forEach(result -> MatcherAssert.assertThat(
-      result.getMeta().getPermissions(),
-      Matchers.empty()));
+    all.forEach(result -> Assertions.assertNull(result.getMeta()));
   }
 
-  private void mockHttpHeader() {
+  @Test
+  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
+  void permissionsTest_WhenNoHeader_PermissionsNotReturned() {
+    mockHttpHeader(Set.of("wrong header"));
+    ResourceList<DinaRepoPermissionMetaTest.ItemDto> all = testRepo.findAll(new QuerySpec(ItemDto.class));
+    all.forEach(result -> Assertions.assertNull(result.getMeta()));
+  }
+
+
+  @Test
+  @WithMockKeycloakUser(groupRole = {"CNC:STAFF"})
+  void permissionsTest_WhenNoPermissions_PermissionsNotReturned() {
+    mockHttpHeader(Set.of(DinaRepository.PERMISSION_META_HEADER_KEY));
+    ResourceList<DinaRepoPermissionMetaTest.ItemDto> all = testRepo.findAll(new QuerySpec(ItemDto.class));
+    all.forEach(result -> MatcherAssert.assertThat(result.getMeta().getPermissions(), Matchers.empty()));
+  }
+
+  private void mockHttpHeader(Set<String> headerNames) {
     ModuleRegistry moduleRegistry = Mockito.mock(ModuleRegistry.class);
     ResourceRegistry resourceRegistry = Mockito.mock(ResourceRegistry.class);
     Mockito.when(resourceRegistry.getLatestVersion()).thenReturn(2);
@@ -106,7 +121,7 @@ public class DinaRepoPermissionMetaTest {
     HttpRequestContext context = Mockito.mock(HttpRequestContext.class);
     Mockito.when(context.getBaseUrl()).thenReturn("http://test");
     Mockito.when(context.getRequestHeaderNames())
-      .thenReturn(Set.of(DinaRepository.PERMISSION_META_HEADER_KEY));
+      .thenReturn(headerNames);
     QueryContext queryContext = new QueryContext();
     Mockito.when(context.getQueryContext()).thenReturn(queryContext);
 
