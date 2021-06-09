@@ -32,6 +32,7 @@ import org.hamcrest.Matchers;
 import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -65,8 +66,8 @@ public class DinaRepoPermissionMetaTest {
   @Inject
   private DefaultDinaService<DinaRepoPermissionMetaTest.Item> itemService;
 
-  @Test
-  void name() {
+  @BeforeEach
+  void setUp() {
     Item persisted = Item.builder()
       .group("g")
       .build();
