@@ -16,7 +16,7 @@ public interface DinaEntity {
   /**
    * The group represents the group owning the entity. group is optional and null
    * is return if an entity doesn't support it.
-   * 
+   *
    * @return the name of the group or null
    */
   default String getGroup() {

@@ -24,6 +24,7 @@ import org.hamcrest.core.Is;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -519,8 +520,8 @@ public class DinaRepositoryIT {
 
   public static class DinaPersonService extends DefaultDinaService<Person> {
 
-    public DinaPersonService(@NonNull BaseDAO baseDAO) {
-      super(baseDAO);
+    public DinaPersonService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+      super(baseDAO, sv);
     }
 
     @Override

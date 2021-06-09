@@ -198,6 +198,27 @@ components:
                   example: {
                      "fr":  Description en Français,
                      "en":  English description}
+            relationships:
+              type: object
+              properties:
+                collectingEvent:
+                  type: object
+                  required:
+                    - data
+                  properties:
+                    data:
+                      type: object
+                      required:
+                        - type
+                        - id
+                      properties:
+                        type:
+                          enum: [ collecting-event ]
+                        id:
+                          type: string
+                          format: uuid
+                          description: materialSample's collectingEvent id
+                          example: a600f9da-fcbe-4fef-9ae3-0f131ca05e0c
     AcceptedValuesStr:
       type: string
     AcceptedValuesInt:

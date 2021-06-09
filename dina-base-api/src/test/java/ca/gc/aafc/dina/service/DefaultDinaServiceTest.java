@@ -1,12 +1,12 @@
 package ca.gc.aafc.dina.service;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -37,6 +37,7 @@ import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.DepartmentType;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import lombok.NonNull;
+import org.springframework.validation.SmartValidator;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
@@ -275,9 +276,9 @@ public class DefaultDinaServiceTest {
     Department d = new Department(); // not using the factory to get an empty object
     // should be a business rule validation but for testing we are using a default validator
     Validator defaultValidator = new SpringValidatorAdapter(Validation.buildDefaultValidatorFactory().getValidator());
-    assertThrows(ValidationException.class, () -> serviceUnderTest.validateBusinessRules(d, defaultValidator));
+    assertThrows(ValidationException.class, () -> serviceUnderTest.applyBusinessRule(d, defaultValidator));
 
-    assertThrows(ConstraintViolationException.class, () -> serviceUnderTest.validate(d));
+    assertThrows(ConstraintViolationException.class, () -> serviceUnderTest.validateBusinessRules(d));
   }
 
   @Test
@@ -310,11 +311,11 @@ public class DefaultDinaServiceTest {
 
   public static class DinaServiceTestImplementation extends DefaultDinaService<Department> {
 
-    @Inject
-    private BaseDAO baseDAO;
+    private final BaseDAO baseDAO;
 
-    public DinaServiceTestImplementation(@NonNull BaseDAO baseDAO) {
-      super(baseDAO);
+    public DinaServiceTestImplementation(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+      super(baseDAO, sv);
+      this.baseDAO = baseDAO;
     }
 
     @Override
@@ -335,6 +336,11 @@ public class DefaultDinaServiceTest {
       entity.setLocation(null);
     }
 
+    @Override
+    public void validateBusinessRules(Department entity) {
+      // this is just to avoid create a dummy validator for a imaginary business rule
+      validateConstraints(entity, null);
+    }
   }
 
 }

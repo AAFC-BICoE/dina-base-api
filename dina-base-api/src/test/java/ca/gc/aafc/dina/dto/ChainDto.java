@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.dto;
 
 import ca.gc.aafc.dina.entity.Chain;
+import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
@@ -28,5 +29,9 @@ public class ChainDto {
 
   @JsonApiRelation
   private ChainTemplateDto chainTemplate;
+
+  @JsonApiRelation
+  @JsonApiExternalRelation(type = "agent")
+  private ExternalRelationDto agent;
 
 }
