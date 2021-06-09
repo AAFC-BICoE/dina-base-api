@@ -12,6 +12,12 @@ import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.service.DinaAdminOnlyAuthorizationService;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
+import io.crnk.core.engine.http.HttpRequestContext;
+import io.crnk.core.engine.http.HttpRequestContextProvider;
+import io.crnk.core.engine.query.QueryContext;
+import io.crnk.core.engine.registry.ResourceRegistry;
+import io.crnk.core.engine.result.ImmediateResultFactory;
+import io.crnk.core.module.ModuleRegistry;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiResource;
@@ -27,6 +33,7 @@ import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,6 +51,7 @@ import javax.persistence.Id;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Transactional
@@ -68,6 +76,7 @@ public class DinaRepoPermissionMetaTest {
   @Test
   @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
   void permissionsTest_WhenHasPermissions_PermissionsReturned() {
+    mockHttpHeader();
     ResourceList<DinaRepoPermissionMetaTest.ItemDto> all = testRepo.findAll(new QuerySpec(ItemDto.class));
     all.forEach(result -> MatcherAssert.assertThat(
       result.getMeta().getPermissions(),
@@ -77,10 +86,32 @@ public class DinaRepoPermissionMetaTest {
   @Test
   @WithMockKeycloakUser(groupRole = {"CNC:STAFF"})
   void permissionsTest() {
+    mockHttpHeader();
     ResourceList<DinaRepoPermissionMetaTest.ItemDto> all = testRepo.findAll(new QuerySpec(ItemDto.class));
     all.forEach(result -> MatcherAssert.assertThat(
       result.getMeta().getPermissions(),
       Matchers.empty()));
+  }
+
+  private void mockHttpHeader() {
+    ModuleRegistry moduleRegistry = Mockito.mock(ModuleRegistry.class);
+    ResourceRegistry resourceRegistry = Mockito.mock(ResourceRegistry.class);
+    Mockito.when(resourceRegistry.getLatestVersion()).thenReturn(2);
+    Mockito.when(moduleRegistry.getResourceRegistry()).thenReturn(resourceRegistry);
+
+    ImmediateResultFactory resultFactory = new ImmediateResultFactory();
+    HttpRequestContextProvider provider = new HttpRequestContextProvider(() -> resultFactory, moduleRegistry);
+
+    HttpRequestContext context = Mockito.mock(HttpRequestContext.class);
+    Mockito.when(context.getBaseUrl()).thenReturn("http://test");
+    Mockito.when(context.getRequestHeaderNames())
+      .thenReturn(Set.of(DinaRepository.PERMISSION_META_HEADER_KEY));
+    QueryContext queryContext = new QueryContext();
+    Mockito.when(context.getQueryContext()).thenReturn(queryContext);
+
+    provider.onRequestStarted(context);
+
+    testRepo.setHttpRequestContextProvider(provider);
   }
 
   @TestConfiguration

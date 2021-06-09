@@ -13,6 +13,8 @@ import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
+import io.crnk.core.engine.http.HttpRequestContextAware;
+import io.crnk.core.engine.http.HttpRequestContextProvider;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.IncludeRelationSpec;
@@ -52,11 +54,12 @@ import java.util.stream.Collectors;
  */
 @Transactional
 public class DinaRepository<D, E extends DinaEntity>
-  implements ResourceRepository<D, Serializable>, MetaRepository<D> {
+  implements ResourceRepository<D, Serializable>, MetaRepository<D>, HttpRequestContextAware {
 
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
   private static final long DEFAULT_LIMIT = 100;
+  public static final String PERMISSION_META_HEADER_KEY = "dina-permission-enabled";
 
   @Getter
   private final Class<D> resourceClass;
@@ -74,6 +77,7 @@ public class DinaRepository<D, E extends DinaEntity>
   private final BuildProperties buildProperties;
   private final DinaMappingRegistry registry;
   private final boolean hasFieldAdapters;
+  private HttpRequestContextProvider httpRequestContextProvider;
 
   public DinaRepository(
     @NonNull DinaService<E> dinaService,
@@ -165,10 +169,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
     List<D> dList = mappingLayer.mapEntitiesToDto(spec, fetchEntities(ids, spec, idName));
 
-    if(AttributeMetaInfoProvider.class.isAssignableFrom(resourceClass)){//TODO use a new service possibly
-      List<AttributeMetaInfoProvider> providerList = ( List<AttributeMetaInfoProvider> ) dList;
-      setPermissions(providerList);
-    }
+    handleMetaPermissionsResponse(dList);//TODO use a new service possibly
 
     Long resourceCount = dinaService.getResourceCount( entityClass,
       (criteriaBuilder, root, em) -> filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idName, em));
@@ -176,6 +177,20 @@ public class DinaRepository<D, E extends DinaEntity>
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
     return new DefaultResourceList<>(dList, metaInformation, NO_LINK_INFORMATION);
+  }
+
+  @SuppressWarnings({"unchecked"}) //Method exits if resource is not castable
+  private void handleMetaPermissionsResponse(List<D> dList) {
+    if (!AttributeMetaInfoProvider.class.isAssignableFrom(resourceClass)) {
+      return;
+    }
+
+    if (httpRequestContextProvider.hasThreadRequestContext()) {
+      Set<String> requestHeaderNames = httpRequestContextProvider.getRequestContext().getRequestHeaderNames();
+      if (requestHeaderNames.stream().anyMatch(rh -> rh.equalsIgnoreCase(PERMISSION_META_HEADER_KEY))) {
+          setPermissions((List<AttributeMetaInfoProvider>) dList);
+      }
+    }
   }
 
   private void setPermissions(List<AttributeMetaInfoProvider> providerList) {//TODO placeholder implementation
@@ -349,5 +364,10 @@ public class DinaRepository<D, E extends DinaEntity>
    */
   private String findIdFieldName(Class<?> clazz) {
     return this.registry.findJsonIdFieldName(clazz);
+  }
+
+  @Override
+  public void setHttpRequestContextProvider(HttpRequestContextProvider httpRequestContextProvider) {
+    this.httpRequestContextProvider = httpRequestContextProvider;
   }
 }
