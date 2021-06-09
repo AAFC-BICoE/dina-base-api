@@ -181,15 +181,14 @@ public class DinaRepository<D, E extends DinaEntity>
 
   @SuppressWarnings({"unchecked"}) //Method exits if resource is not castable
   private void handleMetaPermissionsResponse(List<D> dList) {
-    if (!AttributeMetaInfoProvider.class.isAssignableFrom(resourceClass)) {
+    if (!AttributeMetaInfoProvider.class.isAssignableFrom(resourceClass)
+      || !httpRequestContextProvider.hasThreadRequestContext()) {
       return;
     }
 
-    if (httpRequestContextProvider.hasThreadRequestContext()) {
-      Set<String> requestHeaderNames = httpRequestContextProvider.getRequestContext().getRequestHeaderNames();
-      if (requestHeaderNames.stream().anyMatch(rh -> rh.equalsIgnoreCase(PERMISSION_META_HEADER_KEY))) {
-          setPermissions((List<AttributeMetaInfoProvider>) dList);
-      }
+    Set<String> requestHeaderNames = httpRequestContextProvider.getRequestContext().getRequestHeaderNames();
+    if (requestHeaderNames.stream().anyMatch(rh -> rh.equalsIgnoreCase(PERMISSION_META_HEADER_KEY))) {
+      setPermissions((List<AttributeMetaInfoProvider>) dList);
     }
   }
 
