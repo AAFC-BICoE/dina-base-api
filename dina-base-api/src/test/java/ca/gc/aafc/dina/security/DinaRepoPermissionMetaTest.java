@@ -34,6 +34,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
 import javax.persistence.Column;
@@ -149,8 +150,8 @@ public class DinaRepoPermissionMetaTest {
 
   @Service
   public static class ItemService extends DefaultDinaService<DinaRepoPermissionMetaTest.Item> {
-    public ItemService(@NonNull BaseDAO baseDAO) {
-      super(baseDAO);
+    public ItemService(@NonNull BaseDAO baseDAO, @NonNull SmartValidator sv) {
+      super(baseDAO, sv);
     }
   }
 }
