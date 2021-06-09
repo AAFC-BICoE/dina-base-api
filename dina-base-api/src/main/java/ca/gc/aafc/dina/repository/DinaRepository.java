@@ -187,7 +187,8 @@ public class DinaRepository<D, E extends DinaEntity>
     }
 
     Set<String> requestHeaderNames = httpRequestContextProvider.getRequestContext().getRequestHeaderNames();
-    if (requestHeaderNames.stream().anyMatch(rh -> rh.equalsIgnoreCase(PERMISSION_META_HEADER_KEY))) {
+    if (CollectionUtils.isNotEmpty(requestHeaderNames) &&
+      requestHeaderNames.stream().anyMatch(rh -> rh.equalsIgnoreCase(PERMISSION_META_HEADER_KEY))) {
       setPermissions((List<AttributeMetaInfoProvider>) dList);
     }
   }
