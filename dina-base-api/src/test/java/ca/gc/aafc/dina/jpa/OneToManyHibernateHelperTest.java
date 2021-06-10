@@ -12,6 +12,7 @@ import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import io.restassured.http.Header;
+import io.restassured.response.ValidatableResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -69,11 +70,7 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
   @Test
   void ChildResolution_OnPost() {
     String parentId = postParentWithChild(firstResourceBId);
-
-    given()
-      .header(CRNK_HEADER).port(testPort).basePath(basePath)
-      .queryParams(Map.of("include", "children"))
-      .get("A/" + parentId).then()
+    findParentById(parentId)
       .body("data.relationships.children.data", Matchers.hasSize(1))
       .body("data.relationships.children.data[0].id", Matchers.is(firstResourceBId));
   }
@@ -88,12 +85,16 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
         Map.of("children", Map.of("data", List.of(Map.of("type", "B", "id", secondResourceBid)))),
         "type", "A")));
 
-    given()
-      .header(CRNK_HEADER).port(testPort).basePath(basePath)
-      .queryParams(Map.of("include", "children"))
-      .get("A/" + parentId).then()
+    findParentById(parentId)
       .body("data.relationships.children.data", Matchers.hasSize(1))
       .body("data.relationships.children.data[0].id", Matchers.is(secondResourceBid));
+  }
+
+  private ValidatableResponse findParentById(String parentId) {
+    return given()
+      .header(CRNK_HEADER).port(testPort).basePath(basePath)
+      .queryParams(Map.of("include", "children"))
+      .get("A/" + parentId).then();
   }
 
   private String postParentWithChild(String childId) {
