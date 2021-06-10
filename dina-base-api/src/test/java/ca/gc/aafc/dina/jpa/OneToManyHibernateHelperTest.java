@@ -68,7 +68,7 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
   }
 
   @Test
-  void ChildResolution_OnPost() {
+  void childResolution_OnPost() {
     String parentId = postParentWithChild(firstResourceBId);
     findParentById(parentId)
       .body("data.relationships.children.data", Matchers.hasSize(1))
@@ -76,7 +76,7 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
   }
 
   @Test
-  void ChildResolution_OnPatch() {
+  void childResolution_OnPatch() {
     String parentId = postParentWithChild(firstResourceBId);
 
     sendPatch("A", parentId, Map.of(
@@ -88,6 +88,15 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
     findParentById(parentId)
       .body("data.relationships.children.data", Matchers.hasSize(1))
       .body("data.relationships.children.data[0].id", Matchers.is(secondResourceBid));
+  }
+
+  @Test
+  void childResolution_OnDelete() {
+    String parentId = postParentWithChild(firstResourceBId);
+    findParentById(parentId)
+      .body("data.relationships.children.data", Matchers.hasSize(1))
+      .body("data.relationships.children.data[0].id", Matchers.is(firstResourceBId));
+    sendDelete("A", parentId);
   }
 
   private ValidatableResponse findParentById(String parentId) {
@@ -259,6 +268,11 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
           child -> child.setParent(null)
         );
         OneToManyHibernateHelper.linkChildren(entity.getChildren(), entity, child -> child::setParent);
+      }
+
+      @Override
+      protected void preDelete(Parent entity) {
+        OneToManyHibernateHelper.handleOrphans(entity.getChildren(), null, child -> child.setParent(null));
       }
     }
 
