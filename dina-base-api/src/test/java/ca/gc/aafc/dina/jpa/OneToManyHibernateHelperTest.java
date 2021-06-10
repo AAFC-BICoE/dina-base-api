@@ -8,7 +8,6 @@ import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
-import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
@@ -116,14 +115,6 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       .then().log().all(true)
       .body("data.relationships.children.data", Matchers.hasSize(1))
       .body("data.relationships.children.data[0].id", Matchers.is(childId2));
-  }
-
-  private static QuerySpec getChildQuerySpec() {
-    return new QuerySpec(OneToManyHibernateHelperTestConfig.DtoB.class);
-  }
-
-  private static QuerySpec getParentQuerySpec() {
-    return new QuerySpec(OneToManyHibernateHelperTestConfig.DtoB.class);
   }
 
   @TestConfiguration
@@ -254,7 +245,7 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       protected void preUpdate(A entity) {
         if (CollectionUtils.isNotEmpty(entity.getChildren())) {
           OneToManyHibernateHelper.resolveChildren(
-            OneToManyHibernateHelper.findByParent(B.class, "parent", entity,this),
+            OneToManyHibernateHelper.findByParent(B.class, "parent", entity, this),
             entity.getChildren(),
             b -> b.setParent(null)
           );
