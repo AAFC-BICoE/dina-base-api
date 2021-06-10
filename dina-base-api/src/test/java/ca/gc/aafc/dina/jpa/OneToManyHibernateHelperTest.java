@@ -17,7 +17,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import org.apache.commons.collections.CollectionUtils;
 import org.hamcrest.Matchers;
 import org.hibernate.annotations.NaturalId;
 import org.junit.jupiter.api.Test;
@@ -240,22 +239,17 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       @Override
       protected void preCreate(A entity) {
         entity.setUuid(UUID.randomUUID());
-        if (CollectionUtils.isNotEmpty(entity.getChildren())) {
-          entity.getChildren().forEach(c -> c.setParent(entity));
-        }
+        OneToManyHibernateHelper.linkChildren(entity.getChildren(), entity, b -> b::setParent);
       }
 
       @Override
       protected void preUpdate(A entity) {
-        if (CollectionUtils.isNotEmpty(entity.getChildren())) {
-          OneToManyHibernateHelper.resolveChildren(
-            OneToManyHibernateHelper.findByParent(B.class, "parent", entity, this),
-            entity.getChildren(),
-            b -> b.setParent(null)
-          );
-
-          entity.getChildren().forEach(c -> c.setParent(entity));
-        }
+        OneToManyHibernateHelper.resolveChildren(
+          OneToManyHibernateHelper.findByParent(B.class, "parent", entity, this),
+          entity.getChildren(),
+          b -> b.setParent(null)
+        );
+        OneToManyHibernateHelper.linkChildren(entity.getChildren(), entity, b -> b::setParent);
       }
     }
 

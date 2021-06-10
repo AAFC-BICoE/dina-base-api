@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.jpa;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.service.DinaService;
+import org.apache.commons.collections.CollectionUtils;
 
 import javax.persistence.criteria.Predicate;
 import java.util.List;
@@ -14,6 +15,16 @@ import java.util.stream.Collectors;
 public final class OneToManyHibernateHelper {
 
   private OneToManyHibernateHelper() {
+  }
+
+  public static <C, P> void linkChildren(
+    List<C> children,
+    P parent,
+    Function<C, Consumer<P>> childParentSetter
+  ) {
+    if (CollectionUtils.isNotEmpty(children)) {
+      children.forEach(c -> childParentSetter.apply(c).accept(parent));
+    }
   }
 
   public static <E extends DinaEntity> void resolveChildren(
