@@ -28,6 +28,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.SmartValidator;
+import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -58,31 +59,13 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
   }
 
   @Test
-  void name() {
-    OneToManyHibernateHelperTestConfig.DtoB child = new OneToManyHibernateHelperTestConfig.DtoB();
-    child.setCreatedBy("dina");
-    child.setGroup("1");
-    String childId1 = sendPost(
-      "B",
-      JsonAPITestHelper.toJsonAPIMap("B", JsonAPITestHelper.toAttributeMap(child))).extract()
-      .body()
-      .jsonPath()
-      .getString("data.id");
+  void ChildResolutionTest() {
+    String childId1 = postNewChild();
+    String childId2 = postNewChild();
 
-    OneToManyHibernateHelperTestConfig.DtoB child2 = new OneToManyHibernateHelperTestConfig.DtoB();
-    child2.setCreatedBy("dina");
-    child2.setGroup("2");
-    String childId2 = sendPost(
-      "B",
-      JsonAPITestHelper.toJsonAPIMap("B", JsonAPITestHelper.toAttributeMap(child2))).extract()
-      .body().jsonPath().getString("data.id");
-
-    OneToManyHibernateHelperTestConfig.DtoA parent = new OneToManyHibernateHelperTestConfig.DtoA();
-    parent.setCreatedBy("dina");
-    parent.setGroup("parent");
     String parentId = sendPost(
       "A",
-      JsonAPITestHelper.toJsonAPIMap("A", JsonAPITestHelper.toAttributeMap(parent),
+      JsonAPITestHelper.toJsonAPIMap("A", JsonAPITestHelper.toAttributeMap(newDtoA()),
         Map.of(
           "children",
           Map.of(
@@ -115,6 +98,27 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       .then()
       .body("data.relationships.children.data", Matchers.hasSize(1))
       .body("data.relationships.children.data[0].id", Matchers.is(childId2));
+  }
+
+  private String postNewChild() {
+    return sendPost(
+      "B",
+      JsonAPITestHelper.toJsonAPIMap("B", JsonAPITestHelper.toAttributeMap(newDtoB())))
+      .extract().body().jsonPath().getString("data.id");
+  }
+
+  private static OneToManyHibernateHelperTestConfig.DtoA newDtoA() {
+    OneToManyHibernateHelperTestConfig.DtoA parent = new OneToManyHibernateHelperTestConfig.DtoA();
+    parent.setCreatedBy("dina");
+    parent.setGroup("parent");
+    return parent;
+  }
+
+  private static OneToManyHibernateHelperTestConfig.DtoB newDtoB() {
+    OneToManyHibernateHelperTestConfig.DtoB child = new OneToManyHibernateHelperTestConfig.DtoB();
+    child.setCreatedBy("dina");
+    child.setGroup(RandomStringUtils.randomAlphabetic(3));
+    return child;
   }
 
   @TestConfiguration
