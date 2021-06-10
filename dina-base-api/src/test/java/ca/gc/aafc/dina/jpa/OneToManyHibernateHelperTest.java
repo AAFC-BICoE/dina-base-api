@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import org.apache.commons.collections.CollectionUtils;
 import org.hamcrest.Matchers;
 import org.hibernate.annotations.NaturalId;
 import org.junit.jupiter.api.Test;
@@ -98,27 +99,22 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
     given()
       .header(CRNK_HEADER).port(testPort).basePath(basePath)
       .queryParams(Map.of("include", "children"))
-      .get("A/" + parentId)
-      .then().log().all(true)
-      .body("data.relationships.children.data", Matchers.arrayWithSize(1))
+      .get("A/" + parentId).then()
+      .body("data.relationships.children.data", Matchers.hasSize(1))
       .body("data.relationships.children.data[0].id", Matchers.is(childId1));
 
-    sendPatch(parentId, Map.of("Data", Map.of("relationships", Map.of(
-      "children",
-      Map.of(
-        "data", List.of(Map.of(
-          "type", "B",
-          "id", childId2
-        ))
-      )
-    )))).log().all(true);
+    sendPatch("A", parentId, Map.of(
+      "data",
+      Map.of("relationships",
+        Map.of("children", Map.of("data", List.of(Map.of("type", "B", "id", childId2)))),
+        "type", "A"))).log().all(true);
 
     given()
       .header(CRNK_HEADER).port(testPort).basePath(basePath)
       .queryParams(Map.of("include", "children"))
       .get("A/" + parentId)
-      .then()
-      .body("data.relationships.children.data", Matchers.arrayWithSize(1))
+      .then().log().all(true)
+      .body("data.relationships.children.data", Matchers.hasSize(1))
       .body("data.relationships.children.data[0].id", Matchers.is(childId2));
   }
 
@@ -249,6 +245,22 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       @Override
       protected void preCreate(A entity) {
         entity.setUuid(UUID.randomUUID());
+        if (CollectionUtils.isNotEmpty(entity.getChildren())) {
+          entity.getChildren().forEach(c -> c.setParent(entity));
+        }
+      }
+
+      @Override
+      protected void preUpdate(A entity) {
+        if (CollectionUtils.isNotEmpty(entity.getChildren())) {
+          OneToManyHibernateHelper.resolveChildren(
+            OneToManyHibernateHelper.findByParent(B.class, "parent", entity,this),
+            entity.getChildren(),
+            b -> b.setParent(null)
+          );
+
+          entity.getChildren().forEach(c -> c.setParent(entity));
+        }
       }
     }
 
