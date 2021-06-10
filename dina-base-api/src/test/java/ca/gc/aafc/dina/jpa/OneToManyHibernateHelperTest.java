@@ -239,17 +239,17 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       @Override
       protected void preCreate(A entity) {
         entity.setUuid(UUID.randomUUID());
-        OneToManyHibernateHelper.linkChildren(entity.getChildren(), entity, b -> b::setParent);
+        OneToManyHibernateHelper.linkChildren(entity.getChildren(), entity, child -> child::setParent);
       }
 
       @Override
       protected void preUpdate(A entity) {
-        OneToManyHibernateHelper.resolveChildren(
+        OneToManyHibernateHelper.handleOrphans(
           OneToManyHibernateHelper.findByParent(B.class, "parent", entity, this),
           entity.getChildren(),
           b -> b.setParent(null)
         );
-        OneToManyHibernateHelper.linkChildren(entity.getChildren(), entity, b -> b::setParent);
+        OneToManyHibernateHelper.linkChildren(entity.getChildren(), entity, child -> child::setParent);
       }
     }
 

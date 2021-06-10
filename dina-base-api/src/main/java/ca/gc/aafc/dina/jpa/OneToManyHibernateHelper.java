@@ -27,7 +27,7 @@ public final class OneToManyHibernateHelper {
     }
   }
 
-  public static <E extends DinaEntity> void resolveChildren(
+  public static <E extends DinaEntity> void handleOrphans(
     List<E> oldChildren,
     List<E> newChildren,
     Consumer<E> orphanConsumer
