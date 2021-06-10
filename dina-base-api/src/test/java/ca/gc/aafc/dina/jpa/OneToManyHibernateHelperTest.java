@@ -6,17 +6,20 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.service.DefaultDinaService;
+import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
+import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
+import io.restassured.http.Header;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import org.hamcrest.Matchers;
 import org.hibernate.annotations.NaturalId;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.info.BuildProperties;
@@ -26,69 +29,97 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.SmartValidator;
 
-import javax.inject.Inject;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 
-@SpringBootTest(
-  classes = {TestDinaBaseApp.class, OneToManyHibernateHelperTest.OneToManyHibernateHelperTestConfig.class})
-@Transactional
-class OneToManyHibernateHelperTest {
+import static io.restassured.RestAssured.given;
 
-  @Inject
-  private DinaRepository<OneToManyHibernateHelperTestConfig.DtoA, OneToManyHibernateHelperTestConfig.A> repoA;
-  @Inject
-  private DinaRepository<OneToManyHibernateHelperTestConfig.DtoB, OneToManyHibernateHelperTestConfig.B> repoB;
+@SpringBootTest(
+  classes = {TestDinaBaseApp.class, OneToManyHibernateHelperTest.OneToManyHibernateHelperTestConfig.class},
+  webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Transactional
+class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
+
+  private static final Header CRNK_HEADER = new Header("crnk-compact", "true");
+
+  protected OneToManyHibernateHelperTest() {
+    super("");
+  }
 
   @Test
   void name() {
     OneToManyHibernateHelperTestConfig.DtoB child = new OneToManyHibernateHelperTestConfig.DtoB();
-    child.setUuid(UUID.randomUUID());
     child.setCreatedBy("dina");
     child.setGroup("1");
-    repoB.create(child);
+    String childId1 = sendPost(
+      "B",
+      JsonAPITestHelper.toJsonAPIMap("B", JsonAPITestHelper.toAttributeMap(child))).extract()
+      .body()
+      .jsonPath()
+      .getString("data.id");
 
     OneToManyHibernateHelperTestConfig.DtoB child2 = new OneToManyHibernateHelperTestConfig.DtoB();
-    child2.setUuid(UUID.randomUUID());
     child2.setCreatedBy("dina");
     child2.setGroup("2");
-    repoB.create(child2);
+    String childId2 = sendPost(
+      "B",
+      JsonAPITestHelper.toJsonAPIMap("B", JsonAPITestHelper.toAttributeMap(child2))).extract()
+      .body().jsonPath().getString("data.id");
 
     OneToManyHibernateHelperTestConfig.DtoA parent = new OneToManyHibernateHelperTestConfig.DtoA();
-    parent.setUuid(UUID.randomUUID());
     parent.setCreatedBy("dina");
     parent.setGroup("parent");
-    parent.setChildren(List.of(repoB.findOne(child.getUuid(), getChildQuerySpec())));
-    repoA.create(parent);
+    String parentId = sendPost(
+      "A",
+      JsonAPITestHelper.toJsonAPIMap("A", JsonAPITestHelper.toAttributeMap(parent),
+        Map.of(
+          "children",
+          Map.of(
+            "data", List.of(Map.of(
+              "type", "B",
+              "id", childId1
+            ))
+          )
+        ),
+        null
+      )).extract().body().jsonPath().getString("data.id");
 
-    OneToManyHibernateHelperTestConfig.DtoA resultParent = repoA.findOne(
-      parent.getUuid(),
-      getParentQuerySpec());
-    Assertions.assertEquals(1, resultParent.getChildren().size());
-    Assertions.assertEquals(child.getUuid(), resultParent.getChildren().get(0).getUuid());
+    given()
+      .header(CRNK_HEADER).port(testPort).basePath(basePath)
+      .queryParams(Map.of("include", "children"))
+      .get("A/" + parentId)
+      .then().log().all(true)
+      .body("data.relationships.children.data", Matchers.arrayWithSize(1))
+      .body("data.relationships.children.data[0].id", Matchers.is(childId1));
 
-    resultParent.setChildren(new ArrayList<>(List.of(repoB.findOne(
-      child2.getUuid(),
-      getChildQuerySpec()))));
-    repoA.save(resultParent);
+    sendPatch(parentId, Map.of("Data", Map.of("relationships", Map.of(
+      "children",
+      Map.of(
+        "data", List.of(Map.of(
+          "type", "B",
+          "id", childId2
+        ))
+      )
+    )))).log().all(true);
 
-    OneToManyHibernateHelperTestConfig.DtoA updatedParentResult = repoA.findOne(
-      parent.getUuid(),
-      getParentQuerySpec());
-    Assertions.assertEquals(1, updatedParentResult.getChildren().size());
-    Assertions.assertEquals(child2.getUuid(), updatedParentResult.getChildren().get(0).getUuid());
+    given()
+      .header(CRNK_HEADER).port(testPort).basePath(basePath)
+      .queryParams(Map.of("include", "children"))
+      .get("A/" + parentId)
+      .then()
+      .body("data.relationships.children.data", Matchers.arrayWithSize(1))
+      .body("data.relationships.children.data[0].id", Matchers.is(childId2));
   }
 
   private static QuerySpec getChildQuerySpec() {
@@ -214,6 +245,11 @@ class OneToManyHibernateHelperTest {
       ) {
         super(baseDAO, validator);
       }
+
+      @Override
+      protected void preCreate(A entity) {
+        entity.setUuid(UUID.randomUUID());
+      }
     }
 
     @Service
@@ -224,6 +260,11 @@ class OneToManyHibernateHelperTest {
         @NonNull SmartValidator validator
       ) {
         super(baseDAO, validator);
+      }
+
+      @Override
+      protected void preCreate(B entity) {
+        entity.setUuid(UUID.randomUUID());
       }
     }
 
