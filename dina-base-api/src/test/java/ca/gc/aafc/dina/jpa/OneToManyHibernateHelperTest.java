@@ -106,13 +106,13 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       "data",
       Map.of("relationships",
         Map.of("children", Map.of("data", List.of(Map.of("type", "B", "id", childId2)))),
-        "type", "A"))).log().all(true);
+        "type", "A")));
 
     given()
       .header(CRNK_HEADER).port(testPort).basePath(basePath)
       .queryParams(Map.of("include", "children"))
       .get("A/" + parentId)
-      .then().log().all(true)
+      .then()
       .body("data.relationships.children.data", Matchers.hasSize(1))
       .body("data.relationships.children.data[0].id", Matchers.is(childId2));
   }
