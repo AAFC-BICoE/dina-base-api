@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.validation;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
+import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
 import ca.gc.aafc.dina.service.ManagedAttributeServiceIT;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(classes = {TestDinaBaseApp.class, ManagedAttributeServiceIT.ManagedAttributeConfig.class})
 public class ManagedAttributeValueValidatorTest {
 
+  private static final ManagedAttributeServiceIT.TestManagedAttributeUsage ENTITY_PLACEHOLDER = ManagedAttributeServiceIT.TestManagedAttributeUsage
+      .builder().build();
+
   @Inject
   private ManagedAttributeService<ManagedAttributeServiceIT.TestManagedAttribute> testManagedAttributeService;
 
@@ -34,7 +38,7 @@ public class ManagedAttributeValueValidatorTest {
   private ManagedAttributeServiceIT.TestManagedAttribute testManagedAttribute;
 
   @Test
-  void validate_WhenValidStringType() {
+  void validate_WhenValidStringType_NoExceptionThrown() {
     testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
       name(RandomStringUtils.randomAlphabetic(6))
       .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
@@ -42,14 +46,11 @@ public class ManagedAttributeValueValidatorTest {
     testManagedAttributeService.create(testManagedAttribute);
 
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), "new string value");
-
-    Errors errors = new BeanPropertyBindingResult(mav, "mav");
-    validatorUnderTest.validate(mav, errors);
-    assertFalse(errors.hasErrors());
+    validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav);
   }
 
   @Test
-  void validate_WhenValidIntegerType() {
+  void validate_WhenValidIntegerType_NoExceptionThrown() {
     testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
       name(RandomStringUtils.randomAlphabetic(6))
       .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
@@ -57,15 +58,12 @@ public class ManagedAttributeValueValidatorTest {
     testManagedAttributeService.create(testManagedAttribute);
 
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), "1");
-
-    Errors errors = new BeanPropertyBindingResult(mav, "mav");
-    validatorUnderTest.validate(mav, errors);
-    assertFalse(errors.hasErrors());
+    validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav);
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"1.2", "", "  ", "\t", "\n", "a"})
-  void validate_WhenInvalidIntegerType(String value) {
+  void validate_WhenInvalidIntegerType_ExceptionThrown(String value) {
     testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
       name(RandomStringUtils.randomAlphabetic(6))
       .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
@@ -73,10 +71,7 @@ public class ManagedAttributeValueValidatorTest {
     testManagedAttributeService.create(testManagedAttribute);
 
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), value);
-
-    Errors errors = new BeanPropertyBindingResult(mav, "mav");
-    validatorUnderTest.validate(mav, errors);
-    assertTrue(errors.hasErrors());
+    assertThrows(ValidationException.class, () -> validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav));
   }
 
   @Test
@@ -87,8 +82,8 @@ public class ManagedAttributeValueValidatorTest {
         .build();
     testManagedAttributeService.create(testManagedAttribute);
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), "1.2");
-
-    assertThrows(ValidationException.class, () -> validatorUnderTest.validate(Department.builder().uuid(UUID.randomUUID()).build(), mav));
+    assertThrows(ValidationException.class,
+        () -> validatorUnderTest.validate(Department.builder().uuid(UUID.randomUUID()).build(), mav));
   }
 
   @Test
@@ -116,18 +111,13 @@ public class ManagedAttributeValueValidatorTest {
     validatorUnderTest.validate(mav, errors);
     assertEquals(1, errors.getErrorCount());
 
-    assertTrue(errors.getAllErrors().get(0).getCode().contains("val3"));
+    assertTrue(errors.getAllErrors().get(0).getDefaultMessage().contains("val3"));
   }
 
   @Test
-  public void assignedKeyDoesNotExist_validationFails() {
+  public void assignedKeyDoesNotExist_ValidationExceptionThrown() {
     Map<String, String> mav = Map.of("key_x", "val3");
-
-    Errors errors = new BeanPropertyBindingResult(mav, "mav");
-    validatorUnderTest.validate(mav, errors);
-    assertEquals(1, errors.getErrorCount());
-
-    assertTrue(errors.getAllErrors().get(0).getCode().contains("assignedValue key not found."));
+    assertThrows(ValidationException.class, () -> validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav));
   }
 
   @Test
