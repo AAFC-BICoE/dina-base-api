@@ -1,7 +1,9 @@
 package ca.gc.aafc.dina.jpa;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.service.DinaService;
 
+import javax.persistence.criteria.Predicate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,6 +31,16 @@ public final class OneToManyHibernateHelper {
         orphanConsumer.accept(dinaEntity);
       }
     });
+  }
 
+  public static <T> List<T> findByParent(
+    Class<T> classType,
+    String parentName,
+    Object parentObj,
+    DinaService<?> service
+  ) {
+    return service.findAll(classType, (criteriaBuilder, storageUnitRoot) -> new Predicate[]{
+      criteriaBuilder.equal(storageUnitRoot.get(parentName), parentObj)
+    }, null, 0, Integer.MAX_VALUE);
   }
 }
