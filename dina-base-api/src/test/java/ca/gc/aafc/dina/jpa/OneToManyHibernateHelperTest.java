@@ -247,7 +247,7 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
         OneToManyHibernateHelper.handleOrphans(
           OneToManyHibernateHelper.findByParent(B.class, "parent", entity, this),
           entity.getChildren(),
-          b -> b.setParent(null)
+          child -> child.setParent(null)
         );
         OneToManyHibernateHelper.linkChildren(entity.getChildren(), entity, child -> child::setParent);
       }
