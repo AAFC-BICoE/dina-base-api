@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.hamcrest.Matchers;
 import org.hibernate.annotations.NaturalId;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.info.BuildProperties;
@@ -52,51 +53,58 @@ import static io.restassured.RestAssured.given;
 class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
 
   private static final Header CRNK_HEADER = new Header("crnk-compact", "true");
+  private String firstResourceBId;
+  private String secondResourceBid;
 
   protected OneToManyHibernateHelperTest() {
     super("");
   }
 
-  @Test
-  void ChildResolutionTest() {
-    String childId1 = postNewChild();
-    String childId2 = postNewChild();
+  @BeforeEach
+  void setUp() {
+    firstResourceBId = postNewChild();
+    secondResourceBid = postNewChild();
+  }
 
-    String parentId = sendPost(
-      "A",
-      JsonAPITestHelper.toJsonAPIMap("A", JsonAPITestHelper.toAttributeMap(newDtoA()),
-        Map.of(
-          "children",
-          Map.of(
-            "data", List.of(Map.of(
-              "type", "B",
-              "id", childId1
-            ))
-          )
-        ),
-        null
-      )).extract().body().jsonPath().getString("data.id");
+  @Test
+  void ChildResolution_OnPost() {
+    String parentId = postParentWithChild(firstResourceBId);
 
     given()
       .header(CRNK_HEADER).port(testPort).basePath(basePath)
       .queryParams(Map.of("include", "children"))
       .get("A/" + parentId).then()
       .body("data.relationships.children.data", Matchers.hasSize(1))
-      .body("data.relationships.children.data[0].id", Matchers.is(childId1));
+      .body("data.relationships.children.data[0].id", Matchers.is(firstResourceBId));
+  }
+
+  @Test
+  void ChildResolution_OnPatch() {
+    String parentId = postParentWithChild(firstResourceBId);
 
     sendPatch("A", parentId, Map.of(
       "data",
       Map.of("relationships",
-        Map.of("children", Map.of("data", List.of(Map.of("type", "B", "id", childId2)))),
+        Map.of("children", Map.of("data", List.of(Map.of("type", "B", "id", secondResourceBid)))),
         "type", "A")));
 
     given()
       .header(CRNK_HEADER).port(testPort).basePath(basePath)
       .queryParams(Map.of("include", "children"))
-      .get("A/" + parentId)
-      .then()
+      .get("A/" + parentId).then()
       .body("data.relationships.children.data", Matchers.hasSize(1))
-      .body("data.relationships.children.data[0].id", Matchers.is(childId2));
+      .body("data.relationships.children.data[0].id", Matchers.is(secondResourceBid));
+  }
+
+  private String postParentWithChild(String childId) {
+    return sendPost(
+      "A",
+      JsonAPITestHelper.toJsonAPIMap(
+        "A",
+        JsonAPITestHelper.toAttributeMap(newDtoA()),
+        Map.of("children", Map.of("data", List.of(Map.of("type", "B", "id", childId)))),
+        null))
+      .extract().body().jsonPath().getString("data.id");
   }
 
   private String postNewChild() {
