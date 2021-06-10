@@ -115,15 +115,15 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       .extract().body().jsonPath().getString("data.id");
   }
 
-  private static OneToManyHibernateHelperTestConfig.DtoA newDtoA() {
-    OneToManyHibernateHelperTestConfig.DtoA parent = new OneToManyHibernateHelperTestConfig.DtoA();
+  private static OneToManyHibernateHelperTestConfig.ParentDto newDtoA() {
+    OneToManyHibernateHelperTestConfig.ParentDto parent = new OneToManyHibernateHelperTestConfig.ParentDto();
     parent.setCreatedBy("dina");
     parent.setGroup("parent");
     return parent;
   }
 
-  private static OneToManyHibernateHelperTestConfig.DtoB newDtoB() {
-    OneToManyHibernateHelperTestConfig.DtoB child = new OneToManyHibernateHelperTestConfig.DtoB();
+  private static OneToManyHibernateHelperTestConfig.ChildDto newDtoB() {
+    OneToManyHibernateHelperTestConfig.ChildDto child = new OneToManyHibernateHelperTestConfig.ChildDto();
     child.setCreatedBy("dina");
     child.setGroup(RandomStringUtils.randomAlphabetic(3));
     return child;
@@ -134,16 +134,16 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
   public static class OneToManyHibernateHelperTestConfig {
 
     @Bean
-    public DinaRepository<DtoA, A> testRepoA(
-      ServiceA serviceA
+    public DinaRepository<ParentDto, Parent> testRepoA(
+      ParentService parentService
     ) {
       return new DinaRepository<>(
-        serviceA,
+        parentService,
         Optional.empty(),
         Optional.empty(),
-        new DinaMapper<>(DtoA.class),
-        DtoA.class,
-        A.class,
+        new DinaMapper<>(ParentDto.class),
+        ParentDto.class,
+        Parent.class,
         null,
         null,
         new BuildProperties(new Properties())
@@ -151,16 +151,16 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
     }
 
     @Bean
-    public DinaRepository<DtoB, B> testRepoB(
-      ServiceB serviceB
+    public DinaRepository<ChildDto, Child> testRepoB(
+      ChildService childService
     ) {
       return new DinaRepository<>(
-        serviceB,
+        childService,
         Optional.empty(),
         Optional.empty(),
-        new DinaMapper<>(DtoB.class),
-        DtoB.class,
-        B.class,
+        new DinaMapper<>(ChildDto.class),
+        ChildDto.class,
+        Child.class,
         null,
         null,
         new BuildProperties(new Properties())
@@ -172,7 +172,7 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class A implements DinaEntity {
+    public static class Parent implements DinaEntity {
       private String createdBy;
       private OffsetDateTime createdOn;
       @Column(name = "group_name")
@@ -184,13 +184,13 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       private UUID uuid;
 
       @OneToMany(mappedBy = "parent")
-      private List<B> children;
+      private List<Child> children;
     }
 
     @Data
     @JsonApiResource(type = "A")
-    @RelatedEntity(A.class)
-    public static class DtoA {
+    @RelatedEntity(Parent.class)
+    public static class ParentDto {
       @JsonApiId
       private UUID uuid;
       private String createdBy;
@@ -198,7 +198,7 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       private String group;
 
       @JsonApiRelation
-      private List<DtoB> children;
+      private List<ChildDto> children;
     }
 
     @Data
@@ -206,7 +206,7 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class B implements DinaEntity {
+    public static class Child implements DinaEntity {
       private String createdBy;
       private OffsetDateTime createdOn;
       @Column(name = "group_name")
@@ -218,13 +218,13 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       private UUID uuid;
 
       @ManyToOne
-      private A parent;
+      private Parent parent;
     }
 
     @Data
     @JsonApiResource(type = "B")
-    @RelatedEntity(B.class)
-    public static class DtoB {
+    @RelatedEntity(Child.class)
+    public static class ChildDto {
       @JsonApiId
       private UUID uuid;
       private String createdBy;
@@ -232,13 +232,13 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       private String group;
 
       @JsonApiRelation
-      private DtoA parent;
+      private ParentDto parent;
     }
 
     @Service
-    public static class ServiceA extends DefaultDinaService<A> {
+    public static class ParentService extends DefaultDinaService<Parent> {
 
-      public ServiceA(
+      public ParentService(
         @NonNull BaseDAO baseDAO,
         @NonNull SmartValidator validator
       ) {
@@ -246,15 +246,15 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       }
 
       @Override
-      protected void preCreate(A entity) {
+      protected void preCreate(Parent entity) {
         entity.setUuid(UUID.randomUUID());
         OneToManyHibernateHelper.linkChildren(entity.getChildren(), entity, child -> child::setParent);
       }
 
       @Override
-      protected void preUpdate(A entity) {
+      protected void preUpdate(Parent entity) {
         OneToManyHibernateHelper.handleOrphans(
-          OneToManyHibernateHelper.findByParent(B.class, "parent", entity, this),
+          OneToManyHibernateHelper.findByParent(Child.class, "parent", entity, this),
           entity.getChildren(),
           child -> child.setParent(null)
         );
@@ -263,9 +263,9 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
     }
 
     @Service
-    public static class ServiceB extends DefaultDinaService<B> {
+    public static class ChildService extends DefaultDinaService<Child> {
 
-      public ServiceB(
+      public ChildService(
         @NonNull BaseDAO baseDAO,
         @NonNull SmartValidator validator
       ) {
@@ -273,7 +273,7 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       }
 
       @Override
-      protected void preCreate(B entity) {
+      protected void preCreate(Child entity) {
         entity.setUuid(UUID.randomUUID());
       }
     }
