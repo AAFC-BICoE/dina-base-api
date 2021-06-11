@@ -126,6 +126,18 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       .body("data.relationships.children.data.id", Matchers.containsInAnyOrder(firstResourceBId, childId));
   }
 
+  @Test
+  void parentResolution_OnDelete() {
+    String parentId = postParentWithChild(firstResourceBId);
+    String childId = postNewChildWithParent(parentId);
+    findChildById(childId).body("data.relationships.parent.data.id", Matchers.is(parentId));
+
+    sendDelete("B", childId);
+    findParentById(parentId)
+      .body("data.relationships.children.data", Matchers.hasSize(1))
+      .body("data.relationships.children.data[0].id", Matchers.is(firstResourceBId));
+  }
+
   private ValidatableResponse findChildById(String id) {
     return given()
       .header(CRNK_HEADER).port(testPort).basePath(basePath)
