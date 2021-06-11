@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
 
@@ -95,8 +94,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   }
 
   private static boolean isNotAnAcceptedValue(@NonNull String assignedValue, String[] acceptedValues) {
-    return ArrayUtils.isNotEmpty(acceptedValues)
-      && Arrays.stream(acceptedValues).collect(Collectors.toSet()).stream()
+    return ArrayUtils.isNotEmpty(acceptedValues) && Arrays.stream(acceptedValues)
       .noneMatch(assignedValue::equalsIgnoreCase);
   }
 
