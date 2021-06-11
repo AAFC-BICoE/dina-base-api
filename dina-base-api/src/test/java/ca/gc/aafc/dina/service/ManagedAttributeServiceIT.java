@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.validation.ManagedAttributeValueValidator;
@@ -22,6 +23,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -72,6 +74,20 @@ public class ManagedAttributeServiceIT {
     private String key;
     private ManagedAttributeType managedAttributeType;
     private String[] acceptedValues;
+    private String createdBy;
+    private OffsetDateTime createdOn;
+  }
+
+  @Data
+  @Builder
+  public static class TestManagedAttributeUsage implements DinaEntity {
+    @Id
+    @GeneratedValue
+    private Integer id;
+    private UUID uuid;
+
+    private Map<String, String> managedAttributes;
+
     private String createdBy;
     private OffsetDateTime createdOn;
   }
