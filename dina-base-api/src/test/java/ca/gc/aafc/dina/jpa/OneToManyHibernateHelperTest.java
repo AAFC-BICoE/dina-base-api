@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.hibernate.annotations.NaturalId;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,10 +74,11 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
     findParentById(parentId)
       .body("data.relationships.children.data", Matchers.hasSize(1))
       .body("data.relationships.children.data[0].id", Matchers.is(firstResourceBId));
+    findChildById(firstResourceBId).body("data.relationships.parent.data.id", Matchers.is(parentId));
   }
 
   @Test
-  void childResolution_OnPatch() {
+  void childResolution_OnPatch_AddAndRemove() {
     String parentId = postParentWithChild(firstResourceBId);
 
     sendPatch("A", parentId, Map.of(
@@ -88,6 +90,8 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
     findParentById(parentId)
       .body("data.relationships.children.data", Matchers.hasSize(1))
       .body("data.relationships.children.data[0].id", Matchers.is(secondResourceBid));
+    findChildById(secondResourceBid).body("data.relationships.parent.data.id", Matchers.is(parentId));
+    findChildById(firstResourceBId).body("data.relationships.parent.data", Matchers.nullValue());
   }
 
   @Test
@@ -97,13 +101,31 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       .body("data.relationships.children.data", Matchers.hasSize(1))
       .body("data.relationships.children.data[0].id", Matchers.is(firstResourceBId));
     sendDelete("A", parentId);
+    findChildById(firstResourceBId).body("data.relationships.parent.data", Matchers.nullValue());
   }
 
-  private ValidatableResponse findParentById(String parentId) {
+  @Test
+  void parentResolution_OnPost() {
+    String parentId = postParentWithChild(firstResourceBId);
+    String childId = postNewChildWithParent(parentId);
+    findChildById(childId).body("data.relationships.parent.data.id", Matchers.is(parentId));
+    findParentById(parentId)
+      .body("data.relationships.children.data", Matchers.hasSize(2))
+      .body("data.relationships.children.data.id", Matchers.containsInAnyOrder(firstResourceBId, childId));
+  }
+
+  private ValidatableResponse findChildById(String id) {
+    return given()
+      .header(CRNK_HEADER).port(testPort).basePath(basePath)
+      .queryParams(Map.of("include", "parent"))
+      .get("B/" + id).then();
+  }
+
+  private ValidatableResponse findParentById(String id) {
     return given()
       .header(CRNK_HEADER).port(testPort).basePath(basePath)
       .queryParams(Map.of("include", "children"))
-      .get("A/" + parentId).then();
+      .get("A/" + id).then();
   }
 
   private String postParentWithChild(String childId) {
@@ -118,10 +140,19 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
   }
 
   private String postNewChild() {
-    return sendPost(
-      "B",
-      JsonAPITestHelper.toJsonAPIMap("B", JsonAPITestHelper.toAttributeMap(newDtoB())))
-      .extract().body().jsonPath().getString("data.id");
+    return postNewChildWithParent(null);
+  }
+
+  private String postNewChildWithParent(String parentId) {
+    Map<String, Object> body;
+    if (StringUtils.isBlank(parentId)) {
+      body = JsonAPITestHelper.toJsonAPIMap("B", JsonAPITestHelper.toAttributeMap(newDtoB()));
+    } else {
+      body = JsonAPITestHelper.toJsonAPIMap("B", JsonAPITestHelper.toAttributeMap(newDtoB()),
+        Map.of("parent", Map.of("data", Map.of("type", "A", "id", parentId))),
+        null);
+    }
+    return sendPost("B", body).extract().body().jsonPath().getString("data.id");
   }
 
   private static OneToManyHibernateHelperTestConfig.ParentDto newDtoA() {
