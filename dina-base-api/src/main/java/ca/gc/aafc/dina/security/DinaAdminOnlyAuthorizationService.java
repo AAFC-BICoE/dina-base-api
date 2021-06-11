@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.service;
+package ca.gc.aafc.dina.security;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;

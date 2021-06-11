@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -63,6 +64,19 @@ public class KeycloakCurrentUserIT {
 
     assertEquals(DinaRole.COLLECTION_MANAGER, currentUser.getRolesPerGroup()
       .get("group 2").iterator().next());
+  }
+
+  @Test
+  public void dinaRoleExpectedOrder(){
+    List<DinaRole> dinaRoleList = Arrays.asList(DinaRole.COLLECTION_MANAGER, DinaRole.DINA_ADMIN, DinaRole.STAFF, DinaRole.STUDENT);
+    Collections.shuffle(dinaRoleList);
+
+    dinaRoleList.sort(new PriorityComparator());
+    assertEquals(DinaRole.DINA_ADMIN, dinaRoleList.get(0));
+    assertEquals(DinaRole.COLLECTION_MANAGER, dinaRoleList.get(1));
+    assertEquals(DinaRole.STAFF, dinaRoleList.get(2));
+    assertEquals(DinaRole.STUDENT, dinaRoleList.get(3));
+
   }
 
 }

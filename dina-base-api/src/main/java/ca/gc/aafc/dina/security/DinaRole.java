@@ -12,11 +12,11 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public enum DinaRole {
 
-  COLLECTION_MANAGER("collection-manager"),
-  STAFF("staff"),
-  STUDENT("student"),
-  DINA_ADMIN("dina-admin");
-
+  DINA_ADMIN("dina-admin", 0),
+  COLLECTION_MANAGER("collection-manager", 1),
+  STAFF("staff", 2),
+  STUDENT("student", 3);
+  
   private static final Pattern NON_ALPHA = Pattern.compile("[^A-Za-z]");
 
   /**
@@ -24,6 +24,12 @@ public enum DinaRole {
    */
   @Getter
   private final String keycloakRoleName;
+  
+  /**
+   * priority used in comparator, lower number = higher priority
+   */
+  @Getter
+  private final int priority;
 
   /**
    * Similar but more lenient than {@link #valueOf(String)}.
