@@ -50,10 +50,10 @@ import java.util.UUID;
 import static io.restassured.RestAssured.given;
 
 @SpringBootTest(
-  classes = {TestDinaBaseApp.class, OneToManyHibernateHelperTest.OneToManyHibernateHelperTestConfig.class},
+  classes = {TestDinaBaseApp.class, OneToManyDinaServiceTest.OneToManyHibernateHelperTestConfig.class},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Transactional
-class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
+class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
   private static final Header CRNK_HEADER = new Header("crnk-compact", "true");
   public static final String PARENT_TYPE_NAME = "A";
@@ -61,7 +61,7 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
   private String firstResourceBId;
   private String secondResourceBid;
 
-  protected OneToManyHibernateHelperTest() {
+  protected OneToManyDinaServiceTest() {
     super("");
   }
 
