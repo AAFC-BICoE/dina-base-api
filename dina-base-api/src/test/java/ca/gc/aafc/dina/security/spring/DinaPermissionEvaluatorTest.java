@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.security.spring;
 
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import ca.gc.aafc.dina.security.DinaRole;
-import ca.gc.aafc.dina.security.PriorityComparator;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -16,7 +15,8 @@ import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.mockito.Answers;
 import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -75,11 +75,11 @@ class DinaPermissionEvaluatorTest {
     List<DinaRole> dinaRoleList = Arrays.asList(DinaRole.COLLECTION_MANAGER, DinaRole.DINA_ADMIN, DinaRole.STAFF, DinaRole.STUDENT);
     Collections.shuffle(dinaRoleList);
 
-    dinaRoleList.sort(new PriorityComparator());
-    assertEquals(DinaRole.DINA_ADMIN, dinaRoleList.get(0));
-    assertEquals(DinaRole.COLLECTION_MANAGER, dinaRoleList.get(1));
-    assertEquals(DinaRole.STAFF, dinaRoleList.get(2));
-    assertEquals(DinaRole.STUDENT, dinaRoleList.get(3));
+    assertTrue(DinaRole.COLLECTION_MANAGER.isHigherThan(DinaRole.STUDENT));
+    assertTrue(DinaRole.COLLECTION_MANAGER.isHigherOrEqualThan(DinaRole.COLLECTION_MANAGER));
+
+    assertFalse(DinaRole.COLLECTION_MANAGER.isHigherOrEqualThan(DinaRole.DINA_ADMIN));
+    assertFalse(DinaRole.STUDENT.isHigherOrEqualThan(DinaRole.DINA_ADMIN));
 
   }
 

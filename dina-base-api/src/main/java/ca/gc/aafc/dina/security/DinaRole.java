@@ -45,4 +45,16 @@ public enum DinaRole {
     }
     return Optional.empty();
   }
+
+  public boolean isHigherThan(DinaRole dinaRole) {
+    return this.getPriority() < dinaRole.getPriority();
+  }
+
+  public boolean isHigherOrEqualThan(DinaRole dinaRole) {
+    return this.getPriority() <= dinaRole.getPriority();
+  }
+
+
+
+
 }
