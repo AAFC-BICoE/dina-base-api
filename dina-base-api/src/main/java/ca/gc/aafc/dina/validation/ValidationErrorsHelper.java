@@ -1,9 +1,9 @@
 package ca.gc.aafc.dina.validation;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
-import org.springframework.validation.ObjectError;
 
 import javax.validation.ValidationException;
 import java.util.Optional;
@@ -31,7 +31,9 @@ public final class ValidationErrorsHelper {
   }
 
   /**
-   * Validate the provided Object with the provided Validator and Errors objects.
+   * Check the provided Errors object and throw a {@link ValidationException} if there is at least
+   * one error in the object. The exception will only contain 1 error in the exception even if the object
+   * provides more than 1.
    * @param errors
    * @throws ValidationException
    */
@@ -43,7 +45,7 @@ public final class ValidationErrorsHelper {
 
     Optional<String> errorMsg = errors.getAllErrors()
         .stream()
-        .map(ObjectError::getDefaultMessage)
+        .map(err -> StringUtils.defaultIfBlank(err.getDefaultMessage(), err.toString()))
         .findAny();
 
     errorMsg.ifPresent(msg -> {

@@ -17,16 +17,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
 
+  private static final String MANAGED_ATTRIBUTE_INVALID_VALUE = "managedAttribute.value.invalid";
+  private static final String MANAGED_ATTRIBUTE_INVALID_KEY = "managedAttribute.key.invalid";
+  private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
+
   private final ManagedAttributeService<E> dinaService;
   private final MessageSource messageSource;
-
-  private static final String VALID_ASSIGNED_VALUE = "assignedValue.invalid";
-  private static final String VALID_ASSIGNED_VALUE_KEY = "assignedValue.key.invalid";
-  private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
   public ManagedAttributeValueValidator(
     @Named("validationMessageSource") MessageSource messageSource,
@@ -51,7 +50,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
     Collection<?> difference = CollectionUtils.disjunction(map.keySet(), attributesPerKey.keySet());
     if (!difference.isEmpty()) {
-      errors.reject(getMessageForKey(VALID_ASSIGNED_VALUE_KEY));
+      errors.reject(MANAGED_ATTRIBUTE_INVALID_KEY, getMessageForKey(MANAGED_ATTRIBUTE_INVALID_KEY, difference.stream().findFirst().get()));
     }
 
     attributesPerKey.forEach((key, ma) -> {
@@ -59,12 +58,12 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
       String assignedValue = map.get(key);
 
       if (maType == ManagedAttributeType.INTEGER && !INTEGER_PATTERN.matcher(assignedValue).matches()) {
-        errors.reject(getMessageForKey(VALID_ASSIGNED_VALUE), assignedValue);
+        errors.reject(MANAGED_ATTRIBUTE_INVALID_VALUE, getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
       }
 
       String[] acceptedValues = ma.getAcceptedValues();
       if (isNotAnAcceptedValue(assignedValue, acceptedValues)) {
-        errors.reject(getMessageForKey(VALID_ASSIGNED_VALUE, assignedValue));
+        errors.reject(MANAGED_ATTRIBUTE_INVALID_VALUE, getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
       }
     });
   }
@@ -95,8 +94,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   }
 
   private static boolean isNotAnAcceptedValue(@NonNull String assignedValue, String[] acceptedValues) {
-    return ArrayUtils.isNotEmpty(acceptedValues)
-      && Arrays.stream(acceptedValues).collect(Collectors.toSet()).stream()
+    return ArrayUtils.isNotEmpty(acceptedValues) && Arrays.stream(acceptedValues)
       .noneMatch(assignedValue::equalsIgnoreCase);
   }
 
