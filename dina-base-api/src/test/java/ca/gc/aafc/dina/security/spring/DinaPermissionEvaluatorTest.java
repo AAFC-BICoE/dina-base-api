@@ -72,15 +72,12 @@ class DinaPermissionEvaluatorTest {
 
   @Test
   void dinaRolePriorityComparator(){
-    List<DinaRole> dinaRoleList = Arrays.asList(DinaRole.COLLECTION_MANAGER, DinaRole.DINA_ADMIN, DinaRole.STAFF, DinaRole.STUDENT);
-    Collections.shuffle(dinaRoleList);
 
     assertTrue(DinaRole.COLLECTION_MANAGER.isHigherThan(DinaRole.STUDENT));
     assertTrue(DinaRole.COLLECTION_MANAGER.isHigherOrEqualThan(DinaRole.COLLECTION_MANAGER));
 
     assertFalse(DinaRole.COLLECTION_MANAGER.isHigherOrEqualThan(DinaRole.DINA_ADMIN));
     assertFalse(DinaRole.STUDENT.isHigherOrEqualThan(DinaRole.DINA_ADMIN));
-
   }
 
 
