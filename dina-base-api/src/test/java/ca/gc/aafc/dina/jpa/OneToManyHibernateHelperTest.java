@@ -326,35 +326,28 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
     }
 
     @Service
-    public static class ParentService extends DefaultDinaService<Parent> {
+    public static class ParentService extends OneToManyDinaService<Parent> {
 
       public ParentService(
         @NonNull BaseDAO baseDAO,
         @NonNull SmartValidator validator
       ) {
-        super(baseDAO, validator);
+        super(baseDAO, validator,
+          List.of(new OneToManyFieldHandler<>(
+            Child.class,
+            child -> child::setParent,
+            Parent::getChildren,
+            "parent",
+            child -> child.setParent(null)
+          )));
+
       }
 
       @Override
       protected void preCreate(Parent entity) {
         entity.setUuid(UUID.randomUUID());
-        OneToManyHibernateHelper.linkChildren(entity.getChildren(), entity, child -> child::setParent);
       }
 
-      @Override
-      protected void preUpdate(Parent entity) {
-        OneToManyHibernateHelper.handleOrphans(
-          OneToManyHibernateHelper.findByParent(Child.class, "parent", entity, this),
-          entity.getChildren(),
-          child -> child.setParent(null)
-        );
-        OneToManyHibernateHelper.linkChildren(entity.getChildren(), entity, child -> child::setParent);
-      }
-
-      @Override
-      protected void preDelete(Parent entity) {
-        OneToManyHibernateHelper.handleOrphans(entity.getChildren(), null, child -> child.setParent(null));
-      }
     }
 
     @Service
