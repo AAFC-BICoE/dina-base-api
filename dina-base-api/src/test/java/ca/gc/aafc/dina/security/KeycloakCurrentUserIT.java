@@ -66,17 +66,4 @@ public class KeycloakCurrentUserIT {
       .get("group 2").iterator().next());
   }
 
-  @Test
-  public void dinaRoleExpectedOrder(){
-    List<DinaRole> dinaRoleList = Arrays.asList(DinaRole.COLLECTION_MANAGER, DinaRole.DINA_ADMIN, DinaRole.STAFF, DinaRole.STUDENT);
-    Collections.shuffle(dinaRoleList);
-
-    dinaRoleList.sort(new PriorityComparator());
-    assertEquals(DinaRole.DINA_ADMIN, dinaRoleList.get(0));
-    assertEquals(DinaRole.COLLECTION_MANAGER, dinaRoleList.get(1));
-    assertEquals(DinaRole.STAFF, dinaRoleList.get(2));
-    assertEquals(DinaRole.STUDENT, dinaRoleList.get(3));
-
-  }
-
 }
