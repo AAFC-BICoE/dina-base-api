@@ -95,6 +95,18 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
   }
 
   @Test
+  void childResolution_OnPatch_RemoveAll() {
+    String parentId = postParentWithChild(firstResourceBId);
+
+    sendPatch("A", parentId, Map.of(
+      "data",
+      Map.of("relationships", Map.of("children", Map.of("data", List.of())), "type", "A")));
+
+    findParentById(parentId).body("data.relationships.children.data", Matchers.empty());
+    findChildById(firstResourceBId).body("data.relationships.parent.data", Matchers.nullValue());
+  }
+
+  @Test
   void childResolution_OnDelete() {
     String parentId = postParentWithChild(firstResourceBId);
     findParentById(parentId)
