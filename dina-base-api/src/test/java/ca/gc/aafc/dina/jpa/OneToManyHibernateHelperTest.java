@@ -56,6 +56,8 @@ import static io.restassured.RestAssured.given;
 class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
 
   private static final Header CRNK_HEADER = new Header("crnk-compact", "true");
+  public static final String PARENT_TYPE_NAME = "A";
+  public static final String CHILD_TYPE_NAME = "B";
   private String firstResourceBId;
   private String secondResourceBid;
 
@@ -82,11 +84,10 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
   void childResolution_OnPatch_AddAndRemove() {
     String parentId = postParentWithChild(firstResourceBId);
 
-    sendPatch("A", parentId, Map.of(
-      "data",
-      Map.of("relationships",
-        Map.of("children", Map.of("data", List.of(Map.of("type", "B", "id", secondResourceBid)))),
-        "type", "A")));
+    sendPatch(PARENT_TYPE_NAME, parentId, Map.of(
+      "data", Map.of("relationships", Map.of("children", Map.of(
+        "data", List.of(Map.of("type", CHILD_TYPE_NAME, "id", secondResourceBid)))),
+        "type", PARENT_TYPE_NAME)));
 
     findParentById(parentId)
       .body("data.relationships.children.data", Matchers.hasSize(1))
@@ -99,9 +100,10 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
   void childResolution_OnPatch_RemoveAll() {
     String parentId = postParentWithChild(firstResourceBId);
 
-    sendPatch("A", parentId, Map.of(
+    sendPatch(PARENT_TYPE_NAME, parentId, Map.of(
       "data",
-      Map.of("relationships", Map.of("children", Map.of("data", List.of())), "type", "A")));
+      Map.of("relationships",
+        Map.of("children", Map.of("data", List.of())), "type", PARENT_TYPE_NAME)));
 
     findParentById(parentId).body("data.relationships.children.data", Matchers.empty());
     findChildById(firstResourceBId).body("data.relationships.parent.data", Matchers.nullValue());
@@ -113,7 +115,7 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
     findParentById(parentId)
       .body("data.relationships.children.data", Matchers.hasSize(1))
       .body("data.relationships.children.data[0].id", Matchers.is(firstResourceBId));
-    sendDelete("A", parentId);
+    sendDelete(PARENT_TYPE_NAME, parentId);
     findChildById(firstResourceBId).body("data.relationships.parent.data", Matchers.nullValue());
   }
 
@@ -132,17 +134,18 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
     String parentId = postParentWithChild(firstResourceBId);
     String childId = postNewChild();
 
-    sendPatch("B", childId, Map.of(
-      "data",
-      Map.of("relationships",
-        Map.of("parent", Map.of("data", Map.of("type", "A", "id", parentId))), "type", "B")));
+    sendPatch(CHILD_TYPE_NAME, childId, Map.of(
+      "data", Map.of(
+        "relationships",
+        Map.of("parent", Map.of("data", Map.of("type", PARENT_TYPE_NAME, "id", parentId))),
+        "type", CHILD_TYPE_NAME)));
     findChildById(childId).body("data.relationships.parent.data.id", Matchers.is(parentId));
 
     HashMap<String, Object> empty = new HashMap<>();
     empty.put("data", null);
-    sendPatch("B", childId, Map.of(
+    sendPatch(CHILD_TYPE_NAME, childId, Map.of(
       "data",
-      Map.of("relationships", Map.of("parent", empty), "type", "B")));
+      Map.of("relationships", Map.of("parent", empty), "type", CHILD_TYPE_NAME)));
     findChildById(childId).body("data.relationships.parent.data", Matchers.nullValue());
     findParentById(parentId)
       .body("data.relationships.children.data", Matchers.hasSize(1))
@@ -155,7 +158,7 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
     String childId = postNewChildWithParent(parentId);
     findChildById(childId).body("data.relationships.parent.data.id", Matchers.is(parentId));
 
-    sendDelete("B", childId);
+    sendDelete(CHILD_TYPE_NAME, childId);
     findParentById(parentId)
       .body("data.relationships.children.data", Matchers.hasSize(1))
       .body("data.relationships.children.data[0].id", Matchers.is(firstResourceBId));
@@ -177,11 +180,11 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
 
   private String postParentWithChild(String childId) {
     return sendPost(
-      "A",
+      PARENT_TYPE_NAME,
       JsonAPITestHelper.toJsonAPIMap(
-        "A",
+        PARENT_TYPE_NAME,
         JsonAPITestHelper.toAttributeMap(newDtoA()),
-        Map.of("children", Map.of("data", List.of(Map.of("type", "B", "id", childId)))),
+        Map.of("children", Map.of("data", List.of(Map.of("type", CHILD_TYPE_NAME, "id", childId)))),
         null))
       .extract().body().jsonPath().getString("data.id");
   }
@@ -193,13 +196,13 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
   private String postNewChildWithParent(String parentId) {
     Map<String, Object> body;
     if (StringUtils.isBlank(parentId)) {
-      body = JsonAPITestHelper.toJsonAPIMap("B", JsonAPITestHelper.toAttributeMap(newDtoB()));
+      body = JsonAPITestHelper.toJsonAPIMap(CHILD_TYPE_NAME, JsonAPITestHelper.toAttributeMap(newDtoB()));
     } else {
-      body = JsonAPITestHelper.toJsonAPIMap("B", JsonAPITestHelper.toAttributeMap(newDtoB()),
-        Map.of("parent", Map.of("data", Map.of("type", "A", "id", parentId))),
+      body = JsonAPITestHelper.toJsonAPIMap(CHILD_TYPE_NAME, JsonAPITestHelper.toAttributeMap(newDtoB()),
+        Map.of("parent", Map.of("data", Map.of("type", PARENT_TYPE_NAME, "id", parentId))),
         null);
     }
-    return sendPost("B", body).extract().body().jsonPath().getString("data.id");
+    return sendPost(CHILD_TYPE_NAME, body).extract().body().jsonPath().getString("data.id");
   }
 
   private static OneToManyHibernateHelperTestConfig.ParentDto newDtoA() {
