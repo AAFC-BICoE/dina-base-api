@@ -40,6 +40,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -124,6 +125,28 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
     findParentById(parentId)
       .body("data.relationships.children.data", Matchers.hasSize(2))
       .body("data.relationships.children.data.id", Matchers.containsInAnyOrder(firstResourceBId, childId));
+  }
+
+  @Test
+  void parentResolution_OnPatch_AddAndRemove() {
+    String parentId = postParentWithChild(firstResourceBId);
+    String childId = postNewChild();
+
+    sendPatch("B", childId, Map.of(
+      "data",
+      Map.of("relationships",
+        Map.of("parent", Map.of("data", Map.of("type", "A", "id", parentId))), "type", "B")));
+    findChildById(childId).body("data.relationships.parent.data.id", Matchers.is(parentId));
+
+    HashMap<String, Object> empty = new HashMap<>();
+    empty.put("data", null);
+    sendPatch("B", childId, Map.of(
+      "data",
+      Map.of("relationships", Map.of("parent", empty), "type", "B")));
+    findChildById(childId).body("data.relationships.parent.data", Matchers.nullValue());
+    findParentById(parentId)
+      .body("data.relationships.children.data", Matchers.hasSize(1))
+      .body("data.relationships.children.data[0].id", Matchers.is(firstResourceBId));
   }
 
   @Test
@@ -344,6 +367,11 @@ class OneToManyHibernateHelperTest extends BaseRestAssuredTest {
       @Override
       protected void preCreate(Child entity) {
         entity.setUuid(UUID.randomUUID());
+      }
+
+      @Override
+      protected void preUpdate(Child entity) {
+        super.preUpdate(entity);
       }
     }
 
