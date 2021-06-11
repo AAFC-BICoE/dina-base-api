@@ -1,8 +1,9 @@
 package ca.gc.aafc.dina.security;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
-public class PriorityComparator implements Comparator<DinaRole> {
+public class PriorityComparator implements Comparator<DinaRole>, Serializable {
 
   @Override
   public int compare(DinaRole firstDinaRole, DinaRole secondDinaRole) {
