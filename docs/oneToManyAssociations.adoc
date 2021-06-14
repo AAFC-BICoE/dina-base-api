@@ -41,7 +41,7 @@ OneToManyFieldHandlers can handle parent/child associations for a single field.
 
 If you cannot extend the OneToManyDinaService or need to handle associations outside of this class, you can always use the OneToManyFieldHandlers directly.
 
-After creating the OneToManyFieldHandlers for a single field, 3 methods will be provided to allow you to resolve associations for common create/update/delete operations.
+After creating the OneToManyFieldHandler for a single field, 3 methods will be provided to allow you to resolve associations for common create/update/delete operations.
 
 [source,java]
 ----
