@@ -17,6 +17,7 @@ import org.springframework.validation.Errors;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
+import ca.gc.aafc.dina.i18n.MultilingualDescription.MultilingualPair;
 
 @SpringBootTest(classes = TestDinaBaseApp.class,
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -27,14 +28,18 @@ public class MultilingualDescriptionValidatorTest {
 
   @Test
   void  validate_WhenValidMultilingualDescription_NoExceptionThrown() {
-    List<Map<String, String>> multilingualPair = new ArrayList<Map<String, String>>() {
-      {
-        add(Map.of("lang", "fr", "desc", "description en Français"));
-        add(Map.of("lang", "en", "desc", "description in English"));
-      }
-    };
+    MultilingualPair multilingualPair_fr = MultilingualPair.builder()
+      .desc("description en français")
+      .lang("fr")
+      .build();
+
+    MultilingualPair multilingualPair_en = MultilingualPair.builder()
+      .desc("description in English")
+      .lang("en")
+      .build();;
+
     MultilingualDescription multilingualDescription = MultilingualDescription.builder()
-      .multilingualPair(multilingualPair)
+      .descriptions(List.of(multilingualPair_fr, multilingualPair_en))
       .build();
 
 
@@ -47,15 +52,14 @@ public class MultilingualDescriptionValidatorTest {
 
   @Test
   void  validate_WhenInvalidValidMultilingualDescription_ExceptionThrown() {
-    List<Map<String, String>> multilingualPair = new ArrayList<Map<String, String>>() {
-      {
-        add(Map.of("lang", "es", "desc", "description en español"));
-      }
-    };
-    MultilingualDescription multilingualDescription = MultilingualDescription.builder()
-      .multilingualPair(multilingualPair)
+    MultilingualPair multilingualPair_es = MultilingualPair.builder()
+      .desc("description en español")
+      .lang("es")
       .build();
 
+    MultilingualDescription multilingualDescription = MultilingualDescription.builder()
+      .descriptions(List.of(multilingualPair_es))
+      .build();
 
     Errors errors = new BeanPropertyBindingResult(multilingualDescription, MultilingualDescription.class.getSimpleName());
     multilingualDescriptionValidator.validate(multilingualDescription, errors);

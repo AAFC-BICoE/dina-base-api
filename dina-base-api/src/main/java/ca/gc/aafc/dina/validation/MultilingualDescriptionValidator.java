@@ -13,13 +13,13 @@ import org.springframework.validation.Validator;
 
 import ca.gc.aafc.dina.SupportedLanguagesConfiguration;
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
+import ca.gc.aafc.dina.i18n.MultilingualDescription.MultilingualPair;
 import lombok.NonNull;
 
 @Component
 public class MultilingualDescriptionValidator implements Validator {
 
-  private static final String UNSUPPORT_LANGUAGE = "managedAttribute.value.invalid";
-  private static final String VALIDATOR_TARGET_TYPE_INVALID = "validator.target.type.invalid";
+  private static final String UNSUPPORT_LANGUAGE = "multilingual.description.unsupported";
 
   private final SupportedLanguagesConfiguration supportedLanguagesConfiguration;
   private final MessageSource messageSource;
@@ -42,16 +42,16 @@ public class MultilingualDescriptionValidator implements Validator {
     checkIncomingParameter(target);
     MultilingualDescription multilingualDescription = (MultilingualDescription) target;
     List<String> supportedLanguages = supportedLanguagesConfiguration.getSupportedLanguages();
-    for (Map<String, String> map : multilingualDescription.getMultilingualPair()) {
-      if (!supportedLanguages.contains(map.get("lang"))) {
-        errors.reject(UNSUPPORT_LANGUAGE, messageSource.getMessage(UNSUPPORT_LANGUAGE, null, LocaleContextHolder.getLocale()));
+    for (MultilingualPair multilingualPair : multilingualDescription.getDescriptions()) {
+      if (!supportedLanguages.contains(multilingualPair.getLang())) {
+        errors.reject(UNSUPPORT_LANGUAGE, messageSource.getMessage(UNSUPPORT_LANGUAGE, new Object[] {multilingualPair.getLang()}, LocaleContextHolder.getLocale()));
       }
     }    
   }
 
   private void checkIncomingParameter(Object target) {
     if (!supports(target.getClass())) {
-      throw new IllegalArgumentException(messageSource.getMessage(VALIDATOR_TARGET_TYPE_INVALID, new Object[] {Map.class.getSimpleName()}, LocaleContextHolder.getLocale()));
+      throw new IllegalArgumentException("this validator can only validate the type: " + Map.class.getSimpleName());
     }
 
   }

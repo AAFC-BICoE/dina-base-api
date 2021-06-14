@@ -22,7 +22,6 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
   private static final String MANAGED_ATTRIBUTE_INVALID_VALUE = "managedAttribute.value.invalid";
   private static final String MANAGED_ATTRIBUTE_INVALID_KEY = "managedAttribute.key.invalid";
-  private static final String VALIDATOR_TARGET_TYPE_INVALID = "validator.target.type.invalid";
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
   private final ManagedAttributeService<E> dinaService;
@@ -84,7 +83,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
   private void checkIncomingParameter(Object target) {
     if (!supports(target.getClass())) {
-      throw new IllegalArgumentException(messageSource.getMessage(VALIDATOR_TARGET_TYPE_INVALID, new Object[] {Map.class.getSimpleName()}, LocaleContextHolder.getLocale()));
+      throw new IllegalArgumentException("this validator can only validate the type: " + Map.class.getSimpleName());
     }
     ((Map<?, ?>) target).forEach((o, o2) -> {
       if (!String.class.isAssignableFrom(o.getClass()) || !String.class.isAssignableFrom(o2.getClass())) {
