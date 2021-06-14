@@ -17,6 +17,15 @@ public final class OneToManyHibernateHelper {
   private OneToManyHibernateHelper() {
   }
 
+  /**
+   * Helper method to apply the given parent apply method to a list of children.
+   *
+   * @param children          children to apply parent too
+   * @param parent            parent to apply
+   * @param parentApplyMethod method to apply the parent to the children
+   * @param <C>               Child type
+   * @param <P>               Parent type
+   */
   public static <C, P> void linkChildren(
     List<C> children,
     P parent,
