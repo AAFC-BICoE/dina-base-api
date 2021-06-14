@@ -71,14 +71,14 @@ class DinaPermissionEvaluatorTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"group1", "GROUP1", "   group1   "})
-  void hasDinaRoleInGroup_hasRoleAndGroup_returnsTrue(String group) {
+  void hasGroupAndRolePermissions_hasRoleAndGroup_returnsTrue(String group) {
     DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.COLLECTION_MANAGER);
     Assertions.assertTrue(evaluator.hasGroupAndRolePermissions(user, "collection_manager",
       Person.builder().group(group).build()));
   }
 
   @Test
-  void hasDinaRoleInGroup_hasRoleButNoGroup_returnsTrue() {
+  void hasGroupAndRolePermissions_hasRoleButNoGroup_returnsTrue() {
     DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.COLLECTION_MANAGER);
     Assertions.assertFalse(evaluator.hasGroupAndRolePermissions(user, "collection_manager",
       Person.builder().group("invalid group").build()));
@@ -86,7 +86,7 @@ class DinaPermissionEvaluatorTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"group1", "GROUP1", "   group1   "})
-  void hasDinaRoleInGroup_hasGroupButNoRole_returnsTrue(String group) {
+  void hasGroupAndRolePermissions_hasGroupButNoRole_returnsTrue(String group) {
     DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.COLLECTION_MANAGER);
     Assertions.assertFalse(evaluator.hasGroupAndRolePermissions(user, "staff",
       Person.builder().group(group).build()));
@@ -94,7 +94,7 @@ class DinaPermissionEvaluatorTest {
 
   @ParameterizedTest
   @NullAndEmptySource
-  void hasDinaRoleInGroup_BlankRole_returnsFalse(String role) {
+  void hasGroupAndRolePermissions_BlankRole_returnsFalse(String role) {
     DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STAFF);
     Assertions.assertFalse(evaluator.hasGroupAndRolePermissions(user, role,
       Person.builder().group(GROUP_1).build()));
@@ -102,7 +102,7 @@ class DinaPermissionEvaluatorTest {
 
   @ParameterizedTest
   @NullAndEmptySource
-  void hasDinaRoleInGroup_BlankGroup_returnsFalse(String group) {
+  void hasGroupAndRolePermissions_BlankGroup_returnsFalse(String group) {
     DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STAFF);
     Assertions.assertFalse(evaluator.hasGroupAndRolePermissions(user, "staff",
       Person.builder().group(group).build()));
