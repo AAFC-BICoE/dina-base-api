@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.security.spring;
 
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import ca.gc.aafc.dina.security.DinaRole;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.Assertions;
@@ -15,15 +14,14 @@ import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.mockito.Answers;
 import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DinaPermissionEvaluatorTest {
 
+  public static final String GROUP_1 = "group1";
   private DinaPermissionEvaluator evaluator;
 
   @BeforeEach
@@ -70,6 +68,40 @@ class DinaPermissionEvaluatorTest {
       .build(), "role"));
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {"group1", "GROUP1", "   group1   "})
+  void hasDinaRoleInGroup_hasRoleAndGroup_returnsTrue(String group) {
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.COLLECTION_MANAGER);
+    Assertions.assertTrue(evaluator.hasDinaRoleInGroup(user, "collection_manager", group));
+  }
+
+  @Test
+  void hasDinaRoleInGroup_hasRoleButNoGroup_returnsTrue() {
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.COLLECTION_MANAGER);
+    Assertions.assertFalse(evaluator.hasDinaRoleInGroup(user, "collection_manager", "invalid group"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"group1", "GROUP1", "   group1   "})
+  void hasDinaRoleInGroup_hasGroupButNoRole_returnsTrue(String group) {
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.COLLECTION_MANAGER);
+    Assertions.assertFalse(evaluator.hasDinaRoleInGroup(user, "staff", group));
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  void hasDinaRoleInGroup_BlankRole_returnsFalse(String role) {
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STAFF);
+    Assertions.assertFalse(evaluator.hasDinaRoleInGroup(user, role, GROUP_1));
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  void hasDinaRoleInGroup_BlankGroup_returnsFalse(String group) {
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STAFF);
+    Assertions.assertFalse(evaluator.hasDinaRoleInGroup(user, "staff", group));
+  }
+
   @Test
   void dinaRolePriorityComparison(){
 
@@ -84,7 +116,7 @@ class DinaPermissionEvaluatorTest {
   private static DinaAuthenticatedUser getDinaAuthenticatedUser(DinaRole dinaRole) {
     return DinaAuthenticatedUser.builder()
       .username("name")
-      .rolesPerGroup(ImmutableMap.of("group1", ImmutableSet.of(dinaRole)))
+      .rolesPerGroup(ImmutableMap.of(GROUP_1, ImmutableSet.of(dinaRole)))
       .build();
   }
 }
