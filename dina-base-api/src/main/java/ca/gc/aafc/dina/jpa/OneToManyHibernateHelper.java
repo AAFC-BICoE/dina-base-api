@@ -12,6 +12,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Helper class to resolve one to many relations for Parent resources.
+ */
 public final class OneToManyHibernateHelper {
 
   private OneToManyHibernateHelper() {
