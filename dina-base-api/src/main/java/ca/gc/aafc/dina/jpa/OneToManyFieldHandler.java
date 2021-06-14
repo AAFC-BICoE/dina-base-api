@@ -16,7 +16,7 @@ import java.util.function.Function;
  * @param <P> Parent type
  */
 @RequiredArgsConstructor
-public class OneToManyFieldHandler<C extends DinaEntity, P> {
+public class OneToManyFieldHandler<P, C extends DinaEntity> {
 
   /* Class type of the child resource */
   private final Class<C> childClassType;
