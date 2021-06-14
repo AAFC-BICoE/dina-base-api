@@ -35,7 +35,7 @@ public class BaseRestAssuredTest {
   public static final String JSON_API_CONTENT_TYPE = "application/vnd.api+json";
   public static final String JSON_PATCH_CONTENT_TYPE = "application/json-patch+json";
 
-  private static final Header CRNK_HEADER = new Header("crnk-compact", "true");
+  protected static final Header CRNK_HEADER = new Header("crnk-compact", "true");
   private static final String CRNK_OPERATION_ENDPOINT = "operations";
 
   @LocalServerPort

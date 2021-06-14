@@ -11,7 +11,6 @@ import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
-import io.restassured.http.Header;
 import io.restassured.response.ValidatableResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,7 +54,6 @@ import static io.restassured.RestAssured.given;
 @Transactional
 class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
-  private static final Header CRNK_HEADER = new Header("crnk-compact", "true");
   public static final String PARENT_TYPE_NAME = "A";
   public static final String CHILD_TYPE_NAME = "B";
   private String firstResourceBId;
