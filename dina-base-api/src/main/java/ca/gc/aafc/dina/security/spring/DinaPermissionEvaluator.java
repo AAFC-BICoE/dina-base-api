@@ -93,29 +93,37 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
   }
 
   /**
-   * returns true if the given user has a given role in the given group.
+   * Returns true if the given authenticated user is a member of the group the given target object belongs to
+   * and also has the given role for that group.
    *
-   * @param user  user with roles
-   * @param role  role to check for
-   * @param group group to check
+   * @param user               user with roles
+   * @param role               role to check for
+   * @param targetDomainObject Target resource of the request
    * @return true if the given user has a given role in the given group.
    */
-  public boolean hasDinaRoleInGroup(DinaAuthenticatedUser user, String role, String group) {
-    if (user == null || StringUtils.isBlank(role) || StringUtils.isBlank(group)) {
+  public boolean hasGroupAndRolePermissions(
+    DinaAuthenticatedUser user,
+    String role,
+    Object targetDomainObject
+  ) {
+    if (user == null || StringUtils.isBlank(role) || !(targetDomainObject instanceof DinaEntity)) {
       return false;
     }
 
-    String sanitizedGroup = group.strip();
-
     Map<String, Set<DinaRole>> rolesPerGroup = user.getRolesPerGroup();
-    if (MapUtils.isEmpty(rolesPerGroup)
-      || rolesPerGroup.keySet().stream().noneMatch(key -> key.equalsIgnoreCase(sanitizedGroup))) {
+    if (MapUtils.isEmpty(rolesPerGroup)) {
+      return false;
+    }
+
+    String group = ((DinaEntity) targetDomainObject).getGroup();
+    if (StringUtils.isBlank(group)
+      || rolesPerGroup.keySet().stream().noneMatch(key -> key.equalsIgnoreCase(group.strip()))) {
       return false;
     }
 
     return rolesPerGroup.entrySet()
       .stream()
-      .filter(entry -> entry.getKey().equalsIgnoreCase(sanitizedGroup))
+      .filter(entry -> entry.getKey().equalsIgnoreCase(group.strip()))
       .map(Map.Entry::getValue)
       .flatMap(Set::stream)
       .anyMatch(dinaRole -> dinaRole.name().equalsIgnoreCase(role.strip()));
