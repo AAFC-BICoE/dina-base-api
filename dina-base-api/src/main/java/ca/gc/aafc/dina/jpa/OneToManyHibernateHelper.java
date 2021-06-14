@@ -40,10 +40,10 @@ public final class OneToManyHibernateHelper {
    * Helper method to handle orphaned resources. Runs the orphan handler on the given list of currentChildren
    * that are not present in the given incomingChildren.
    *
-   * @param currentChildren current children to evaluate
+   * @param currentChildren  current children to evaluate
    * @param incomingChildren incoming children to evaluate
-   * @param orphanHandler consumer to handle the evaluated orphans
-   * @param <E> Child type
+   * @param orphanHandler    consumer to handle the evaluated orphans
+   * @param <E>              Child type
    */
   public static <E extends DinaEntity> void handleOrphans(
     List<E> currentChildren,
@@ -62,14 +62,24 @@ public final class OneToManyHibernateHelper {
     });
   }
 
+  /**
+   * Finds a List of resources with a given parent object.
+   *
+   * @param classType  type of resource
+   * @param parentFieldName name of the parent field
+   * @param parentObj  parent object of the resource
+   * @param service    database service to use
+   * @param <T>        resource type
+   * @return List of resources with a given parent object.
+   */
   public static <T> List<T> findByParent(
     Class<T> classType,
-    String parentName,
+    String parentFieldName,
     Object parentObj,
     DinaService<?> service
   ) {
     return service.findAll(classType, (criteriaBuilder, storageUnitRoot) -> new Predicate[]{
-      criteriaBuilder.equal(storageUnitRoot.get(parentName), parentObj)
+      criteriaBuilder.equal(storageUnitRoot.get(parentFieldName), parentObj)
     }, null, 0, Integer.MAX_VALUE);
   }
 }
