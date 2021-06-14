@@ -36,19 +36,28 @@ public final class OneToManyHibernateHelper {
     }
   }
 
+  /**
+   * Helper method to handle orphaned resources. Runs the orphan handler on the given list of currentChildren
+   * that are not present in the given incomingChildren.
+   *
+   * @param currentChildren current children to evaluate
+   * @param incomingChildren incoming children to evaluate
+   * @param orphanHandler consumer to handle the evaluated orphans
+   * @param <E> Child type
+   */
   public static <E extends DinaEntity> void handleOrphans(
-    List<E> oldChildren,
-    List<E> newChildren,
-    Consumer<E> orphanConsumer
+    List<E> currentChildren,
+    List<E> incomingChildren,
+    Consumer<E> orphanHandler
   ) {
-    Map<UUID, E> oldChildrenById = oldChildren == null ? Map.of() : oldChildren.stream()
+    Map<UUID, E> oldChildrenById = currentChildren == null ? Map.of() : currentChildren.stream()
       .collect(Collectors.toMap(DinaEntity::getUuid, Function.identity()));
-    Map<UUID, E> newChildrenByID = newChildren == null ? Map.of() : newChildren.stream()
+    Map<UUID, E> newChildrenByID = incomingChildren == null ? Map.of() : incomingChildren.stream()
       .collect(Collectors.toMap(DinaEntity::getUuid, Function.identity()));
 
     oldChildrenById.forEach((uuid, dinaEntity) -> {
       if (!newChildrenByID.containsKey(uuid)) {
-        orphanConsumer.accept(dinaEntity);
+        orphanHandler.accept(dinaEntity);
       }
     });
   }
