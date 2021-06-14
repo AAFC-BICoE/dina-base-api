@@ -18,10 +18,19 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class OneToManyFieldHandler<C extends DinaEntity, P> {
 
+  /* Class type of the child resource */
   private final Class<C> childClassType;
+
+  /* Method to apply the parent to the child */
   private final Function<C, Consumer<P>> parentApplyMethod;
+
+  /* Method to supply the children from the parent */
   private final Function<P, List<C>> childSupplyMethod;
+
+  /* field name of the parent on the child class */
   private final String parentFieldName;
+
+  /* Method to handle orphaned children of the parent resource */
   private final Consumer<C> orphanHandler;
 
   /**
