@@ -116,17 +116,18 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
     }
 
     String group = ((DinaEntity) targetDomainObject).getGroup();
-    if (StringUtils.isBlank(group)
-      || rolesPerGroup.keySet().stream().noneMatch(key -> key.equalsIgnoreCase(group.strip()))) {
+    if (StringUtils.isBlank(group)) {
       return false;
     }
 
-    return rolesPerGroup.entrySet()
-      .stream()
-      .filter(entry -> entry.getKey().equalsIgnoreCase(group.strip()))
-      .map(Map.Entry::getValue)
-      .flatMap(Set::stream)
-      .anyMatch(dinaRole -> dinaRole.name().equalsIgnoreCase(role.strip()));
+    for (Map.Entry<String, Set<DinaRole>> rolePerGroup : rolesPerGroup.entrySet()) {
+      if (rolePerGroup.getKey().equalsIgnoreCase(group.strip())) {
+        return rolePerGroup.getValue()
+          .stream().anyMatch(dinaRole -> dinaRole.name().equalsIgnoreCase(role.strip()));
+      }
+    }
+
+    return false;
   }
 
   @Override
