@@ -20,10 +20,10 @@ public final class OneToManyHibernateHelper {
   public static <C, P> void linkChildren(
     List<C> children,
     P parent,
-    Function<C, Consumer<P>> childParentSetter
+    Function<C, Consumer<P>> parentApplyMethod
   ) {
     if (CollectionUtils.isNotEmpty(children)) {
-      children.forEach(c -> childParentSetter.apply(c).accept(parent));
+      children.forEach(c -> parentApplyMethod.apply(c).accept(parent));
     }
   }
 
