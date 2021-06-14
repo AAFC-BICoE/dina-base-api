@@ -4,6 +4,8 @@ There is some common functionality the currently needs to be run to resolve asso
 
 This documentation will provide the current strategies used in dina base to help resolve child/parent associations.
 
+Basic information around Hibernates requirements for Bi directional associations : https://vladmihalcea.com/the-best-way-to-map-a-onetomany-association-with-jpa-and-hibernate/[Article]
+
 == Using the OneToManyDinaService
 
 The simplest way would be to extend the OneToManyDinaService. After extending a OneToManyDinaService, the constructor will require you to supply a list of OneToManyFieldHandler as shown in the example service below.
