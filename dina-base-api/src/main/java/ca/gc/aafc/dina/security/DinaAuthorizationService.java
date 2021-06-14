@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.service;
+package ca.gc.aafc.dina.security;
 
 public interface DinaAuthorizationService {
 
