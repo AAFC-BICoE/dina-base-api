@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.security;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
@@ -26,9 +27,8 @@ public enum DinaRole {
   private final String keycloakRoleName;
   
   /**
-   * priority used in comparator, lower number = higher priority
+   * Priority of the role, lower number = higher priority
    */
-  @Getter
   private final int priority;
 
   /**
@@ -46,15 +46,12 @@ public enum DinaRole {
     return Optional.empty();
   }
 
-  public boolean isHigherThan(DinaRole dinaRole) {
-    return this.getPriority() < dinaRole.getPriority();
+  public boolean isHigherThan(@NonNull DinaRole dinaRole) {
+    return priority < dinaRole.priority;
   }
 
-  public boolean isHigherOrEqualThan(DinaRole dinaRole) {
-    return this.getPriority() <= dinaRole.getPriority();
+  public boolean isHigherOrEqualThan(@NonNull DinaRole dinaRole) {
+    return priority <= dinaRole.priority;
   }
-
-
-
 
 }

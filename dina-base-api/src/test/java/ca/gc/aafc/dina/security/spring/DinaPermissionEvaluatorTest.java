@@ -71,7 +71,7 @@ class DinaPermissionEvaluatorTest {
   }
 
   @Test
-  void dinaRolePriorityComparator(){
+  void dinaRolePriorityComparison(){
 
     assertTrue(DinaRole.COLLECTION_MANAGER.isHigherThan(DinaRole.STUDENT));
     assertTrue(DinaRole.COLLECTION_MANAGER.isHigherOrEqualThan(DinaRole.COLLECTION_MANAGER));
