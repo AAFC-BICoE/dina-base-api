@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.filter;
 
+import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import com.github.tennaito.rsql.jpa.JpaPredicateVisitor;
 import com.github.tennaito.rsql.misc.ArgumentParser;
@@ -10,6 +11,7 @@ import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
+import io.crnk.core.queryspec.SortSpec;
 import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -115,6 +117,34 @@ public class DinaFilterResolver {
   }
 
   /**
+   * Convenience method that Left joins a list of given sorting specs if the sorting specs attribute is a
+   * valid internal relation tracked by the given set of relations.
+   *
+   * @param root      the root type
+   * @param sorts     list of sorting specs
+   * @param relations tracked set of internal relations
+   * @param <E>       Dina entity type
+   */
+  public static <E extends DinaEntity> void leftJoinOrders(
+    Root<E> root,
+    List<SortSpec> sorts,
+    Set<DinaMappingRegistry.InternalRelation> relations
+  ) {
+    if (CollectionUtils.isEmpty(sorts) || root == null || CollectionUtils.isEmpty(relations)) {
+      return;
+    }
+
+    sorts.forEach(sortSpec -> {
+      if (CollectionUtils.isNotEmpty(sortSpec.getAttributePath())) {
+        String attribute = sortSpec.getAttributePath().get(0);
+        if (relations.stream().anyMatch(ir -> ir.getName().equalsIgnoreCase(attribute))) {
+          root.fetch(attribute, JoinType.LEFT);
+        }
+      }
+    });
+  }
+
+  /**
    * Returns an array of predicates by mapping crnk filters into JPA restrictions with a given querySpec,
    * criteria builder, root, ids, and id field name.
    *
@@ -166,33 +196,14 @@ public class DinaFilterResolver {
    * @param root - root path of entity
    * @return a list of {@link Order} from a given {@link CriteriaBuilder} and {@link Path}
    */
-  public static <T> List<Order> getOrders(
-    QuerySpec qs,
-    CriteriaBuilder cb,
-    Root<T> root,
-    Set<DinaMappingRegistry.InternalRelation> mappableRelationsPerClass
-  ) {
+  public static <T> List<Order> getOrders(QuerySpec qs, CriteriaBuilder cb, Path<T> root) {
     return qs.getSort().stream().map(sort -> {
-      leftJoinIfRelation(root, mappableRelationsPerClass, sort);
       Path<T> from = root;
       for (String path : sort.getAttributePath()) {
         from = from.get(path);
       }
       return sort.getDirection() == Direction.ASC ? cb.asc(from) : cb.desc(from);
     }).collect(Collectors.toList());
-  }
-
-  private static <T> void leftJoinIfRelation(
-    Root<T> root,
-    Set<DinaMappingRegistry.InternalRelation> mappableRelationsPerClass,
-    io.crnk.core.queryspec.SortSpec sort
-  ) {
-    if (CollectionUtils.isNotEmpty(sort.getAttributePath())) {
-      String attribute = sort.getAttributePath().get(0);
-      if (mappableRelationsPerClass.stream().anyMatch(ir -> ir.getName().equalsIgnoreCase(attribute))) {
-        root.fetch(attribute, JoinType.LEFT);
-      }
-    }
   }
 
   /**

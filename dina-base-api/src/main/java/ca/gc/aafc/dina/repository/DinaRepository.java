@@ -204,11 +204,12 @@ public class DinaRepository<D, E extends DinaEntity>
     return dinaService.findAll(
       entityClass,
       (criteriaBuilder, root, em) -> {
+        DinaFilterResolver.leftJoinOrders(root, querySpec.getSort(),
+          registry.findMappableRelationsForClass(querySpec.getResourceClass()));
         DinaFilterResolver.eagerLoadRelations(root, relationsToEagerLoad);
         return filterResolver.buildPredicates(querySpec, criteriaBuilder, root, ids, idName, em);
       },
-      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root,
-        registry.findMappableRelationsForClass(querySpec.getResourceClass())),
+      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
       Math.toIntExact(querySpec.getOffset()),
       Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
   }
