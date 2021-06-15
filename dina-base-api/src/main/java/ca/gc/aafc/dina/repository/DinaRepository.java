@@ -207,7 +207,8 @@ public class DinaRepository<D, E extends DinaEntity>
         DinaFilterResolver.eagerLoadRelations(root, relationsToEagerLoad);
         return filterResolver.buildPredicates(querySpec, criteriaBuilder, root, ids, idName, em);
       },
-      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
+      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root,
+        registry.findMappableRelationsForClass(querySpec.getResourceClass())),
       Math.toIntExact(querySpec.getOffset()),
       Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
   }

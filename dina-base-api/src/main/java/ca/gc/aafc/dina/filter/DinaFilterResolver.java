@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -165,14 +166,33 @@ public class DinaFilterResolver {
    * @param root - root path of entity
    * @return a list of {@link Order} from a given {@link CriteriaBuilder} and {@link Path}
    */
-  public static <T> List<Order> getOrders(QuerySpec qs, CriteriaBuilder cb, Path<T> root) {
+  public static <T> List<Order> getOrders(
+    QuerySpec qs,
+    CriteriaBuilder cb,
+    Root<T> root,
+    Set<DinaMappingRegistry.InternalRelation> mappableRelationsPerClass
+  ) {
     return qs.getSort().stream().map(sort -> {
+      leftJoinIfRelation(root, mappableRelationsPerClass, sort);
       Path<T> from = root;
       for (String path : sort.getAttributePath()) {
         from = from.get(path);
       }
       return sort.getDirection() == Direction.ASC ? cb.asc(from) : cb.desc(from);
     }).collect(Collectors.toList());
+  }
+
+  private static <T> void leftJoinIfRelation(
+    Root<T> root,
+    Set<DinaMappingRegistry.InternalRelation> mappableRelationsPerClass,
+    io.crnk.core.queryspec.SortSpec sort
+  ) {
+    if (CollectionUtils.isNotEmpty(sort.getAttributePath())) {
+      String attribute = sort.getAttributePath().get(0);
+      if (mappableRelationsPerClass.stream().anyMatch(ir -> ir.getName().equalsIgnoreCase(attribute))) {
+        root.fetch(attribute, JoinType.LEFT);
+      }
+    }
   }
 
   /**
