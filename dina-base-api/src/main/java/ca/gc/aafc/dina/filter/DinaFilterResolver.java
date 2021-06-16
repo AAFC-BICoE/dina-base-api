@@ -27,6 +27,7 @@ import javax.persistence.criteria.Root;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -117,31 +118,37 @@ public class DinaFilterResolver {
   }
 
   /**
-   * Convenience method that Left joins a list of given sorting specs if the sorting specs attribute is a
-   * valid internal relation tracked by the given set of relations.
+   * Convenience method to left join the given lists of relations. joins will not be duplicated if a relation
+   * appears in both lists.
    *
-   * @param root      the root type
-   * @param sorts     list of sorting specs
-   * @param relations tracked set of internal relations
-   * @param <E>       Dina entity type
+   * @param root                    root path of entity
+   * @param relationNames           list of relation names to join
+   * @param includedRelationsToJoin list of included relations to join
+   * @param <E>                     root entity type
    */
-  public static <E extends DinaEntity> void leftJoinOrders(
+  public static <E extends DinaEntity> void leftJoinRelations(
     Root<E> root,
-    List<SortSpec> sorts,
-    Set<DinaMappingRegistry.InternalRelation> relations
+    List<String> relationNames,
+    List<IncludeRelationSpec> includedRelationsToJoin
   ) {
-    if (CollectionUtils.isEmpty(sorts) || root == null || CollectionUtils.isEmpty(relations)) {
+    if (root == null) {
       return;
     }
 
-    sorts.forEach(sortSpec -> {
-      if (CollectionUtils.isNotEmpty(sortSpec.getAttributePath())) {
-        String attribute = sortSpec.getAttributePath().get(0);
-        if (relations.stream().anyMatch(ir -> ir.getName().equalsIgnoreCase(attribute))) {
-          root.fetch(attribute, JoinType.LEFT);
+    Set<String> visited = new HashSet<>();
+    if (CollectionUtils.isNotEmpty(includedRelationsToJoin)) {
+      DinaFilterResolver.eagerLoadRelations(root, includedRelationsToJoin);
+      visited.addAll(
+        includedRelationsToJoin.stream().map(ir -> ir.getAttributePath().get(0)).collect(Collectors.toSet()));
+    }
+
+    if (CollectionUtils.isNotEmpty(relationNames)) {
+      relationNames.forEach(sort -> {
+        if (visited.stream().noneMatch(sort::equalsIgnoreCase)) {
+          root.fetch(sort, JoinType.LEFT);
         }
-      }
-    });
+      });
+    }
   }
 
   /**
@@ -212,7 +219,7 @@ public class DinaFilterResolver {
    * @param root              - root path to add joins
    * @param includedRelations - relations to map
    */
-  public static void eagerLoadRelations(Root<?> root, List<IncludeRelationSpec> includedRelations) {
+  private static void eagerLoadRelations(Root<?> root, List<IncludeRelationSpec> includedRelations) {
     for (IncludeRelationSpec relation : includedRelations) {
       FetchParent<?, ?> join = root;
       for (String path : relation.getAttributePath()) {

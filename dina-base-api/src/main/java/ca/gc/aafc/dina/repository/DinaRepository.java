@@ -16,6 +16,7 @@ import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.QuerySpec;
+import io.crnk.core.queryspec.SortSpec;
 import io.crnk.core.repository.MetaRepository;
 import io.crnk.core.repository.ResourceRepository;
 import io.crnk.core.resource.list.DefaultResourceList;
@@ -31,13 +32,16 @@ import org.springframework.boot.info.BuildProperties;
 
 import javax.transaction.Transactional;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * JSONAPI repository that interfaces using DTOs, and uses JPA entities internally. Sparse fields
@@ -188,7 +192,31 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName) {
-    List<IncludeRelationSpec> relationsToEagerLoad = querySpec.getIncludedRelations().stream()
+    List<IncludeRelationSpec> includedRelationsToJoin = findIncludedRelationsToJoin(querySpec);
+    List<String> sortRelationsToJoin = findSortingRelationsToJoin(querySpec);
+
+    return dinaService.findAll(
+      entityClass,
+      (criteriaBuilder, root, em) -> {
+        DinaFilterResolver.leftJoinRelations(root, sortRelationsToJoin, includedRelationsToJoin);
+        return filterResolver.buildPredicates(querySpec, criteriaBuilder, root, ids, idName, em);
+      },
+      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
+      Math.toIntExact(querySpec.getOffset()),
+      Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
+  }
+
+  private List<String> findSortingRelationsToJoin(QuerySpec querySpec) {
+    Set<DinaMappingRegistry.InternalRelation> relations = registry.findMappableRelationsForClass(querySpec.getResourceClass());
+    return querySpec.getSort().stream()
+      .filter(sortSpec -> CollectionUtils.isNotEmpty(sortSpec.getAttributePath()) && relations.stream()
+        .anyMatch(ir -> ir.getName().equalsIgnoreCase(sortSpec.getAttributePath().get(0))))
+      .map(sortSpec -> sortSpec.getAttributePath().get(0))
+      .collect(Collectors.toList());
+  }
+
+  private List<IncludeRelationSpec> findIncludedRelationsToJoin(QuerySpec querySpec) {
+    return querySpec.getIncludedRelations().stream()
       .filter(ir -> {
         // Skip eager loading on JsonApiExternalRelation-marked fields:
         Class<?> dtoClass = querySpec.getResourceClass();
@@ -200,18 +228,6 @@ public class DinaRepository<D, E extends DinaEntity>
         }
         return true;
       }).collect(Collectors.toList());
-
-    return dinaService.findAll(
-      entityClass,
-      (criteriaBuilder, root, em) -> {
-        DinaFilterResolver.leftJoinOrders(root, querySpec.getSort(),
-          registry.findMappableRelationsForClass(querySpec.getResourceClass()));
-        DinaFilterResolver.eagerLoadRelations(root, relationsToEagerLoad);
-        return filterResolver.buildPredicates(querySpec, criteriaBuilder, root, ids, idName, em);
-      },
-      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
-      Math.toIntExact(querySpec.getOffset()),
-      Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
   }
 
   @Override
