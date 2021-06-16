@@ -135,36 +135,50 @@ public class DinaFilterResolver {
       return;
     }
 
-    List<IncludeRelationSpec> includedRelationsToJoin = findIncludedRelationsToJoin(querySpec, registry);
-    List<String> sortRelationsToJoin = findSortingRelationsToJoin(querySpec, registry);
+    List<IncludeRelationSpec> includedRelationsToJoin = findIncludedRelations(querySpec, registry);
+    List<List<String>> sortRelationsToJoin = findSortingRelations(querySpec, registry);
     Set<String> visited = new HashSet<>();
 
     if (CollectionUtils.isNotEmpty(includedRelationsToJoin)) {
       for (IncludeRelationSpec relation : includedRelationsToJoin) {
-        joinAttributePath(root, relation.getAttributePath());
-        visited.add(relation.getAttributePath().get(0));
+        if (CollectionUtils.isNotEmpty(relation.getAttributePath())) {
+          joinAttributePath(root, relation.getAttributePath());
+          visited.add(String.join(".", relation.getAttributePath()));
+        }
       }
     }
 
     if (CollectionUtils.isNotEmpty(sortRelationsToJoin)) {
-      sortRelationsToJoin.forEach(sort -> {
-        if (visited.stream().noneMatch(sort::equalsIgnoreCase)) {
-          root.fetch(sort, JoinType.LEFT);
+      for (List<String> sortRelationPath : sortRelationsToJoin) {
+        if (CollectionUtils.isNotEmpty(sortRelationPath)
+          && !visited.contains(String.join(".", sortRelationPath))) {
+          joinAttributePath(root, sortRelationPath);
         }
-      });
+      }
     }
   }
 
-  private static List<String> findSortingRelationsToJoin(QuerySpec querySpec, DinaMappingRegistry registry) {
-    Set<DinaMappingRegistry.InternalRelation> relations = registry.findMappableRelationsForClass(querySpec.getResourceClass());
-    return querySpec.getSort().stream()
-      .filter(sortSpec -> CollectionUtils.isNotEmpty(sortSpec.getAttributePath()) && relations.stream()
-        .anyMatch(ir -> ir.getName().equalsIgnoreCase(sortSpec.getAttributePath().get(0))))
-      .map(sortSpec -> sortSpec.getAttributePath().get(0))
-      .collect(Collectors.toList());
+  private static List<List<String>> findSortingRelations(QuerySpec querySpec, DinaMappingRegistry registry) {
+    List<List<String>> sortingRelationPaths = new ArrayList<>();
+    querySpec.getSort().forEach(sortSpec -> {
+      List<String> relationPath = new ArrayList<>();
+      Class<?> dtoClass = querySpec.getResourceClass();
+      for (String attr : sortSpec.getAttributePath()) {
+        if (hasMappableRelation(registry, dtoClass, attr)) {
+          relationPath.add(attr);
+          dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
+        } else {
+          break;
+        }
+      }
+      if (CollectionUtils.isNotEmpty(relationPath)) {
+        sortingRelationPaths.add(relationPath);
+      }
+    });
+    return sortingRelationPaths;
   }
 
-  private static List<IncludeRelationSpec> findIncludedRelationsToJoin(
+  private static List<IncludeRelationSpec> findIncludedRelations(
     QuerySpec querySpec,
     DinaMappingRegistry registry
   ) {
