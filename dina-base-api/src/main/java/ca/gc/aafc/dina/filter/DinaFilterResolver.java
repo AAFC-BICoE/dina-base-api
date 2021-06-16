@@ -135,31 +135,31 @@ public class DinaFilterResolver {
       return;
     }
 
-    List<IncludeRelationSpec> includedRelationsToJoin = findIncludedRelations(querySpec, registry);
-    List<List<String>> sortRelationsToJoin = findSortingRelations(querySpec, registry);
+    List<PathSpec> includedRelationsToJoin = findIncludedRelations(querySpec, registry);
+    List<PathSpec> sortRelationsToJoin = findSortingRelations(querySpec, registry);
     Set<String> visited = new HashSet<>();
 
     if (CollectionUtils.isNotEmpty(includedRelationsToJoin)) {
-      for (IncludeRelationSpec relation : includedRelationsToJoin) {
-        if (CollectionUtils.isNotEmpty(relation.getAttributePath())) {
-          joinAttributePath(root, relation.getAttributePath());
-          visited.add(String.join(".", relation.getAttributePath()));
+      for (PathSpec relation : includedRelationsToJoin) {
+        if (CollectionUtils.isNotEmpty(relation.getElements())) {
+          joinAttributePath(root, relation.getElements());
+          visited.add(relation.toString());
         }
       }
     }
 
     if (CollectionUtils.isNotEmpty(sortRelationsToJoin)) {
-      for (List<String> sortRelationPath : sortRelationsToJoin) {
-        if (CollectionUtils.isNotEmpty(sortRelationPath)
-          && !visited.contains(String.join(".", sortRelationPath))) {
-          joinAttributePath(root, sortRelationPath);
+      for (PathSpec sortRelationPath : sortRelationsToJoin) {
+        if (CollectionUtils.isNotEmpty(sortRelationPath.getElements())
+          && !visited.contains(sortRelationPath.toString())) {
+          joinAttributePath(root, sortRelationPath.getElements());
         }
       }
     }
   }
 
-  private static List<List<String>> findSortingRelations(QuerySpec querySpec, DinaMappingRegistry registry) {
-    List<List<String>> sortingRelationPaths = new ArrayList<>();
+  private static List<PathSpec> findSortingRelations(QuerySpec querySpec, DinaMappingRegistry registry) {
+    List<PathSpec> sortingRelationPaths = new ArrayList<>();
     querySpec.getSort().forEach(sortSpec -> {
       List<String> relationPath = new ArrayList<>();
       Class<?> dtoClass = querySpec.getResourceClass();
@@ -172,13 +172,13 @@ public class DinaFilterResolver {
         }
       }
       if (CollectionUtils.isNotEmpty(relationPath)) {
-        sortingRelationPaths.add(relationPath);
+        sortingRelationPaths.add(PathSpec.of(relationPath));
       }
     });
     return sortingRelationPaths;
   }
 
-  private static List<IncludeRelationSpec> findIncludedRelations(
+  private static List<PathSpec> findIncludedRelations(
     QuerySpec querySpec,
     DinaMappingRegistry registry
   ) {
@@ -192,7 +192,7 @@ public class DinaFilterResolver {
           dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
         }
         return true;
-      }).collect(Collectors.toList());
+      }).map(IncludeRelationSpec::getPath).collect(Collectors.toList());
   }
 
   /**
