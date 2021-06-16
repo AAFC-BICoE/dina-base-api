@@ -16,7 +16,6 @@ import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.QuerySpec;
-import io.crnk.core.queryspec.SortSpec;
 import io.crnk.core.repository.MetaRepository;
 import io.crnk.core.repository.ResourceRepository;
 import io.crnk.core.resource.list.DefaultResourceList;
@@ -32,7 +31,6 @@ import org.springframework.boot.info.BuildProperties;
 
 import javax.transaction.Transactional;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +39,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * JSONAPI repository that interfaces using DTOs, and uses JPA entities internally. Sparse fields
