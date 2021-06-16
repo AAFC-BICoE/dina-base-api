@@ -1,10 +1,9 @@
-package ca.gc.aafc.dina.service;
+package ca.gc.aafc.dina.security;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import ca.gc.aafc.dina.security.spring.DinaPermissionEvaluator;
 import ca.gc.aafc.dina.security.spring.MethodSecurityConfig;
 
