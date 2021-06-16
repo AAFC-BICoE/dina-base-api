@@ -18,8 +18,19 @@ import java.util.Objects;
 @SuppressFBWarnings({ "EI_EXPOSE_REP", "EI_EXPOSE_REP2" })
 public final class WorkbookConverter {
 
+  private static final String SUPPORTED_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
   // Utility class
   private WorkbookConverter() { }
+
+  /**
+   * Check if a mediaType is supported as source for the WorkbookConverter.
+   * @param mediaType
+   * @return
+   */
+  public boolean isSupported(String mediaType) {
+    return SUPPORTED_TYPE.equals(mediaType);
+  }
 
   /**
    * Converts the first sheet of a Workbook into a list of WorkbookRow.
