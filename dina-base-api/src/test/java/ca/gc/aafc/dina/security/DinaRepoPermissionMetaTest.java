@@ -10,7 +10,6 @@ import ca.gc.aafc.dina.repository.DinaRepositoryIT;
 import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
-import ca.gc.aafc.dina.service.DinaAdminOnlyAuthorizationService;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import io.crnk.core.engine.http.HttpRequestContext;
 import io.crnk.core.engine.http.HttpRequestContextProvider;
