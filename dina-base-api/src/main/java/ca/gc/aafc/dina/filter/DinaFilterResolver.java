@@ -11,7 +11,6 @@ import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
-import io.crnk.core.queryspec.SortSpec;
 import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
