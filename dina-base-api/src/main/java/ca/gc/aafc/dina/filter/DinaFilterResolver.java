@@ -138,10 +138,12 @@ public class DinaFilterResolver {
     List<IncludeRelationSpec> includedRelationsToJoin = findIncludedRelationsToJoin(querySpec, registry);
     List<String> sortRelationsToJoin = findSortingRelationsToJoin(querySpec, registry);
     Set<String> visited = new HashSet<>();
+
     if (CollectionUtils.isNotEmpty(includedRelationsToJoin)) {
-      DinaFilterResolver.eagerLoadRelations(root, includedRelationsToJoin);
-      visited.addAll(
-        includedRelationsToJoin.stream().map(ir -> ir.getAttributePath().get(0)).collect(Collectors.toSet()));
+      for (IncludeRelationSpec relation : includedRelationsToJoin) {
+        joinAttributePath(root, relation.getAttributePath());
+        visited.add(relation.getAttributePath().get(0));
+      }
     }
 
     if (CollectionUtils.isNotEmpty(sortRelationsToJoin)) {
@@ -254,18 +256,13 @@ public class DinaFilterResolver {
     }).collect(Collectors.toList());
   }
 
-  /**
-   * Adds left joins for eager Loading the relationships of a given query spec to a given root.
-   *
-   * @param root              - root path to add joins
-   * @param includedRelations - relations to map
-   */
-  private static void eagerLoadRelations(Root<?> root, List<IncludeRelationSpec> includedRelations) {
-    for (IncludeRelationSpec relation : includedRelations) {
-      FetchParent<?, ?> join = root;
-      for (String path : relation.getAttributePath()) {
-        join = join.fetch(path, JoinType.LEFT);
-      }
+  private static void joinAttributePath(Root<?> root, List<String> attributePath) {
+    if (root == null || CollectionUtils.isEmpty(attributePath)) {
+      return;
+    }
+    FetchParent<?, ?> join = root;
+    for (String path : attributePath) {
+      join = join.fetch(path, JoinType.LEFT);
     }
   }
 
