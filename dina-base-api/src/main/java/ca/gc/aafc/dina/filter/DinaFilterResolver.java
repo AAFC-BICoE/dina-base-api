@@ -2,16 +2,19 @@ package ca.gc.aafc.dina.filter;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
+import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import com.github.tennaito.rsql.jpa.JpaPredicateVisitor;
 import com.github.tennaito.rsql.misc.ArgumentParser;
 import cz.jirutka.rsql.parser.RSQLParser;
 import cz.jirutka.rsql.parser.ast.Node;
+import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -117,23 +120,25 @@ public class DinaFilterResolver {
   }
 
   /**
-   * Convenience method to left join the given lists of relations. joins will not be duplicated if a relation
-   * appears in both lists.
+   * Convenience method to left join relations that have been parsed from a given querySpec using a mapping
+   * registry.
    *
-   * @param root                    root path of entity
-   * @param relationNames           list of relation names to join
-   * @param includedRelationsToJoin list of included relations to join
-   * @param <E>                     root entity type
+   * @param <E>       root entity type
+   * @param root      root path of entity
+   * @param querySpec query spec to parse
+   * @param registry registry to use to determine relations
    */
   public static <E extends DinaEntity> void leftJoinRelations(
     Root<E> root,
-    List<String> relationNames,
-    List<IncludeRelationSpec> includedRelationsToJoin
+    @NonNull QuerySpec querySpec,
+    @NonNull DinaMappingRegistry registry
   ) {
     if (root == null) {
       return;
     }
 
+    List<IncludeRelationSpec> includedRelationsToJoin = findIncludedRelationsToJoin(querySpec);
+    List<String> sortRelationsToJoin = findSortingRelationsToJoin(querySpec, registry);
     Set<String> visited = new HashSet<>();
     if (CollectionUtils.isNotEmpty(includedRelationsToJoin)) {
       DinaFilterResolver.eagerLoadRelations(root, includedRelationsToJoin);
@@ -141,13 +146,37 @@ public class DinaFilterResolver {
         includedRelationsToJoin.stream().map(ir -> ir.getAttributePath().get(0)).collect(Collectors.toSet()));
     }
 
-    if (CollectionUtils.isNotEmpty(relationNames)) {
-      relationNames.forEach(sort -> {
+    if (CollectionUtils.isNotEmpty(sortRelationsToJoin)) {
+      sortRelationsToJoin.forEach(sort -> {
         if (visited.stream().noneMatch(sort::equalsIgnoreCase)) {
           root.fetch(sort, JoinType.LEFT);
         }
       });
     }
+  }
+
+  private static List<String> findSortingRelationsToJoin(QuerySpec querySpec, DinaMappingRegistry registry) {
+    Set<DinaMappingRegistry.InternalRelation> relations = registry.findMappableRelationsForClass(querySpec.getResourceClass());
+    return querySpec.getSort().stream()
+      .filter(sortSpec -> CollectionUtils.isNotEmpty(sortSpec.getAttributePath()) && relations.stream()
+        .anyMatch(ir -> ir.getName().equalsIgnoreCase(sortSpec.getAttributePath().get(0))))
+      .map(sortSpec -> sortSpec.getAttributePath().get(0))
+      .collect(Collectors.toList());
+  }
+
+  private static List<IncludeRelationSpec> findIncludedRelationsToJoin(QuerySpec querySpec) {
+    return querySpec.getIncludedRelations().stream()
+      .filter(ir -> {
+        // Skip eager loading on JsonApiExternalRelation-marked fields:
+        Class<?> dtoClass = querySpec.getResourceClass();
+        for (String attr : ir.getAttributePath()) {
+          if (isExternalRelation(dtoClass, attr)) {
+            return false;
+          }
+          dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
+        }
+        return true;
+      }).collect(Collectors.toList());
   }
 
   /**
@@ -240,6 +269,19 @@ public class DinaFilterResolver {
       rsqlNode = adapter.process(rsqlNode);
     }
     return rsqlNode;
+  }
+
+  /**
+   * Returns true if the given class has a given field with an annotation of a given type.
+   *
+   * @param <T>   - Class type
+   * @param clazz - class of the field
+   * @param field - field to check
+   * @return true if a dto field is generated and read-only
+   */
+  @SneakyThrows(NoSuchFieldException.class)
+  private static <T> boolean isExternalRelation(Class<T> clazz, String field) {
+    return clazz.getDeclaredField(field).isAnnotationPresent(JsonApiExternalRelation.class);
   }
 
 }
