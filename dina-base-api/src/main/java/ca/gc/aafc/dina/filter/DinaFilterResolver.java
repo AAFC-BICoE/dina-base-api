@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.filter;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
-import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import com.github.tennaito.rsql.jpa.JpaPredicateVisitor;
 import com.github.tennaito.rsql.misc.ArgumentParser;
 import cz.jirutka.rsql.parser.RSQLParser;
@@ -14,7 +13,6 @@ import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -137,7 +135,7 @@ public class DinaFilterResolver {
       return;
     }
 
-    List<IncludeRelationSpec> includedRelationsToJoin = findIncludedRelationsToJoin(querySpec);
+    List<IncludeRelationSpec> includedRelationsToJoin = findIncludedRelationsToJoin(querySpec, registry);
     List<String> sortRelationsToJoin = findSortingRelationsToJoin(querySpec, registry);
     Set<String> visited = new HashSet<>();
     if (CollectionUtils.isNotEmpty(includedRelationsToJoin)) {
@@ -164,19 +162,34 @@ public class DinaFilterResolver {
       .collect(Collectors.toList());
   }
 
-  private static List<IncludeRelationSpec> findIncludedRelationsToJoin(QuerySpec querySpec) {
+  private static List<IncludeRelationSpec> findIncludedRelationsToJoin(
+    QuerySpec querySpec,
+    DinaMappingRegistry registry
+  ) {
     return querySpec.getIncludedRelations().stream()
       .filter(ir -> {
-        // Skip eager loading on JsonApiExternalRelation-marked fields:
         Class<?> dtoClass = querySpec.getResourceClass();
         for (String attr : ir.getAttributePath()) {
-          if (isExternalRelation(dtoClass, attr)) {
+          if (!hasMappableRelation(registry, dtoClass, attr)) {
             return false;
           }
           dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
         }
         return true;
       }).collect(Collectors.toList());
+  }
+
+  /**
+   * Returns true if a given class has a given relation.
+   *
+   * @param registry registry to determine results
+   * @param aClass   class to evaluate
+   * @param relation relation to evaluate
+   * @return true if a given class has a given relation.
+   */
+  private static boolean hasMappableRelation(DinaMappingRegistry registry, Class<?> aClass, String relation) {
+    return registry.findMappableRelationsForClass(aClass)
+      .stream().anyMatch(rel -> rel.getName().equalsIgnoreCase(relation));
   }
 
   /**
@@ -269,19 +282,6 @@ public class DinaFilterResolver {
       rsqlNode = adapter.process(rsqlNode);
     }
     return rsqlNode;
-  }
-
-  /**
-   * Returns true if the given class has a given field with an annotation of a given type.
-   *
-   * @param <T>   - Class type
-   * @param clazz - class of the field
-   * @param field - field to check
-   * @return true if a dto field is generated and read-only
-   */
-  @SneakyThrows(NoSuchFieldException.class)
-  private static <T> boolean isExternalRelation(Class<T> clazz, String field) {
-    return clazz.getDeclaredField(field).isAnnotationPresent(JsonApiExternalRelation.class);
   }
 
 }
