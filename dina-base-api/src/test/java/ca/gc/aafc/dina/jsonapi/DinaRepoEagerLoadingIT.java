@@ -9,6 +9,7 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
+import ca.gc.aafc.dina.security.spring.SecurityChecker;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.service.OnCreate;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
@@ -162,8 +163,9 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     public DinaRepository<ChainDto, Chain> chainRepo(
       BaseDAO baseDAO,
       ChainDinaService chainDinaService,
-      ExternalResourceProvider externalResourceProvider
-      ) {
+      ExternalResourceProvider externalResourceProvider,
+      SecurityChecker securityChecker
+    ) {
       return new DinaRepository<>(
         chainDinaService,
         Optional.empty(),
@@ -171,14 +173,18 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
         new DinaMapper<>(ChainDto.class),
         ChainDto.class,
         Chain.class,
-        null, 
+        securityChecker, null,
         externalResourceProvider,
         new BuildProperties(new Properties())
       );
     }
 
     @Bean
-    public DinaRepository<ChainTemplateDto, ChainTemplate> TemplateRepo(BaseDAO baseDAO, TemplateDinaService templateDinaService) {
+    public DinaRepository<ChainTemplateDto, ChainTemplate> TemplateRepo(
+      BaseDAO baseDAO,
+      TemplateDinaService templateDinaService,
+      SecurityChecker securityChecker
+    ) {
       return new DinaRepository<>(
         templateDinaService,
         Optional.empty(),
@@ -186,7 +192,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
         new DinaMapper<>(ChainTemplateDto.class),
         ChainTemplateDto.class,
         ChainTemplate.class,
-        null,
+        securityChecker, null,
         null,
         new BuildProperties(new Properties())
       );

@@ -19,6 +19,7 @@ import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
 import ca.gc.aafc.dina.security.GroupAuthorizationService;
 import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
+import ca.gc.aafc.dina.security.spring.SecurityChecker;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaServiceTest.DinaServiceTestImplementation;
 
@@ -48,7 +49,11 @@ public class TestDinaBaseApp {
   private Optional<GroupAuthorizationService> groupAuthService;
 
   @Bean
-  public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO, DepartmentDinaService departmentDinaService) {
+  public DinaRepository<DepartmentDto, Department> departmentRepository(
+    BaseDAO baseDAO,
+    DepartmentDinaService departmentDinaService,
+    SecurityChecker securityChecker
+  ) {
     return new DinaRepository<>(
       departmentDinaService,
       Optional.empty(),
@@ -56,13 +61,17 @@ public class TestDinaBaseApp {
       new DinaMapper<>(DepartmentDto.class),
       DepartmentDto.class,
       Department.class,
-      null,
+      securityChecker, null,
       null,
       buildProperties());
   }
 
   @Bean
-  public DinaRepository<EmployeeDto, Employee> employeeRepository(BaseDAO baseDAO, EmployeeDinaService employeeDinaService) {
+  public DinaRepository<EmployeeDto, Employee> employeeRepository(
+    BaseDAO baseDAO,
+    EmployeeDinaService employeeDinaService,
+    SecurityChecker securityChecker
+  ) {
     return new DinaRepository<>(
       employeeDinaService,
       Optional.empty(),
@@ -70,7 +79,7 @@ public class TestDinaBaseApp {
       new DinaMapper<>(EmployeeDto.class),
       EmployeeDto.class,
       Employee.class,
-      null, 
+      securityChecker, null,
       null,
       buildProperties());
   }
@@ -88,7 +97,8 @@ public class TestDinaBaseApp {
   @Bean
   public DinaRepository<PersonDTO, Person> dinaRepository(
     DinaPersonService service,
-    Optional<AuditService> auditService
+    Optional<AuditService> auditService,
+    SecurityChecker securityChecker
   ) {
     DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(PersonDTO.class);
     return new DinaRepository<>(
@@ -98,13 +108,17 @@ public class TestDinaBaseApp {
       dinaMapper,
       PersonDTO.class,
       Person.class,
-      new DinaFilterResolver(new PersonRsqlAdapter()),
+      securityChecker, new DinaFilterResolver(new PersonRsqlAdapter()),
       null,
       buildProperties());
   }
 
   @Bean
-  public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(BaseDAO baseDAO, VocabularyDinaService vocabularyDinaService) {
+  public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(
+    BaseDAO baseDAO,
+    VocabularyDinaService vocabularyDinaService,
+    SecurityChecker securityChecker
+  ) {
     DinaMapper<VocabularyDto, Vocabulary> dinaMapper = new DinaMapper<>(VocabularyDto.class);
     return new ReadOnlyDinaRepository<>(
       vocabularyDinaService,
@@ -112,7 +126,7 @@ public class TestDinaBaseApp {
       VocabularyDto.class,
       Vocabulary.class,
       null,
-      buildProperties());
+      buildProperties(), securityChecker);
   }
 
   @Bean

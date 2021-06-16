@@ -5,6 +5,7 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.security.spring.SecurityChecker;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
@@ -71,7 +72,8 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
     @Bean
     public DinaRepository<ThingDTO, Thing> projectRepo(
       BaseDAO baseDAO,
-      ThingDinaService dinaService
+      ThingDinaService dinaService,
+      SecurityChecker securityChecker
     ) {
       Map<String, Object> warnings = new HashMap<>();
       warnings.put(KEY, VALUE);
@@ -82,7 +84,7 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
         Thing.class,
         thingDTO -> AttributeMetaInfoProvider.DinaJsonMetaInfo.builder()
           .warnings(warnings)
-          .build());
+          .build(), securityChecker);
     }
 
     @Service
@@ -150,7 +152,8 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
       DefaultDinaService<E> dinaService,
       Class<D> resourceClass,
       Class<E> entityClass,
-      Function<D, AttributeMetaInfoProvider.DinaJsonMetaInfo> handler
+      Function<D, AttributeMetaInfoProvider.DinaJsonMetaInfo> handler,
+      @NonNull SecurityChecker securityChecker
     ) {
       super(
         dinaService,
@@ -159,7 +162,7 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
         new DinaMapper<>(resourceClass),
         resourceClass,
         entityClass,
-        null,
+        securityChecker, null,
         null,
         new BuildProperties(new Properties()));
       this.handler = handler;

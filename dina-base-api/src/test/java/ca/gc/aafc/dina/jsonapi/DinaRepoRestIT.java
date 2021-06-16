@@ -11,6 +11,7 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
+import ca.gc.aafc.dina.security.spring.SecurityChecker;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIOperationBuilder;
@@ -287,7 +288,8 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     public DinaRepository<ProjectDTO, Project> projectRepo(
       BaseDAO baseDAO,
       ExternalResourceProvider externalResourceProvider,
-      ProjectDinaService projectDinaService
+      ProjectDinaService projectDinaService,
+      SecurityChecker securityChecker
     ) {
       return new DinaRepository<>(
         projectDinaService,
@@ -296,7 +298,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         new DinaMapper<>(ProjectDTO.class),
         ProjectDTO.class,
         Project.class,
-        null,
+        securityChecker, null,
         externalResourceProvider,
         new BuildProperties(new Properties())
       );
@@ -306,7 +308,8 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     public DinaRepository<TaskDTO, Task> taskRepo(
       BaseDAO baseDAO,
       ExternalResourceProvider externalResourceProvider,
-      TaskDinaService taskDinaService
+      TaskDinaService taskDinaService,
+      SecurityChecker securityChecker
     ) {
       return new DinaRepository<>(
         taskDinaService,
@@ -315,7 +318,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         new DinaMapper<>(TaskDTO.class),
         TaskDTO.class,
         Task.class,
-        null,
+        securityChecker, null,
         externalResourceProvider,
         new BuildProperties(new Properties())
       );

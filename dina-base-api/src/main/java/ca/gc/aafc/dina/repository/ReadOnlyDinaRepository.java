@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.repository;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.security.spring.SecurityChecker;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.exception.MethodNotAllowedException;
 import org.springframework.boot.info.BuildProperties;
@@ -24,7 +25,8 @@ public class ReadOnlyDinaRepository<D, E extends DinaEntity> extends DinaReposit
     Class<D> resourceClass,
     Class<E> entityClass,
     DinaFilterResolver filterResolver,
-    BuildProperties buildProperties
+    BuildProperties buildProperties,
+    SecurityChecker securityChecker
   ) {
     super(
       dinaService,
@@ -33,7 +35,7 @@ public class ReadOnlyDinaRepository<D, E extends DinaEntity> extends DinaReposit
       dinaMapper,
       resourceClass,
       entityClass,
-      filterResolver,
+      securityChecker, filterResolver,
       null,
       buildProperties);
   }

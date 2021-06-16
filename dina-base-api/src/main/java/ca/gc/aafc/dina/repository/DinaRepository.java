@@ -11,6 +11,7 @@ import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.security.DinaAuthorizationService;
+import ca.gc.aafc.dina.security.spring.SecurityChecker;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.engine.http.HttpRequestContextAware;
@@ -30,11 +31,13 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.transaction.Transactional;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -66,6 +69,7 @@ public class DinaRepository<D, E extends DinaEntity>
   private final Class<E> entityClass;
 
   private final DinaService<E> dinaService;
+  private final SecurityChecker securityChecker;
   private final Optional<DinaAuthorizationService> authorizationService;
   private final Optional<AuditService> auditService;
 
@@ -86,6 +90,7 @@ public class DinaRepository<D, E extends DinaEntity>
     @NonNull DinaMapper<D, E> dinaMapper,
     @NonNull Class<D> resourceClass,
     @NonNull Class<E> entityClass,
+    @NonNull SecurityChecker securityChecker,
     DinaFilterResolver filterResolver,
     ExternalResourceProvider externalResourceProvider,
     @NonNull BuildProperties buildProperties
@@ -95,6 +100,7 @@ public class DinaRepository<D, E extends DinaEntity>
     this.auditService = auditService;
     this.resourceClass = resourceClass;
     this.entityClass = entityClass;
+    this.securityChecker = securityChecker;
     this.filterResolver = Objects.requireNonNullElseGet(
       filterResolver, () -> new DinaFilterResolver(null));
     this.buildProperties = buildProperties;
@@ -197,13 +203,19 @@ public class DinaRepository<D, E extends DinaEntity>
     authorizationService.ifPresent(as -> {
       Set<String> permissions = new HashSet<>();
       providerList.forEach(p -> {
-        if (ifAccess(() -> as.authorizeCreate(p))) {
+        if (securityChecker.check(getPreAuthorizeExpression(
+          "authorizeCreate",
+          as.getClass().getSuperclass()))) {
           permissions.add("create");
         }
-        if (ifAccess(() -> as.authorizeDelete(p))) {
+        if (securityChecker.check(getPreAuthorizeExpression(
+          "authorizeUpdate",
+          as.getClass().getSuperclass()))) {
           permissions.add("delete");
         }
-        if (ifAccess(() -> as.authorizeUpdate(p))) {
+        if (securityChecker.check(getPreAuthorizeExpression(
+          "authorizeDelete",
+          as.getClass().getSuperclass()))) {
           permissions.add("update");
         }
         p.setMeta(AttributeMetaInfoProvider.DinaJsonMetaInfo.builder().permissions(permissions).build());
@@ -211,14 +223,12 @@ public class DinaRepository<D, E extends DinaEntity>
     });
   }
 
-  private boolean ifAccess(Runnable r) {//TODO placeholder implementation
-    try {
-      r.run();
-    } catch (AccessDeniedException e) {
-      return false;
-    }
-    return true;
+  private String getPreAuthorizeExpression(String methodName, Class<?> aClass) {
+    Method matchingMethod = MethodUtils.getMatchingMethod(aClass, methodName, Object.class);
+    PreAuthorize annotation = matchingMethod.getAnnotation(PreAuthorize.class);
+    return annotation.value();
   }
+
 
   /**
    * Convenience method to resolve the filters of a given query spec for {@link

@@ -8,6 +8,7 @@ import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT;
 import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
+import ca.gc.aafc.dina.security.spring.SecurityChecker;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
@@ -141,7 +142,8 @@ public class DinaRepoPermissionMetaTest {
       DinaAdminOnlyAuthorizationService authorizationService,
       BuildProperties buildProperties,
       BaseDAO baseDao,
-      DefaultDinaService<DinaRepoPermissionMetaTest.Item> defaultService
+      DefaultDinaService<Item> defaultService,
+      SecurityChecker securityChecker
     ) {
       DinaMapper<DinaRepoPermissionMetaTest.ItemDto, DinaRepoPermissionMetaTest.Item> dinaMapper = new DinaMapper<>(
         DinaRepoPermissionMetaTest.ItemDto.class);
@@ -152,7 +154,7 @@ public class DinaRepoPermissionMetaTest {
         dinaMapper,
         DinaRepoPermissionMetaTest.ItemDto.class,
         DinaRepoPermissionMetaTest.Item.class,
-        null,
+        securityChecker, null,
         null,
         buildProperties);
     }

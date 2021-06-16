@@ -7,6 +7,7 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT;
+import ca.gc.aafc.dina.security.spring.SecurityChecker;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
@@ -115,7 +116,8 @@ public class DinaAdminOnlyAuthTest {
       DinaAdminOnlyAuthorizationService authorizationService,
       BuildProperties buildProperties,
       BaseDAO baseDao,
-      DefaultDinaService<Item> defaultService
+      DefaultDinaService<Item> defaultService,
+      SecurityChecker securityChecker
     ) {
       DinaMapper<ItemDto, Item> dinaMapper = new DinaMapper<>(ItemDto.class);
       return new DinaRepository<>(
@@ -125,7 +127,7 @@ public class DinaAdminOnlyAuthTest {
         dinaMapper,
         ItemDto.class,
         Item.class,
-        null,
+        securityChecker, null,
         null,
         buildProperties);
     }
