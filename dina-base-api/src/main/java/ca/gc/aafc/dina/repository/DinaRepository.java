@@ -44,7 +44,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * JSONAPI repository that interfaces using DTOs, and uses JPA entities internally. Sparse fields
@@ -171,9 +170,10 @@ public class DinaRepository<D, E extends DinaEntity>
     final QuerySpec spec = resolveFilterAdapters(querySpec);
     String idName = findIdFieldName(resourceClass);
 
-    List<D> dList = mappingLayer.mapEntitiesToDto(spec, fetchEntities(ids, spec, idName));
+    List<E> entities = fetchEntities(ids, spec, idName);
+    List<D> dList = mappingLayer.mapEntitiesToDto(spec, entities);
 
-    handleMetaPermissionsResponse(dList);//TODO use a new service possibly
+    handleMetaPermissionsResponse(entities, dList);
 
     Long resourceCount = dinaService.getResourceCount( entityClass,
       (criteriaBuilder, root, em) -> filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idName, em));
@@ -183,50 +183,24 @@ public class DinaRepository<D, E extends DinaEntity>
     return new DefaultResourceList<>(dList, metaInformation, NO_LINK_INFORMATION);
   }
 
-  @SuppressWarnings({"unchecked"}) //Method exits if resource is not castable
-  private void handleMetaPermissionsResponse(List<D> dList) {
+  private void handleMetaPermissionsResponse(List<E> entities, List<D> dList) {
     if (!AttributeMetaInfoProvider.class.isAssignableFrom(resourceClass)
-      || !httpRequestContextProvider.hasThreadRequestContext()) {
+      || !httpRequestContextProvider.hasThreadRequestContext()
+      || authorizationService.isEmpty()) {
       return;
     }
 
     Set<String> requestHeaderNames = httpRequestContextProvider.getRequestContext().getRequestHeaderNames();
     if (CollectionUtils.isNotEmpty(requestHeaderNames) &&
       requestHeaderNames.stream().anyMatch(rh -> rh.equalsIgnoreCase(PERMISSION_META_HEADER_KEY))) {
-      setPermissions((List<AttributeMetaInfoProvider>) dList);
+      List<AttributeMetaInfoProvider> providers = ((List<AttributeMetaInfoProvider>)dList);
+      entities.forEach(e -> {//TODO clean
+        Set<String> permissions = securityChecker.getPermissionsForObject(e, authorizationService.get());
+        providers.stream().filter(d -> d.getUuid().equals(e.getUuid())).findFirst().ifPresent(attributeMetaInfoProvider ->
+          attributeMetaInfoProvider.setMeta(AttributeMetaInfoProvider.DinaJsonMetaInfo.builder().permissions(permissions).build()));
+      });
     }
   }
-
-  private void setPermissions(List<AttributeMetaInfoProvider> providerList) {//TODO placeholder implementation
-    authorizationService.ifPresent(as -> {
-      Set<String> permissions = new HashSet<>();
-      providerList.forEach(p -> {
-        if (securityChecker.check(getPreAuthorizeExpression(
-          "authorizeCreate",
-          as.getClass().getSuperclass()))) {
-          permissions.add("create");
-        }
-        if (securityChecker.check(getPreAuthorizeExpression(
-          "authorizeUpdate",
-          as.getClass().getSuperclass()))) {
-          permissions.add("delete");
-        }
-        if (securityChecker.check(getPreAuthorizeExpression(
-          "authorizeDelete",
-          as.getClass().getSuperclass()))) {
-          permissions.add("update");
-        }
-        p.setMeta(AttributeMetaInfoProvider.DinaJsonMetaInfo.builder().permissions(permissions).build());
-      });
-    });
-  }
-
-  private String getPreAuthorizeExpression(String methodName, Class<?> aClass) {
-    Method matchingMethod = MethodUtils.getMatchingMethod(aClass, methodName, Object.class);
-    PreAuthorize annotation = matchingMethod.getAnnotation(PreAuthorize.class);
-    return annotation.value();
-  }
-
 
   /**
    * Convenience method to resolve the filters of a given query spec for {@link

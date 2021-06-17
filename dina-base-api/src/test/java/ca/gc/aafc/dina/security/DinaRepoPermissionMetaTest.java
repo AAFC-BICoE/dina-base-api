@@ -70,6 +70,7 @@ public class DinaRepoPermissionMetaTest {
   @BeforeEach
   void setUp() {
     Item persisted = Item.builder()
+      .uuid(UUID.randomUUID())
       .group("CNC")
       .build();
     itemService.create(persisted);
@@ -102,7 +103,7 @@ public class DinaRepoPermissionMetaTest {
 
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:STAFF"})
+  @WithMockKeycloakUser(groupRole = {"InvalidGroup:STAFF"})
   void permissionsTest_WhenNoPermissions_PermissionsNotReturned() {
     mockHttpHeader(Set.of(DinaRepository.PERMISSION_META_HEADER_KEY));
     ResourceList<DinaRepoPermissionMetaTest.ItemDto> all = testRepo.findAll(new QuerySpec(ItemDto.class));

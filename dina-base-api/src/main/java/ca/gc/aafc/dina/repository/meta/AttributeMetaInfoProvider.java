@@ -10,6 +10,7 @@ import lombok.Setter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Abstract class which can be extended by a resource to add meta information to a resource's JSON response
@@ -37,5 +38,7 @@ public abstract class AttributeMetaInfoProvider {
       this.warnings.put(warningKey, warningValue);
     }
   }
+
+  public abstract UUID getUuid();
 
 }
