@@ -12,7 +12,7 @@
   </parent>
 
   <artifactId>dina-workbook</artifactId>
-  <name>dina-base-api</name>
+  <name>dina-workbook</name>
   <description>Base DINA API workbook related package based on Apache POI</description>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
