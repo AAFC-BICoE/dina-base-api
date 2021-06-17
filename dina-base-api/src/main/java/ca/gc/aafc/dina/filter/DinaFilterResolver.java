@@ -9,7 +9,6 @@ import cz.jirutka.rsql.parser.ast.Node;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.FilterSpec;
-import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
@@ -134,55 +133,39 @@ public class DinaFilterResolver {
     if (root == null) {
       return;
     }
-    Set<String> visited = new HashSet<>();
-    Stream.concat(
-      findIncludedRelations(registry, querySpec.getResourceClass(), querySpec.getIncludedRelations()),
-      findSortingRelations(querySpec, registry)
-    ).forEach(relation -> {
-      if (CollectionUtils.isNotEmpty(relation.getElements()) && !visited.contains(relation.toString())) {
+
+    Set<PathSpec> relationsToJoin = new HashSet<>();
+    querySpec.getIncludedRelations().forEach(ir ->
+      parseMappablePaths(registry, querySpec.getResourceClass(), relationsToJoin, ir.getAttributePath()));
+    querySpec.getSort().forEach(sort ->
+      parseMappablePaths(registry, querySpec.getResourceClass(), relationsToJoin, sort.getAttributePath()));
+
+    relationsToJoin.forEach(relation -> {
+      if (CollectionUtils.isNotEmpty(relation.getElements())) {
         joinAttributePath(root, relation.getElements());
-        visited.add(relation.toString());
       }
     });
-
   }
 
-  private static Stream<PathSpec> findSortingRelations(QuerySpec querySpec, DinaMappingRegistry registry) {
-    List<PathSpec> sortingRelationPaths = new ArrayList<>();
-    querySpec.getSort().forEach(sortSpec -> {
-      List<String> relationPath = new ArrayList<>();
-      Class<?> dtoClass = querySpec.getResourceClass();
-      for (String attr : sortSpec.getAttributePath()) {
-        if (hasMappableRelation(registry, dtoClass, attr)) {
-          relationPath.add(attr);
-          dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
-        } else {
-          break;
-        }
-      }
-      if (CollectionUtils.isNotEmpty(relationPath)) {
-        sortingRelationPaths.add(PathSpec.of(relationPath));
-      }
-    });
-    return sortingRelationPaths.stream();
-  }
-
-  private static Stream<PathSpec> findIncludedRelations(
+  private static void parseMappablePaths(
     @NonNull DinaMappingRegistry registry,
     @NonNull Class<?> resourceClass,
-    @NonNull List<IncludeRelationSpec> includedRelations
+    @NonNull Set<PathSpec> mappablePaths,
+    @NonNull List<String> attributePath
   ) {
-    return includedRelations.stream()
-      .filter(ir -> {
-        Class<?> dtoClass = resourceClass;
-        for (String attr : ir.getAttributePath()) {
-          if (!hasMappableRelation(registry, dtoClass, attr)) {
-            return false;
-          }
-          dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
-        }
-        return true;
-      }).map(IncludeRelationSpec::getPath);
+    List<String> relationPath = new ArrayList<>();
+    Class<?> dtoClass = resourceClass;
+    for (String attr : attributePath) {
+      if (hasMappableRelation(registry, dtoClass, attr)) {
+        relationPath.add(attr);
+        dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
+      } else {
+        break;
+      }
+    }
+    if (CollectionUtils.isNotEmpty(relationPath)) {
+      mappablePaths.add(PathSpec.of(relationPath));
+    }
   }
 
   /**
