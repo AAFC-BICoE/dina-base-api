@@ -135,7 +135,8 @@ public class DinaFilterResolver {
       return;
     }
 
-    List<PathSpec> includedRelationsToJoin = findIncludedRelations(querySpec, registry);
+    List<PathSpec> includedRelationsToJoin = findIncludedRelations(registry,
+      querySpec.getResourceClass(), querySpec.getIncludedRelations());
     List<PathSpec> sortRelationsToJoin = findSortingRelations(querySpec, registry);
     Set<String> visited = new HashSet<>();
 
@@ -179,12 +180,13 @@ public class DinaFilterResolver {
   }
 
   private static List<PathSpec> findIncludedRelations(
-    QuerySpec querySpec,
-    DinaMappingRegistry registry
+    @NonNull DinaMappingRegistry registry,
+    @NonNull Class<?> resourceClass,
+    @NonNull List<IncludeRelationSpec> includedRelations
   ) {
-    return querySpec.getIncludedRelations().stream()
+    return includedRelations.stream()
       .filter(ir -> {
-        Class<?> dtoClass = querySpec.getResourceClass();
+        Class<?> dtoClass = resourceClass;
         for (String attr : ir.getAttributePath()) {
           if (!hasMappableRelation(registry, dtoClass, attr)) {
             return false;
