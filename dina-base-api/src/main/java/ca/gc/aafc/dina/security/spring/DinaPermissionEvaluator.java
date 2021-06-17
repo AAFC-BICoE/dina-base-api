@@ -13,6 +13,7 @@ import org.springframework.security.access.expression.method.MethodSecurityExpre
 import org.springframework.security.core.Authentication;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -110,24 +111,27 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
       return false;
     }
 
-    Map<String, Set<DinaRole>> rolesPerGroup = user.getRolesPerGroup();
-    if (MapUtils.isEmpty(rolesPerGroup)) {
+    Optional<Set<DinaRole>> roles = findRolesForGroup((
+      (DinaEntity) targetDomainObject).getGroup(), user.getRolesPerGroup());
+
+    if (roles.isEmpty()) {
       return false;
     }
+    return roles.get().stream().anyMatch(dinaRole -> dinaRole.name().equalsIgnoreCase(role.strip()));
+  }
 
-    String group = ((DinaEntity) targetDomainObject).getGroup();
-    if (StringUtils.isBlank(group)) {
-      return false;
+  private static Optional<Set<DinaRole>> findRolesForGroup(
+    String group,
+    Map<String, Set<DinaRole>> rolesPerGroup
+  ) {
+    if (StringUtils.isBlank(group) || MapUtils.isEmpty(rolesPerGroup)) {
+      return Optional.empty();
     }
 
-    for (Map.Entry<String, Set<DinaRole>> rolePerGroup : rolesPerGroup.entrySet()) {
-      if (rolePerGroup.getKey().equalsIgnoreCase(group.strip())) {
-        return rolePerGroup.getValue()
-          .stream().anyMatch(dinaRole -> dinaRole.name().equalsIgnoreCase(role.strip()));
-      }
-    }
-
-    return false;
+    return rolesPerGroup.entrySet().stream()
+      .filter(rolePerGroup -> rolePerGroup.getKey().equalsIgnoreCase(group.strip()))
+      .map(Map.Entry::getValue)
+      .findFirst();
   }
 
   @Override
