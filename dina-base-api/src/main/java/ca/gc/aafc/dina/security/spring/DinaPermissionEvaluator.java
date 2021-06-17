@@ -120,6 +120,27 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
     return roles.get().stream().anyMatch(dinaRole -> dinaRole.name().equalsIgnoreCase(role.strip()));
   }
 
+  public boolean hasMinimumGroupAndRolePermissions(
+    DinaAuthenticatedUser user,
+    String minimumRole,
+    Object targetDomainObject
+  ) {
+    if (user == null || StringUtils.isBlank(minimumRole) || !(targetDomainObject instanceof DinaEntity)) {
+      return false;
+    }
+
+    Optional<DinaRole> minimumDinaRole = DinaRole.fromString(minimumRole);
+    Optional<Set<DinaRole>> roles = findRolesForGroup((
+      (DinaEntity) targetDomainObject).getGroup(), user.getRolesPerGroup());
+
+    if (roles.isEmpty() || minimumDinaRole.isEmpty()) {
+      return false;
+    }
+
+    return roles.get().stream().anyMatch(dinaRole -> dinaRole.isHigherOrEqualThan(minimumDinaRole.get()));
+  }
+
+
   private static Optional<Set<DinaRole>> findRolesForGroup(
     String group,
     Map<String, Set<DinaRole>> rolesPerGroup
