@@ -1,13 +1,14 @@
 package ca.gc.aafc.dina.filter;
 
+import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import com.github.tennaito.rsql.jpa.JpaPredicateVisitor;
 import com.github.tennaito.rsql.misc.ArgumentParser;
 import cz.jirutka.rsql.parser.RSQLParser;
 import cz.jirutka.rsql.parser.ast.Node;
+import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.FilterSpec;
-import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
@@ -25,9 +26,11 @@ import javax.persistence.criteria.Root;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -114,6 +117,71 @@ public class DinaFilterResolver {
   }
 
   /**
+   * Convenience method to left join relations that have been parsed from a given querySpec using a mapping
+   * registry.
+   *
+   * @param <E>       root entity type
+   * @param root      root path of entity
+   * @param querySpec query spec to parse
+   * @param registry  registry to use to determine relations
+   */
+  public static <E extends DinaEntity> void leftJoinRelations(
+    Root<E> root,
+    @NonNull QuerySpec querySpec,
+    @NonNull DinaMappingRegistry registry
+  ) {
+    if (root == null) {
+      return;
+    }
+
+    Set<PathSpec> relationsToJoin = new HashSet<>();
+    querySpec.getIncludedRelations().forEach(ir ->
+      parseMappablePaths(registry, querySpec.getResourceClass(), relationsToJoin, ir.getAttributePath()));
+    querySpec.getSort().forEach(sort ->
+      parseMappablePaths(registry, querySpec.getResourceClass(), relationsToJoin, sort.getAttributePath()));
+
+    relationsToJoin.forEach(relation -> {
+      if (CollectionUtils.isNotEmpty(relation.getElements())) {
+        joinAttributePath(root, relation.getElements());
+      }
+    });
+  }
+
+  private static void parseMappablePaths(
+    @NonNull DinaMappingRegistry registry,
+    @NonNull Class<?> resourceClass,
+    @NonNull Set<PathSpec> mappablePaths,
+    @NonNull List<String> attributePath
+  ) {
+    List<String> relationPath = new ArrayList<>();
+    Class<?> dtoClass = resourceClass;
+    for (String attr : attributePath) {
+      if (hasMappableRelation(registry, dtoClass, attr)) {
+        relationPath.add(attr);
+        dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
+      } else {
+        break;
+      }
+    }
+    if (CollectionUtils.isNotEmpty(relationPath)) {
+      mappablePaths.add(PathSpec.of(relationPath));
+    }
+  }
+
+  /**
+   * Returns true if a given class has a given relation.
+   *
+   * @param registry registry to determine results
+   * @param aClass   class to evaluate
+   * @param relation relation to evaluate
+   * @return true if a given class has a given relation.
+   */
+  private static boolean hasMappableRelation(DinaMappingRegistry registry, Class<?> aClass, String relation) {
+    return registry.findMappableRelationsForClass(aClass)
+      .stream().anyMatch(rel -> rel.getName().equalsIgnoreCase(relation));
+  }
+
+  /**
    * Returns an array of predicates by mapping crnk filters into JPA restrictions with a given querySpec,
    * criteria builder, root, ids, and id field name.
    *
@@ -175,18 +243,13 @@ public class DinaFilterResolver {
     }).collect(Collectors.toList());
   }
 
-  /**
-   * Adds left joins for eager Loading the relationships of a given query spec to a given root.
-   *
-   * @param root              - root path to add joins
-   * @param includedRelations - relations to map
-   */
-  public static void eagerLoadRelations(Root<?> root, List<IncludeRelationSpec> includedRelations) {
-    for (IncludeRelationSpec relation : includedRelations) {
-      FetchParent<?, ?> join = root;
-      for (String path : relation.getAttributePath()) {
-        join = join.fetch(path, JoinType.LEFT);
-      }
+  private static void joinAttributePath(Root<?> root, List<String> attributePath) {
+    if (root == null || CollectionUtils.isEmpty(attributePath)) {
+      return;
+    }
+    FetchParent<?, ?> join = root;
+    for (String path : attributePath) {
+      join = join.fetch(path, JoinType.LEFT);
     }
   }
 
