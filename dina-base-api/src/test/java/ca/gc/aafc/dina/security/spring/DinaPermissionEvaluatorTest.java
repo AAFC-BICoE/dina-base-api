@@ -110,7 +110,7 @@ class DinaPermissionEvaluatorTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"group1", "GROUP1", "   group1   "})
-  void hasMinimumGroupAndRolePermissions_hasRoleAndGroup_returnsTrue(String group) {
+  void hasMinimumGroupAndRolePermissions_hasMinimumRoleAndGroup_returnsTrue(String group) {
     DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.COLLECTION_MANAGER);
     Assertions.assertTrue(evaluator.hasMinimumGroupAndRolePermissions(user, "staff",
       Person.builder().group(group).build()));

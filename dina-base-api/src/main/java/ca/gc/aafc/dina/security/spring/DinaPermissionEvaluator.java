@@ -120,6 +120,15 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
     return roles.get().stream().anyMatch(dinaRole -> dinaRole.name().equalsIgnoreCase(role.strip()));
   }
 
+  /**
+   * Returns true if the given authenticated user is a member of the group the given target object belongs to
+   * and also has the given minimum role for that group.
+   *
+   * @param user               user with roles
+   * @param minimumRole        minimum role to check the user has
+   * @param targetDomainObject Target resource of the request
+   * @return true if the given user has the given minimum role for that group.
+   */
   public boolean hasMinimumGroupAndRolePermissions(
     DinaAuthenticatedUser user,
     String minimumRole,
