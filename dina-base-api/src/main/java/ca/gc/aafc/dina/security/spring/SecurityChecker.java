@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.security.spring;
 
+import ca.gc.aafc.dina.security.DinaAuthorizationService;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.security.access.expression.ExpressionUtils;
@@ -21,28 +22,22 @@ public final class SecurityChecker {
   @Inject
   private MethodSecurityConfig config;
 
-  private static class SecurityObject {
-    public void triggerCheck() { /*NOP*/ }
-  }
-
-  private static Method triggerCheckMethod;
   private static final SpelExpressionParser parser;
 
-  static{
-    try {
-      triggerCheckMethod =  SecurityObject.class.getMethod("triggerCheck");
-    } catch (NoSuchMethodException e) {
-      e.printStackTrace();
-    }
+  static {
     parser = new SpelExpressionParser();
   }
-  public boolean check(String securityExpression) {
-    SecurityObject securityObject = new SecurityObject();
 
+  public boolean check(
+    DinaAuthorizationService as,
+    String securityExpression,
+    Object entity,
+    Method triggerCheckMethod
+  ) {
     EvaluationContext evaluationContext = config.createExpressionHandler().createEvaluationContext(
       SecurityContextHolder.getContext().getAuthentication(),
-      new SimpleMethodInvocation(securityObject, triggerCheckMethod));
+      new SimpleMethodInvocation(as, triggerCheckMethod, entity));
 
-    return ExpressionUtils.evaluateAsBoolean(parser.parseExpression(securityExpression),evaluationContext);
+    return ExpressionUtils.evaluateAsBoolean(parser.parseExpression(securityExpression), evaluationContext);
   }
 }
