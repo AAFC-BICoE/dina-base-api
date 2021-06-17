@@ -2,9 +2,12 @@ package ca.gc.aafc.dina.security;
 
 import lombok.Builder;
 import lombok.Getter;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -31,5 +34,23 @@ public class DinaAuthenticatedUser {
     this.agentIdentifer = agentIdentifer;
     this.rolesPerGroup = rolesPerGroup == null ? Collections.emptyMap() : rolesPerGroup;
     this.groups = this.rolesPerGroup.keySet();
+  }
+
+  /**
+   * Returns the Set of dina roles this user has for the given group, empty if the user has no roles for this
+   * group, or the group is blank.
+   *
+   * @param group group to search
+   * @return the Set of dina roles this user has for the given group
+   */
+  public Optional<Set<DinaRole>> findRolesForGroup(String group) {
+    if (StringUtils.isBlank(group) || MapUtils.isEmpty(this.rolesPerGroup)) {
+      return Optional.empty();
+    }
+
+    return this.rolesPerGroup.entrySet().stream()
+      .filter(rolePerGroup -> rolePerGroup.getKey().equalsIgnoreCase(group.strip()))
+      .map(Map.Entry::getValue)
+      .findFirst();
   }
 }

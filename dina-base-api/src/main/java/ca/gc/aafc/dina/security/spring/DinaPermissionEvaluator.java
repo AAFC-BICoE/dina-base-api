@@ -111,8 +111,7 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
       return false;
     }
 
-    Optional<Set<DinaRole>> roles = findRolesForGroup((
-      (DinaEntity) targetDomainObject).getGroup(), user.getRolesPerGroup());
+    Optional<Set<DinaRole>> roles = user.findRolesForGroup(((DinaEntity) targetDomainObject).getGroup());
 
     if (roles.isEmpty()) {
       return false;
@@ -139,29 +138,13 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
     }
 
     Optional<DinaRole> minimumDinaRole = DinaRole.fromString(minimumRole);
-    Optional<Set<DinaRole>> roles = findRolesForGroup((
-      (DinaEntity) targetDomainObject).getGroup(), user.getRolesPerGroup());
+    Optional<Set<DinaRole>> roles = user.findRolesForGroup(((DinaEntity) targetDomainObject).getGroup());
 
     if (roles.isEmpty() || minimumDinaRole.isEmpty()) {
       return false;
     }
 
     return roles.get().stream().anyMatch(dinaRole -> dinaRole.isHigherOrEqualThan(minimumDinaRole.get()));
-  }
-
-
-  private static Optional<Set<DinaRole>> findRolesForGroup(
-    String group,
-    Map<String, Set<DinaRole>> rolesPerGroup
-  ) {
-    if (StringUtils.isBlank(group) || MapUtils.isEmpty(rolesPerGroup)) {
-      return Optional.empty();
-    }
-
-    return rolesPerGroup.entrySet().stream()
-      .filter(rolePerGroup -> rolePerGroup.getKey().equalsIgnoreCase(group.strip()))
-      .map(Map.Entry::getValue)
-      .findFirst();
   }
 
   @Override
