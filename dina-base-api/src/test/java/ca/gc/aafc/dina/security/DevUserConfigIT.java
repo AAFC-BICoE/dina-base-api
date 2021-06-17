@@ -23,7 +23,7 @@ public class DevUserConfigIT {
   @Test
   public void getCurrentUser_whenKeycloakDisabled_devUserGiven() {
     assertEquals("dev", currentUser.getUsername());
-    assertEquals("c628fc6f-c9ad-4bb6-a187-81eb7884bdd7", currentUser.getAgentIdentifer());
+    assertEquals("c628fc6f-c9ad-4bb6-a187-81eb7884bdd7", currentUser.getAgentIdentifier());
     assertEquals(Sets.newHashSet("dev-group"), currentUser.getGroups());
   }
 
