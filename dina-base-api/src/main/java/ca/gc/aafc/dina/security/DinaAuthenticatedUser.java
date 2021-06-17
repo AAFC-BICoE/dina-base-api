@@ -15,8 +15,8 @@ import java.util.Set;
 @Getter
 public class DinaAuthenticatedUser {
 
-  private final String internalIdentifer;
-  private final String agentIdentifer;
+  private final String internalIdentifier;
+  private final String agentIdentifier;
   private final String username;
   private final Set<String> groups;
   private final Map<String, Set<DinaRole>> rolesPerGroup;
@@ -28,9 +28,9 @@ public class DinaAuthenticatedUser {
     String internalIdentifier,
     Map<String, Set<DinaRole>> rolesPerGroup
   ) {
-    this.internalIdentifer = internalIdentifier;
+    this.internalIdentifier = internalIdentifier;
     this.username = username;
-    this.agentIdentifer = agentIdentifier;
+    this.agentIdentifier = agentIdentifier;
     this.rolesPerGroup = rolesPerGroup == null ? Collections.emptyMap() : rolesPerGroup;
     this.groups = this.rolesPerGroup.keySet();
   }
