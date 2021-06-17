@@ -111,7 +111,7 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
       return false;
     }
 
-    Optional<Set<DinaRole>> roles = user.findRolesForGroup(((DinaEntity) targetDomainObject).getGroup());
+    Optional<Set<DinaRole>> roles = user.getRolesForGroup(((DinaEntity) targetDomainObject).getGroup());
 
     if (roles.isEmpty()) {
       return false;
@@ -138,7 +138,7 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
     }
 
     Optional<DinaRole> minimumDinaRole = DinaRole.fromString(minimumRole);
-    Optional<Set<DinaRole>> roles = user.findRolesForGroup(((DinaEntity) targetDomainObject).getGroup());
+    Optional<Set<DinaRole>> roles = user.getRolesForGroup(((DinaEntity) targetDomainObject).getGroup());
 
     if (roles.isEmpty() || minimumDinaRole.isEmpty()) {
       return false;

@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.security;
 
 import lombok.Builder;
 import lombok.Getter;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
@@ -25,13 +24,13 @@ public class DinaAuthenticatedUser {
   @Builder
   public DinaAuthenticatedUser(
     String username,
-    String agentIdentifer,
-    String internalIdentifer,
+    String agentIdentifier,
+    String internalIdentifier,
     Map<String, Set<DinaRole>> rolesPerGroup
   ) {
-    this.internalIdentifer = internalIdentifer;
+    this.internalIdentifer = internalIdentifier;
     this.username = username;
-    this.agentIdentifer = agentIdentifer;
+    this.agentIdentifer = agentIdentifier;
     this.rolesPerGroup = rolesPerGroup == null ? Collections.emptyMap() : rolesPerGroup;
     this.groups = this.rolesPerGroup.keySet();
   }
@@ -43,8 +42,8 @@ public class DinaAuthenticatedUser {
    * @param group group to search
    * @return the Set of dina roles this user has for the given group
    */
-  public Optional<Set<DinaRole>> findRolesForGroup(String group) {
-    if (StringUtils.isBlank(group) || MapUtils.isEmpty(this.rolesPerGroup)) {
+  public Optional<Set<DinaRole>> getRolesForGroup(String group) {
+    if (StringUtils.isBlank(group) || rolesPerGroup.isEmpty()) {
       return Optional.empty();
     }
 
