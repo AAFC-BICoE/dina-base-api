@@ -70,7 +70,7 @@ public class DinaRepoPermissionMetaTest {
   @BeforeEach
   void setUp() {
     Item persisted = Item.builder()
-      .group("g")
+      .group("CNC")
       .build();
     itemService.create(persisted);
   }
@@ -139,7 +139,7 @@ public class DinaRepoPermissionMetaTest {
     public DinaRepository<DinaRepoPermissionMetaTest.ItemDto, DinaRepoPermissionMetaTest.Item> testRepo(
       DinaRepositoryIT.DinaPersonService service,
       Optional<AuditService> auditService,
-      DinaAdminOnlyAuthorizationService authorizationService,
+      GroupAuthorizationService authorizationService,
       BuildProperties buildProperties,
       BaseDAO baseDao,
       DefaultDinaService<Item> defaultService,
