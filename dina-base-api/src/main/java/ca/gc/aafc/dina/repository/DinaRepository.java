@@ -9,7 +9,6 @@ import ca.gc.aafc.dina.repository.auditlog.AuditSnapshotRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
-import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import ca.gc.aafc.dina.security.DinaAuthorizationService;
 import ca.gc.aafc.dina.security.spring.SecurityChecker;
 import ca.gc.aafc.dina.service.AuditService;
@@ -18,7 +17,6 @@ import io.crnk.core.engine.http.HttpRequestContextAware;
 import io.crnk.core.engine.http.HttpRequestContextProvider;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
 import io.crnk.core.exception.ResourceNotFoundException;
-import io.crnk.core.queryspec.IncludeRelationSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.MetaRepository;
 import io.crnk.core.repository.ResourceRepository;
@@ -249,23 +247,10 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName) {
-    List<IncludeRelationSpec> relationsToEagerLoad = querySpec.getIncludedRelations().stream()
-      .filter(ir -> {
-        // Skip eager loading on JsonApiExternalRelation-marked fields:
-        Class<?> dtoClass = querySpec.getResourceClass();
-        for (String attr : ir.getAttributePath()) {
-          if (isExternalRelation(dtoClass, attr)) {
-            return false;
-          }
-          dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
-        }
-        return true;
-      }).collect(Collectors.toList());
-
     return dinaService.findAll(
       entityClass,
       (criteriaBuilder, root, em) -> {
-        DinaFilterResolver.eagerLoadRelations(root, relationsToEagerLoad);
+        DinaFilterResolver.leftJoinRelations(root, querySpec, registry);
         return filterResolver.buildPredicates(querySpec, criteriaBuilder, root, ids, idName, em);
       },
       (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
@@ -351,19 +336,6 @@ public class DinaRepository<D, E extends DinaEntity>
     // validation group should probably be set here
     dinaService.validateConstraints(entity, null);
     dinaService.validateBusinessRules(entity);
-  }
-
-  /**
-   * Returns true if the given class has a given field with an annotation of a given type.
-   *
-   * @param <T>   - Class type
-   * @param clazz - class of the field
-   * @param field - field to check
-   * @return true if a dto field is generated and read-only
-   */
-  @SneakyThrows(NoSuchFieldException.class)
-  private static <T> boolean isExternalRelation(Class<T> clazz, String field) {
-    return clazz.getDeclaredField(field).isAnnotationPresent(JsonApiExternalRelation.class);
   }
 
   /**

@@ -18,9 +18,11 @@ import io.crnk.core.queryspec.SortSpec;
 import io.crnk.core.resource.list.ResourceList;
 import io.crnk.core.resource.meta.PagedMetaInformation;
 import lombok.NonNull;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.hamcrest.core.Is;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,6 +33,7 @@ import javax.transaction.Transactional;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +58,7 @@ public class DinaRepositoryIT {
 
   @BeforeEach
   public void setup() {
-    singleRelationUnderTest =  persistDepartment();
+    singleRelationUnderTest = persistDepartment();
     collectionRelationUnderTest = persistDepartments();
   }
 
@@ -83,7 +86,7 @@ public class DinaRepositoryIT {
   public void findOne_NoResourceFound_ThrowsResourceNotFoundException() {
     assertThrows(
       ResourceNotFoundException.class,
-      ()-> dinaRepository.findOne(UUID.randomUUID(), new QuerySpec(PersonDTO.class))
+      () -> dinaRepository.findOne(UUID.randomUUID(), new QuerySpec(PersonDTO.class))
     );
   }
 
@@ -276,6 +279,24 @@ public class DinaRepositoryIT {
   }
 
   @Test
+  public void findAll_SortingByNestedProperty_ReturnsResourcesWithNullProperty() {
+    for (int i = 0; i < 3; i++) {
+      PersonDTO noRelation = createPersonDto();
+      noRelation.setDepartment(null);
+      noRelation.setDepartments(null);
+      dinaRepository.create(noRelation);
+    }
+
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.setSort(Collections.singletonList(
+      new SortSpec(Arrays.asList("department", "name"), Direction.ASC)));
+
+    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    Assertions.assertTrue(CollectionUtils.isNotEmpty(resultList), "no results were returned");
+    resultList.forEach(result -> Assertions.assertNull(result.getDepartment()));
+  }
+
+  @Test
   public void findAll_whenPageLimitIsSet_pageSizeIsLimited() {
     long pageLimit = 10;
 
@@ -436,7 +457,7 @@ public class DinaRepositoryIT {
       new DinaMetaInfo()
     );
 
-    assertEquals("test-api-version" , meta.getModuleVersion());
+    assertEquals("test-api-version", meta.getModuleVersion());
   }
 
   private void assertEqualsPersonDtos(PersonDTO dto, PersonDTO result, boolean testRelations) {
