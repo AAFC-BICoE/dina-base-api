@@ -37,7 +37,7 @@ public enum DinaRole {
    * @param str
    * @return
    */
-  static Optional<DinaRole> fromString(String str) {
+  public static Optional<DinaRole> fromString(String str) {
     for (DinaRole currRole : values()) {
       if (currRole.name().equalsIgnoreCase(NON_ALPHA.matcher(str).replaceAll("_"))) {
         return Optional.of(currRole);
