@@ -9,7 +9,6 @@ import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT;
 import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
 import ca.gc.aafc.dina.security.spring.SecurityChecker;
-import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import io.crnk.core.engine.http.HttpRequestContext;
@@ -25,6 +24,7 @@ import io.crnk.core.resource.list.ResourceList;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.hamcrest.MatcherAssert;
@@ -139,7 +139,6 @@ public class DinaRepoPermissionMetaTest {
     @Primary
     public DinaRepository<DinaRepoPermissionMetaTest.ItemDto, DinaRepoPermissionMetaTest.Item> testRepo(
       DinaRepositoryIT.DinaPersonService service,
-      Optional<AuditService> auditService,
       GroupAuthorizationService authorizationService,
       BuildProperties buildProperties,
       BaseDAO baseDao,
@@ -151,7 +150,7 @@ public class DinaRepoPermissionMetaTest {
       return new DinaRepository<>(
         defaultService,
         Optional.of(authorizationService),
-        auditService,
+        Optional.empty(),
         dinaMapper,
         DinaRepoPermissionMetaTest.ItemDto.class,
         DinaRepoPermissionMetaTest.Item.class,
@@ -180,6 +179,7 @@ public class DinaRepoPermissionMetaTest {
   }
 
   @Data
+  @EqualsAndHashCode(callSuper = true)
   @JsonApiResource(type = DinaRepoPermissionMetaTest.ItemDto.TYPE_NAME)
   @Builder
   @NoArgsConstructor
