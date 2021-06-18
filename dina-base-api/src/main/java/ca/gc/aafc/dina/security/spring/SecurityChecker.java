@@ -26,12 +26,11 @@ import java.util.Set;
 public final class SecurityChecker {
 
   private final MethodSecurityConfig config;
+  private static final SpelExpressionParser parser = new SpelExpressionParser();
 
   public SecurityChecker(Optional<MethodSecurityConfig> config) {
     this.config = config.orElse(null);
   }
-
-  private static final SpelExpressionParser parser = new SpelExpressionParser();
 
   public Set<String> getPermissionsForObject(@NonNull Object target, @NonNull DinaAuthorizationService as) {
     Set<String> permissions = new HashSet<>();
