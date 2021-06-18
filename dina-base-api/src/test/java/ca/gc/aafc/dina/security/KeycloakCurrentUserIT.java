@@ -42,7 +42,7 @@ public class KeycloakCurrentUserIT {
     SecurityContextHolder.getContext().setAuthentication(mockToken);
 
     assertEquals("test-user", currentUser.getUsername());
-    assertEquals("a2cef694-10f1-42ec-b403-e0f8ae9d2ae6", currentUser.getAgentIdentifer().toString());
+    assertEquals("a2cef694-10f1-42ec-b403-e0f8ae9d2ae6", currentUser.getAgentIdentifier().toString());
     assertTrue(CollectionUtils.isEqualCollection(currentUser.getGroups(), expectedGroups));
   }
 

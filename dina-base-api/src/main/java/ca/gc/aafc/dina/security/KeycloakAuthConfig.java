@@ -104,8 +104,8 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
     }
 
     return DinaAuthenticatedUser.builder()
-      .agentIdentifer(agentId)
-      .internalIdentifer(internalID)
+      .agentIdentifier(agentId)
+      .internalIdentifier(internalID)
       .username(username)
       .rolesPerGroup(rolesPerGroup)
       .build();

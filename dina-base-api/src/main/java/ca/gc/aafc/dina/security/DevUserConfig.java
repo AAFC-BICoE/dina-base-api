@@ -20,8 +20,8 @@ public class DevUserConfig {
   @RequestScope
   public DinaAuthenticatedUser currentUser() {
     return DinaAuthenticatedUser.builder()
-      .agentIdentifer("c628fc6f-c9ad-4bb6-a187-81eb7884bdd7")
-      .internalIdentifer("c628fc6f-c9ad-4bb6-a187-81eb7884bdd7")
+      .agentIdentifier("c628fc6f-c9ad-4bb6-a187-81eb7884bdd7")
+      .internalIdentifier("c628fc6f-c9ad-4bb6-a187-81eb7884bdd7")
       .username("dev")
       .rolesPerGroup(Map.of("dev-group", Set.of(DinaRole.STAFF)))
       .build();

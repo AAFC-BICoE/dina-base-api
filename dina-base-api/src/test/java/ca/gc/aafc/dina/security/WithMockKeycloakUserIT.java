@@ -41,8 +41,8 @@ public class WithMockKeycloakUserIT {
     groupRole = {"group 1:staff", "group 3:staff"})
   @Test
   public void withMockedUser_UserMocked() {
-    Assertions.assertEquals("internal", currentUser.getInternalIdentifer());
-    Assertions.assertEquals("agent one", currentUser.getAgentIdentifer());
+    Assertions.assertEquals("internal", currentUser.getInternalIdentifier());
+    Assertions.assertEquals("agent one", currentUser.getAgentIdentifier());
   }
 
 }
