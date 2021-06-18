@@ -47,9 +47,10 @@ public final class SecurityChecker {
 
   public Set<String> getPermissionsForObject(Object target, DinaAuthorizationService as) {
     Set<String> permissions = new HashSet<>();
-    Method authorizeCreate = getMethod("authorizeCreate", as.getClass().getSuperclass());
-    Method authorizeUpdate = getMethod("authorizeUpdate", as.getClass().getSuperclass());
-    Method authorizeDelete = getMethod("authorizeDelete", as.getClass().getSuperclass());
+    Class<?> authServiceClass = as.getClass().getSuperclass();
+    Method authorizeCreate = MethodUtils.getMatchingMethod(authServiceClass, "authorizeCreate", Object.class);
+    Method authorizeUpdate = MethodUtils.getMatchingMethod(authServiceClass, "authorizeUpdate", Object.class);
+    Method authorizeDelete = MethodUtils.getMatchingMethod(authServiceClass, "authorizeDelete", Object.class);
     if (this.check(as, getPreAuthorizeExpression(authorizeCreate), target, authorizeCreate)) {
       permissions.add("create");
     }
@@ -67,7 +68,4 @@ public final class SecurityChecker {
     return annotation.value();
   }
 
-  private Method getMethod(String methodName, Class<?> aClass) {
-    return MethodUtils.getMatchingMethod(aClass, methodName, Object.class);
-  }
 }
