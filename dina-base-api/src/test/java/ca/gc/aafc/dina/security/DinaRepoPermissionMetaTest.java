@@ -6,7 +6,6 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
-import ca.gc.aafc.dina.repository.DinaRepositoryIT;
 import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
 import ca.gc.aafc.dina.security.spring.SecurityChecker;
 import ca.gc.aafc.dina.service.DefaultDinaService;
@@ -42,6 +41,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.SmartValidator;
 
@@ -62,14 +62,14 @@ import java.util.UUID;
 public class DinaRepoPermissionMetaTest {
 
   @Inject
-  private DinaRepository<DinaRepoPermissionMetaTest.ItemDto, DinaRepoPermissionMetaTest.Item> testRepo;
+  private DinaRepository<TestConfig.ItemDto, TestConfig.Item> testRepo;
 
   @Inject
-  private DefaultDinaService<DinaRepoPermissionMetaTest.Item> itemService;
+  private DefaultDinaService<TestConfig.Item> itemService;
 
   @BeforeEach
   void setUp() {
-    Item persisted = Item.builder()
+    TestConfig.Item persisted = TestConfig.Item.builder()
       .uuid(UUID.randomUUID())
       .group("CNC")
       .build();
@@ -80,16 +80,16 @@ public class DinaRepoPermissionMetaTest {
   @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
   void permissionsTest_WhenHasPermissions_PermissionsReturned() {
     mockHttpHeader(Set.of(DinaRepository.PERMISSION_META_HEADER_KEY));
-    ResourceList<DinaRepoPermissionMetaTest.ItemDto> all = testRepo.findAll(new QuerySpec(ItemDto.class));
+    ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
     all.forEach(result -> MatcherAssert.assertThat(
       result.getMeta().getPermissions(),
-      Matchers.hasItems("create", "update", "delete")));
+      Matchers.hasItems("create", "update")));
   }
 
   @Test
   @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
   void permissionsTest_WhenNoContext_PermissionsNotReturned() {
-    ResourceList<DinaRepoPermissionMetaTest.ItemDto> all = testRepo.findAll(new QuerySpec(ItemDto.class));
+    ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
     all.forEach(result -> Assertions.assertNull(result.getMeta()));
   }
 
@@ -97,16 +97,15 @@ public class DinaRepoPermissionMetaTest {
   @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
   void permissionsTest_WhenNoHeader_PermissionsNotReturned() {
     mockHttpHeader(Set.of("wrong header"));
-    ResourceList<DinaRepoPermissionMetaTest.ItemDto> all = testRepo.findAll(new QuerySpec(ItemDto.class));
+    ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
     all.forEach(result -> Assertions.assertNull(result.getMeta()));
   }
-
 
   @Test
   @WithMockKeycloakUser(groupRole = {"InvalidGroup:STAFF"})
   void permissionsTest_WhenNoPermissions_PermissionsNotReturned() {
     mockHttpHeader(Set.of(DinaRepository.PERMISSION_META_HEADER_KEY));
-    ResourceList<DinaRepoPermissionMetaTest.ItemDto> all = testRepo.findAll(new QuerySpec(ItemDto.class));
+    ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
     all.forEach(result -> MatcherAssert.assertThat(result.getMeta().getPermissions(), Matchers.empty()));
   }
 
@@ -132,75 +131,95 @@ public class DinaRepoPermissionMetaTest {
   }
 
   @TestConfiguration
-  @EntityScan(basePackageClasses = DinaRepoPermissionMetaTest.class)
+  @EntityScan(basePackageClasses = TestConfig.class)
   static class TestConfig {
 
     @Bean
     @Primary
-    public DinaRepository<DinaRepoPermissionMetaTest.ItemDto, DinaRepoPermissionMetaTest.Item> testRepo(
-      DinaRepositoryIT.DinaPersonService service,
-      GroupAuthorizationService authorizationService,
+    public DinaRepository<ItemDto, Item> testRepo(
+      SpecialAuthServiceUnderTest authorizationService,
       BuildProperties buildProperties,
-      BaseDAO baseDao,
       DefaultDinaService<Item> defaultService,
       SecurityChecker securityChecker
     ) {
-      DinaMapper<DinaRepoPermissionMetaTest.ItemDto, DinaRepoPermissionMetaTest.Item> dinaMapper = new DinaMapper<>(
-        DinaRepoPermissionMetaTest.ItemDto.class);
+      DinaMapper<ItemDto, Item> dinaMapper = new DinaMapper<>(
+        ItemDto.class);
       return new DinaRepository<>(
         defaultService,
         Optional.of(authorizationService),
         Optional.empty(),
         dinaMapper,
-        DinaRepoPermissionMetaTest.ItemDto.class,
-        DinaRepoPermissionMetaTest.Item.class,
+        ItemDto.class,
+        Item.class,
         securityChecker, null,
         null,
         buildProperties);
     }
 
-  }
+    @Data
+    @Entity
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Item implements DinaEntity {
+      private String createdBy;
+      private OffsetDateTime createdOn;
+      @Column(name = "group_name")
+      private String group;
+      @Id
+      @GeneratedValue
+      private Integer id;
+      @NaturalId
+      private UUID uuid;
+    }
 
-  @Data
-  @Entity
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class Item implements DinaEntity {
-    private String createdBy;
-    private OffsetDateTime createdOn;
-    @Column(name = "group_name")
-    private String group;
-    @Id
-    @GeneratedValue
-    private Integer id;
-    @NaturalId
-    private UUID uuid;
-  }
+    @Data
+    @EqualsAndHashCode(callSuper = true)
+    @JsonApiResource(type = ItemDto.TYPE_NAME)
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @RelatedEntity(Item.class)
+    @TypeName(ItemDto.TYPE_NAME)
+    public static class ItemDto extends AttributeMetaInfoProvider {
+      private static final String TYPE_NAME = "item";
+      @JsonApiId
+      @org.javers.core.metamodel.annotation.Id
+      @PropertyName("id")
+      private UUID uuid;
+      private String group;
+      private String createdBy;
+      private OffsetDateTime createdOn;
+    }
 
-  @Data
-  @EqualsAndHashCode(callSuper = true)
-  @JsonApiResource(type = DinaRepoPermissionMetaTest.ItemDto.TYPE_NAME)
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @RelatedEntity(DinaRepoPermissionMetaTest.Item.class)
-  @TypeName(DinaRepoPermissionMetaTest.ItemDto.TYPE_NAME)
-  public static class ItemDto extends AttributeMetaInfoProvider {
-    private static final String TYPE_NAME = "item";
-    @JsonApiId
-    @org.javers.core.metamodel.annotation.Id
-    @PropertyName("id")
-    private UUID uuid;
-    private String group;
-    private String createdBy;
-    private OffsetDateTime createdOn;
-  }
+    @Service
+    public static class ItemService extends DefaultDinaService<Item> {
+      public ItemService(@NonNull BaseDAO baseDAO, @NonNull SmartValidator sv) {
+        super(baseDAO, sv);
+      }
+    }
 
-  @Service
-  public static class ItemService extends DefaultDinaService<DinaRepoPermissionMetaTest.Item> {
-    public ItemService(@NonNull BaseDAO baseDAO, @NonNull SmartValidator sv) {
-      super(baseDAO, sv);
+    @Service
+    public static class SpecialAuthServiceUnderTest implements DinaAuthorizationService {
+
+      @Override
+      @PreAuthorize("hasGroupPermission(@currentUser, #entity)")
+      public void authorizeCreate(Object entity) {
+
+      }
+
+      @Override
+      @PreAuthorize("hasDinaRole(@currentUser, 'DINA_ADMIN')")
+      public void authorizeUpdate(Object entity) {
+
+      }
+
+      @Override
+      @PreAuthorize("hasDinaRole(@currentUser, 'STUDENT')")
+      public void authorizeDelete(Object entity) {
+
+      }
     }
   }
+
 }

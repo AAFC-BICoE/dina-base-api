@@ -37,10 +37,10 @@ public final class SecurityChecker {
     if (this.checkObjectPreAuthorized(as, target, "authorizeCreate")) {
       permissions.add("create");
     }
-    if (this.checkObjectPreAuthorized(as, target, "authorizeUpdate")) {
+    if (this.checkObjectPreAuthorized(as, target, "authorizeDelete")) {
       permissions.add("delete");
     }
-    if (this.checkObjectPreAuthorized(as, target, "authorizeDelete")) {
+    if (this.checkObjectPreAuthorized(as, target, "authorizeUpdate")) {
       permissions.add("update");
     }
     return permissions;
