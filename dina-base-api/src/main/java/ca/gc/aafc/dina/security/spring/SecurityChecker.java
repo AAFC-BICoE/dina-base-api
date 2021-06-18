@@ -1,6 +1,8 @@
 package ca.gc.aafc.dina.security.spring;
 
 import ca.gc.aafc.dina.security.DinaAuthorizationService;
+import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -26,45 +28,43 @@ public final class SecurityChecker {
   @Inject
   private MethodSecurityConfig config;
 
-  private static final SpelExpressionParser parser;
+  private static final SpelExpressionParser parser = new SpelExpressionParser();
 
-  static {
-    parser = new SpelExpressionParser();
-  }
-
-  public boolean check(
-    DinaAuthorizationService as,
-    String securityExpression,
-    Object entity,
-    Method triggerCheckMethod
-  ) {
-    EvaluationContext evaluationContext = config.createExpressionHandler().createEvaluationContext(
-      SecurityContextHolder.getContext().getAuthentication(),
-      new SimpleMethodInvocation(as, triggerCheckMethod, entity));
-
-    return ExpressionUtils.evaluateAsBoolean(parser.parseExpression(securityExpression), evaluationContext);
-  }
-
-  public Set<String> getPermissionsForObject(Object target, DinaAuthorizationService as) {
+  public Set<String> getPermissionsForObject(@NonNull Object target, @NonNull DinaAuthorizationService as) {
     Set<String> permissions = new HashSet<>();
-    Class<?> authServiceClass = as.getClass().getSuperclass();
-    Method authorizeCreate = MethodUtils.getMatchingMethod(authServiceClass, "authorizeCreate", Object.class);
-    Method authorizeUpdate = MethodUtils.getMatchingMethod(authServiceClass, "authorizeUpdate", Object.class);
-    Method authorizeDelete = MethodUtils.getMatchingMethod(authServiceClass, "authorizeDelete", Object.class);
-    if (this.check(as, getPreAuthorizeExpression(authorizeCreate), target, authorizeCreate)) {
+    if (this.checkObjectPreAuthorized(as, target, "authorizeCreate")) {
       permissions.add("create");
     }
-    if (this.check(as, getPreAuthorizeExpression(authorizeUpdate), target, authorizeUpdate)) {
+    if (this.checkObjectPreAuthorized(as, target, "authorizeUpdate")) {
       permissions.add("delete");
     }
-    if (this.check(as, getPreAuthorizeExpression(authorizeDelete), target, authorizeCreate)) {
+    if (this.checkObjectPreAuthorized(as, target, "authorizeDelete")) {
       permissions.add("update");
     }
     return permissions;
   }
 
+  private boolean checkObjectPreAuthorized(
+    @NonNull DinaAuthorizationService as,
+    @NonNull Object entity,
+    @NonNull String methodName
+  ) {
+    Method preAuthorizeMethod = MethodUtils.getMatchingMethod(
+      as.getClass().getSuperclass(), methodName, Object.class);
+
+    EvaluationContext evaluationContext = config.createExpressionHandler().createEvaluationContext(
+      SecurityContextHolder.getContext().getAuthentication(),
+      new SimpleMethodInvocation(as, preAuthorizeMethod, entity));
+
+    return ExpressionUtils.evaluateAsBoolean(
+      parser.parseExpression(getPreAuthorizeExpression(preAuthorizeMethod)), evaluationContext);
+  }
+
   private String getPreAuthorizeExpression(Method matchingMethod) {
     PreAuthorize annotation = matchingMethod.getAnnotation(PreAuthorize.class);
+    if (annotation == null || StringUtils.isBlank(annotation.value())) {
+      throw new IllegalArgumentException("the given method does contain a valid PreAuthorizeAnnotation");
+    }
     return annotation.value();
   }
 
