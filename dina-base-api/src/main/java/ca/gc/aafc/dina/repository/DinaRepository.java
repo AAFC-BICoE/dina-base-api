@@ -189,8 +189,8 @@ public class DinaRepository<D, E extends DinaEntity>
     Set<String> requestHeaderNames = httpRequestContextProvider.getRequestContext().getRequestHeaderNames();
     if (CollectionUtils.isNotEmpty(requestHeaderNames) &&
       requestHeaderNames.stream().anyMatch(rh -> rh.equalsIgnoreCase(PERMISSION_META_HEADER_KEY))) {
-      List<AttributeMetaInfoProvider> providers = ((List<AttributeMetaInfoProvider>)dList);
-      entities.forEach(e -> {//TODO clean
+      List<AttributeMetaInfoProvider> providers = (List<AttributeMetaInfoProvider>)dList;
+      entities.forEach(e -> { //TODO clean
         Set<String> permissions = securityChecker.getPermissionsForObject(e, authorizationService.get());
         providers.stream().filter(d -> d.getUuid().equals(e.getUuid())).findFirst().ifPresent(attributeMetaInfoProvider ->
           attributeMetaInfoProvider.setMeta(AttributeMetaInfoProvider.DinaJsonMetaInfo.builder().permissions(permissions).build()));

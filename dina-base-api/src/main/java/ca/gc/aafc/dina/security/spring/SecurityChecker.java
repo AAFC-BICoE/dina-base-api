@@ -26,7 +26,7 @@ import java.util.Set;
 public final class SecurityChecker {
 
   private final MethodSecurityConfig config;
-  private static final SpelExpressionParser parser = new SpelExpressionParser();
+  private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
   public SecurityChecker(Optional<MethodSecurityConfig> config) {
     this.config = config.orElse(null);
@@ -63,7 +63,7 @@ public final class SecurityChecker {
       new SimpleMethodInvocation(as, preAuthorizeMethod, entity));
 
     return ExpressionUtils.evaluateAsBoolean(
-      parser.parseExpression(getPreAuthorizeExpression(preAuthorizeMethod)), evaluationContext);
+      PARSER.parseExpression(getPreAuthorizeExpression(preAuthorizeMethod)), evaluationContext);
   }
 
   private String getPreAuthorizeExpression(Method matchingMethod) {
