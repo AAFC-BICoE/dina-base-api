@@ -12,9 +12,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.util.SimpleMethodInvocation;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -25,8 +25,11 @@ import java.util.Set;
 @Service
 public final class SecurityChecker {
 
-  @Inject
-  private MethodSecurityConfig config;
+  private final MethodSecurityConfig config;
+
+  public SecurityChecker(Optional<MethodSecurityConfig> config) {
+    this.config = config.orElse(null);
+  }
 
   private static final SpelExpressionParser parser = new SpelExpressionParser();
 
@@ -49,6 +52,10 @@ public final class SecurityChecker {
     @NonNull Object entity,
     @NonNull String methodName
   ) {
+    if (config == null) {
+      return false;
+    }
+
     Method preAuthorizeMethod = MethodUtils.getMatchingMethod(
       as.getClass().getSuperclass(), methodName, Object.class);
 
