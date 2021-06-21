@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.testsupport;
 import static io.restassured.RestAssured.given;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -171,6 +172,21 @@ public class BaseRestAssuredTest {
     return response.then()
         .log().ifValidationFails()
         .statusCode(HttpStatus.OK.value());
+  }
+
+  /**
+   * Construct a Builder for URI instances from the provided URI host and URI path
+   * 
+   * @param host
+   * @param specPath
+   * @return
+   */
+  protected static URIBuilder createSchemaUriBuilder(String host, String specPath) {
+    URIBuilder uriBuilder = new URIBuilder();
+    uriBuilder.setScheme("https");
+    uriBuilder.setHost(host);
+    uriBuilder.setPath(specPath);
+    return uriBuilder;
   }
 
 }
