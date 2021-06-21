@@ -181,7 +181,7 @@ public class BaseRestAssuredTest {
    * @param specPath
    * @return
    */
-  protected URIBuilder createSchemaUriBuilder(String host, String specPath) {
+  protected static URIBuilder createSchemaUriBuilder(String host, String specPath) {
     URIBuilder uriBuilder = new URIBuilder();
     uriBuilder.setScheme("https");
     uriBuilder.setHost(host);
