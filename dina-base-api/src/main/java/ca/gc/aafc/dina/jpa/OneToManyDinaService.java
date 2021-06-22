@@ -3,6 +3,8 @@ package ca.gc.aafc.dina.jpa;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import lombok.NonNull;
+import org.hibernate.FlushMode;
+import org.hibernate.Session;
 import org.springframework.validation.SmartValidator;
 
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.List;
 public abstract class OneToManyDinaService<E extends DinaEntity> extends DefaultDinaService<E> {
 
   private final List<OneToManyFieldHandler<E, ?>> handlers;
+  private final BaseDAO baseDAO;
 
   public OneToManyDinaService(
     BaseDAO baseDAO,
@@ -25,6 +28,7 @@ public abstract class OneToManyDinaService<E extends DinaEntity> extends Default
   ) {
     super(baseDAO, validator);
     this.handlers = handlers;
+    this.baseDAO = baseDAO;
   }
 
   @Override
@@ -35,7 +39,13 @@ public abstract class OneToManyDinaService<E extends DinaEntity> extends Default
 
   @Override
   public E update(E entity) {
+    Session session = baseDAO.createWithEntityManager(em -> em.unwrap(Session.class));
+    FlushMode hibernateFlushMode = session.getHibernateFlushMode();
+
+    session.setHibernateFlushMode(FlushMode.MANUAL);
     handlers.forEach(h -> h.onUpdate(entity, this));
+
+    session.setHibernateFlushMode(hibernateFlushMode);
     return super.update(entity);
   }
 
