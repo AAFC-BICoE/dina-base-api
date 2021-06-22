@@ -76,16 +76,19 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
   @Test
   void childResolution_OnPost() {
-    String parentId = postParentWithChild(firstResourceBId);
-    findParentById(parentId).log().all(true)
+    String expectedInternalChild = RandomStringUtils.randomAlphabetic(3);
+    String parentId = postParentWithChild(firstResourceBId, List.of(expectedInternalChild));
+    findParentById(parentId)
       .body("data.relationships.children.data", Matchers.hasSize(1))
-      .body("data.relationships.children.data[0].id", Matchers.is(firstResourceBId));
+      .body("data.relationships.children.data[0].id", Matchers.is(firstResourceBId))
+      .body("data.attributes.internalChildren[0]", Matchers.is(expectedInternalChild));
     findChildById(firstResourceBId).body("data.relationships.parent.data.id", Matchers.is(parentId));
   }
 
   @Test
   void childResolution_OnPatch_AddAndRemove() {
-    String parentId = postParentWithChild(firstResourceBId);
+    String parentId = postParentWithChild(firstResourceBId, List.of(
+      RandomStringUtils.randomAlphabetic(3), RandomStringUtils.randomAlphabetic(3)));
 
     sendPatch(PARENT_TYPE_NAME, parentId, Map.of(
       "data", Map.of("relationships", Map.of("children", Map.of(
@@ -101,7 +104,8 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
   @Test
   void childResolution_OnPatch_RemoveAll() {
-    String parentId = postParentWithChild(firstResourceBId);
+    String parentId = postParentWithChild(firstResourceBId, List.of(
+      RandomStringUtils.randomAlphabetic(3), RandomStringUtils.randomAlphabetic(3)));
 
     sendPatch(PARENT_TYPE_NAME, parentId, Map.of(
       "data",
@@ -114,7 +118,8 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
   @Test
   void childResolution_OnDelete() {
-    String parentId = postParentWithChild(firstResourceBId);
+    String parentId = postParentWithChild(firstResourceBId, List.of(
+      RandomStringUtils.randomAlphabetic(3), RandomStringUtils.randomAlphabetic(3)));
     findParentById(parentId)
       .body("data.relationships.children.data", Matchers.hasSize(1))
       .body("data.relationships.children.data[0].id", Matchers.is(firstResourceBId));
@@ -124,7 +129,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
   @Test
   void parentResolution_OnPost() {
-    String parentId = postParentWithChild(firstResourceBId);
+    String parentId = postParentWithChild(firstResourceBId, null);
     String childId = postNewChildWithParent(parentId);
     findChildById(childId).body("data.relationships.parent.data.id", Matchers.is(parentId));
     findParentById(parentId)
@@ -134,7 +139,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
   @Test
   void parentResolution_OnPatch_AddAndRemove() {
-    String parentId = postParentWithChild(firstResourceBId);
+    String parentId = postParentWithChild(firstResourceBId, null);
     String childId = postNewChild();
 
     sendPatch(CHILD_TYPE_NAME, childId, Map.of(
@@ -157,7 +162,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
   @Test
   void parentResolution_OnDelete() {
-    String parentId = postParentWithChild(firstResourceBId);
+    String parentId = postParentWithChild(firstResourceBId, null);
     String childId = postNewChildWithParent(parentId);
     findChildById(childId).body("data.relationships.parent.data.id", Matchers.is(parentId));
 
@@ -181,12 +186,12 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
       .get("A/" + id).then();
   }
 
-  private String postParentWithChild(String childId) {
+  private String postParentWithChild(String childId, List<String> internalChildren) {
     return sendPost(
       PARENT_TYPE_NAME,
       JsonAPITestHelper.toJsonAPIMap(
         PARENT_TYPE_NAME,
-        JsonAPITestHelper.toAttributeMap(newParent()),
+        JsonAPITestHelper.toAttributeMap(newParent(internalChildren)),
         Map.of("children", Map.of("data", List.of(Map.of("type", CHILD_TYPE_NAME, "id", childId)))),
         null))
       .extract().body().jsonPath().getString("data.id");
@@ -208,12 +213,11 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
     return sendPost(CHILD_TYPE_NAME, body).extract().body().jsonPath().getString("data.id");
   }
 
-  private static OneToManyHibernateHelperTestConfig.ParentDto newParent() {
+  private static OneToManyHibernateHelperTestConfig.ParentDto newParent(List<String> internalChildren) {
     OneToManyHibernateHelperTestConfig.ParentDto parent = new OneToManyHibernateHelperTestConfig.ParentDto();
     parent.setCreatedBy("dina");
     parent.setGroup("parent");
-    parent.setInternalChildren(List.of(
-      RandomStringUtils.randomAlphabetic(3), RandomStringUtils.randomAlphabetic(3)));
+    parent.setInternalChildren(internalChildren);
     return parent;
   }
 
