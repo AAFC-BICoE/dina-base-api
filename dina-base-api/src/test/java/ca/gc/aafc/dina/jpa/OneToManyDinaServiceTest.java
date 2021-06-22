@@ -87,17 +87,22 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
   @Test
   void childResolution_OnPatch_AddAndRemove() {
-    String parentId = postParentWithChild(firstResourceBId, List.of(
-      RandomStringUtils.randomAlphabetic(3), RandomStringUtils.randomAlphabetic(3)));
+    String parentId = postParentWithChild(
+      firstResourceBId, List.of(RandomStringUtils.randomAlphabetic(3)));
+    String expectedInternalChild = RandomStringUtils.randomAlphabetic(3);
 
     sendPatch(PARENT_TYPE_NAME, parentId, Map.of(
-      "data", Map.of("relationships", Map.of("children", Map.of(
-        "data", List.of(Map.of("type", CHILD_TYPE_NAME, "id", secondResourceBid)))),
+      "data", Map.of(
+        "relationships", Map.of("children", Map.of(
+          "data", List.of(Map.of("type", CHILD_TYPE_NAME, "id", secondResourceBid)))),
+        "attributes", Map.of("internalChildren", List.of(expectedInternalChild)),
         "type", PARENT_TYPE_NAME)));
 
     findParentById(parentId)
       .body("data.relationships.children.data", Matchers.hasSize(1))
-      .body("data.relationships.children.data[0].id", Matchers.is(secondResourceBid));
+      .body("data.relationships.children.data[0].id", Matchers.is(secondResourceBid))
+      .body("data.attributes.internalChildren[0]", Matchers.is(expectedInternalChild));
+
     findChildById(secondResourceBid).body("data.relationships.parent.data.id", Matchers.is(parentId));
     findChildById(firstResourceBId).body("data.relationships.parent.data", Matchers.nullValue());
   }
@@ -285,7 +290,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
       @OneToMany(mappedBy = "parent")
       private List<Child> children;
 
-      @OneToMany(mappedBy = "parent", cascade = CascadeType.PERSIST)
+      @OneToMany(mappedBy = "parent", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
       private List<InternalChild> internalChildren;
 
     }
