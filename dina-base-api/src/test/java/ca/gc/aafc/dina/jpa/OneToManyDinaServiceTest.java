@@ -3,7 +3,10 @@ package ca.gc.aafc.dina.jpa;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.mapper.CustomFieldAdapter;
+import ca.gc.aafc.dina.mapper.DinaFieldAdapter;
 import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.mapper.IgnoreDinaMapping;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
@@ -31,13 +34,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.SmartValidator;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -45,13 +48,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 
 @SpringBootTest(
   classes = {TestDinaBaseApp.class, OneToManyDinaServiceTest.OneToManyHibernateHelperTestConfig.class},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Transactional
 class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
   public static final String PARENT_TYPE_NAME = "A";
@@ -72,7 +77,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
   @Test
   void childResolution_OnPost() {
     String parentId = postParentWithChild(firstResourceBId);
-    findParentById(parentId)
+    findParentById(parentId).log().all(true)
       .body("data.relationships.children.data", Matchers.hasSize(1))
       .body("data.relationships.children.data[0].id", Matchers.is(firstResourceBId));
     findChildById(firstResourceBId).body("data.relationships.parent.data.id", Matchers.is(parentId));
@@ -181,7 +186,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
       PARENT_TYPE_NAME,
       JsonAPITestHelper.toJsonAPIMap(
         PARENT_TYPE_NAME,
-        JsonAPITestHelper.toAttributeMap(newDtoA()),
+        JsonAPITestHelper.toAttributeMap(newParent()),
         Map.of("children", Map.of("data", List.of(Map.of("type", CHILD_TYPE_NAME, "id", childId)))),
         null))
       .extract().body().jsonPath().getString("data.id");
@@ -203,10 +208,12 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
     return sendPost(CHILD_TYPE_NAME, body).extract().body().jsonPath().getString("data.id");
   }
 
-  private static OneToManyHibernateHelperTestConfig.ParentDto newDtoA() {
+  private static OneToManyHibernateHelperTestConfig.ParentDto newParent() {
     OneToManyHibernateHelperTestConfig.ParentDto parent = new OneToManyHibernateHelperTestConfig.ParentDto();
     parent.setCreatedBy("dina");
     parent.setGroup("parent");
+    parent.setInternalChildren(List.of(
+      RandomStringUtils.randomAlphabetic(3), RandomStringUtils.randomAlphabetic(3)));
     return parent;
   }
 
@@ -273,11 +280,16 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
       @OneToMany(mappedBy = "parent")
       private List<Child> children;
+
+      @OneToMany(mappedBy = "parent", cascade = CascadeType.PERSIST)
+      private List<InternalChild> internalChildren;
+
     }
 
     @Data
     @JsonApiResource(type = "A")
     @RelatedEntity(Parent.class)
+    @CustomFieldAdapter(adapters = ParentDto.InternalChildAdapter.class)
     public static class ParentDto {
       @JsonApiId
       private UUID uuid;
@@ -287,6 +299,48 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
       @JsonApiRelation
       private List<ChildDto> children;
+
+      @IgnoreDinaMapping(reason = "custom mapped")
+      private List<String> internalChildren;
+
+      public static class InternalChildAdapter
+        implements DinaFieldAdapter<
+        ParentDto,
+        Parent,
+        List<String>,
+        List<InternalChild>> {
+        @Override
+        public List<String> toDTO(List<InternalChild> internalChildren) {
+          return internalChildren == null ? null : internalChildren.stream()
+            .map(InternalChild::getName).collect(Collectors.toList());
+        }
+
+        @Override
+        public List<InternalChild> toEntity(List<String> strings) {
+          return strings == null ? null : strings.stream()
+            .map(s -> InternalChild.builder().name(s).build()).collect(Collectors.toList());
+        }
+
+        @Override
+        public Consumer<List<InternalChild>> entityApplyMethod(Parent entityRef) {
+          return entityRef::setInternalChildren;
+        }
+
+        @Override
+        public Consumer<List<String>> dtoApplyMethod(ParentDto dtoRef) {
+          return dtoRef::setInternalChildren;
+        }
+
+        @Override
+        public Supplier<List<InternalChild>> entitySupplyMethod(Parent entityRef) {
+          return entityRef::getInternalChildren;
+        }
+
+        @Override
+        public Supplier<List<String>> dtoSupplyMethod(ParentDto dtoRef) {
+          return dtoRef::getInternalChildren;
+        }
+      }
     }
 
     @Data
@@ -323,6 +377,21 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
       private ParentDto parent;
     }
 
+    @Data
+    @Entity
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class InternalChild {
+      @Id
+      @GeneratedValue
+      private Integer id;
+      @ManyToOne
+      private Parent parent;
+      @Column(name = "name", unique = true)
+      private String name;
+    }
+
     @Service
     public static class ParentService extends OneToManyDinaService<Parent> {
 
@@ -334,7 +403,10 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
           List.of(
             new OneToManyFieldHandler<>(Child.class, child -> child::setParent, Parent::getChildren,
               "parent", child -> child.setParent(null),
-              (child, child2) -> child.getUuid().equals(child2.getUuid()))));
+              (child, child2) -> child.getUuid().equals(child2.getUuid())),
+            new OneToManyFieldHandler<>(InternalChild.class, child -> child::setParent,
+              Parent::getInternalChildren, "parent",
+              baseDAO::delete, (child, child2) -> child.getName().equalsIgnoreCase(child2.getName()))));
       }
 
       @Override
