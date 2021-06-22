@@ -1,16 +1,13 @@
 package ca.gc.aafc.dina.jpa;
 
-import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.service.DinaService;
 import org.apache.commons.collections.CollectionUtils;
 
 import javax.persistence.criteria.Predicate;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Helper class to resolve one to many relations for Parent resources.
@@ -48,21 +45,25 @@ public final class OneToManyHibernateHelper {
    * @param orphanHandler    consumer to handle the evaluated orphans
    * @param <E>              Child type
    */
-  public static <E extends DinaEntity> void handleOrphans(
+  public static <E> void handleOrphans(
     List<E> currentChildren,
     List<E> incomingChildren,
+    BiFunction<E, E, Boolean> childEqualityMethod,
     Consumer<E> orphanHandler
   ) {
-    Map<UUID, E> oldChildrenById = currentChildren == null ? Map.of() : currentChildren.stream()
-      .collect(Collectors.toMap(DinaEntity::getUuid, Function.identity()));
-    Map<UUID, E> newChildrenByID = incomingChildren == null ? Map.of() : incomingChildren.stream()
-      .collect(Collectors.toMap(DinaEntity::getUuid, Function.identity()));
+    if (CollectionUtils.isEmpty(currentChildren) || childEqualityMethod == null || orphanHandler == null) {
+      return;
+    }
 
-    oldChildrenById.forEach((uuid, dinaEntity) -> {
-      if (!newChildrenByID.containsKey(uuid)) {
-        orphanHandler.accept(dinaEntity);
-      }
-    });
+    if (CollectionUtils.isEmpty(incomingChildren)) {
+      currentChildren.forEach(orphanHandler);
+    } else {
+      currentChildren.forEach(current -> {
+        if (incomingChildren.stream().noneMatch(incoming -> childEqualityMethod.apply(current, incoming))) {
+          orphanHandler.accept(current);
+        }
+      });
+    }
   }
 
   /**

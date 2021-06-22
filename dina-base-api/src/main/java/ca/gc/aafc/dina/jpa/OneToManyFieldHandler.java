@@ -1,10 +1,10 @@
 package ca.gc.aafc.dina.jpa;
 
-import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.service.DinaService;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -16,7 +16,7 @@ import java.util.function.Function;
  * @param <P> Parent type
  */
 @RequiredArgsConstructor
-public class OneToManyFieldHandler<P, C extends DinaEntity> {
+public class OneToManyFieldHandler<P, C> {
 
   /* Class type of the child resource */
   private final Class<C> childClassType;
@@ -32,6 +32,8 @@ public class OneToManyFieldHandler<P, C extends DinaEntity> {
 
   /* Method to handle orphaned children of the parent resource */
   private final Consumer<C> orphanHandler;
+
+  private final BiFunction<C, C, Boolean> childEqualityMethod;
 
   /**
    * Handles create operations to link associations of children to a given parent.
@@ -52,6 +54,7 @@ public class OneToManyFieldHandler<P, C extends DinaEntity> {
     OneToManyHibernateHelper.handleOrphans(
       OneToManyHibernateHelper.findByParent(childClassType, parentFieldName, parent, dinaService),
       childSupplyMethod.apply(parent),
+      childEqualityMethod,
       orphanHandler
     );
     OneToManyHibernateHelper.linkChildren(childSupplyMethod.apply(parent), parent, parentApplyMethod);
@@ -63,7 +66,8 @@ public class OneToManyFieldHandler<P, C extends DinaEntity> {
    * @param parent parent with orphans to resolve
    */
   public void onDelete(P parent) {
-    OneToManyHibernateHelper.handleOrphans(childSupplyMethod.apply(parent), null, orphanHandler);
+    OneToManyHibernateHelper.handleOrphans(
+      childSupplyMethod.apply(parent), null, childEqualityMethod, orphanHandler);
   }
 
 }

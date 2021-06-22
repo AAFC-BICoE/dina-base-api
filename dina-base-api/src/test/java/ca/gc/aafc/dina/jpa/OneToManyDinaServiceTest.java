@@ -333,7 +333,8 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
         super(baseDAO, validator,
           List.of(
             new OneToManyFieldHandler<>(Child.class, child -> child::setParent, Parent::getChildren,
-              "parent", child -> child.setParent(null))));
+              "parent", child -> child.setParent(null),
+              (child, child2) -> child.getUuid().equals(child2.getUuid()))));
       }
 
       @Override
