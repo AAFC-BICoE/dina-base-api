@@ -118,9 +118,13 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
     sendPatch(PARENT_TYPE_NAME, parentId, Map.of(
       "data",
       Map.of("relationships",
-        Map.of("children", Map.of("data", List.of())), "type", PARENT_TYPE_NAME)));
+        Map.of("children", Map.of("data", List.of())),
+        "attributes", Map.of("internalChildren", List.of()),
+        "type", PARENT_TYPE_NAME)));
 
-    findParentById(parentId).body("data.relationships.children.data", Matchers.empty());
+    findParentById(parentId)
+      .body("data.relationships.children.data", Matchers.empty())
+      .body("data.attributes.internalChildren", Matchers.empty());
     findChildById(firstResourceBId).body("data.relationships.parent.data", Matchers.nullValue());
   }
 
