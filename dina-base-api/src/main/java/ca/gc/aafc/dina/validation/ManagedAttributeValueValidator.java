@@ -4,7 +4,6 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.entity.ManagedAttribute.ManagedAttributeType;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -79,7 +78,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
    * @param errors
    * @return true if the validation of the value should proceed or false if it should not since there is already an error
    */
-  protected boolean preValidateValue(E managedAttributeDefinition, String value, Errors errors){
+  protected boolean preValidateValue(E managedAttributeDefinition, String value, Errors errors) {
     return true;
   }
 
