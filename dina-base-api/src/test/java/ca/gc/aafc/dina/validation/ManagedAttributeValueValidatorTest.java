@@ -86,6 +86,19 @@ public class ManagedAttributeValueValidatorTest {
   }
 
   @Test
+  void validate_WhenPreValidationFailsExceptionThrown() {
+    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
+        name(RandomStringUtils.randomAlphabetic(6))
+        .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
+        .failValidateValue(true)
+        .build();
+    testManagedAttributeService.create(testManagedAttribute);
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), "2");
+    assertThrows(ValidationException.class,
+        () -> validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav));
+  }
+
+  @Test
   public void assignedValueContainedInAcceptedValues_validationPasses() {
     testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
       name("My special Attribute").acceptedValues(new String[]{"val1", "val2"}).build();
