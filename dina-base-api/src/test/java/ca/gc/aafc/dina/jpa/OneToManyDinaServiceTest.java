@@ -20,6 +20,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.hibernate.annotations.NaturalId;
@@ -41,7 +42,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.criteria.Predicate;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -421,6 +424,29 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
       @Override
       protected void preCreate(Parent entity) {
         entity.setUuid(UUID.randomUUID());
+      }
+
+      @Override
+      public void preHandleUpdate(Parent entity) {
+        if (CollectionUtils.isNotEmpty(entity.getInternalChildren())) {
+          List<InternalChild> resolved = new ArrayList<>();
+          entity.getInternalChildren().forEach(incoming -> {
+            Optional<InternalChild> byName = findByName(incoming.getName());
+            byName.ifPresentOrElse(resolved::add, () -> resolved.add(incoming));
+          });
+          entity.setInternalChildren(resolved);
+        }
+      }
+
+      private Optional<InternalChild> findByName(String name) {
+        return this.findAll(
+          InternalChild.class,
+          (criteriaBuilder, root, em) -> new Predicate[]{
+            criteriaBuilder.equal(root.get("name"), name)
+          },
+          null,
+          0,
+          Integer.MAX_VALUE).stream().findFirst();
       }
 
     }

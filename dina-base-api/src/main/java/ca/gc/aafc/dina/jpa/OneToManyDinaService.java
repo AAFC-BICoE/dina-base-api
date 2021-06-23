@@ -33,26 +33,49 @@ public abstract class OneToManyDinaService<E extends DinaEntity> extends Default
 
   @Override
   public E create(E entity) {
-    handlers.forEach(h -> h.onCreate(entity));
+    runStateless(() -> {
+      preHandleCreate(entity);
+      handlers.forEach(h -> h.onCreate(entity));
+    });
     return super.create(entity);
   }
 
   @Override
   public E update(E entity) {
-    Session session = baseDAO.createWithEntityManager(em -> em.unwrap(Session.class));
-    FlushMode hibernateFlushMode = session.getHibernateFlushMode();
+    runStateless(() -> {
+      preHandleUpdate(entity);
+      handlers.forEach(h -> h.onUpdate(entity, this));
+    });
 
-    session.setHibernateFlushMode(FlushMode.MANUAL);
-    handlers.forEach(h -> h.onUpdate(entity, this));
-
-    session.setHibernateFlushMode(hibernateFlushMode);
     return super.update(entity);
   }
 
   @Override
   public void delete(E entity) {
-    handlers.forEach(h -> h.onDelete(entity));
+    runStateless(() -> {
+      preHandleDelete(entity);
+      handlers.forEach(h -> h.onDelete(entity));
+    });
     super.delete(entity);
+  }
+
+  public void preHandleCreate(E entity) {
+  }
+
+  public void preHandleUpdate(E entity) {
+  }
+
+  public void preHandleDelete(E entity) {
+  }
+
+  public void runStateless(Runnable runnable) {
+    Session session = baseDAO.createWithEntityManager(em -> em.unwrap(Session.class));
+    FlushMode hibernateFlushMode = session.getHibernateFlushMode();
+    session.setHibernateFlushMode(FlushMode.MANUAL);
+    if (runnable != null) {
+      runnable.run();
+    }
+    session.setHibernateFlushMode(hibernateFlushMode);
   }
 
 }
