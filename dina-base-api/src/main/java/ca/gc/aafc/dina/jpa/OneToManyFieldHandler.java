@@ -33,6 +33,7 @@ public class OneToManyFieldHandler<P, C> {
   /* Method to handle orphaned children of the parent resource */
   private final Consumer<C> orphanHandler;
 
+  /* Method to determine if two children represent the same resource */
   private final BiFunction<C, C, Boolean> childEqualityMethod;
 
   /**
