@@ -16,8 +16,10 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
 import org.springframework.web.context.annotation.RequestScope;
 
 import javax.inject.Inject;
@@ -60,7 +62,22 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
-    super.configure(http);
+    http
+    .csrf().requireCsrfProtectionMatcher(keycloakCsrfRequestMatcher())
+    .and()
+    .sessionManagement()
+    .sessionAuthenticationStrategy(sessionAuthenticationStrategy())
+    .and()
+    .addFilterBefore(keycloakPreAuthActionsFilter(), LogoutFilter.class)
+    .addFilterBefore(keycloakAuthenticationProcessingFilter(), LogoutFilter.class)
+    .addFilterAfter(keycloakSecurityContextRequestFilter(), SecurityContextHolderAwareRequestFilter.class)
+    .addFilterAfter(keycloakAuthenticatedActionsRequestFilter(), SecurityContextHolderAwareRequestFilter.class)
+    .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint())
+    .and()
+    .logout()
+    .addLogoutHandler(keycloakLogoutHandler())
+    .logoutUrl("/sso/logout").permitAll()
+    .logoutSuccessUrl("/");
 
     // Need to disable CSRF for Postman and testing
     http.csrf().disable();
