@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.validation.Errors;
 import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
@@ -58,7 +59,18 @@ public class ManagedAttributeServiceIT {
     public ManagedAttributeValueValidator<TestManagedAttribute> managedAttributeValueValidator(
         @Named("validationMessageSource") MessageSource messageSource,
         @NonNull ManagedAttributeService<TestManagedAttribute> dinaService) {
-      return new ManagedAttributeValueValidator<>(messageSource, dinaService);
+
+      return new ManagedAttributeValueValidator<>(messageSource, dinaService) {
+        @Override
+        protected boolean preValidateValue(TestManagedAttribute managedAttributeDefinition,
+            String value, Errors errors) {
+          if(managedAttributeDefinition.isFailValidateValue()) {
+            errors.reject("failValidateValue is true");
+            return false;
+          }
+          return true;
+        }
+      };
     }
   }
 
@@ -76,6 +88,8 @@ public class ManagedAttributeServiceIT {
     private String[] acceptedValues;
     private String createdBy;
     private OffsetDateTime createdOn;
+    //for testing purpose
+    private boolean failValidateValue;
   }
 
   @Data
