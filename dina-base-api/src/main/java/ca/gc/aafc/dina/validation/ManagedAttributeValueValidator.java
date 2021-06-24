@@ -57,15 +57,29 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
       ManagedAttributeType maType = ma.getManagedAttributeType();
       String assignedValue = map.get(key);
 
-      if (maType == ManagedAttributeType.INTEGER && !INTEGER_PATTERN.matcher(assignedValue).matches()) {
-        errors.reject(MANAGED_ATTRIBUTE_INVALID_VALUE, getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
-      }
+      if(preValidateValue(ma, assignedValue, errors)) {
+        if (maType == ManagedAttributeType.INTEGER && !INTEGER_PATTERN.matcher(assignedValue).matches()) {
+          errors.reject(MANAGED_ATTRIBUTE_INVALID_VALUE,
+              getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
+        }
 
-      String[] acceptedValues = ma.getAcceptedValues();
-      if (isNotAnAcceptedValue(assignedValue, acceptedValues)) {
-        errors.reject(MANAGED_ATTRIBUTE_INVALID_VALUE, getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
+        String[] acceptedValues = ma.getAcceptedValues();
+        if (isNotAnAcceptedValue(assignedValue, acceptedValues)) {
+          errors.reject(MANAGED_ATTRIBUTE_INVALID_VALUE, getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
+        }
       }
     });
+  }
+
+  /**
+   * Override this method to add additional validation before a value is validated for a specific managed attribute.
+   * @param managedAttributeDefinition
+   * @param value
+   * @param errors
+   * @return true if the validation of the value should proceed or false if it should not since there is already an error
+   */
+  protected boolean preValidateValue(E managedAttributeDefinition, String value, Errors errors) {
+    return true;
   }
 
   /**
