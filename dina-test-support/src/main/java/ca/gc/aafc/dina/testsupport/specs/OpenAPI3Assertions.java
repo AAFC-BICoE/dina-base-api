@@ -2,13 +2,13 @@ package ca.gc.aafc.dina.testsupport.specs;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.openapi4j.core.exception.EncodeException;
 import org.openapi4j.core.exception.ResolutionException;
 import org.openapi4j.core.model.reference.Reference;
 import org.openapi4j.core.model.v3.OAI3;
+import org.openapi4j.core.model.v3.OAI3SchemaKeywords;
 import org.openapi4j.core.validation.ValidationException;
 import org.openapi4j.parser.OpenApi3Parser;
 import org.openapi4j.parser.model.v3.OpenApi3;
@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -130,7 +129,10 @@ public final class OpenAPI3Assertions {
     SchemaValidator schemaValidator;
     try {
       ValidationContext<OAI3> context = new ValidationContext<>(openApi.getContext());
-      JsonNode schemaNode = loadSchemaAsJsonNode(openApi, schemaName, strictMode);
+      if (strictMode) {
+        context.addValidator(OAI3SchemaKeywords.PROPERTIES, MandatoryFieldValidator::new);
+      }
+      JsonNode schemaNode = loadSchemaAsJsonNode(openApi, schemaName);
       if (schemaNode == null ) {
         fail("can't find schema " + schemaName);
       }
@@ -161,21 +163,16 @@ public final class OpenAPI3Assertions {
    *
    * @param openApi
    * @param schemaName
-   * @param strictMode strict mode will make all the fields from the schema required to make sure a
-   *                   complete api response is valid.
    * @return the schema as {@link JsonNode}
    * @throws EncodeException
    */
-  private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName, boolean strictMode)
+  private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName)
       throws EncodeException {
 
     // try to locate the schema in the main OpenAPI3 file
     if (openApi.getComponents() != null) {
       Schema schema = openApi.getComponents().getSchema(schemaName);
       if (schema != null) {
-        if (strictMode) {
-          setAllFieldsRequired(schema);
-        }
         return schema.toNode();
       }
     }
@@ -183,32 +180,6 @@ public final class OpenAPI3Assertions {
     // then, try to reach it be refs from the paths
     Set<String> filenamesFromPathRefs = getFilenamesFromPathRefs(openApi);
     return loadFirstFoundSchema(openApi, filenamesFromPathRefs, schemaName);
-  }
-
-  private static void setAllFieldsRequired(@NonNull Schema schema) {
-    Map<String, Schema> properties = schema.getProperties();
-    if (properties != null && properties.containsKey("data")) {
-      Schema data = properties.get("data");
-
-      // if nothing to set just exit
-      if (data == null || data.getProperties() == null) {
-        return;
-      }
-
-      if (data.getProperties().containsKey("attributes")) {
-        Schema attributes = data.getProperties().get("attributes");
-        attributes.setAdditionalPropertiesAllowed(false);
-        attributes.setRequiredFields(new ArrayList<>(attributes.getProperties().keySet()));
-      }
-
-      if (data.getProperties().containsKey("relationships")) {
-        data.addRequiredField("relationships");
-        Schema relations = data.getProperties().get("relationships");
-        relations.setAdditionalPropertiesAllowed(false);
-        relations.setRequiredFields(new ArrayList<>(relations.getProperties().keySet()));
-      }
-
-    }
   }
 
   /**
