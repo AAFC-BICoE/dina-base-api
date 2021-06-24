@@ -29,6 +29,7 @@ class MandatoryFieldValidator extends BaseJsonValidator<OAI3> {
     = new ValidationResults.CrumbInfo(ADDITIONALPROPERTIES, true);
 
   private final Set<String> requiredAttributes = new HashSet<>();
+  private final Set<String> requiredRelations = new HashSet<>();
 
   protected MandatoryFieldValidator(
     ValidationContext<OAI3> context,
@@ -37,29 +38,43 @@ class MandatoryFieldValidator extends BaseJsonValidator<OAI3> {
     SchemaValidator parentSchema
   ) {
     super(context, schemaNode, schemaParentNode, parentSchema);
-    schemaNode.fieldNames().forEachRemaining(s -> {
-      if (s.equalsIgnoreCase("attributes")) {
+    schemaNode.fieldNames().forEachRemaining(node -> {
+      if (node.equalsIgnoreCase("attributes")) {
         JsonNode attributesNode = schemaNode.at("/attributes/" + OAI3SchemaKeywords.PROPERTIES);
         attributesNode.fieldNames().forEachRemaining(requiredAttributes::add);
+      }
+      if (node.equalsIgnoreCase("relationships")) {
+        JsonNode attributesNode = schemaNode.at("/relationships/" + OAI3SchemaKeywords.PROPERTIES);
+        attributesNode.fieldNames().forEachRemaining(requiredRelations::add);
       }
     });
   }
 
   @Override
   public boolean validate(JsonNode valueNode, ValidationData<?> validation) {
-    if (!requiredAttributes.isEmpty()) {
-      valueNode.at("/attributes").fieldNames().forEachRemaining(field -> {
-        if (requiredAttributes.stream().noneMatch(attrib -> attrib.equalsIgnoreCase(field))) {
+    validateRequiredFields(valueNode, validation, requiredAttributes, "attributes");
+    validateRequiredFields(valueNode, validation, requiredRelations, "relationships");
+    return true;
+  }
+
+  private void validateRequiredFields(
+    JsonNode valueNode,
+    ValidationData<?> validation,
+    Set<String> requiredFieldNames,
+    String blockName
+  ) {
+    if (!requiredFieldNames.isEmpty()) {
+      valueNode.at("/" + blockName).fieldNames().forEachRemaining(field -> {
+        if (requiredFieldNames.stream().noneMatch(attrib -> attrib.equalsIgnoreCase(field))) {
           validation.add(ADDITIONAL_FIELD_CRUMB, ADDITIONAL_FIELD_ERROR, field);
         }
       });
 
-      for (String fieldName : requiredAttributes) {
-        if (valueNode.at("/attributes/" + fieldName).isMissingNode()) {
+      for (String fieldName : requiredFieldNames) {
+        if (valueNode.at("/" + blockName + "/" + fieldName).isMissingNode()) {
           validation.add(CRUMB_MISSING_FIELD, MISSING_FIELD_ERROR, fieldName);
         }
       }
     }
-    return true;
   }
 }
