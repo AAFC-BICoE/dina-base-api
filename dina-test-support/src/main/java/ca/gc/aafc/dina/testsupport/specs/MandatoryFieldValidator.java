@@ -28,7 +28,7 @@ class MandatoryFieldValidator extends BaseJsonValidator<OAI3> {
   private static final ValidationResults.CrumbInfo ADDITIONAL_FIELD_CRUMB
     = new ValidationResults.CrumbInfo(ADDITIONALPROPERTIES, true);
 
-  private final Set<String> attributes = new HashSet<>();
+  private final Set<String> requiredAttributes = new HashSet<>();
 
   protected MandatoryFieldValidator(
     ValidationContext<OAI3> context,
@@ -40,27 +40,21 @@ class MandatoryFieldValidator extends BaseJsonValidator<OAI3> {
     schemaNode.fieldNames().forEachRemaining(s -> {
       if (s.equalsIgnoreCase("attributes")) {
         JsonNode attributesNode = schemaNode.at("/attributes/" + OAI3SchemaKeywords.PROPERTIES);
-        attributesNode.fieldNames().forEachRemaining(attributes::add);
+        attributesNode.fieldNames().forEachRemaining(requiredAttributes::add);
       }
     });
   }
 
   @Override
   public boolean validate(JsonNode valueNode, ValidationData<?> validation) {
-    if (attributes.isEmpty()) {
-      return true;
-    } else {
-      JsonNode attribNode = valueNode.at("/attributes");
+    if (!requiredAttributes.isEmpty()) {
+      valueNode.at("/attributes").fieldNames().forEachRemaining(field -> {
+        if (requiredAttributes.stream().noneMatch(attrib -> attrib.equalsIgnoreCase(field))) {
+          validation.add(ADDITIONAL_FIELD_CRUMB, ADDITIONAL_FIELD_ERROR, field);
+        }
+      });
 
-      if (attribNode.isObject()) {
-        attribNode.fieldNames().forEachRemaining(field -> {
-          if (attributes.stream().noneMatch(attrib -> attrib.equalsIgnoreCase(field))) {
-            validation.add(ADDITIONAL_FIELD_CRUMB, ADDITIONAL_FIELD_ERROR, field);
-          }
-        });
-      }
-
-      for (String fieldName : attributes) {
+      for (String fieldName : requiredAttributes) {
         if (valueNode.at("/attributes/" + fieldName).isMissingNode()) {
           validation.add(CRUMB_MISSING_FIELD, MISSING_FIELD_ERROR, fieldName);
         }
