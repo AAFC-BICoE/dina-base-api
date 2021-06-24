@@ -89,6 +89,20 @@ public class OpenAPI3AssertionsTest {
          "ManagedAttribute", responseJson);
   }
 
+  @Test
+  public void assertSchema_WhenReferencedByPath_ValidationEnabled() throws IOException {
+    URL specsUrl = this.getClass().getResource("/customPath.yaml");
+    Assertions.assertThrows(
+      AssertionFailedError.class,
+      () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute",
+        TestResourceHelper.readContentAsString("missingAttribute.json")));
+    Assertions.assertThrows(
+      AssertionFailedError.class,
+      () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute",
+        TestResourceHelper.readContentAsString("missingRelation.json")));
+    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute",
+      TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json"));
+  }
 
   @Test
   public void assertEndPointTest() {
