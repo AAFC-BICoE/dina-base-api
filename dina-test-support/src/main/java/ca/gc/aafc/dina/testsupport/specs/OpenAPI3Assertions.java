@@ -130,7 +130,7 @@ public final class OpenAPI3Assertions {
     try {
       ValidationContext<OAI3> context = new ValidationContext<>(openApi.getContext());
       if (strictMode) {
-        context.addValidator(OAI3SchemaKeywords.PROPERTIES, MandatoryFieldValidator::new);
+        context.addValidator(OAI3SchemaKeywords.PROPERTIES, RestrictiveFieldValidator::new);
       }
       JsonNode schemaNode = loadSchemaAsJsonNode(openApi, schemaName);
       if (schemaNode == null ) {

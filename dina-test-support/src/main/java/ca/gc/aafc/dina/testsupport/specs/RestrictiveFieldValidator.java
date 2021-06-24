@@ -18,7 +18,11 @@ import static org.openapi4j.core.model.v3.OAI3SchemaKeywords.ADDITIONALPROPERTIE
 import static org.openapi4j.core.model.v3.OAI3SchemaKeywords.REQUIRED;
 import static org.openapi4j.core.validation.ValidationSeverity.ERROR;
 
-class MandatoryFieldValidator extends BaseJsonValidator<OAI3> {
+/**
+ * Used for Open api response validation. Ensures all attributes and relations are present in the response and
+ * does not allow additional fields.
+ */
+class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
 
   private static final ValidationResult MISSING_FIELD_ERROR =
     new ValidationResult(ERROR, 1026, "Field '%s' is required.");
@@ -40,7 +44,7 @@ class MandatoryFieldValidator extends BaseJsonValidator<OAI3> {
   private final Set<String> requiredAttributes = new HashSet<>();
   private final Set<String> requiredRelations = new HashSet<>();
 
-  protected MandatoryFieldValidator(
+  protected RestrictiveFieldValidator(
     ValidationContext<OAI3> context,
     JsonNode schemaNode,
     JsonNode schemaParentNode,
