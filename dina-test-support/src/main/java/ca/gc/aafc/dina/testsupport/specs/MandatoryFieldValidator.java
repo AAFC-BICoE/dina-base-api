@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.testsupport.specs;
 
+import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.openapi4j.core.model.v3.OAI3;
 import org.openapi4j.core.model.v3.OAI3SchemaKeywords;
@@ -19,14 +20,22 @@ import static org.openapi4j.core.validation.ValidationSeverity.ERROR;
 
 class MandatoryFieldValidator extends BaseJsonValidator<OAI3> {
 
-  private static final ValidationResult MISSING_FIELD_ERROR
-    = new ValidationResult(ERROR, 1026, "Field '%s' is required.");
+  private static final ValidationResult MISSING_FIELD_ERROR =
+    new ValidationResult(ERROR, 1026, "Field '%s' is required.");
   private static final ValidationResults.CrumbInfo CRUMB_MISSING_FIELD =
     new ValidationResults.CrumbInfo(REQUIRED, true);
-  private static final ValidationResult ADDITIONAL_FIELD_ERROR
-    = new ValidationResult(ERROR, 1000, "Additional property '%s' is not allowed.");
-  private static final ValidationResults.CrumbInfo ADDITIONAL_FIELD_CRUMB
-    = new ValidationResults.CrumbInfo(ADDITIONALPROPERTIES, true);
+  private static final ValidationResult ADDITIONAL_FIELD_ERROR =
+    new ValidationResult(ERROR, 1000, "Additional property '%s' is not allowed.");
+  private static final ValidationResults.CrumbInfo ADDITIONAL_FIELD_CRUMB =
+    new ValidationResults.CrumbInfo(ADDITIONALPROPERTIES, true);
+
+  public static final String ATTRIBUTES_BLOCK_NAME = "attributes";
+  public static final String RELATIONSHIPS_BLOCK_NAME = "relationships";
+
+  public static final JsonPointer ATTRIB_POINTER =
+    JsonPointer.compile("/" + ATTRIBUTES_BLOCK_NAME + "/" + OAI3SchemaKeywords.PROPERTIES);
+  public static final JsonPointer RELATION_POINTER =
+    JsonPointer.compile("/" + RELATIONSHIPS_BLOCK_NAME + "/" + OAI3SchemaKeywords.PROPERTIES);
 
   private final Set<String> requiredAttributes = new HashSet<>();
   private final Set<String> requiredRelations = new HashSet<>();
@@ -39,12 +48,12 @@ class MandatoryFieldValidator extends BaseJsonValidator<OAI3> {
   ) {
     super(context, schemaNode, schemaParentNode, parentSchema);
     schemaNode.fieldNames().forEachRemaining(node -> {
-      if (node.equalsIgnoreCase("attributes")) {
-        JsonNode attributesNode = schemaNode.at("/attributes/" + OAI3SchemaKeywords.PROPERTIES);
+      if (node.equalsIgnoreCase(ATTRIBUTES_BLOCK_NAME)) {
+        JsonNode attributesNode = schemaNode.at(ATTRIB_POINTER);
         attributesNode.fieldNames().forEachRemaining(requiredAttributes::add);
       }
-      if (node.equalsIgnoreCase("relationships")) {
-        JsonNode attributesNode = schemaNode.at("/relationships/" + OAI3SchemaKeywords.PROPERTIES);
+      if (node.equalsIgnoreCase(RELATIONSHIPS_BLOCK_NAME)) {
+        JsonNode attributesNode = schemaNode.at(RELATION_POINTER);
         attributesNode.fieldNames().forEachRemaining(requiredRelations::add);
       }
     });
@@ -52,12 +61,12 @@ class MandatoryFieldValidator extends BaseJsonValidator<OAI3> {
 
   @Override
   public boolean validate(JsonNode valueNode, ValidationData<?> validation) {
-    validateRequiredFields(valueNode, validation, requiredAttributes, "attributes");
-    validateRequiredFields(valueNode, validation, requiredRelations, "relationships");
+    validateRequiredFields(valueNode, validation, requiredAttributes, ATTRIBUTES_BLOCK_NAME);
+    validateRequiredFields(valueNode, validation, requiredRelations, RELATIONSHIPS_BLOCK_NAME);
     return true;
   }
 
-  private void validateRequiredFields(
+  private static void validateRequiredFields(
     JsonNode valueNode,
     ValidationData<?> validation,
     Set<String> requiredFieldNames,
