@@ -1,0 +1,19 @@
+openapi: 3.0.0
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/AAFC/test/1.0.0
+info:
+  description: Managed attributes schema
+  version: "1.0.0"
+  title: Managed attributes schema
+  contact:
+    email: you@your-company.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+
+paths:
+  /v1/managed-attribute:
+    $ref: 'managedAttribute.yaml#/paths/~1v1~1managed-attribute'
+  /v1/managed-attribute/{Id}:
+    $ref: 'managedAttribute.yaml#/paths/~1v1~1managed-attribute~1{Id}'
