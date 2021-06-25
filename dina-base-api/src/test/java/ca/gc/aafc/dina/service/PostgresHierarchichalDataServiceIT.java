@@ -33,7 +33,6 @@ public class PostgresHierarchichalDataServiceIT {
     ).getArray();
     
     assertEquals("Hierarchy should have three elements", 3, hierarchy.length);
-    assertTrue(true, "wrong");
 
   }
   
