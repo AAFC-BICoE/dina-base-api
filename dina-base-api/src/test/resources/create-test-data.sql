@@ -29,18 +29,19 @@ INSERT INTO public.dina_test_table(
 VALUES (2, 'row_two', 2, '{"attr_02": "val_02"}');
 
 
-CREATE TABLE public.hierarchy_test_table
+CREATE TABLE hierarchy_test_table
 (
     id integer NOT NULL,
     name text NOT NULL,
     parent_id integer,
-    FOREIGN KEY (parent_id),
     CONSTRAINT hierarchy_table_pkey PRIMARY KEY (id)
+);
 
-)
+ALTER TABLE hierarchy_test_table ADD CONSTRAINT fk_parent
+    FOREIGN KEY (parent_id) references hierarchy_test_table(id);
 
 INSERT INTO public.hierarchy_test_table(
-   id, name, parent_id)
+    id, name, parent_id)
 VALUES 
  	(1, 'a1', NULL), 
 	(2, 'a2', 1),
