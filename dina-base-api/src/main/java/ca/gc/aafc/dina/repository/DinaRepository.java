@@ -104,7 +104,7 @@ public class DinaRepository<D, E extends DinaEntity>
    * @param querySpec - query spec of the request
    * @return - list of resources
    */
-  @Transactional(readOnly=true)
+  @Transactional(readOnly = true)
   @Override
   public D findOne(Serializable id, QuerySpec querySpec) {
     querySpec.setLimit(1L);
@@ -137,7 +137,7 @@ public class DinaRepository<D, E extends DinaEntity>
    * @param querySpec - query spec of the request
    * @return - list of resources
    */
-  @Transactional(readOnly=true)
+  @Transactional(readOnly = true)
   @Override
   public ResourceList<D> findAll(QuerySpec querySpec) {
     return findAll(null, querySpec);
@@ -152,7 +152,7 @@ public class DinaRepository<D, E extends DinaEntity>
    * @param querySpec - query spec of the request
    * @return - list of resources
    */
-  @Transactional(readOnly=true)
+  @Transactional(readOnly = true)
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     final QuerySpec spec = resolveFilterAdapters(querySpec);
