@@ -26,8 +26,8 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,7 +43,6 @@ import java.util.Optional;
  * @param <D> - Dto type
  * @param <E> - Entity type
  */
-@Transactional
 public class DinaRepository<D, E extends DinaEntity>
   implements ResourceRepository<D, Serializable>, MetaRepository<D> {
 
@@ -105,6 +104,7 @@ public class DinaRepository<D, E extends DinaEntity>
    * @param querySpec - query spec of the request
    * @return - list of resources
    */
+  @Transactional(readOnly=true)
   @Override
   public D findOne(Serializable id, QuerySpec querySpec) {
     querySpec.setLimit(1L);
@@ -137,6 +137,7 @@ public class DinaRepository<D, E extends DinaEntity>
    * @param querySpec - query spec of the request
    * @return - list of resources
    */
+  @Transactional(readOnly=true)
   @Override
   public ResourceList<D> findAll(QuerySpec querySpec) {
     return findAll(null, querySpec);
@@ -151,6 +152,7 @@ public class DinaRepository<D, E extends DinaEntity>
    * @param querySpec - query spec of the request
    * @return - list of resources
    */
+  @Transactional(readOnly=true)
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     final QuerySpec spec = resolveFilterAdapters(querySpec);
@@ -196,6 +198,7 @@ public class DinaRepository<D, E extends DinaEntity>
       Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
   }
 
+  @Transactional
   @Override
   public <S extends D> S save(S resource) {
     Object id = PropertyUtils.getProperty(resource, findIdFieldName(resourceClass));
@@ -214,6 +217,7 @@ public class DinaRepository<D, E extends DinaEntity>
     return resource;
   }
 
+  @Transactional
   @Override
   @SneakyThrows
   @SuppressWarnings("unchecked")
@@ -232,6 +236,7 @@ public class DinaRepository<D, E extends DinaEntity>
     return (S) dto;
   }
 
+  @Transactional
   @Override
   public void delete(Serializable id) {
     E entity = dinaService.findOne(id, entityClass);

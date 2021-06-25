@@ -12,7 +12,6 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.SmartValidator;
 import org.springframework.validation.Validator;
-import org.springframework.validation.annotation.Validated;
 
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -38,7 +37,6 @@ import java.util.function.BiFunction;
  */
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-@Validated
 public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> {
 
   @NonNull
