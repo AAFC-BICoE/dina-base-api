@@ -19,8 +19,9 @@ import static org.openapi4j.core.model.v3.OAI3SchemaKeywords.REQUIRED;
 import static org.openapi4j.core.validation.ValidationSeverity.ERROR;
 
 /**
- * Used for Open api response validation. Given {@link ValidationRestrictionOptions} to set if additional fields
- * are allowed and to specify which fields may remain missing.
+ * Used for Open api response validation. Given {@link ValidationRestrictionOptions} to set if additional
+ * fields are allowed and to specify which fields may remain missing. Default validation Ensures all
+ * attributes and relations are present in the response and does not allow additional fields.
  */
 class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
 
@@ -53,7 +54,7 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
     ValidationRestrictionOptions options
   ) {
     super(context, schemaNode, schemaParentNode, parentSchema);
-    this.options = options;
+    this.options = options == null ? ValidationRestrictionOptions.FULL_RESTRICTIONS : options;
     schemaNode.fieldNames().forEachRemaining(node -> {
       if (node.equalsIgnoreCase(ATTRIBUTES_BLOCK_NAME)) {
         JsonNode attributesNode = schemaNode.at(ATTRIB_POINTER);
