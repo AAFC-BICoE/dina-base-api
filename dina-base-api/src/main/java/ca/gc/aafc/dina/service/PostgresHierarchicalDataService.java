@@ -22,7 +22,7 @@ public interface PostgresHierarchicalDataService {
 @Select(
 "WITH RECURSIVE get_hierarchy (id, parent_id, name, rank) AS ( "
     + "SELECT initial_t.${idColumnName}, initial_t.${parentIdColumnName}, initial_t.${nameColumnName}, 1 "
-    + "FROM hierarchy_test_table AS initial_t where initial_t.id = ${id} " + "UNION ALL "
+    + "FROM ${tableName} AS initial_t where initial_t.id = ${id} " + "UNION ALL "
     + "SELECT node.${idColumnName}, node.${parentIdColumnName}, node.${nameColumnName}, gh.rank + 1 "
     + "FROM get_hierarchy gh, ${tableName} AS node " + "WHERE node.${idColumnName} = gh.${parentIdColumnName}) "
 + "SELECT id, name, rank FROM get_hierarchy;"
