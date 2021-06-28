@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -76,7 +77,19 @@ public class OpenAPI3AssertionsTest {
   public void assertSchema_AllowsAdditionalFields() throws IOException {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     String responseJson = TestResourceHelper.readContentAsString("fieldThatShouldNotExist.json");
-    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson);
+    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson,
+      ValidationRestrictionOptions.builder().allowAdditionalFields(true).build());
+  }
+
+  @Test
+  public void assertSchema_AllowMissingFields() throws IOException {
+    URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
+    String responseJson = TestResourceHelper.readContentAsString("missingAttribute.json");
+    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson,
+      ValidationRestrictionOptions.builder()
+        .allowAdditionalFields(false)
+        .allowableMissingFields(Set.of("createdDate","description","acceptedValues"))
+        .build());
   }
 
   @Test

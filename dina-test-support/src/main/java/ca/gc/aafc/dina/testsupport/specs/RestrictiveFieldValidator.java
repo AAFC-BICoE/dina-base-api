@@ -43,14 +43,17 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
 
   private final Set<String> requiredAttributes = new HashSet<>();
   private final Set<String> requiredRelations = new HashSet<>();
+  private final ValidationRestrictionOptions options;
 
   protected RestrictiveFieldValidator(
     ValidationContext<OAI3> context,
     JsonNode schemaNode,
     JsonNode schemaParentNode,
-    SchemaValidator parentSchema
+    SchemaValidator parentSchema,
+    ValidationRestrictionOptions options
   ) {
     super(context, schemaNode, schemaParentNode, parentSchema);
+    this.options = options;
     schemaNode.fieldNames().forEachRemaining(node -> {
       if (node.equalsIgnoreCase(ATTRIBUTES_BLOCK_NAME)) {
         JsonNode attributesNode = schemaNode.at(ATTRIB_POINTER);
@@ -70,24 +73,48 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
     return true;
   }
 
-  private static void validateRequiredFields(
+  private void validateRequiredFields(
     JsonNode valueNode,
     ValidationData<?> validation,
     Set<String> requiredFieldNames,
     String blockName
   ) {
     if (!requiredFieldNames.isEmpty()) {
-      valueNode.at("/" + blockName).fieldNames().forEachRemaining(field -> {
-        if (requiredFieldNames.stream().noneMatch(attrib -> attrib.equalsIgnoreCase(field))) {
-          validation.add(ADDITIONAL_FIELD_CRUMB, ADDITIONAL_FIELD_ERROR, field);
-        }
-      });
+      if (!options.isAllowAdditionalFields()) {
+        checkAdditionalFields(valueNode, validation, requiredFieldNames, blockName);
+      }
+      checkMissingFields(valueNode, validation, requiredFieldNames, blockName);
+    }
+  }
 
-      for (String fieldName : requiredFieldNames) {
-        if (valueNode.at("/" + blockName + "/" + fieldName).isMissingNode()) {
-          validation.add(CRUMB_MISSING_FIELD, MISSING_FIELD_ERROR, fieldName);
-        }
+  private void checkMissingFields(
+    JsonNode valueNode,
+    ValidationData<?> validation,
+    Set<String> requiredFieldNames,
+    String blockName
+  ) {
+    for (String fieldName : requiredFieldNames) {
+      if (valueNode.at("/" + blockName + "/" + fieldName).isMissingNode()
+        && setDoesNotContainIgnoreCase(options.getAllowableMissingFields(), fieldName)) {
+        validation.add(CRUMB_MISSING_FIELD, MISSING_FIELD_ERROR, fieldName);
       }
     }
+  }
+
+  private static void checkAdditionalFields(
+    JsonNode valueNode,
+    ValidationData<?> validation,
+    Set<String> requiredFieldNames,
+    String blockName
+  ) {
+    valueNode.at("/" + blockName).fieldNames().forEachRemaining(field -> {
+      if (setDoesNotContainIgnoreCase(requiredFieldNames, field)) {
+        validation.add(ADDITIONAL_FIELD_CRUMB, ADDITIONAL_FIELD_ERROR, field);
+      }
+    });
+  }
+
+  private static boolean setDoesNotContainIgnoreCase(Set<String> requiredFieldNames, String field) {
+    return requiredFieldNames.stream().noneMatch(attrib -> attrib.equalsIgnoreCase(field));
   }
 }

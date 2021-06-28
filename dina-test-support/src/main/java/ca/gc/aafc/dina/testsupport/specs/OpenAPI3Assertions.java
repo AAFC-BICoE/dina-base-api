@@ -43,31 +43,31 @@ public final class OpenAPI3Assertions {
   }
 
   /**
-   * Same as {@link #assertSchema(URL, String, String, boolean)} but the assertion can be skipped by setting
+   * Same as {@link #assertSchema(URL, String, String, ValidationRestrictionOptions)} but the assertion can be skipped by setting
    * the System property {@link #SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY} to true. Strict mode will be enabled,
-   * see {@link #assertRemoteSchema(URL, String, String, boolean)}
+   * see {@link #assertRemoteSchema(URL, String, String, ValidationRestrictionOptions)}
    *
    * @param specsUrl    location of the spec
    * @param schemaName  schema name
    * @param apiResponse the api response to assert
    */
   public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse) {
-    assertRemoteSchema(specsUrl, schemaName, apiResponse, true);
+    assertRemoteSchema(specsUrl, schemaName, apiResponse, ValidationRestrictionOptions.FULL_RESTRICTIONS);
   }
 
   /**
-   * Same as {@link #assertSchema(URL, String, String, boolean)} but the assertion can be skipped by setting
+   * Same as {@link #assertSchema(OpenApi3, String, String, ValidationRestrictionOptions)} but the assertion can be skipped by setting
    * the System property {@link #SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY} to true.
    *
    * @param specsUrl    location of the spec
    * @param schemaName  schema name
    * @param apiResponse the api response to assert
-   * @param strictMode  strict mode will make all the fields from the schema required to make sure a complete
-   *                    api response is valid.
+   * @param options     validation restriction options to specify allowable missing fields and if additional
+   *                    fields are allowed.
    */
-  public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse, boolean strictMode) {
+  public static void assertRemoteSchema(URL specsUrl, String schemaName, String apiResponse, ValidationRestrictionOptions options) {
     if (!Boolean.valueOf(System.getProperty(SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY))) {
-      assertSchema(specsUrl, schemaName, apiResponse, strictMode);
+      assertSchema(specsUrl, schemaName, apiResponse, options);
     } else {
       log.warn("Skipping schema validation." + "System property testing.skip-remote-schema-validation set to true.");
     }
@@ -75,14 +75,14 @@ public final class OpenAPI3Assertions {
 
   /**
    * Assert an API response against an OpenAPI 3 Specification located at specsUrl with strict mode on. See
-   * {@link #assertSchema(OpenApi3, String, String, boolean)}
+   * {@link #assertSchema(OpenApi3, String, String, ValidationRestrictionOptions)}
    *
    * @param specsUrl    location of the spec
    * @param schemaName  schema name
    * @param apiResponse the api response to assert
    */
   public static void assertSchema(URL specsUrl, String schemaName, String apiResponse) {
-    assertSchema(specsUrl, schemaName, apiResponse, true);
+    assertSchema(specsUrl, schemaName, apiResponse, ValidationRestrictionOptions.FULL_RESTRICTIONS);
   }
 
   /**
@@ -91,28 +91,28 @@ public final class OpenAPI3Assertions {
    * @param specsUrl    location of the spec
    * @param schemaName  schema name
    * @param apiResponse the api response to assert
-   * @param strictMode strict mode will make all the fields from the schema required to make sure a
-   *                   complete api response is valid.
+   * @param options     validation restriction options to specify allowable missing fields and if additional
+   *                    fields are allowed.
    */
-  public static void assertSchema(URL specsUrl, String schemaName, String apiResponse, boolean strictMode) {
+  public static void assertSchema(URL specsUrl, String schemaName, String apiResponse, ValidationRestrictionOptions options) {
     Objects.requireNonNull(specsUrl, "specsUrl shall be provided");
     Objects.requireNonNull(schemaName, "schemaName shall be provided");
     Objects.requireNonNull(apiResponse, "apiResponse shall be provided");
 
     OpenApi3 openApi3 = innerParseAndValidateOpenAPI3Specs(specsUrl) ;
-    assertSchema(openApi3, schemaName, apiResponse, strictMode);
+    assertSchema(openApi3, schemaName, apiResponse, options);
   }
 
   /**
    * Assert an API response against the provided OpenAPI 3 Specification with strict mode on. See {@link
-   * #assertSchema(OpenApi3, String, String, boolean)}
+   * #assertSchema(URL, String, String, ValidationRestrictionOptions)}
    *
    * @param openApi     provided specification
    * @param schemaName  schema name
    * @param apiResponse the api response to assert
    */
   public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse) {
-    assertSchema(openApi, schemaName, apiResponse, true);
+    assertSchema(openApi, schemaName, apiResponse, ValidationRestrictionOptions.FULL_RESTRICTIONS);
   }
 
   /**
@@ -121,17 +121,17 @@ public final class OpenAPI3Assertions {
    * @param openApi     provided specification
    * @param schemaName  schema name
    * @param apiResponse the api response to assert
-   * @param strictMode  strict mode will make all the fields from the schema required to make sure a complete
+   * @param options  strict mode will make all the fields from the schema required to make sure a complete
    *                    api response is valid.
    */
-  public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse, boolean strictMode) {
+  public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse, ValidationRestrictionOptions options) {
 
     SchemaValidator schemaValidator;
     try {
       ValidationContext<OAI3> context = new ValidationContext<>(openApi.getContext());
-      if (strictMode) {
-        context.addValidator(OAI3SchemaKeywords.PROPERTIES, RestrictiveFieldValidator::new);
-      }
+      context.addValidator(OAI3SchemaKeywords.PROPERTIES,
+        (context1, schemaNode, schemaParentNode, parentSchema) ->
+          new RestrictiveFieldValidator(context1, schemaNode, schemaParentNode, parentSchema, options));
       JsonNode schemaNode = loadSchemaAsJsonNode(openApi, schemaName);
       if (schemaNode == null ) {
         fail("can't find schema " + schemaName);
