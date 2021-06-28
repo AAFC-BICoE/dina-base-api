@@ -73,6 +73,13 @@ public class OpenAPI3AssertionsTest {
   }
 
   @Test
+  public void assertSchema_AllowsAdditionalFields() throws IOException {
+    URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
+    String responseJson = TestResourceHelper.readContentAsString("fieldThatShouldNotExist.json");
+    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson);
+  }
+
+  @Test
   public void assertSchema_WhenRelationShouldNotExist() throws IOException {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     String responseJson = TestResourceHelper.readContentAsString("relationShouldNotExist.json");
