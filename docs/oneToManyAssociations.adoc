@@ -26,7 +26,8 @@ The simplest way would be to extend the OneToManyDinaService. After extending a 
               child -> child::setParent, // Method to apply the parent to the child
               Parent::getChildren, // Method to supply the children from the parent
               "parent", // field name of the parent on the child class
-              child -> child.setParent(null)))); // Method to handle orphaned children of the parent resource
+              child -> child.setParent(null), // Method to handle orphaned children of the parent resource
+              (child, child2) -> child.getUuid().equals(child2.getUuid())))); // Method to determine two children represent the same resource
       }
 
       @Override
@@ -35,6 +36,20 @@ The simplest way would be to extend the OneToManyDinaService. After extending a 
       }
 
     }
+----
+
+If you need to perform any actions before the OneToManyDinaService runs the handlers, you can override 3 designated methods which will be run before the handlers.
+
+[source,java]
+----
+  public void preHandleCreate(E entity) {
+  }
+
+  public void preHandleUpdate(E entity) {
+  }
+
+  public void preHandleDelete(E entity) {
+  }
 ----
 
 == Using OneToManyFieldHandler directly
