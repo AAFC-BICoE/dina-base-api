@@ -115,6 +115,9 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
   }
 
   private static boolean setDoesNotContainIgnoreCase(Set<String> requiredFieldNames, String field) {
+    if (requiredFieldNames == null || requiredFieldNames.isEmpty() || field == null || field.isBlank()) {
+      return true;
+    }
     return requiredFieldNames.stream().noneMatch(attrib -> attrib.equalsIgnoreCase(field));
   }
 }

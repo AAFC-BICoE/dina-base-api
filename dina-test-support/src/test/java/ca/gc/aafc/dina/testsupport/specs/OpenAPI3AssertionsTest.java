@@ -88,7 +88,14 @@ public class OpenAPI3AssertionsTest {
     OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson,
       ValidationRestrictionOptions.builder()
         .allowAdditionalFields(false)
-        .allowableMissingFields(Set.of("createdDate","description","acceptedValues"))
+        .allowableMissingFields(Set.of("createdDate", "description", "acceptedValues"))
+        .build());
+
+    responseJson = TestResourceHelper.readContentAsString("missingRelation.json");
+    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson,
+      ValidationRestrictionOptions.builder()
+        .allowAdditionalFields(true)
+        .allowableMissingFields(Set.of("collectingEvent"))
         .build());
   }
 
