@@ -19,8 +19,8 @@ import static org.openapi4j.core.model.v3.OAI3SchemaKeywords.REQUIRED;
 import static org.openapi4j.core.validation.ValidationSeverity.ERROR;
 
 /**
- * Used for Open api response validation. Ensures all attributes and relations are present in the response and
- * does not allow additional fields.
+ * Used for Open api response validation. Given {@link ValidationRestrictionOptions} to set if additional fields
+ * are allowed and to specify which fields may remain missing.
  */
 class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
 
