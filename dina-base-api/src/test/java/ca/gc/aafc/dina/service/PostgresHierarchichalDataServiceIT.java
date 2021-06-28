@@ -1,13 +1,13 @@
 package ca.gc.aafc.dina.service;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.inject.Inject;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -24,16 +24,12 @@ public class PostgresHierarchichalDataServiceIT {
 
   @Test
   public void getHierarchy_validEntry_hierarchyRetrieved() throws SQLException {
-    String[] hierarchy = (String[])postgresHierarchichalDataService.getHierarchy(
-      "3", 
-      "hierarchy_test_table",
-      "id",
-      "parent_id",
-      "name"
-    ).getArray();
-    
-    assertEquals("Hierarchy should have three elements", 3, hierarchy.length);
+    ArrayList<String> hierarchy = postgresHierarchichalDataService
+        .getHierarchy("3", "hierarchy_test_table", "id", "parent_id", "name");
+
+    assertEquals("Hierarchy should have three elements", 2, hierarchy.size());
+    assertEquals("", "(3, 2)", hierarchy.get(0));
 
   }
-  
+
 }

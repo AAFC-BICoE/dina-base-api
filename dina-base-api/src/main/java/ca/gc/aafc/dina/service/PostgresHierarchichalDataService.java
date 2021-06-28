@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.service;
 
 import java.sql.Array;
+import java.util.ArrayList;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -13,9 +14,9 @@ public interface PostgresHierarchichalDataService {
 /**
 * @param id         ID of the object for which we seek the hierarchy
 * @param tableName Table name against which the search will be performed
-* @param idColName
-* @param nameColName
-* @param parentIdColName
+* @param idColumnName
+* @param nameColumnName
+* @param parentIdColumnName
 * @return
 **/
 
@@ -40,22 +41,20 @@ FROM get_hierarchy where hierarchy[1] = 3 order by depth desc
 limit 1
 */
   
-  @Select(
-  "WITH RECURSIVE get_hierarchy(child_id, parent_id, depth, hierarchy) AS ("
-      + "SELECT ${idColName}, ${parentIdColName}, 1, ARRAY[${idColName}] " + "FROM ${tableName} as t" + "UNION ALL"
-      + "SELECT t.${idColName}, t.${parentIdColName}, depth + 1, hierarchy || t.${idColName} " + "FROM t"
-      + "JOIN get_hierarchy on get_hierarchy.${parentIdColName} = t.child_id) " + "SELECT hierarchy FROM ("
-      + "SELECT child_id, hierarchy, depth " + "FROM get_hierarchy where hierarchy[1] = ${id} "
-      + "ORDER BY depth desc ) a "
-      + "LIMIT 1;"
+@Select(
+  "WITH RECURSIVE get_hierarchy AS ( "
+      + "SELECT ${id} AS id, 1 AS rank UNION ALL "
+      + "SELECT t.${parentIdColumnName}, rank + 1 FROM ${tableName} AS t "
+      + "JOIN get_hierarchy ON get_hierarchy.id = t.${idColumnName}) "
+      + "SELECT (id, rank) AS hierarchy FROM get_hierarchy WHERE id IS NOT NULL ORDER BY rank;"
     )
   @Options(statementType = StatementType.CALLABLE)
-  Array getHierarchy (
+  ArrayList<String> getHierarchy (
     @Param("id") String id,
     @Param("tableName") String tableName,
-    @Param("idColumnName") String idColName,
-    @Param("parentIdColumnName") String parentIdColName,
-    @Param("nameColumnName") String nameColName
+    @Param("idColumnName") String idColumnName,
+    @Param("parentIdColumnName") String parentIdColumnName,
+    @Param("nameColumnName") String nameColumnName
   );
 
   
