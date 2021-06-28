@@ -12,6 +12,7 @@ import org.apache.ibatis.mapping.StatementType;
 @Mapper
 public interface PostgresHierarchicalDataService {
 /**
+* @param id
 * @param uuid         ID of the object for which we seek the hierarchy
 * @param tableName  Table name against which the search will be performed
 * @param idColumnName     Name of the column containing the object id
@@ -22,17 +23,18 @@ public interface PostgresHierarchicalDataService {
 
   
 @Select(
-"WITH RECURSIVE get_hierarchy (id, parent_id, name, rank) AS ( "
-    + "SELECT initial_t.${uuidColumnName}, initial_t.${parentIdColumnName}, initial_t.${nameColumnName}, 1 "
+"WITH RECURSIVE get_hierarchy (id, parent_id, uuid, name, rank) AS ( "
+    + "SELECT initial_t.${idColumnName}, initial_t.${parentIdColumnName}, initial_t.${uuidColumnName}, initial_t.${nameColumnName}, 1 "
     + "FROM ${tableName} AS initial_t where initial_t.uuid = ${uuid} " + "UNION ALL "
-    + "SELECT node.${uuidColumnName}, node.${parentIdColumnName}, node.${nameColumnName}, gh.rank + 1 "
-    + "FROM get_hierarchy gh, ${tableName} AS node " + "WHERE node.${uuidColumnName} = gh.${parentIdColumnName}) "
-+ "SELECT id, name, rank FROM get_hierarchy;"
+    + "SELECT node.${idColumnName}, node.${parentIdColumnName}, node.${uuidColumnName}, node.${nameColumnName}, gh.rank + 1 "
+    + "FROM get_hierarchy gh, ${tableName} AS node " + "WHERE node.${idColumnName} = gh.${parentIdColumnName}) "
++ "SELECT id, uuid, name, rank FROM get_hierarchy;"
 )
   @Options(statementType = StatementType.CALLABLE)
-  List<HierarchicalObject> getHierarchy (
-    @Param("uuid") String uuid,
+List<HierarchicalObject> getHierarchy(
+    @Param("uuid") UUID uuid,
     @Param("tableName") String tableName,
+    @Param("idColumnName") String idColumnName,
     @Param("uuidColumnName") String uuidColumnName,
     @Param("parentIdColumnName") String parentIdColumnName,
     @Param("nameColumnName") String nameColumnName
