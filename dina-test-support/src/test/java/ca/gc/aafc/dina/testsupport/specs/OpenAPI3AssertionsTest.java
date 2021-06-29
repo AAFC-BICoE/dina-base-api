@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -73,6 +74,32 @@ public class OpenAPI3AssertionsTest {
   }
 
   @Test
+  public void assertSchema_AllowsAdditionalFields() throws IOException {
+    URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
+    String responseJson = TestResourceHelper.readContentAsString("fieldThatShouldNotExist.json");
+    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson,
+      ValidationRestrictionOptions.builder().allowAdditionalFields(true).build());
+  }
+
+  @Test
+  public void assertSchema_AllowMissingFields() throws IOException {
+    URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
+    String responseJson = TestResourceHelper.readContentAsString("missingAttribute.json");
+    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson,
+      ValidationRestrictionOptions.builder()
+        .allowAdditionalFields(false)
+        .allowableMissingFields(Set.of("createdDate", "description", "acceptedValues"))
+        .build());
+
+    responseJson = TestResourceHelper.readContentAsString("missingRelation.json");
+    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson,
+      ValidationRestrictionOptions.builder()
+        .allowAdditionalFields(true)
+        .allowableMissingFields(Set.of("collectingEvent"))
+        .build());
+  }
+
+  @Test
   public void assertSchema_WhenRelationShouldNotExist() throws IOException {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     String responseJson = TestResourceHelper.readContentAsString("relationShouldNotExist.json");
@@ -89,6 +116,20 @@ public class OpenAPI3AssertionsTest {
          "ManagedAttribute", responseJson);
   }
 
+  @Test
+  public void assertSchema_WhenReferencedByPath_ValidationEnabled() throws IOException {
+    URL specsUrl = this.getClass().getResource("/customPath.yaml");
+    Assertions.assertThrows(
+      AssertionFailedError.class,
+      () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute",
+        TestResourceHelper.readContentAsString("missingAttribute.json")));
+    Assertions.assertThrows(
+      AssertionFailedError.class,
+      () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute",
+        TestResourceHelper.readContentAsString("missingRelation.json")));
+    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute",
+      TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json"));
+  }
 
   @Test
   public void assertEndPointTest() {
