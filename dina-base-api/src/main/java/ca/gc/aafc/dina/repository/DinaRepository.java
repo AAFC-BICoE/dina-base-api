@@ -184,20 +184,28 @@ public class DinaRepository<D, E extends DinaEntity>
   private void handleMetaPermissionsResponse(List<E> entities, List<D> dList) {
     if (!AttributeMetaInfoProvider.class.isAssignableFrom(resourceClass)
       || !httpRequestContextProvider.hasThreadRequestContext()
-      || authorizationService.isEmpty()) {
+      || authorizationService.isEmpty()
+      || !permissionsRequested()) {
       return;
     }
 
+    @SuppressWarnings("unchecked") // we checked
+    final List<AttributeMetaInfoProvider> providers = (List<AttributeMetaInfoProvider>) dList;
+    entities.forEach(e -> {
+      // Return permissions for the entity
+      Set<String> permissions = securityChecker.getPermissionsForObject(e, authorizationService.get());
+      // but apply response to the DTO.
+      providers.stream().filter(d -> d.getUuid().equals(e.getUuid())).findFirst()
+        .ifPresent(provider -> provider.setMeta(
+          AttributeMetaInfoProvider.DinaJsonMetaInfo.builder().permissions(permissions).build())
+        );
+    });
+  }
+
+  private boolean permissionsRequested() {
     Set<String> requestHeaderNames = httpRequestContextProvider.getRequestContext().getRequestHeaderNames();
-    if (CollectionUtils.isNotEmpty(requestHeaderNames) &&
-      requestHeaderNames.stream().anyMatch(rh -> rh.equalsIgnoreCase(PERMISSION_META_HEADER_KEY))) {
-      List<AttributeMetaInfoProvider> providers = (List<AttributeMetaInfoProvider>)dList;
-      entities.forEach(e -> { //TODO clean
-        Set<String> permissions = securityChecker.getPermissionsForObject(e, authorizationService.get());
-        providers.stream().filter(d -> d.getUuid().equals(e.getUuid())).findFirst().ifPresent(attributeMetaInfoProvider ->
-          attributeMetaInfoProvider.setMeta(AttributeMetaInfoProvider.DinaJsonMetaInfo.builder().permissions(permissions).build()));
-      });
-    }
+    return CollectionUtils.isNotEmpty(requestHeaderNames) &&
+      requestHeaderNames.stream().anyMatch(rh -> rh.equalsIgnoreCase(PERMISSION_META_HEADER_KEY));
   }
 
   /**
