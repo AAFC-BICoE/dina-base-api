@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -26,7 +25,7 @@ public class PostgresHierarchicalDataServiceIT{
   @Test
   public void getHierarchy_validEntry_hierarchyRetrieved() throws SQLException {
     List<HierarchicalObject> hierarchy = postgresHierarchicalDataService
-        .getHierarchy(Integer.valueOf(5), "hierarchy_test_table", "id", "uuid", "parent_id", "name");
+        .getHierarchy(5, "hierarchy_test_table", "id", "uuid", "parent_id", "name");
         
     assertEquals("Hierarchy should have three elements", 3, hierarchy.size());
 
