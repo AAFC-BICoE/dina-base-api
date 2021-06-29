@@ -1,7 +1,6 @@
 package ca.gc.aafc.dina.service;
 
 import java.util.List;
-import java.util.UUID;
 
 import ca.gc.aafc.dina.mybatis.UUIDTypeHandler;
 import org.apache.ibatis.annotations.Mapper;
