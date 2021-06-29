@@ -28,7 +28,7 @@ public final class WorkbookConverter {
    * @param mediaType
    * @return
    */
-  public boolean isSupported(String mediaType) {
+  public static boolean isSupported(String mediaType) {
     return SUPPORTED_TYPE.equals(mediaType);
   }
 
