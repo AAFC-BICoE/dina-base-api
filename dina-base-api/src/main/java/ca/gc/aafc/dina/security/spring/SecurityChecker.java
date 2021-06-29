@@ -18,6 +18,8 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
+ * Service used to return the permissions of an object authorized from a {@link DinaAuthorizationService}.
+ * <p>
  * Inspired by
  *
  * @see <a href="https://gist.github.com/matteocedroni/b0e5a935127316603dfb">Security Checker</a>
@@ -32,8 +34,20 @@ public final class SecurityChecker {
     this.config = config.orElse(null);
   }
 
+  /**
+   * Returns a set of permissions for a given object using a given {@link DinaAuthorizationService}
+   *
+   * @param target permissions of object to check
+   * @param as     authorization service used in evanluation.
+   * @return Returns a set of permissions for a given object
+   */
   public Set<String> getPermissionsForObject(@NonNull Object target, @NonNull DinaAuthorizationService as) {
     Set<String> permissions = new HashSet<>();
+
+    if (config == null) {
+      return permissions;
+    }
+
     if (this.checkObjectPreAuthorized(as, target, "authorizeCreate")) {
       permissions.add("create");
     }
@@ -51,10 +65,6 @@ public final class SecurityChecker {
     @NonNull Object entity,
     @NonNull String methodName
   ) {
-    if (config == null) {
-      return false;
-    }
-
     Method preAuthorizeMethod = MethodUtils.getMatchingMethod(
       as.getClass().getSuperclass(), methodName, Object.class);
 
