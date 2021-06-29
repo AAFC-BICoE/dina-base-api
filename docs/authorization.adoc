@@ -69,3 +69,50 @@ When keycloak is enabled a default Group Authorization Service bean is available
 
 * Run with `keycloak.enabled = true`
 * Your dina repo will now use the default Group Authorization Service. See GroupAuthorizationService.java.
+
+== Returning your permissions for an object
+
+You can have permissions for three types of operations as evaluated by the dina authorization service.
+
+.Permissions
+* create
+* update
+* delete
+
+When keycloak is enabled you can send a GET request and view your permissions for an object.
+
+Send a GET request to a resource and add the Header `dina-permission-enabled` to your HTTP request.
+
+.Example Response
+[source,json]
+----
+{
+  "data": [
+    {
+      "id": "475c1dc4-99c0-4a56-8177-3f00e4f151e1",
+      "type": "person",
+      "links": {
+        "self": "/api/v1/person/475c1dc4-99c0-4a56-8177-3f00e4f151e1"
+      },
+      "meta": {
+        "permissions": [
+            create,
+            update,
+            delete
+        ],
+        "warnings": null
+      },
+      "attributes": {
+        ... // shortened
+        ]
+      },
+      "relationships": {
+        ... // shortened
+      }
+    }
+  ],
+  "meta": {
+    ... // shortened
+  }
+}
+----
