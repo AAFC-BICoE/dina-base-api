@@ -16,9 +16,4 @@ public class HierarchicalObject {
   private UUID uuid;
   private String name;
   private Integer rank;
-
-  public HierarchicalObject() {
-    // empty constructor keeps mybatis happy
-  }
-
 }
