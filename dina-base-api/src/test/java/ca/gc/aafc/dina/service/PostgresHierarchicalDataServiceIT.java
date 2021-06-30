@@ -25,7 +25,7 @@ public class PostgresHierarchicalDataServiceIT{
   @Test
   public void getHierarchy_validEntry_hierarchyRetrieved() throws SQLException {
     List<HierarchicalObject> hierarchy = postgresHierarchicalDataService
-        .getHierarchy(5, "hierarchy_test_table", "id", "uuid", "parent_id", "name");
+        .getHierarchy(5, "hierarchy_test_table", "id", "uuid", "parent_identifier", "name");
         
     assertEquals("Hierarchy should have three elements", 3, hierarchy.size());
 
