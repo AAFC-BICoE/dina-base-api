@@ -291,7 +291,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     ) {
       return new DinaRepository<>(
         projectDinaService,
-        Optional.empty(),
+        null,
         Optional.empty(),
         new DinaMapper<>(ProjectDTO.class),
         ProjectDTO.class,
@@ -310,7 +310,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     ) {
       return new DinaRepository<>(
         taskDinaService,
-        Optional.empty(),
+        null,
         Optional.empty(),
         new DinaMapper<>(TaskDTO.class),
         TaskDTO.class,

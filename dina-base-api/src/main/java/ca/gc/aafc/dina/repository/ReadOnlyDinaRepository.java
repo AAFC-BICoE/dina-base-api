@@ -28,7 +28,7 @@ public class ReadOnlyDinaRepository<D, E extends DinaEntity> extends DinaReposit
   ) {
     super(
       dinaService,
-      Optional.empty(),
+      null,
       Optional.empty(),
       dinaMapper,
       resourceClass,

@@ -227,7 +227,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
     ) {
       return new DinaRepository<>(
         parentService,
-        Optional.empty(),
+        null,
         Optional.empty(),
         new DinaMapper<>(ParentDto.class),
         ParentDto.class,
@@ -244,7 +244,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
     ) {
       return new DinaRepository<>(
         childService,
-        Optional.empty(),
+        null,
         Optional.empty(),
         new DinaMapper<>(ChildDto.class),
         ChildDto.class,

@@ -166,7 +166,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       ) {
       return new DinaRepository<>(
         chainDinaService,
-        Optional.empty(),
+        null,
         Optional.empty(),
         new DinaMapper<>(ChainDto.class),
         ChainDto.class,
@@ -181,7 +181,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     public DinaRepository<ChainTemplateDto, ChainTemplate> TemplateRepo(BaseDAO baseDAO, TemplateDinaService templateDinaService) {
       return new DinaRepository<>(
         templateDinaService,
-        Optional.empty(),
+        null,
         Optional.empty(),
         new DinaMapper<>(ChainTemplateDto.class),
         ChainTemplateDto.class,

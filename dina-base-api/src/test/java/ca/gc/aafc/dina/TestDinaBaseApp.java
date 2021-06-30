@@ -51,7 +51,7 @@ public class TestDinaBaseApp {
   public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO, DepartmentDinaService departmentDinaService) {
     return new DinaRepository<>(
       departmentDinaService,
-      Optional.empty(),
+      null,
       Optional.empty(),
       new DinaMapper<>(DepartmentDto.class),
       DepartmentDto.class,
@@ -65,7 +65,7 @@ public class TestDinaBaseApp {
   public DinaRepository<EmployeeDto, Employee> employeeRepository(BaseDAO baseDAO, EmployeeDinaService employeeDinaService) {
     return new DinaRepository<>(
       employeeDinaService,
-      Optional.empty(),
+      null,
       Optional.empty(),
       new DinaMapper<>(EmployeeDto.class),
       EmployeeDto.class,
@@ -93,7 +93,7 @@ public class TestDinaBaseApp {
     DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(PersonDTO.class);
     return new DinaRepository<>(
       service,
-      Optional.ofNullable(groupAuthService.orElse(null)),
+      null,
       auditService,
       dinaMapper,
       PersonDTO.class,

@@ -154,7 +154,7 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
     ) {
       super(
         dinaService,
-        Optional.empty(),
+        null,
         Optional.empty(),
         new DinaMapper<>(resourceClass),
         resourceClass,
