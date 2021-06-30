@@ -34,15 +34,15 @@ CREATE TABLE hierarchy_test_table
     id integer NOT NULL,
     uuid uuid NOT NULL,
     name text NOT NULL,
-    parent_id integer,
+    parent_identifier integer,
     CONSTRAINT hierarchy_table_pkey PRIMARY KEY (id)
 );
 
 ALTER TABLE hierarchy_test_table ADD CONSTRAINT fk_parent
-    FOREIGN KEY (parent_id) references hierarchy_test_table(id);
+    FOREIGN KEY (parent_identifier) references hierarchy_test_table(id);
 
 INSERT INTO public.hierarchy_test_table(
-    id, uuid, name, parent_id)
+    id, uuid, name, parent_identifier)
 VALUES 
    (1, '7e0c2c3a-8113-427c-b8ed-83247a82ba43', 'a1', NULL), 
    (2, 'c779eea7-3e6b-42a2-9ce6-88ca66857dad', 'a2', 1),
