@@ -45,7 +45,7 @@ public class ManagedAttributeValueValidatorTest {
     testManagedAttributeService.create(testManagedAttribute);
 
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), "new string value");
-    validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav);
+    validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X);
   }
 
   @Test

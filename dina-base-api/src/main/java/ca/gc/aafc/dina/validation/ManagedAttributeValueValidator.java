@@ -41,23 +41,48 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   }
 
   @Override
+  @SuppressWarnings("unchecked") // We check with checkIncomingParameter()
   public void validate(@NonNull Object target, @NonNull Errors errors) {
     checkIncomingParameter(target);
+    validateElements((Map<String, String>) target, errors, null);
+  }
 
-    @SuppressWarnings("unchecked") // We check with checkIncomingParameter()
-    final Map<String, String> map = (Map<String, String>) target;
-    Map<String, E> attributesPerKey = dinaService.findAttributesForKeys(map.keySet());
+  /**
+   * See {@link #validate(DinaEntity, Map, ValidationContext)}
+   * @param entity
+   * @param managedAttributes
+   * @param <D>
+   */
+  public <D extends DinaEntity> void validate(D entity, Map<String, String> managedAttributes) {
+    validate(entity, managedAttributes, null);
+  }
+  
+  /**
+   * Validates the managedAttributes attached to the provided entity.
+   * @param entity
+   * @param managedAttributes
+   * @param <D>
+   * @throws javax.validation.ValidationException
+   */
+  public <D extends DinaEntity> void validate(D entity, Map<String, String> managedAttributes, ValidationContext validationContext) {
+    Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
+    validateElements(managedAttributes, errors, validationContext);
+    ValidationErrorsHelper.errorsToValidationException(errors);
+  }
 
-    Collection<?> difference = CollectionUtils.disjunction(map.keySet(), attributesPerKey.keySet());
+  private void validateElements(Map<String, String> attributesAndValues, Errors errors, ValidationContext validationContext) {
+    Map<String, E> attributesPerKey = dinaService.findAttributesForKeys(attributesAndValues.keySet());
+
+    Collection<?> difference = CollectionUtils.disjunction(attributesAndValues.keySet(), attributesPerKey.keySet());
     if (!difference.isEmpty()) {
       errors.reject(MANAGED_ATTRIBUTE_INVALID_KEY, getMessageForKey(MANAGED_ATTRIBUTE_INVALID_KEY, difference.stream().findFirst().get()));
     }
 
     attributesPerKey.forEach((key, ma) -> {
       ManagedAttributeType maType = ma.getManagedAttributeType();
-      String assignedValue = map.get(key);
+      String assignedValue = attributesAndValues.get(key);
 
-      if(preValidateValue(ma, assignedValue, errors)) {
+      if(preValidateValue(ma, assignedValue, errors, validationContext)) {
         if (maType == ManagedAttributeType.INTEGER && !INTEGER_PATTERN.matcher(assignedValue).matches()) {
           errors.reject(MANAGED_ATTRIBUTE_INVALID_VALUE,
               getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
@@ -76,23 +101,11 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
    * @param managedAttributeDefinition
    * @param value
    * @param errors
+   * @param validationContext optional, can be null. The ValidationContext is simply the one provided to validate method
    * @return true if the validation of the value should proceed or false if it should not since there is already an error
    */
-  protected boolean preValidateValue(E managedAttributeDefinition, String value, Errors errors) {
+  protected boolean preValidateValue(E managedAttributeDefinition, String value, Errors errors, ValidationContext validationContext) {
     return true;
-  }
-
-  /**
-   * Validates the managedAttributes attached to the provided entity.
-   * @param entity
-   * @param managedAttributes
-   * @param <D>
-   * @throws javax.validation.ValidationException
-   */
-  public <D extends DinaEntity> void validate(D entity, Map<String, String> managedAttributes) {
-    Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
-    validate(managedAttributes, errors);
-    ValidationErrorsHelper.errorsToValidationException(errors);
   }
 
   private void checkIncomingParameter(Object target) {
