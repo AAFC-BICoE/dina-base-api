@@ -45,7 +45,7 @@ import java.util.Properties;
 public class TestDinaBaseApp {
 
   @Inject
-  private Optional<GroupAuthorizationService> groupAuthService;
+  private GroupAuthorizationService groupAuthService;
 
   @Bean
   public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO, DepartmentDinaService departmentDinaService) {
@@ -93,7 +93,7 @@ public class TestDinaBaseApp {
     DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(PersonDTO.class);
     return new DinaRepository<>(
       service,
-      null,
+      groupAuthService,
       auditService,
       dinaMapper,
       PersonDTO.class,
