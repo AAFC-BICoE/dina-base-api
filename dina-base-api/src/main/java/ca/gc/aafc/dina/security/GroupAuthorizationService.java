@@ -1,18 +1,15 @@
 package ca.gc.aafc.dina.security;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import ca.gc.aafc.dina.security.spring.DinaPermissionEvaluator;
+import ca.gc.aafc.dina.security.spring.MethodSecurityConfig;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import ca.gc.aafc.dina.security.spring.DinaPermissionEvaluator;
-import ca.gc.aafc.dina.security.spring.MethodSecurityConfig;
-
 /**
- * Authorization service using spring security. Service is only available on
- * keycloak.enabled = true. Use Optional injection when using this service.
+ * Authorization service using spring security. Service will only proxy authorization methods on
+ * keycloak.enabled = true.
  */
 @Service
-@ConditionalOnProperty(value = "keycloak.enabled", havingValue = "true")
 public class GroupAuthorizationService implements DinaAuthorizationService {
 
   /**
