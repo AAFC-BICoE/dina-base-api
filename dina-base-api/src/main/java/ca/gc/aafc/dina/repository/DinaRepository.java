@@ -205,9 +205,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
     E entity = dinaService.findOne(id, entityClass);
 
-    if (authorizationService != null) {
-      authorizationService.authorizeUpdate(entity);
-    }
+    authorizationService.authorizeUpdate(entity);
 
     if (entity == null) {
       throw new ResourceNotFoundException(
@@ -229,9 +227,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
     mappingLayer.mapToEntity(resource, entity);
 
-    if (authorizationService != null) {
-      authorizationService.authorizeCreate(entity);
-    }
+    authorizationService.authorizeCreate(entity);
     dinaService.create(entity);
 
     D dto = findOne(
@@ -249,9 +245,7 @@ public class DinaRepository<D, E extends DinaEntity>
       throw new ResourceNotFoundException(
         resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
-    if (authorizationService != null) {
-      authorizationService.authorizeDelete(entity);
-    }
+    authorizationService.authorizeDelete(entity);
     dinaService.delete(entity);
 
     auditService.ifPresent(service -> service.auditDeleteEvent(mappingLayer.toDtoSimpleMapping(
