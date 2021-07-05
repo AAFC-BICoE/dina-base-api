@@ -10,6 +10,7 @@ import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.security.spring.SecurityChecker;
+import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.service.OnCreate;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
@@ -168,7 +169,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     ) {
       return new DinaRepository<>(
         chainDinaService,
-        Optional.empty(),
+        new AllowAllAuthorizationService(),
         Optional.empty(),
         new DinaMapper<>(ChainDto.class),
         ChainDto.class,
@@ -187,7 +188,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     ) {
       return new DinaRepository<>(
         templateDinaService,
-        Optional.empty(),
+        new AllowAllAuthorizationService(),
         Optional.empty(),
         new DinaMapper<>(ChainTemplateDto.class),
         ChainTemplateDto.class,

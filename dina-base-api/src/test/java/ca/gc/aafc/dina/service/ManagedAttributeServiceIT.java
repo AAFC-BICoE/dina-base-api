@@ -5,6 +5,7 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.validation.ManagedAttributeValueValidator;
+import ca.gc.aafc.dina.validation.ValidationContext;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -63,7 +64,7 @@ public class ManagedAttributeServiceIT {
       return new ManagedAttributeValueValidator<>(messageSource, dinaService) {
         @Override
         protected boolean preValidateValue(TestManagedAttribute managedAttributeDefinition,
-            String value, Errors errors) {
+            String value, Errors errors, ValidationContext vc) {
           if(managedAttributeDefinition.isFailValidateValue()) {
             errors.reject("failValidateValue is true");
             return false;
@@ -106,5 +107,8 @@ public class ManagedAttributeServiceIT {
     private OffsetDateTime createdOn;
   }
 
+  public enum XYZValidationContext implements ValidationContext {
+    X, Y, Z
+  }
 
 }

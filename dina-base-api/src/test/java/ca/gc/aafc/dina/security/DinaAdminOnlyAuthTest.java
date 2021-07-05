@@ -122,7 +122,7 @@ public class DinaAdminOnlyAuthTest {
       DinaMapper<ItemDto, Item> dinaMapper = new DinaMapper<>(ItemDto.class);
       return new DinaRepository<>(
         defaultService,
-        Optional.of(authorizationService),
+        authorizationService,
         auditService,
         dinaMapper,
         ItemDto.class,

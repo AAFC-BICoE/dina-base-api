@@ -11,6 +11,7 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.security.spring.SecurityChecker;
+import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
@@ -227,7 +228,7 @@ public class DinaMappingLayerIT {
     ) {
       return new DinaRepository<>(
         projectDinaService,
-        Optional.empty(),
+        new AllowAllAuthorizationService(),
         Optional.empty(),
         new DinaMapper<>(ProjectDTO.class),
         ProjectDTO.class,
@@ -248,7 +249,7 @@ public class DinaMappingLayerIT {
     ) {
       return new DinaRepository<>(
         taskDinaService,
-        Optional.empty(),
+        new AllowAllAuthorizationService(),
         Optional.empty(),
         new DinaMapper<>(TaskDTO.class),
         TaskDTO.class,

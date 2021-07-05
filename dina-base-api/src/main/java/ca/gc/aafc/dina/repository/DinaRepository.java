@@ -62,7 +62,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private final DinaService<E> dinaService;
   private final SecurityChecker securityChecker;
-  private final Optional<DinaAuthorizationService> authorizationService;
+  private final DinaAuthorizationService authorizationService;
   private final Optional<AuditService> auditService;
 
   private final DinaMappingLayer<D, E> mappingLayer;
@@ -77,7 +77,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   public DinaRepository(
     @NonNull DinaService<E> dinaService,
-    @NonNull Optional<DinaAuthorizationService> authorizationService,
+    @NonNull DinaAuthorizationService authorizationService,
     @NonNull Optional<AuditService> auditService,
     @NonNull DinaMapper<D, E> dinaMapper,
     @NonNull Class<D> resourceClass,
@@ -181,33 +181,6 @@ public class DinaRepository<D, E extends DinaEntity>
     return new DefaultResourceList<>(dList, metaInformation, NO_LINK_INFORMATION);
   }
 
-  private void handleMetaPermissionsResponse(List<E> entities, List<D> dList) {
-    if (!AttributeMetaInfoProvider.class.isAssignableFrom(resourceClass)
-      || !httpRequestContextProvider.hasThreadRequestContext()
-      || authorizationService.isEmpty()
-      || !permissionsRequested()) {
-      return;
-    }
-
-    @SuppressWarnings("unchecked") // we checked
-    final List<AttributeMetaInfoProvider> providers = (List<AttributeMetaInfoProvider>) dList;
-    entities.forEach(e -> {
-      // Return permissions for the entity
-      Set<String> permissions = securityChecker.getPermissionsForObject(e, authorizationService.get());
-      // but apply response to the DTO.
-      providers.stream().filter(d -> d.getUuid().equals(e.getUuid())).findFirst()
-        .ifPresent(provider -> provider.setMeta(
-          AttributeMetaInfoProvider.DinaJsonMetaInfo.builder().permissions(permissions).build())
-        );
-    });
-  }
-
-  private boolean permissionsRequested() {
-    Set<String> requestHeaderNames = httpRequestContextProvider.getRequestContext().getRequestHeaderNames();
-    return CollectionUtils.isNotEmpty(requestHeaderNames) &&
-      requestHeaderNames.stream().anyMatch(rh -> rh.equalsIgnoreCase(PERMISSION_META_HEADER_KEY));
-  }
-
   /**
    * Convenience method to resolve the filters of a given query spec for {@link
    * ca.gc.aafc.dina.mapper.DinaFieldAdapter}'s. A QuerySpec will only be processed if a resources entity
@@ -244,7 +217,8 @@ public class DinaRepository<D, E extends DinaEntity>
     Object id = PropertyUtils.getProperty(resource, findIdFieldName(resourceClass));
 
     E entity = dinaService.findOne(id, entityClass);
-    authorizationService.ifPresent(auth -> auth.authorizeUpdate(entity));
+
+    authorizationService.authorizeUpdate(entity);
 
     if (entity == null) {
       throw new ResourceNotFoundException(
@@ -266,7 +240,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
     mappingLayer.mapToEntity(resource, entity);
 
-    authorizationService.ifPresent(auth -> auth.authorizeCreate(entity));
+    authorizationService.authorizeCreate(entity);
     dinaService.create(entity);
 
     D dto = findOne(
@@ -284,7 +258,7 @@ public class DinaRepository<D, E extends DinaEntity>
       throw new ResourceNotFoundException(
         resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
-    authorizationService.ifPresent(auth -> auth.authorizeDelete(entity));
+    authorizationService.authorizeDelete(entity);
     dinaService.delete(entity);
 
     auditService.ifPresent(service -> service.auditDeleteEvent(mappingLayer.toDtoSimpleMapping(

@@ -17,6 +17,7 @@ import ca.gc.aafc.dina.jsonapi.DinaRepoEagerLoadingIT;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
+import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.security.GroupAuthorizationService;
 import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
 import ca.gc.aafc.dina.security.spring.SecurityChecker;
@@ -46,7 +47,7 @@ import java.util.Properties;
 public class TestDinaBaseApp {
 
   @Inject
-  private Optional<GroupAuthorizationService> groupAuthService;
+  private GroupAuthorizationService groupAuthService;
 
   @Bean
   public DinaRepository<DepartmentDto, Department> departmentRepository(
@@ -56,7 +57,7 @@ public class TestDinaBaseApp {
   ) {
     return new DinaRepository<>(
       departmentDinaService,
-      Optional.empty(),
+      new AllowAllAuthorizationService(),
       Optional.empty(),
       new DinaMapper<>(DepartmentDto.class),
       DepartmentDto.class,
@@ -74,7 +75,7 @@ public class TestDinaBaseApp {
   ) {
     return new DinaRepository<>(
       employeeDinaService,
-      Optional.empty(),
+      new AllowAllAuthorizationService(),
       Optional.empty(),
       new DinaMapper<>(EmployeeDto.class),
       EmployeeDto.class,
@@ -103,7 +104,7 @@ public class TestDinaBaseApp {
     DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(PersonDTO.class);
     return new DinaRepository<>(
       service,
-      Optional.ofNullable(groupAuthService.orElse(null)),
+      groupAuthService,
       auditService,
       dinaMapper,
       PersonDTO.class,

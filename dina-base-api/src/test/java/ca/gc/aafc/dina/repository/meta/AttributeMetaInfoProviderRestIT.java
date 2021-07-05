@@ -6,6 +6,7 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.security.spring.SecurityChecker;
+import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
@@ -158,7 +159,7 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
     ) {
       super(
         dinaService,
-        Optional.empty(),
+        new AllowAllAuthorizationService(),
         Optional.empty(),
         new DinaMapper<>(resourceClass),
         resourceClass,
