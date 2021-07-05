@@ -7,7 +7,8 @@ import org.springframework.stereotype.Service;
 
 /**
  * Authorization service using spring security. Service will only proxy authorization methods on
- * keycloak.enabled = true.
+ * keycloak.enabled = true, see {@link MethodSecurityConfig}.
+ *
  */
 @Service
 public class GroupAuthorizationService implements DinaAuthorizationService {
