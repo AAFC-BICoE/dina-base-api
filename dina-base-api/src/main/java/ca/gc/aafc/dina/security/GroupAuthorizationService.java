@@ -57,9 +57,4 @@ public class GroupAuthorizationService extends PermissionAuthorizationService im
   @PreAuthorize("hasGroupPermission(@currentUser, #entity)")
   public void authorizeDelete(Object entity) {
   }
-
-  @Override
-  protected DinaAuthorizationService getThis() {
-    return this;
-  }
 }

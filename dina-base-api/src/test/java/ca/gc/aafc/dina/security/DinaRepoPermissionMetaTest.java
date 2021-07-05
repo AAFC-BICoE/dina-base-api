@@ -217,11 +217,6 @@ public class DinaRepoPermissionMetaTest {
       public void authorizeDelete(Object entity) {
 
       }
-
-      @Override
-      protected DinaAuthorizationService getThis() {
-        return this;
-      }
     }
   }
 

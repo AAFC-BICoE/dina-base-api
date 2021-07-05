@@ -12,9 +12,7 @@ public abstract class PermissionAuthorizationService implements DinaAuthorizatio
 
   @Override
   public Set<String> getPermissionsForObject(Object target) {
-    return checker.getPermissionsForObject(target, getThis());
+    return checker.getPermissionsForObject(target, this);
   }
-
-  protected abstract DinaAuthorizationService getThis();
 
 }

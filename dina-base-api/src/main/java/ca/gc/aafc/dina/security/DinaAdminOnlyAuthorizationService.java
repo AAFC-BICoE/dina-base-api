@@ -23,9 +23,4 @@ public class DinaAdminOnlyAuthorizationService extends PermissionAuthorizationSe
   public void authorizeDelete(Object entity) {
 
   }
-
-  @Override
-  protected DinaAuthorizationService getThis() {
-    return this;
-  }
 }
