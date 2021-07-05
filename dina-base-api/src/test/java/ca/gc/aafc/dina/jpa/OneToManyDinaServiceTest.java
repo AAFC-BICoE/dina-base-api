@@ -5,6 +5,7 @@ import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
@@ -227,7 +228,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
     ) {
       return new DinaRepository<>(
         parentService,
-        null,
+        new AllowAllAuthorizationService(),
         Optional.empty(),
         new DinaMapper<>(ParentDto.class),
         ParentDto.class,
@@ -244,7 +245,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
     ) {
       return new DinaRepository<>(
         childService,
-        null,
+        new AllowAllAuthorizationService(),
         Optional.empty(),
         new DinaMapper<>(ChildDto.class),
         ChildDto.class,

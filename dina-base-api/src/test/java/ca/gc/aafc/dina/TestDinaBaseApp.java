@@ -17,6 +17,7 @@ import ca.gc.aafc.dina.jsonapi.DinaRepoEagerLoadingIT;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
+import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.security.GroupAuthorizationService;
 import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
 import ca.gc.aafc.dina.service.AuditService;
@@ -51,7 +52,7 @@ public class TestDinaBaseApp {
   public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO, DepartmentDinaService departmentDinaService) {
     return new DinaRepository<>(
       departmentDinaService,
-      null,
+      new AllowAllAuthorizationService(),
       Optional.empty(),
       new DinaMapper<>(DepartmentDto.class),
       DepartmentDto.class,
@@ -65,7 +66,7 @@ public class TestDinaBaseApp {
   public DinaRepository<EmployeeDto, Employee> employeeRepository(BaseDAO baseDAO, EmployeeDinaService employeeDinaService) {
     return new DinaRepository<>(
       employeeDinaService,
-      null,
+      new AllowAllAuthorizationService(),
       Optional.empty(),
       new DinaMapper<>(EmployeeDto.class),
       EmployeeDto.class,

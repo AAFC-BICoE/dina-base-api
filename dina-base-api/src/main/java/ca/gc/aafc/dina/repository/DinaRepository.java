@@ -69,7 +69,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   public DinaRepository(
     @NonNull DinaService<E> dinaService,
-    DinaAuthorizationService authorizationService,
+    @NonNull DinaAuthorizationService authorizationService,
     @NonNull Optional<AuditService> auditService,
     @NonNull DinaMapper<D, E> dinaMapper,
     @NonNull Class<D> resourceClass,
