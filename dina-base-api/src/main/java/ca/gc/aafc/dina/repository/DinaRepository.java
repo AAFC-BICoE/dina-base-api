@@ -181,6 +181,32 @@ public class DinaRepository<D, E extends DinaEntity>
     return new DefaultResourceList<>(dList, metaInformation, NO_LINK_INFORMATION);
   }
 
+  private void handleMetaPermissionsResponse(List<E> entities, List<D> dList) {
+    if (!AttributeMetaInfoProvider.class.isAssignableFrom(resourceClass)
+      || !httpRequestContextProvider.hasThreadRequestContext()
+      || !permissionsRequested()) {
+      return;
+    }
+
+    @SuppressWarnings("unchecked") // we checked
+    final List<AttributeMetaInfoProvider> providers = (List<AttributeMetaInfoProvider>) dList;
+    entities.forEach(e -> {
+      // Return permissions for the entity
+      Set<String> permissions = securityChecker.getPermissionsForObject(e, authorizationService);
+      // but apply response to the DTO.
+      providers.stream().filter(d -> d.getUuid().equals(e.getUuid())).findFirst()
+        .ifPresent(provider -> provider.setMeta(
+          AttributeMetaInfoProvider.DinaJsonMetaInfo.builder().permissions(permissions).build())
+        );
+    });
+  }
+
+  private boolean permissionsRequested() {
+    Set<String> requestHeaderNames = httpRequestContextProvider.getRequestContext().getRequestHeaderNames();
+    return CollectionUtils.isNotEmpty(requestHeaderNames) &&
+      requestHeaderNames.stream().anyMatch(rh -> rh.equalsIgnoreCase(PERMISSION_META_HEADER_KEY));
+  }
+
   /**
    * Convenience method to resolve the filters of a given query spec for {@link
    * ca.gc.aafc.dina.mapper.DinaFieldAdapter}'s. A QuerySpec will only be processed if a resources entity
