@@ -146,7 +146,7 @@ public class DinaRepoPermissionMetaTest {
         ItemDto.class);
       return new DinaRepository<>(
         defaultService,
-        Optional.of(authorizationService),
+        authorizationService,
         Optional.empty(),
         dinaMapper,
         ItemDto.class,
