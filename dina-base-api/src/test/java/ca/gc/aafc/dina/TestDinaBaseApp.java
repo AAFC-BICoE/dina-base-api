@@ -20,7 +20,6 @@ import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
 import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.security.GroupAuthorizationService;
 import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
-import ca.gc.aafc.dina.security.spring.SecurityChecker;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaServiceTest.DinaServiceTestImplementation;
 
@@ -114,8 +113,7 @@ public class TestDinaBaseApp {
   @Bean
   public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(
     BaseDAO baseDAO,
-    VocabularyDinaService vocabularyDinaService,
-    SecurityChecker securityChecker
+    VocabularyDinaService vocabularyDinaService
   ) {
     DinaMapper<VocabularyDto, Vocabulary> dinaMapper = new DinaMapper<>(VocabularyDto.class);
     return new ReadOnlyDinaRepository<>(
@@ -124,7 +122,7 @@ public class TestDinaBaseApp {
       VocabularyDto.class,
       Vocabulary.class,
       null,
-      buildProperties(), securityChecker);
+      buildProperties());
   }
 
   @Bean
