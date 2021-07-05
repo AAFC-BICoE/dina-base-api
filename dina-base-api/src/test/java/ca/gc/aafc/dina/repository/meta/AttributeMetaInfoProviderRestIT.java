@@ -164,7 +164,7 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
         new DinaMapper<>(resourceClass),
         resourceClass,
         entityClass,
-        securityChecker, null,
+        null,
         null,
         new BuildProperties(new Properties()));
       this.handler = handler;

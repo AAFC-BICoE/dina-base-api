@@ -7,7 +7,6 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
-import ca.gc.aafc.dina.security.spring.SecurityChecker;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import io.crnk.core.engine.http.HttpRequestContext;
@@ -139,8 +138,7 @@ public class DinaRepoPermissionMetaTest {
     public DinaRepository<ItemDto, Item> testRepo(
       SpecialAuthServiceUnderTest authorizationService,
       BuildProperties buildProperties,
-      DefaultDinaService<Item> defaultService,
-      SecurityChecker securityChecker
+      DefaultDinaService<Item> defaultService
     ) {
       DinaMapper<ItemDto, Item> dinaMapper = new DinaMapper<>(
         ItemDto.class);
@@ -151,7 +149,7 @@ public class DinaRepoPermissionMetaTest {
         dinaMapper,
         ItemDto.class,
         Item.class,
-        securityChecker, null,
+        null,
         null,
         buildProperties);
     }
@@ -200,7 +198,7 @@ public class DinaRepoPermissionMetaTest {
     }
 
     @Service
-    public static class SpecialAuthServiceUnderTest implements DinaAuthorizationService {
+    public static class SpecialAuthServiceUnderTest extends PermissionAuthorizationService implements DinaAuthorizationService {
 
       @Override
       @PreAuthorize("hasGroupPermission(@currentUser, #entity)")
@@ -218,6 +216,11 @@ public class DinaRepoPermissionMetaTest {
       @PreAuthorize("hasDinaRole(@currentUser, 'STUDENT')")
       public void authorizeDelete(Object entity) {
 
+      }
+
+      @Override
+      protected DinaAuthorizationService getThis() {
+        return this;
       }
     }
   }

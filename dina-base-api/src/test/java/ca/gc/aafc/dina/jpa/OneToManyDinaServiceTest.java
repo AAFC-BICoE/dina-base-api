@@ -5,7 +5,6 @@ import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
-import ca.gc.aafc.dina.security.spring.SecurityChecker;
 import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
@@ -225,8 +224,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
     @Bean
     public DinaRepository<ParentDto, Parent> testRepoA(
-      ParentService parentService,
-      SecurityChecker securityChecker
+      ParentService parentService
     ) {
       return new DinaRepository<>(
         parentService,
@@ -235,7 +233,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
         new DinaMapper<>(ParentDto.class),
         ParentDto.class,
         Parent.class,
-        securityChecker, null,
+        null,
         null,
         new BuildProperties(new Properties())
       );
@@ -243,8 +241,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
     @Bean
     public DinaRepository<ChildDto, Child> testRepoB(
-      ChildService childService,
-      SecurityChecker securityChecker
+      ChildService childService
     ) {
       return new DinaRepository<>(
         childService,
@@ -253,7 +250,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
         new DinaMapper<>(ChildDto.class),
         ChildDto.class,
         Child.class,
-        securityChecker, null,
+        null,
         null,
         new BuildProperties(new Properties())
       );

@@ -10,7 +10,6 @@ import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.security.DinaAuthorizationService;
-import ca.gc.aafc.dina.security.spring.SecurityChecker;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
 import io.crnk.core.engine.http.HttpRequestContextAware;
@@ -61,7 +60,6 @@ public class DinaRepository<D, E extends DinaEntity>
   private final Class<E> entityClass;
 
   private final DinaService<E> dinaService;
-  private final SecurityChecker securityChecker;
   private final DinaAuthorizationService authorizationService;
   private final Optional<AuditService> auditService;
 
@@ -82,7 +80,6 @@ public class DinaRepository<D, E extends DinaEntity>
     @NonNull DinaMapper<D, E> dinaMapper,
     @NonNull Class<D> resourceClass,
     @NonNull Class<E> entityClass,
-    @NonNull SecurityChecker securityChecker,
     DinaFilterResolver filterResolver,
     ExternalResourceProvider externalResourceProvider,
     @NonNull BuildProperties buildProperties
@@ -92,7 +89,6 @@ public class DinaRepository<D, E extends DinaEntity>
     this.auditService = auditService;
     this.resourceClass = resourceClass;
     this.entityClass = entityClass;
-    this.securityChecker = securityChecker;
     this.filterResolver = Objects.requireNonNullElseGet(
       filterResolver, () -> new DinaFilterResolver(null));
     this.buildProperties = buildProperties;
@@ -192,7 +188,7 @@ public class DinaRepository<D, E extends DinaEntity>
     final List<AttributeMetaInfoProvider> providers = (List<AttributeMetaInfoProvider>) dList;
     entities.forEach(e -> {
       // Return permissions for the entity
-      Set<String> permissions = securityChecker.getPermissionsForObject(e, authorizationService);
+      Set<String> permissions = authorizationService.getPermissionsForObject(e);
       // but apply response to the DTO.
       providers.stream().filter(d -> d.getUuid().equals(e.getUuid())).findFirst()
         .ifPresent(provider -> provider.setMeta(

@@ -10,7 +10,6 @@ import ca.gc.aafc.dina.entity.Task;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
-import ca.gc.aafc.dina.security.spring.SecurityChecker;
 import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import io.crnk.core.queryspec.PathSpec;
@@ -223,8 +222,7 @@ public class DinaMappingLayerIT {
       BaseDAO baseDAO,
       ExternalResourceProvider externalResourceProvider,
       BuildProperties buildProperties,
-      ProjectDinaService projectDinaService,
-      SecurityChecker securityChecker
+      ProjectDinaService projectDinaService
     ) {
       return new DinaRepository<>(
         projectDinaService,
@@ -233,7 +231,7 @@ public class DinaMappingLayerIT {
         new DinaMapper<>(ProjectDTO.class),
         ProjectDTO.class,
         Project.class,
-        securityChecker, null,
+        null,
         externalResourceProvider,
         buildProperties
       );
@@ -244,8 +242,7 @@ public class DinaMappingLayerIT {
       BaseDAO baseDAO,
       ExternalResourceProvider externalResourceProvider,
       BuildProperties buildProperties,
-      TaskDinaService taskDinaService,
-      SecurityChecker securityChecker
+      TaskDinaService taskDinaService
     ) {
       return new DinaRepository<>(
         taskDinaService,
@@ -254,7 +251,7 @@ public class DinaMappingLayerIT {
         new DinaMapper<>(TaskDTO.class),
         TaskDTO.class,
         Task.class,
-        securityChecker, null,
+        null,
         externalResourceProvider,
         buildProperties
       );

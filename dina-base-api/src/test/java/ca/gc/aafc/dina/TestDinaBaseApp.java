@@ -52,8 +52,7 @@ public class TestDinaBaseApp {
   @Bean
   public DinaRepository<DepartmentDto, Department> departmentRepository(
     BaseDAO baseDAO,
-    DepartmentDinaService departmentDinaService,
-    SecurityChecker securityChecker
+    DepartmentDinaService departmentDinaService
   ) {
     return new DinaRepository<>(
       departmentDinaService,
@@ -62,7 +61,7 @@ public class TestDinaBaseApp {
       new DinaMapper<>(DepartmentDto.class),
       DepartmentDto.class,
       Department.class,
-      securityChecker, null,
+      null,
       null,
       buildProperties());
   }
@@ -70,8 +69,7 @@ public class TestDinaBaseApp {
   @Bean
   public DinaRepository<EmployeeDto, Employee> employeeRepository(
     BaseDAO baseDAO,
-    EmployeeDinaService employeeDinaService,
-    SecurityChecker securityChecker
+    EmployeeDinaService employeeDinaService
   ) {
     return new DinaRepository<>(
       employeeDinaService,
@@ -80,7 +78,7 @@ public class TestDinaBaseApp {
       new DinaMapper<>(EmployeeDto.class),
       EmployeeDto.class,
       Employee.class,
-      securityChecker, null,
+      null,
       null,
       buildProperties());
   }
@@ -98,8 +96,7 @@ public class TestDinaBaseApp {
   @Bean
   public DinaRepository<PersonDTO, Person> dinaRepository(
     DinaPersonService service,
-    Optional<AuditService> auditService,
-    SecurityChecker securityChecker
+    Optional<AuditService> auditService
   ) {
     DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(PersonDTO.class);
     return new DinaRepository<>(
@@ -109,7 +106,7 @@ public class TestDinaBaseApp {
       dinaMapper,
       PersonDTO.class,
       Person.class,
-      securityChecker, new DinaFilterResolver(new PersonRsqlAdapter()),
+      new DinaFilterResolver(new PersonRsqlAdapter()),
       null,
       buildProperties());
   }

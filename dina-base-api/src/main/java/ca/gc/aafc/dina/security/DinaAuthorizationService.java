@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.security;
 
+import java.util.Set;
+
 public interface DinaAuthorizationService {
 
     void authorizeCreate(Object entity);
@@ -7,5 +9,7 @@ public interface DinaAuthorizationService {
     void authorizeUpdate(Object entity);
 
     void authorizeDelete(Object entity);
+
+    Set<String> getPermissionsForObject(Object target);
     
 }

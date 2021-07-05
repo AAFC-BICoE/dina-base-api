@@ -1,6 +1,8 @@
 package ca.gc.aafc.dina.security.spring;
 
 import ca.gc.aafc.dina.security.DinaAuthorizationService;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -27,6 +29,15 @@ import java.util.Set;
 @Service
 public final class SecurityChecker {
 
+  @AllArgsConstructor
+  @Getter
+  public enum Operations {
+    CREATE("create"),
+    UPDATE("update"),
+    DELETE("delete");
+    private final String value;
+  }
+
   private final MethodSecurityConfig config;
   private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
@@ -49,13 +60,13 @@ public final class SecurityChecker {
     }
 
     if (this.checkObjectPreAuthorized(as, target, "authorizeCreate")) {
-      permissions.add("create");
+      permissions.add(Operations.CREATE.getValue());
     }
     if (this.checkObjectPreAuthorized(as, target, "authorizeDelete")) {
-      permissions.add("delete");
+      permissions.add(Operations.DELETE.getValue());
     }
     if (this.checkObjectPreAuthorized(as, target, "authorizeUpdate")) {
-      permissions.add("update");
+      permissions.add(Operations.UPDATE.getValue());
     }
     return permissions;
   }
@@ -65,8 +76,7 @@ public final class SecurityChecker {
     @NonNull Object entity,
     @NonNull String methodName
   ) {
-    Method preAuthorizeMethod = MethodUtils.getMatchingMethod(
-      as.getClass().getSuperclass(), methodName, Object.class);
+    Method preAuthorizeMethod = MethodUtils.getMatchingMethod(as.getClass(), methodName, Object.class);
 
     EvaluationContext evaluationContext = config.createExpressionHandler().createEvaluationContext(
       SecurityContextHolder.getContext().getAuthentication(),

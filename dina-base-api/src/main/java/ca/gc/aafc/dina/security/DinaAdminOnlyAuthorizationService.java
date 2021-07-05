@@ -4,7 +4,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DinaAdminOnlyAuthorizationService implements DinaAuthorizationService {
+public class DinaAdminOnlyAuthorizationService extends PermissionAuthorizationService implements DinaAuthorizationService  {
 
   @Override
   @PreAuthorize("hasDinaRole(@currentUser, 'DINA_ADMIN')")
@@ -24,4 +24,8 @@ public class DinaAdminOnlyAuthorizationService implements DinaAuthorizationServi
 
   }
 
+  @Override
+  protected DinaAuthorizationService getThis() {
+    return this;
+  }
 }
