@@ -49,10 +49,7 @@ public class TestDinaBaseApp {
   private GroupAuthorizationService groupAuthService;
 
   @Bean
-  public DinaRepository<DepartmentDto, Department> departmentRepository(
-    BaseDAO baseDAO,
-    DepartmentDinaService departmentDinaService
-  ) {
+  public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO, DepartmentDinaService departmentDinaService) {
     return new DinaRepository<>(
       departmentDinaService,
       new AllowAllAuthorizationService(),
@@ -66,10 +63,7 @@ public class TestDinaBaseApp {
   }
 
   @Bean
-  public DinaRepository<EmployeeDto, Employee> employeeRepository(
-    BaseDAO baseDAO,
-    EmployeeDinaService employeeDinaService
-  ) {
+  public DinaRepository<EmployeeDto, Employee> employeeRepository(BaseDAO baseDAO, EmployeeDinaService employeeDinaService) {
     return new DinaRepository<>(
       employeeDinaService,
       new AllowAllAuthorizationService(),
@@ -111,10 +105,7 @@ public class TestDinaBaseApp {
   }
 
   @Bean
-  public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(
-    BaseDAO baseDAO,
-    VocabularyDinaService vocabularyDinaService
-  ) {
+  public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(BaseDAO baseDAO, VocabularyDinaService vocabularyDinaService) {
     DinaMapper<VocabularyDto, Vocabulary> dinaMapper = new DinaMapper<>(VocabularyDto.class);
     return new ReadOnlyDinaRepository<>(
       vocabularyDinaService,

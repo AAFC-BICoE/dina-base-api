@@ -164,7 +164,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
       BaseDAO baseDAO,
       ChainDinaService chainDinaService,
       ExternalResourceProvider externalResourceProvider
-    ) {
+      ) {
       return new DinaRepository<>(
         chainDinaService,
         new AllowAllAuthorizationService(),
@@ -179,10 +179,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     }
 
     @Bean
-    public DinaRepository<ChainTemplateDto, ChainTemplate> TemplateRepo(
-      BaseDAO baseDAO,
-      TemplateDinaService templateDinaService
-    ) {
+    public DinaRepository<ChainTemplateDto, ChainTemplate> TemplateRepo(BaseDAO baseDAO, TemplateDinaService templateDinaService) {
       return new DinaRepository<>(
         templateDinaService,
         new AllowAllAuthorizationService(),
