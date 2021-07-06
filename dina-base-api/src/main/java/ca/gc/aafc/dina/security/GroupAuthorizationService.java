@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class GroupAuthorizationService extends PermissionAuthorizationService implements DinaAuthorizationService {
+public class GroupAuthorizationService extends PermissionAuthorizationService {
 
   /**
    * Proxy Method to invoke security authorization, Delegates to

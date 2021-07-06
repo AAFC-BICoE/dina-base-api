@@ -198,7 +198,7 @@ public class DinaRepoPermissionMetaTest {
     }
 
     @Service
-    public static class SpecialAuthServiceUnderTest extends PermissionAuthorizationService implements DinaAuthorizationService {
+    public static class SpecialAuthServiceUnderTest extends PermissionAuthorizationService {
 
       @Override
       @PreAuthorize("hasGroupPermission(@currentUser, #entity)")
