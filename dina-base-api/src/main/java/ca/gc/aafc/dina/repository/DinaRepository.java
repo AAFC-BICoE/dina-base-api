@@ -201,9 +201,7 @@ public class DinaRepository<D, E extends DinaEntity>
       return true;
     }
 
-    Set<String> requestHeaderNames = httpRequestContextProvider.getRequestContext().getRequestHeaderNames();
-    return CollectionUtils.isEmpty(requestHeaderNames) ||
-      requestHeaderNames.stream().noneMatch(rh -> rh.equalsIgnoreCase(PERMISSION_META_HEADER_KEY));
+    return httpRequestContextProvider.getRequestContext().getRequestHeader(PERMISSION_META_HEADER_KEY) == null;
   }
 
   /**

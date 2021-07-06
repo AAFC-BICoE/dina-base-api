@@ -52,7 +52,6 @@ import javax.persistence.Id;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 @Transactional
@@ -78,7 +77,7 @@ public class DinaRepoPermissionMetaTest {
   @Test
   @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
   void permissionsTest_WhenHasPermissions_PermissionsReturned() {
-    mockHttpHeader(Set.of(DinaRepository.PERMISSION_META_HEADER_KEY));
+    mockHttpHeader(DinaRepository.PERMISSION_META_HEADER_KEY, "true");
     ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
     all.forEach(result -> MatcherAssert.assertThat(
       result.getMeta().getPermissions(),
@@ -88,6 +87,13 @@ public class DinaRepoPermissionMetaTest {
   @Test
   @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
   void permissionsTest_WhenNoContext_PermissionsNotReturned() {
+    ModuleRegistry moduleRegistry = Mockito.mock(ModuleRegistry.class);
+    ResourceRegistry resourceRegistry = Mockito.mock(ResourceRegistry.class);
+    Mockito.when(resourceRegistry.getLatestVersion()).thenReturn(2);
+    Mockito.when(moduleRegistry.getResourceRegistry()).thenReturn(resourceRegistry);
+    ImmediateResultFactory resultFactory = new ImmediateResultFactory();
+    HttpRequestContextProvider provider = new HttpRequestContextProvider(() -> resultFactory, moduleRegistry);
+    testRepo.setHttpRequestContextProvider(provider);
     ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
     all.forEach(result -> Assertions.assertNull(result.getMeta()));
   }
@@ -95,7 +101,7 @@ public class DinaRepoPermissionMetaTest {
   @Test
   @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
   void permissionsTest_WhenNoHeader_PermissionsNotReturned() {
-    mockHttpHeader(Set.of("wrong header"));
+    mockHttpHeader("wrong header", "true");
     ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
     all.forEach(result -> Assertions.assertNull(result.getMeta()));
   }
@@ -103,12 +109,12 @@ public class DinaRepoPermissionMetaTest {
   @Test
   @WithMockKeycloakUser(groupRole = {"InvalidGroup:STAFF"})
   void permissionsTest_WhenNoPermissions_PermissionsNotReturned() {
-    mockHttpHeader(Set.of(DinaRepository.PERMISSION_META_HEADER_KEY));
+    mockHttpHeader(DinaRepository.PERMISSION_META_HEADER_KEY, "true");
     ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
     all.forEach(result -> MatcherAssert.assertThat(result.getMeta().getPermissions(), Matchers.empty()));
   }
 
-  private void mockHttpHeader(Set<String> headerNames) {
+  private void mockHttpHeader(String header, String value) {
     ModuleRegistry moduleRegistry = Mockito.mock(ModuleRegistry.class);
     ResourceRegistry resourceRegistry = Mockito.mock(ResourceRegistry.class);
     Mockito.when(resourceRegistry.getLatestVersion()).thenReturn(2);
@@ -119,8 +125,7 @@ public class DinaRepoPermissionMetaTest {
 
     HttpRequestContext context = Mockito.mock(HttpRequestContext.class);
     Mockito.when(context.getBaseUrl()).thenReturn("http://test");
-    Mockito.when(context.getRequestHeaderNames())
-      .thenReturn(headerNames);
+    Mockito.when(context.getRequestHeader(header)).thenReturn(value);
     QueryContext queryContext = new QueryContext();
     Mockito.when(context.getQueryContext()).thenReturn(queryContext);
 
