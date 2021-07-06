@@ -53,7 +53,7 @@ public class DinaRepository<D, E extends DinaEntity>
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
   private static final long DEFAULT_LIMIT = 100;
-  public static final String PERMISSION_META_HEADER_KEY = "dina-permission-enabled";
+  public static final String PERMISSION_META_HEADER_KEY = "include-dina-permission";
 
   @Getter
   private final Class<D> resourceClass;
