@@ -71,7 +71,7 @@ public class TestDinaBaseApp {
       new DinaMapper<>(EmployeeDto.class),
       EmployeeDto.class,
       Employee.class,
-      null, 
+      null,
       null,
       buildProperties());
   }
