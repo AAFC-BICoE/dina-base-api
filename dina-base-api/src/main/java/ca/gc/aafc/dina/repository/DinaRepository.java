@@ -178,9 +178,7 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   private void handleMetaPermissionsResponse(List<E> entities, List<D> dList) {
-    if (!AttributeMetaInfoProvider.class.isAssignableFrom(resourceClass)
-      || !httpRequestContextProvider.hasThreadRequestContext()
-      || !permissionsRequested()) {
+    if (permissionsNotRequested()) {
       return;
     }
 
@@ -197,10 +195,15 @@ public class DinaRepository<D, E extends DinaEntity>
     });
   }
 
-  private boolean permissionsRequested() {
+  private boolean permissionsNotRequested() {
+    if (!AttributeMetaInfoProvider.class.isAssignableFrom(resourceClass)
+      || !httpRequestContextProvider.hasThreadRequestContext()) {
+      return true;
+    }
+
     Set<String> requestHeaderNames = httpRequestContextProvider.getRequestContext().getRequestHeaderNames();
-    return CollectionUtils.isNotEmpty(requestHeaderNames) &&
-      requestHeaderNames.stream().anyMatch(rh -> rh.equalsIgnoreCase(PERMISSION_META_HEADER_KEY));
+    return CollectionUtils.isEmpty(requestHeaderNames) ||
+      requestHeaderNames.stream().noneMatch(rh -> rh.equalsIgnoreCase(PERMISSION_META_HEADER_KEY));
   }
 
   /**
