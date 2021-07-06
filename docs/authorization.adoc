@@ -81,7 +81,7 @@ You can have permissions for three types of operations as evaluated by the dina 
 
 When keycloak is enabled you can send a GET request and view your permissions for an object.
 
-Send a GET request to a resource and add the Header `dina-permission-enabled` to your HTTP request.
+Send a GET request to a resource and add the Header `include-dina-permission` to your HTTP request.
 
 .Example Response
 [source,json]
