@@ -17,6 +17,7 @@ import ca.gc.aafc.dina.jsonapi.DinaRepoEagerLoadingIT;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
+import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.security.GroupAuthorizationService;
 import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
 import ca.gc.aafc.dina.service.AuditService;
@@ -45,13 +46,13 @@ import java.util.Properties;
 public class TestDinaBaseApp {
 
   @Inject
-  private Optional<GroupAuthorizationService> groupAuthService;
+  private GroupAuthorizationService groupAuthService;
 
   @Bean
   public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO, DepartmentDinaService departmentDinaService) {
     return new DinaRepository<>(
       departmentDinaService,
-      Optional.empty(),
+      new AllowAllAuthorizationService(),
       Optional.empty(),
       new DinaMapper<>(DepartmentDto.class),
       DepartmentDto.class,
@@ -65,7 +66,7 @@ public class TestDinaBaseApp {
   public DinaRepository<EmployeeDto, Employee> employeeRepository(BaseDAO baseDAO, EmployeeDinaService employeeDinaService) {
     return new DinaRepository<>(
       employeeDinaService,
-      Optional.empty(),
+      new AllowAllAuthorizationService(),
       Optional.empty(),
       new DinaMapper<>(EmployeeDto.class),
       EmployeeDto.class,
@@ -93,7 +94,7 @@ public class TestDinaBaseApp {
     DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(PersonDTO.class);
     return new DinaRepository<>(
       service,
-      Optional.ofNullable(groupAuthService.orElse(null)),
+      groupAuthService,
       auditService,
       dinaMapper,
       PersonDTO.class,

@@ -11,6 +11,7 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
+import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIOperationBuilder;
@@ -291,7 +292,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     ) {
       return new DinaRepository<>(
         projectDinaService,
-        Optional.empty(),
+        new AllowAllAuthorizationService(),
         Optional.empty(),
         new DinaMapper<>(ProjectDTO.class),
         ProjectDTO.class,
@@ -310,7 +311,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     ) {
       return new DinaRepository<>(
         taskDinaService,
-        Optional.empty(),
+        new AllowAllAuthorizationService(),
         Optional.empty(),
         new DinaMapper<>(TaskDTO.class),
         TaskDTO.class,
