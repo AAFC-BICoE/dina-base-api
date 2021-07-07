@@ -18,9 +18,9 @@ public class ValidationRestrictionOptions {
    * Allows no additional fields and no fields may be missing.
    */
   public static final ValidationRestrictionOptions FULL_RESTRICTIONS = ValidationRestrictionOptions.builder()
-    .allowAdditionalFields(false)
-    .allowableMissingFields(Collections.emptySet())
-    .build();
+      .allowAdditionalFields(false)
+      .allowableMissingFields(Collections.emptySet())
+      .build();
 
   private final boolean allowAdditionalFields;
   private final Set<String> allowableMissingFields;

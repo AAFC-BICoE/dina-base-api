@@ -81,7 +81,7 @@ public class BaseRestAssuredTest {
 
   protected ValidatableResponse sendGet(String path, String id, int expectedReturnCode) {
     Response response = newRequest()
-      .get(StringUtils.appendIfMissing(path, "/") + "{id}", id);
+        .get(StringUtils.appendIfMissing(path, "/") + "{id}", id);
 
     return response.then()
       .statusCode(expectedReturnCode);
@@ -102,9 +102,9 @@ public class BaseRestAssuredTest {
 
   protected ValidatableResponse sendPost(String path, Object body, int expectedReturnCode) {
     Response response =  newRequest()
-      .contentType(JSON_API_CONTENT_TYPE)
-      .body(body)
-      .post(path);
+        .contentType(JSON_API_CONTENT_TYPE)
+        .body(body)
+        .post(path);
 
     return response.then()
       .log().ifValidationFails()
@@ -127,9 +127,9 @@ public class BaseRestAssuredTest {
 
   protected ValidatableResponse sendPatch(String path, String id, Object body, int expectedReturnCode) {
     Response response =  newRequest()
-      .contentType(JSON_API_CONTENT_TYPE)
-      .body(body)
-      .patch(StringUtils.appendIfMissing(path, "/") + "{id}", id);
+        .contentType(JSON_API_CONTENT_TYPE)
+        .body(body)
+        .patch(StringUtils.appendIfMissing(path, "/") + "{id}", id);
 
     return response.then()
       .log().ifValidationFails()
@@ -150,7 +150,7 @@ public class BaseRestAssuredTest {
 
   protected void sendDelete(String path, String id, int expectedReturnCode) {
     Response response = newRequest()
-      .delete(StringUtils.appendIfMissing(path, "/") + "{id}", id);
+        .delete(StringUtils.appendIfMissing(path, "/") + "{id}", id);
     
     response.then().statusCode(expectedReturnCode);
   }

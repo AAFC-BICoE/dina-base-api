@@ -26,32 +26,32 @@ import static org.openapi4j.core.validation.ValidationSeverity.ERROR;
 class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
 
   private static final ValidationResult MISSING_FIELD_ERROR =
-    new ValidationResult(ERROR, 1026, "Field '%s' is required.");
+      new ValidationResult(ERROR, 1026, "Field '%s' is required.");
   private static final ValidationResults.CrumbInfo CRUMB_MISSING_FIELD =
-    new ValidationResults.CrumbInfo(REQUIRED, true);
+      new ValidationResults.CrumbInfo(REQUIRED, true);
   private static final ValidationResult ADDITIONAL_FIELD_ERROR =
-    new ValidationResult(ERROR, 1000, "Additional property '%s' is not allowed.");
+      new ValidationResult(ERROR, 1000, "Additional property '%s' is not allowed.");
   private static final ValidationResults.CrumbInfo ADDITIONAL_FIELD_CRUMB =
-    new ValidationResults.CrumbInfo(ADDITIONALPROPERTIES, true);
+      new ValidationResults.CrumbInfo(ADDITIONALPROPERTIES, true);
 
   public static final String ATTRIBUTES_BLOCK_NAME = "attributes";
   public static final String RELATIONSHIPS_BLOCK_NAME = "relationships";
 
   public static final JsonPointer ATTRIB_POINTER =
-    JsonPointer.compile("/" + ATTRIBUTES_BLOCK_NAME + "/" + OAI3SchemaKeywords.PROPERTIES);
+      JsonPointer.compile("/" + ATTRIBUTES_BLOCK_NAME + "/" + OAI3SchemaKeywords.PROPERTIES);
   public static final JsonPointer RELATION_POINTER =
-    JsonPointer.compile("/" + RELATIONSHIPS_BLOCK_NAME + "/" + OAI3SchemaKeywords.PROPERTIES);
+      JsonPointer.compile("/" + RELATIONSHIPS_BLOCK_NAME + "/" + OAI3SchemaKeywords.PROPERTIES);
 
   private final Set<String> requiredAttributes = new HashSet<>();
   private final Set<String> requiredRelations = new HashSet<>();
   private final ValidationRestrictionOptions options;
 
   protected RestrictiveFieldValidator(
-    ValidationContext<OAI3> context,
-    JsonNode schemaNode,
-    JsonNode schemaParentNode,
-    SchemaValidator parentSchema,
-    ValidationRestrictionOptions options
+      ValidationContext<OAI3> context,
+      JsonNode schemaNode,
+      JsonNode schemaParentNode,
+      SchemaValidator parentSchema,
+      ValidationRestrictionOptions options
   ) {
     super(context, schemaNode, schemaParentNode, parentSchema);
     this.options = options == null ? ValidationRestrictionOptions.FULL_RESTRICTIONS : options;
@@ -75,10 +75,10 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
   }
 
   private void validateRequiredFields(
-    JsonNode valueNode,
-    ValidationData<?> validation,
-    Set<String> requiredFieldNames,
-    String blockName
+      JsonNode valueNode,
+      ValidationData<?> validation,
+      Set<String> requiredFieldNames,
+      String blockName
   ) {
     if (!requiredFieldNames.isEmpty()) {
       if (!options.isAllowAdditionalFields()) {
@@ -89,24 +89,24 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
   }
 
   private void checkMissingFields(
-    JsonNode valueNode,
-    ValidationData<?> validation,
-    Set<String> requiredFieldNames,
-    String blockName
+      JsonNode valueNode,
+      ValidationData<?> validation,
+      Set<String> requiredFieldNames,
+      String blockName
   ) {
     for (String fieldName : requiredFieldNames) {
       if (valueNode.at("/" + blockName + "/" + fieldName).isMissingNode()
-        && setDoesNotContainIgnoreCase(options.getAllowableMissingFields(), fieldName)) {
+          && setDoesNotContainIgnoreCase(options.getAllowableMissingFields(), fieldName)) {
         validation.add(CRUMB_MISSING_FIELD, MISSING_FIELD_ERROR, fieldName);
       }
     }
   }
 
   private static void checkAdditionalFields(
-    JsonNode valueNode,
-    ValidationData<?> validation,
-    Set<String> requiredFieldNames,
-    String blockName
+      JsonNode valueNode,
+      ValidationData<?> validation,
+      Set<String> requiredFieldNames,
+      String blockName
   ) {
     valueNode.at("/" + blockName).fieldNames().forEachRemaining(field -> {
       if (setDoesNotContainIgnoreCase(requiredFieldNames, field)) {

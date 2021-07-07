@@ -22,7 +22,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  */
 @SuppressFBWarnings({"LI_LAZY_INIT_UPDATE_STATIC", "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"})
 public class PostgresTestContainerInitializer
-  implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
   private static PostgreSQLContainer<?> sqlContainer = null;
 
@@ -34,8 +34,8 @@ public class PostgresTestContainerInitializer
     if (!Objects.equals(env.getProperty("embedded.postgresql.enabled"), "false")) {
       if (sqlContainer == null) {
         DockerImageName myImage = DockerImageName
-          .parse(Optional.ofNullable(env.getProperty("embedded.postgresql.image")).orElse("postgres"))
-          .asCompatibleSubstituteFor("postgres");
+            .parse(Optional.ofNullable(env.getProperty("embedded.postgresql.image")).orElse("postgres"))
+            .asCompatibleSubstituteFor("postgres");
         sqlContainer = new PostgreSQLContainer<>(myImage)
           .withDatabaseName(
             Optional.ofNullable(env.getProperty("embedded.postgresql.database"))
