@@ -482,6 +482,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_overview">6.1. Overview</a></li>
 <li><a href="#_step_by_step_using_a_custom_dina_authorization_service">6.2. Step by Step: Using a custom Dina Authorization Service</a></li>
+<li><a href="#_returning_your_permissions_for_an_object">6.3. Returning your permissions for an object</a></li>
 </ul>
 </li>
 <li><a href="#_validation">7. Validation</a>
@@ -1015,6 +1016,66 @@ public class CustomAuthorizationService implements DinaAuthorizationService {
 <p>Your dina repo will now use the default Group Authorization Service. See GroupAuthorizationService.java.</p>
 </li>
 </ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_returning_your_permissions_for_an_object">6.3. Returning your permissions for an object</h3>
+<div class="paragraph">
+<p>You can have permissions for three types of operations as evaluated by the dina authorization service.</p>
+</div>
+<div class="ulist">
+<div class="title">Permissions</div>
+<ul>
+<li>
+<p>create</p>
+</li>
+<li>
+<p>update</p>
+</li>
+<li>
+<p>delete</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When keycloak is enabled you can send a GET request and view your permissions for an object.</p>
+</div>
+<div class="paragraph">
+<p>Send a GET request to a resource and add the Header <code>include-dina-permission</code> to your HTTP request.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example Response</div>
+<div class="content">
+<pre class="highlight"><code class="language-json" data-lang="json">{
+  "data": [
+    {
+      "id": "475c1dc4-99c0-4a56-8177-3f00e4f151e1",
+      "type": "person",
+      "links": {
+        "self": "/api/v1/person/475c1dc4-99c0-4a56-8177-3f00e4f151e1"
+      },
+      "meta": {
+        "permissions": [
+            create,
+            update,
+            delete
+        ],
+        "warnings": null
+      },
+      "attributes": {
+        ... // shortened
+        ]
+      },
+      "relationships": {
+        ... // shortened
+      }
+    }
+  ],
+  "meta": {
+    ... // shortened
+  }
+}</code></pre>
 </div>
 </div>
 </div>
@@ -1566,7 +1627,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-30 18:35:12 UTC
+Last updated 2021-07-07 19:40:09 UTC
 </div>
 </div>
 </body>
