@@ -112,16 +112,12 @@ limitations under the License.
 
       <!-- severity is at ignore until we fix the other issues -->
       <module name="Indentation">
+        <property name="basicOffset" value="2"/>
         <property name="braceAdjustment" value="0"/>
         <property name="caseIndent" value="2"/>
         <property name="throwsIndent" value="4"/>
         <property name="lineWrappingIndentation" value="4"/>
         <property name="arrayInitIndent" value="2"/>
-        <property name="severity" value="ignore"/>
-      </module>
-
-      <module name="Indentation">
-        <property name="basicOffset" value="2"/>
         <property name="severity" value="error"/>
       </module>
 
@@ -182,7 +178,7 @@ limitations under the License.
 
 
         <!-- javadoc doesn't need one @param, @return, @throws tags -->
-        <property name="accessModifiers" value="public"/>
+        <property name="scope" value="public"/>
         <property name="allowMissingParamTags" value="true"/>
         <property name="allowMissingReturnTag" value="true"/>
 
