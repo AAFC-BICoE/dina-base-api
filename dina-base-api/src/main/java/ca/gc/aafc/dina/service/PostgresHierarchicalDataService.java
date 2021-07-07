@@ -33,9 +33,9 @@ public interface PostgresHierarchicalDataService {
       + "SELECT node.${idColumnName}, node.${parentIdColumnName}, node.${uuidColumnName}, node.${nameColumnName}, gh.rank + 1 "
       + "FROM get_hierarchy gh, ${tableName} AS node " + "WHERE node.${idColumnName} = gh.parent_id) "
       + "SELECT id, uuid, name, rank FROM get_hierarchy;")
-@Options(statementType = StatementType.CALLABLE)
-@Result(property = "uuid", column = "uuid", typeHandler = UUIDTypeHandler.class)
-List<HierarchicalObject> getHierarchy(
+  @Options(statementType = StatementType.CALLABLE)
+  @Result(property = "uuid", column = "uuid", typeHandler = UUIDTypeHandler.class)
+  List<HierarchicalObject> getHierarchy(
     @Param("id") Integer id,
     @Param("tableName") String tableName,
     @Param("idColumnName") String idColumnName,
