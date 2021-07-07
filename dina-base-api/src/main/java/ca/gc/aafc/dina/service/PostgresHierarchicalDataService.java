@@ -27,12 +27,12 @@ public interface PostgresHierarchicalDataService {
   *                           where rank is the distance from X + 1
   **/
   @Select(
-  "WITH RECURSIVE get_hierarchy (id, parent_id, uuid, name, rank) AS ( "
-    + "SELECT initial_t.${idColumnName}, initial_t.${parentIdColumnName}, initial_t.${uuidColumnName}, initial_t.${nameColumnName}, 1 "
-    + "FROM ${tableName} AS initial_t where initial_t.${idColumnName} = ${id} " + "UNION ALL "
-    + "SELECT node.${idColumnName}, node.${parentIdColumnName}, node.${uuidColumnName}, node.${nameColumnName}, gh.rank + 1 "
-    + "FROM get_hierarchy gh, ${tableName} AS node " + "WHERE node.${idColumnName} = gh.parent_id) "
-    + "SELECT id, uuid, name, rank FROM get_hierarchy;")
+    "WITH RECURSIVE get_hierarchy (id, parent_id, uuid, name, rank) AS ( "
+      + "SELECT initial_t.${idColumnName}, initial_t.${parentIdColumnName}, initial_t.${uuidColumnName}, initial_t.${nameColumnName}, 1 "
+      + "FROM ${tableName} AS initial_t where initial_t.${idColumnName} = ${id} " + "UNION ALL "
+      + "SELECT node.${idColumnName}, node.${parentIdColumnName}, node.${uuidColumnName}, node.${nameColumnName}, gh.rank + 1 "
+      + "FROM get_hierarchy gh, ${tableName} AS node " + "WHERE node.${idColumnName} = gh.parent_id) "
+      + "SELECT id, uuid, name, rank FROM get_hierarchy;")
 @Options(statementType = StatementType.CALLABLE)
 @Result(property = "uuid", column = "uuid", typeHandler = UUIDTypeHandler.class)
 List<HierarchicalObject> getHierarchy(
