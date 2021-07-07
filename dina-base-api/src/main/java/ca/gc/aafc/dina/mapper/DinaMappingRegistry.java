@@ -237,7 +237,7 @@ public class DinaMappingRegistry {
       FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
         .stream().collect(Collectors.toMap(
         Field::getName,
-        field -> field.getAnnotation(JsonApiExternalRelation.class).type())));
+          field -> field.getAnnotation(JsonApiExternalRelation.class).type())));
   }
 
   private Map<Class<?>, DinaFieldAdapterHandler<?>> parseFieldAdapters(Set<Class<?>> resources) {

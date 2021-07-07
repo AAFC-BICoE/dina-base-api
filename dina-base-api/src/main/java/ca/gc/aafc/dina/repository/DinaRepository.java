@@ -191,7 +191,7 @@ public class DinaRepository<D, E extends DinaEntity>
       providers.stream().filter(d -> d.getUuid().equals(e.getUuid())).findFirst()
         .ifPresent(provider -> provider.setMeta(
           AttributeMetaInfoProvider.DinaJsonMetaInfo.builder().permissions(permissions).build())
-        );
+      );
     });
   }
 

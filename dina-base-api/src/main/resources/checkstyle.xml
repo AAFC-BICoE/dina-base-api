@@ -178,7 +178,7 @@ limitations under the License.
 
 
         <!-- javadoc doesn't need one @param, @return, @throws tags -->
-        <property name="scope" value="public"/>
+        <property name="accessModifiers" value="public"/>
         <property name="allowMissingParamTags" value="true"/>
         <property name="allowMissingReturnTag" value="true"/>
 
