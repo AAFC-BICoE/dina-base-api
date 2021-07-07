@@ -72,14 +72,14 @@ public final class SecurityChecker {
   }
 
   private boolean checkObjectPreAuthorized(
-      @NonNull DinaAuthorizationService as,
-      @NonNull Object entity,
-      @NonNull String methodName
+    @NonNull DinaAuthorizationService as,
+    @NonNull Object entity,
+    @NonNull String methodName
   ) {
     Method preAuthorizeMethod = MethodUtils.getMatchingMethod(as.getClass(), methodName, Object.class);
 
     EvaluationContext evaluationContext = config.createExpressionHandler().createEvaluationContext(
-        SecurityContextHolder.getContext().getAuthentication(),
+      SecurityContextHolder.getContext().getAuthentication(),
       new SimpleMethodInvocation(as, preAuthorizeMethod, entity));
 
     return ExpressionUtils.evaluateAsBoolean(

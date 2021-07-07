@@ -30,9 +30,9 @@ public final class OneToManyHibernateHelper {
    * @param <P>               Parent type
    */
   public static <C, P> void linkChildren(
-      List<C> children,
-      P parent,
-      Function<C, Consumer<P>> parentApplyMethod
+    List<C> children,
+    P parent,
+    Function<C, Consumer<P>> parentApplyMethod
   ) {
     if (CollectionUtils.isNotEmpty(children)) {
       children.forEach(c -> parentApplyMethod.apply(c).accept(parent));
@@ -49,14 +49,14 @@ public final class OneToManyHibernateHelper {
    * @param <E>              Child type
    */
   public static <E extends DinaEntity> void handleOrphans(
-      List<E> currentChildren,
-      List<E> incomingChildren,
-      Consumer<E> orphanHandler
+    List<E> currentChildren,
+    List<E> incomingChildren,
+    Consumer<E> orphanHandler
   ) {
     Map<UUID, E> oldChildrenById = currentChildren == null ? Map.of() : currentChildren.stream()
-        .collect(Collectors.toMap(DinaEntity::getUuid, Function.identity()));
+      .collect(Collectors.toMap(DinaEntity::getUuid, Function.identity()));
     Map<UUID, E> newChildrenByID = incomingChildren == null ? Map.of() : incomingChildren.stream()
-        .collect(Collectors.toMap(DinaEntity::getUuid, Function.identity()));
+      .collect(Collectors.toMap(DinaEntity::getUuid, Function.identity()));
 
     oldChildrenById.forEach((uuid, dinaEntity) -> {
       if (!newChildrenByID.containsKey(uuid)) {
@@ -76,10 +76,10 @@ public final class OneToManyHibernateHelper {
    * @return List of resources with a given parent object.
    */
   public static <T> List<T> findByParent(
-      Class<T> classType,
-      String parentFieldName,
-      Object parentObj,
-      DinaService<?> service
+    Class<T> classType,
+    String parentFieldName,
+    Object parentObj,
+    DinaService<?> service
   ) {
     return service.findAll(classType, (criteriaBuilder, storageUnitRoot) -> new Predicate[]{
       criteriaBuilder.equal(storageUnitRoot.get(parentFieldName), parentObj)

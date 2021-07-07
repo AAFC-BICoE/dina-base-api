@@ -4,12 +4,12 @@ import java.util.Set;
 
 public interface DinaAuthorizationService {
 
-  void authorizeCreate(Object entity);
+    void authorizeCreate(Object entity);
 
-  void authorizeUpdate(Object entity);
+    void authorizeUpdate(Object entity);
 
-  void authorizeDelete(Object entity); 
+    void authorizeDelete(Object entity);
 
-  Set<String> getPermissionsForObject(Object target);
+    Set<String> getPermissionsForObject(Object target);
     
 }

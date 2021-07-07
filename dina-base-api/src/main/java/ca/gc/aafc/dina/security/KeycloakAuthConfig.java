@@ -80,7 +80,7 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
   @RequestScope
   public DinaAuthenticatedUser currentUser() {
     KeycloakAuthenticationToken token = (KeycloakAuthenticationToken) SecurityContextHolder.getContext()
-        .getAuthentication();
+      .getAuthentication();
 
     if (token == null) {
       return null;
@@ -89,8 +89,8 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
     String username = token.getName();
 
     AccessToken accessToken = token.getAccount()
-        .getKeycloakSecurityContext()
-        .getToken();
+      .getKeycloakSecurityContext()
+      .getToken();
     Map<String, Object> otherClaims = accessToken.getOtherClaims();
 
     String agentId = (String) otherClaims.get(AGENT_IDENTIFIER_CLAIM_KEY);

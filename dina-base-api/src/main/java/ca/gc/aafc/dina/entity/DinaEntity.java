@@ -23,8 +23,8 @@ public interface DinaEntity {
     return null;
   }
 
-  String getCreatedBy();
+    String getCreatedBy();
 
-  OffsetDateTime getCreatedOn();
+    OffsetDateTime getCreatedOn();
 
 }

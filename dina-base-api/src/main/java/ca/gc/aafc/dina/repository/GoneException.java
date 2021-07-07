@@ -17,11 +17,11 @@ public class GoneException extends CrnkMappableException {
 
   public GoneException(String title, String message, String link) {
     super(410, ErrorData.builder()
-        .setTitle(title)
-        .setDetail(message)
-        .setStatus("410")
-        .setAboutLink(link)
-        .build());
+      .setTitle(title)
+      .setDetail(message)
+      .setStatus("410")
+      .setAboutLink(link)
+      .build());
   }
 
 }

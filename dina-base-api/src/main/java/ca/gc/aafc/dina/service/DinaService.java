@@ -73,11 +73,11 @@ public interface DinaService<E extends DinaEntity> {
    * @return list of entities
    */
   <T> List<T> findAll(
-      @NonNull Class<T> entityClass,
-      @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> where,
-      BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
-      int startIndex,
-      int maxResult
+    @NonNull Class<T> entityClass,
+    @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> where,
+    BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
+    int startIndex,
+    int maxResult
   );
 
   /**
@@ -91,11 +91,11 @@ public interface DinaService<E extends DinaEntity> {
    * @return list of entities
    */
   <T> List<T> findAll(
-      @NonNull Class<T> entityClass,
-      @NonNull PredicateSupplier<T> where,
-      BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
-      int startIndex,
-      int maxResult
+    @NonNull Class<T> entityClass,
+    @NonNull PredicateSupplier<T> where,
+    BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
+    int startIndex,
+    int maxResult
   );
 
   /**
@@ -106,8 +106,8 @@ public interface DinaService<E extends DinaEntity> {
    * @return resource count
    */
   <T> Long getResourceCount(
-      @NonNull Class<T> entityClass,
-      @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
+    @NonNull Class<T> entityClass,
+    @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
   );
 
   /**
@@ -118,8 +118,8 @@ public interface DinaService<E extends DinaEntity> {
    * @return resource count
    */
   <T> Long getResourceCount(
-      @NonNull Class<T> entityClass,
-      @NonNull PredicateSupplier<T> predicateSupplier
+    @NonNull Class<T> entityClass,
+    @NonNull PredicateSupplier<T> predicateSupplier
   );
 
   /**

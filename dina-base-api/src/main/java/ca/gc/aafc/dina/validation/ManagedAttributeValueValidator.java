@@ -28,8 +28,8 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   private final MessageSource messageSource;
 
   public ManagedAttributeValueValidator(
-      @Named("validationMessageSource") MessageSource messageSource,
-      @NonNull ManagedAttributeService<E> dinaService
+    @Named("validationMessageSource") MessageSource messageSource,
+    @NonNull ManagedAttributeService<E> dinaService
   ) {
     this.messageSource = messageSource;
     this.dinaService = dinaService;

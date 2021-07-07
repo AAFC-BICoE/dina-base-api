@@ -97,11 +97,11 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    */
   @Override
   public <T> List<T> findAll(
-      @NonNull Class<T> entityClass,
-      @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> where,
-      BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
-      int startIndex,
-      int maxResult
+    @NonNull Class<T> entityClass,
+    @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> where,
+    BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
+    int startIndex,
+    int maxResult
   ) {
     return findAll(entityClass, (criteriaBuilder, root, em) -> where.apply(criteriaBuilder, root),
       orderBy, startIndex, maxResult);
@@ -119,11 +119,11 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    */
   @Override
   public <T> List<T> findAll(
-      @NonNull Class<T> entityClass,
-      @NonNull PredicateSupplier<T> where,
-      BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
-      int startIndex,
-      int maxResult
+    @NonNull Class<T> entityClass,
+    @NonNull PredicateSupplier<T> where,
+    BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
+    int startIndex,
+    int maxResult
   ) {
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
     CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
@@ -145,8 +145,8 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    */
   @Override
   public <T> Long getResourceCount(
-      @NonNull Class<T> entityClass,
-      @NonNull PredicateSupplier<T> predicateSupplier
+    @NonNull Class<T> entityClass,
+    @NonNull PredicateSupplier<T> predicateSupplier
   ) {
     return baseDAO.getResourceCount(entityClass, predicateSupplier);
   }
@@ -160,8 +160,8 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    */
   @Override
   public <T> Long getResourceCount(
-      @NonNull Class<T> entityClass,
-      @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
+    @NonNull Class<T> entityClass,
+    @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
   ) {
     return getResourceCount(
       entityClass,

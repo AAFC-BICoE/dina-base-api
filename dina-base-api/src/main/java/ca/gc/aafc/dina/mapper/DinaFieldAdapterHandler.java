@@ -29,9 +29,9 @@ public class DinaFieldAdapterHandler<D> {
     Set<DinaFieldAdapter<Object, Object, Object, Object>> set = new HashSet<>();
     if (dtoClass.isAnnotationPresent(CustomFieldAdapter.class)) {
       for (Class<? extends DinaFieldAdapter<?, ?, ?, ?>> aClass :
-          dtoClass.getAnnotation(CustomFieldAdapter.class).adapters()) {
+        dtoClass.getAnnotation(CustomFieldAdapter.class).adapters()) {
         set.add(
-            (DinaFieldAdapter<Object, Object, Object, Object>) aClass.getConstructor().newInstance());
+          (DinaFieldAdapter<Object, Object, Object, Object>) aClass.getConstructor().newInstance());
       }
     }
     return set;

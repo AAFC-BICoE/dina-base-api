@@ -25,8 +25,8 @@ public class MultilingualDescriptionValidator implements Validator {
   private final MessageSource messageSource;
 
   public MultilingualDescriptionValidator(
-      @Named("validationMessageSource") MessageSource messageSource,
-      @NonNull SupportedLanguagesConfiguration supportedLanguagesConfiguration
+    @Named("validationMessageSource") MessageSource messageSource,
+    @NonNull SupportedLanguagesConfiguration supportedLanguagesConfiguration
   ) {
     this.messageSource = messageSource;
     this.supportedLanguagesConfiguration = supportedLanguagesConfiguration;

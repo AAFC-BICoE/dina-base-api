@@ -221,25 +221,25 @@ public final class SpreadsheetHelper {
 
     CellType effectiveCellType = cell.getCellType() == CellType.FORMULA ? cell.getCachedFormulaResultType() : cell.getCellType();
     switch (effectiveCellType) {
-        case STRING:
-          value = cell.getStringCellValue();
-          break;
-        case BLANK:
-          value = null;
-          break;
-        case BOOLEAN:
-          value = String.valueOf(cell.getBooleanCellValue());
-          break;
-        case NUMERIC:
-          double n = cell.getNumericCellValue();
-          if (Math.ceil(n) == Math.floor(n)) {
-            value = String.valueOf(Math.round(n));
-          } else {
-            value = String.valueOf(n);
-          }
-          break;
-        default:
-          break; //noop, continue
+      case STRING:
+        value = cell.getStringCellValue();
+        break;
+      case BLANK:
+        value = null;
+        break;
+      case BOOLEAN:
+        value = String.valueOf(cell.getBooleanCellValue());
+        break;
+      case NUMERIC:
+        double n = cell.getNumericCellValue();
+        if (Math.ceil(n) == Math.floor(n)) {
+          value = String.valueOf(Math.round(n));
+        } else {
+          value = String.valueOf(n);
+        }
+        break;
+      default:
+        break; //noop, continue
     }
 
     if (value != null) {

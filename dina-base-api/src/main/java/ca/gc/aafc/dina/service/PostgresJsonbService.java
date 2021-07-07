@@ -21,9 +21,9 @@ public interface PostgresJsonbService {
    */
   @Select("SELECT COUNT(${columnName}) FROM ${tableName} WHERE ${columnName} ?? #{keyName}")
   Integer countFirstLevelKeys (
-      @Param("tableName") String tableName,
-      @Param("columnName") String colName,
-      @Param("keyName") String keyName
+    @Param("tableName") String tableName,
+    @Param("columnName") String colName,
+    @Param("keyName") String keyName
   );
     // This query is checking if the the key name exist as a top-level key within the JSON value
     // RE: WHERE ${columnName} ?? #{keyName}

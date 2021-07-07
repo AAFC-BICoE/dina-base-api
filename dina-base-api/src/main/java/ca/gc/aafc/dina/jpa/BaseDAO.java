@@ -322,8 +322,8 @@ public class BaseDAO {
    * @return resource count
    */
   public <E> Long getResourceCount(
-      @NonNull Class<E> entityClass,
-      @NonNull PredicateSupplier<E> predicateSupplier
+    @NonNull Class<E> entityClass,
+    @NonNull PredicateSupplier<E> predicateSupplier
   ) {
     CriteriaBuilder cb = entityManager.getCriteriaBuilder();
     CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);

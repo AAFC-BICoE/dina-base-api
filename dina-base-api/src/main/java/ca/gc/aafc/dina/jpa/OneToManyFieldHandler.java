@@ -50,9 +50,9 @@ public class OneToManyFieldHandler<P, C extends DinaEntity> {
    */
   public void onUpdate(P parent, DinaService<?> dinaService) {
     OneToManyHibernateHelper.handleOrphans(
-        OneToManyHibernateHelper.findByParent(childClassType, parentFieldName, parent, dinaService),
-        childSupplyMethod.apply(parent),
-        orphanHandler
+      OneToManyHibernateHelper.findByParent(childClassType, parentFieldName, parent, dinaService),
+      childSupplyMethod.apply(parent),
+      orphanHandler
     );
     OneToManyHibernateHelper.linkChildren(childSupplyMethod.apply(parent), parent, parentApplyMethod);
   }

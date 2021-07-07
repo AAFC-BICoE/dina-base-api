@@ -19,9 +19,9 @@ public abstract class OneToManyDinaService<E extends DinaEntity> extends Default
   private final List<OneToManyFieldHandler<E, ?>> handlers;
 
   public OneToManyDinaService(
-      BaseDAO baseDAO,
-      SmartValidator validator,
-      @NonNull List<OneToManyFieldHandler<E, ?>> handlers
+    BaseDAO baseDAO,
+    SmartValidator validator,
+    @NonNull List<OneToManyFieldHandler<E, ?>> handlers
   ) {
     super(baseDAO, validator);
     this.handlers = handlers;

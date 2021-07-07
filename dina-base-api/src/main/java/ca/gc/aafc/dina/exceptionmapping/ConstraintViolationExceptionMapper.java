@@ -51,9 +51,9 @@ public class ConstraintViolationExceptionMapper
 
   private String violationName(ConstraintViolation<?> cv) {
     String name = StreamSupport.stream(cv.getPropertyPath().spliterator(), false)
-        .map(Path.Node::getName)
-        .reduce((head, tail) -> tail)
-        .orElseGet(() -> cv.getPropertyPath().toString());
+      .map(Path.Node::getName)
+      .reduce((head, tail) -> tail)
+      .orElseGet(() -> cv.getPropertyPath().toString());
     return name;
   }
   

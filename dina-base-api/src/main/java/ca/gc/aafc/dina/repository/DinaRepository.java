@@ -48,7 +48,7 @@ import java.util.Set;
  * @param <E> - Entity type
  */
 public class DinaRepository<D, E extends DinaEntity>
-    implements ResourceRepository<D, Serializable>, MetaRepository<D>, HttpRequestContextAware {
+  implements ResourceRepository<D, Serializable>, MetaRepository<D>, HttpRequestContextAware {
 
   /* Forces CRNK to not display any top-level links. */
   private static final NoLinkInformation NO_LINK_INFORMATION = new NoLinkInformation();
@@ -74,15 +74,15 @@ public class DinaRepository<D, E extends DinaEntity>
   private HttpRequestContextProvider httpRequestContextProvider;
 
   public DinaRepository(
-      @NonNull DinaService<E> dinaService,
-      @NonNull DinaAuthorizationService authorizationService,
-      @NonNull Optional<AuditService> auditService,
-      @NonNull DinaMapper<D, E> dinaMapper,
-      @NonNull Class<D> resourceClass,
-      @NonNull Class<E> entityClass,
-      DinaFilterResolver filterResolver,
-      ExternalResourceProvider externalResourceProvider,
-      @NonNull BuildProperties buildProperties
+    @NonNull DinaService<E> dinaService,
+    @NonNull DinaAuthorizationService authorizationService,
+    @NonNull Optional<AuditService> auditService,
+    @NonNull DinaMapper<D, E> dinaMapper,
+    @NonNull Class<D> resourceClass,
+    @NonNull Class<E> entityClass,
+    DinaFilterResolver filterResolver,
+    ExternalResourceProvider externalResourceProvider,
+    @NonNull BuildProperties buildProperties
   ) {
     this.dinaService = dinaService;
     this.authorizationService = authorizationService;
@@ -120,7 +120,7 @@ public class DinaRepository<D, E extends DinaEntity>
       auditService.ifPresent(service -> { // Past Deleted records with audit logs throw Gone.
         final String resourceType = querySpec.getResourceType();
         final AuditService.AuditInstance auditInstance = AuditService.AuditInstance.builder()
-            .id(id.toString()).type(resourceType).build();
+          .id(id.toString()).type(resourceType).build();
         if (service.hasTerminalSnapshot(auditInstance)) {
           throw new GoneException(
             "GONE",
@@ -170,7 +170,7 @@ public class DinaRepository<D, E extends DinaEntity>
     handleMetaPermissionsResponse(entities, dList);
 
     Long resourceCount = dinaService.getResourceCount( entityClass,
-        (criteriaBuilder, root, em) -> filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idName, em));
+      (criteriaBuilder, root, em) -> filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idName, em));
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
@@ -189,15 +189,15 @@ public class DinaRepository<D, E extends DinaEntity>
       Set<String> permissions = authorizationService.getPermissionsForObject(e);
       // but apply response to the DTO.
       providers.stream().filter(d -> d.getUuid().equals(e.getUuid())).findFirst()
-          .ifPresent(provider -> provider.setMeta(
+        .ifPresent(provider -> provider.setMeta(
           AttributeMetaInfoProvider.DinaJsonMetaInfo.builder().permissions(permissions).build())
-      );
+        );
     });
   }
 
   private boolean permissionsNotRequested() {
     if (!AttributeMetaInfoProvider.class.isAssignableFrom(resourceClass)
-        || !httpRequestContextProvider.hasThreadRequestContext()) {
+      || !httpRequestContextProvider.hasThreadRequestContext()) {
       return true;
     }
 
@@ -216,7 +216,7 @@ public class DinaRepository<D, E extends DinaEntity>
     if (hasFieldAdapters) {
       QuerySpec spec = querySpec.clone();
       spec.setFilters(
-          DinaFilterResolver.resolveFilterAdapters(resourceClass, querySpec.getFilters(), registry));
+        DinaFilterResolver.resolveFilterAdapters(resourceClass, querySpec.getFilters(), registry));
       return spec;
     }
     return querySpec;
@@ -267,7 +267,7 @@ public class DinaRepository<D, E extends DinaEntity>
     dinaService.create(entity);
 
     D dto = findOne(
-        (Serializable) PropertyUtils.getProperty(entity, findIdFieldName(resourceClass)),
+      (Serializable) PropertyUtils.getProperty(entity, findIdFieldName(resourceClass)),
       new QuerySpec(resourceClass));
     auditService.ifPresent(service -> service.audit(dto));
     return (S) dto;
@@ -285,12 +285,12 @@ public class DinaRepository<D, E extends DinaEntity>
     dinaService.delete(entity);
 
     auditService.ifPresent(service -> service.auditDeleteEvent(mappingLayer.toDtoSimpleMapping(
-        entity)));
+      entity)));
   }
 
   @Override
   public DinaMetaInfo getMetaInformation(
-      Collection<D> collection, QuerySpec querySpec, MetaInformation metaInformation
+    Collection<D> collection, QuerySpec querySpec, MetaInformation metaInformation
   ) {
     DinaMetaInfo metaInfo = new DinaMetaInfo();
     // Set External types

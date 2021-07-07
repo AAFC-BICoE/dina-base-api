@@ -23,7 +23,7 @@ import java.util.Set;
 @Getter
 @Setter
 public class DinaPermissionEvaluator extends SecurityExpressionRoot
-    implements MethodSecurityExpressionOperations {
+  implements MethodSecurityExpressionOperations {
 
   /**
    * <p>
@@ -103,9 +103,9 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
    * @return true if the given user has a given role in the given group.
    */
   public boolean hasGroupAndRolePermissions(
-      DinaAuthenticatedUser user,
-      String role,
-      Object targetDomainObject
+    DinaAuthenticatedUser user,
+    String role,
+    Object targetDomainObject
   ) {
     if (user == null || StringUtils.isBlank(role) || !(targetDomainObject instanceof DinaEntity)) {
       return false;
@@ -129,9 +129,9 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
    * @return true if the given user has the given minimum role for that group.
    */
   public boolean hasMinimumGroupAndRolePermissions(
-      DinaAuthenticatedUser user,
-      String minimumRole,
-      Object targetDomainObject
+    DinaAuthenticatedUser user,
+    String minimumRole,
+    Object targetDomainObject
   ) {
     if (user == null || StringUtils.isBlank(minimumRole) || !(targetDomainObject instanceof DinaEntity)) {
       return false;

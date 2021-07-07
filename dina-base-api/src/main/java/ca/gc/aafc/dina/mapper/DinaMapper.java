@@ -49,7 +49,7 @@ public class DinaMapper<D, E> {
    */
   public D toDto(E entity) {
     Set<String> relations = registry.findMappableRelationsForClass(dtoClass).stream()
-        .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());
+      .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());
     return toDto(entity, registry.getAttributesPerClass(), relations);
   }
 
@@ -77,9 +77,9 @@ public class DinaMapper<D, E> {
    */
   @SneakyThrows
   public D toDto(
-      E entity,
-      Map<Class<?>, Set<String>> selectedFieldPerClass,
-      Set<String> relations
+    E entity,
+    Map<Class<?>, Set<String>> selectedFieldPerClass,
+    Set<String> relations
   ) {
     D dto = dtoClass.getConstructor().newInstance();
     mapSourceToTarget(entity, dto, selectedFieldPerClass, relations, new IdentityHashMap<>());
@@ -110,10 +110,10 @@ public class DinaMapper<D, E> {
    */
   @SneakyThrows
   public void applyDtoToEntity(
-      D dto,
-      E entity,
-      Map<Class<?>, Set<String>> selectedFieldPerClass,
-      Set<String> relations
+    D dto,
+    E entity,
+    Map<Class<?>, Set<String>> selectedFieldPerClass,
+    Set<String> relations
   ) {
     mapSourceToTarget(dto, entity, selectedFieldPerClass, relations, new IdentityHashMap<>());
   }
@@ -131,11 +131,11 @@ public class DinaMapper<D, E> {
    */
   @SuppressWarnings("unchecked")
   private <T, S> void mapSourceToTarget(
-      @NonNull S source,
-      @NonNull T target,
-      @NonNull Map<Class<?>, Set<String>> selectedFieldPerClass,
-      @NonNull Set<String> relations,
-      @NonNull Map<Object, Object> visited
+    @NonNull S source,
+    @NonNull T target,
+    @NonNull Map<Class<?>, Set<String>> selectedFieldPerClass,
+    @NonNull Set<String> relations,
+    @NonNull Map<Object, Object> visited
   ) {
     visited.putIfAbsent(source, target);
     // The source could be a Hibernate-proxied entity; unproxy it here:
@@ -163,15 +163,15 @@ public class DinaMapper<D, E> {
    */
   @SneakyThrows
   private <T, S> void mapRelationsToTarget(
-      S source,
-      T target,
-      Map<Class<?>, Set<String>> fieldsPerClass,
-      Set<String> relations,
-      Map<Object, Object> visited
+    S source,
+    T target,
+    Map<Class<?>, Set<String>> fieldsPerClass,
+    Set<String> relations,
+    Map<Object, Object> visited
   ) {
     for (String relationFieldName : relations) {
       DinaMappingRegistry.InternalRelation internalRelation = findInternalRelation(
-            target, relationFieldName);
+        target, relationFieldName);
 
       if (internalRelation != null) {
 
@@ -213,10 +213,10 @@ public class DinaMapper<D, E> {
    */
   @SneakyThrows
   private Object mapRelation(
-      Map<Class<?>, Set<String>> fields,
-      Object source,
-      Class<?> targetType,
-      Map<Object, Object> visited
+    Map<Class<?>, Set<String>> fields,
+    Object source,
+    Class<?> targetType,
+    Map<Object, Object> visited
   ) {
     if (source == null) {
       return null;
@@ -230,9 +230,9 @@ public class DinaMapper<D, E> {
     Object target = targetType.getDeclaredConstructor().newInstance();
 
     Set<String> set1 = registry.findMappableRelationsForClass(unBoxed.getClass()).stream()
-          .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());
+      .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());
     Set<String> set2 = registry.findMappableRelationsForClass(targetType).stream()
-          .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());
+      .map(DinaMappingRegistry.InternalRelation::getName).collect(Collectors.toSet());
 
     /*
      * Here we check which side had the relationships ( source or target ), only one
@@ -259,9 +259,9 @@ public class DinaMapper<D, E> {
    */
   @SneakyThrows
   private static <T, S> void mapFieldsToTarget(
-      S source,
-      T target,
-      Set<String> selectedFields
+    S source,
+    T target,
+    Set<String> selectedFields
   ) {
     for (String attribute : selectedFields) {
       PropertyUtils.setProperty(target, attribute, PropertyUtils.getProperty(source, attribute));
@@ -269,8 +269,8 @@ public class DinaMapper<D, E> {
   }
 
   private <T> DinaMappingRegistry.InternalRelation findInternalRelation(
-        T target,
-        String relationFieldName
+    T target,
+    String relationFieldName
   ) {
     return registry.findMappableRelationsForClass(target.getClass())
       .stream()

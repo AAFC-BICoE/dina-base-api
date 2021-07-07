@@ -34,7 +34,7 @@ public class ExternalRepository implements UntypedResourceRepository<ExternalRel
 
   @Override
   public ResourceList<ExternalRelationDto> findAll(
-      Collection<String> collection, QuerySpec querySpec
+    Collection<String> collection, QuerySpec querySpec
   ) {
     throw new MethodNotAllowedException("External Types only use findOne");
   }

@@ -9,7 +9,7 @@ import org.springframework.context.annotation.PropertySource;
 import ca.gc.aafc.dina.property.YamlPropertyLoaderFactory;
 
 @PropertySource(value = "classpath:supported-languages.yml",
-    factory = YamlPropertyLoaderFactory.class)
+  factory = YamlPropertyLoaderFactory.class)
 @Configuration
 @ConfigurationProperties
 public class SupportedLanguagesConfiguration {
