@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * @param <T>
  */
 public abstract class ManagedAttributeService<T extends ManagedAttribute>
-  extends DefaultDinaService<T> {
+    extends DefaultDinaService<T> {
   private static final String KEY = "key";
   private static final Pattern NON_ALPHANUMERICAL = Pattern.compile("[^a-z0-9]");
   private final Class<T> maClass;

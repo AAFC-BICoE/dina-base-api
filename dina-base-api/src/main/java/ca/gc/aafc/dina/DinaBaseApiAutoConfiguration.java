@@ -100,8 +100,8 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
   @Bean
   @Override
   public LocalValidatorFactoryBean getValidator() {
-      LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
-      bean.setValidationMessageSource(messageSource());
-      return bean;
+    LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
+    bean.setValidationMessageSource(messageSource());
+    return bean;
   }
 }

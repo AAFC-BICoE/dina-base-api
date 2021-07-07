@@ -79,12 +79,12 @@ public class AuditService {
   @Transactional
   public void removeSnapshots(@NonNull AuditInstance instance) {
     List<CdoSnapshot> snapshots = javers.findSnapshots(
-      QueryBuilder.byInstanceId(instance.getId(), instance.getType()).build());
+        QueryBuilder.byInstanceId(instance.getId(), instance.getType()).build());
     for (CdoSnapshot snap : snapshots) {
       CommitId commitId = snap.getCommitId();
       MapSqlParameterSource idMap = new MapSqlParameterSource(Map.of(
-        "id",
-        commitId.valueAsNumber()));
+          "id",
+          commitId.valueAsNumber()));
 
       String snapShotDelete = "delete from jv_snapshot where commit_fk = (select commit_pk from jv_commit where commit_id = :id)";
       jdbcTemplate.update(snapShotDelete, idMap);
@@ -98,7 +98,7 @@ public class AuditService {
 
     String globalDelete = "delete from jv_global_id where local_id = :id and type_name = :type";
     jdbcTemplate.update(globalDelete, new MapSqlParameterSource(
-      Map.of("id", instance.getId(), "type", instance.getType())));
+        Map.of("id", instance.getId(), "type", instance.getType())));
   }
 
   /**
@@ -181,9 +181,9 @@ public class AuditService {
     }
 
     SqlParameterSource parameters = new MapSqlParameterSource()
-      .addValue("author", author)
-      .addValue("id", id)
-      .addValue("type", type);
+        .addValue("author", author)
+        .addValue("id", id)
+        .addValue("type", type);
 
     String sql = getResouceCountSql(author, id);
     return jdbc.queryForObject(sql, parameters, Long.class);

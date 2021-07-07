@@ -23,10 +23,10 @@ public class DinaAuthenticatedUser {
 
   @Builder
   public DinaAuthenticatedUser(
-    String username,
-    String agentIdentifier,
-    String internalIdentifier,
-    Map<String, Set<DinaRole>> rolesPerGroup
+      String username,
+      String agentIdentifier,
+      String internalIdentifier,
+      Map<String, Set<DinaRole>> rolesPerGroup
   ) {
     this.internalIdentifier = internalIdentifier;
     this.username = username;

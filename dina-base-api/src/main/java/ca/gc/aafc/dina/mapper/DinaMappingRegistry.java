@@ -131,14 +131,14 @@ public class DinaMappingRegistry {
    * @return - the nested resource type from a given path.
    */
   public Class<?> resolveNestedResourceFromPath(
-    @NonNull Class<?> resource,
-    @NonNull List<String> attributePath
+      @NonNull Class<?> resource,
+      @NonNull List<String> attributePath
   ) {
     Class<?> nested = resource;
     for (String attribute : attributePath) {
       Optional<InternalRelation> relation = this.findMappableRelationsForClass(nested).stream()
-        .filter(internalRelation -> internalRelation.getName().equalsIgnoreCase(attribute))
-        .findAny();
+          .filter(internalRelation -> internalRelation.getName().equalsIgnoreCase(attribute))
+          .findAny();
       if (relation.isPresent()) {
         nested = relation.get().getElementType();
       } else {
@@ -184,9 +184,9 @@ public class DinaMappingRegistry {
       RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
       if (relatedEntity != null) {
         Set<String> fieldsToInclude = FieldUtils.getAllFieldsList(dtoClass).stream()
-          .filter(DinaMappingRegistry::isFieldMappable)
-          .map(Field::getName)
-          .collect(Collectors.toSet());
+            .filter(DinaMappingRegistry::isFieldMappable)
+            .map(Field::getName)
+            .collect(Collectors.toSet());
         map.put(dtoClass, Set.copyOf(fieldsToInclude));
         map.put(relatedEntity.value(), Set.copyOf(fieldsToInclude));
       }
@@ -200,12 +200,12 @@ public class DinaMappingRegistry {
       RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
       if (relatedEntity != null) {
         Set<InternalRelation> mappableRelations = FieldUtils
-          .getFieldsListWithAnnotation(dtoClass, JsonApiRelation.class).stream()
-          .filter(field -> isRelationMappable(dtoClass, relatedEntity.value(), field))
-          .map(DinaMappingRegistry::mapToInternalRelation)
-          .collect(Collectors.toSet());
+            .getFieldsListWithAnnotation(dtoClass, JsonApiRelation.class).stream()
+            .filter(field -> isRelationMappable(dtoClass, relatedEntity.value(), field))
+            .map(DinaMappingRegistry::mapToInternalRelation)
+            .collect(Collectors.toSet());
         Set<InternalRelation> entityRelations = mappableRelations.stream().map(
-          ir -> InternalRelation.builder().name(ir.getName()).isCollection(ir.isCollection())
+            ir -> InternalRelation.builder().name(ir.getName()).isCollection(ir.isCollection())
             .elementType(ir.getElementType().getAnnotation(RelatedEntity.class).value()).build()
         ).collect(Collectors.toSet());
         map.put(dtoClass, Set.copyOf(mappableRelations));
@@ -237,7 +237,7 @@ public class DinaMappingRegistry {
       FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
         .stream().collect(Collectors.toMap(
         Field::getName,
-        field -> field.getAnnotation(JsonApiExternalRelation.class).type())));
+          field -> field.getAnnotation(JsonApiExternalRelation.class).type())));
   }
 
   private Map<Class<?>, DinaFieldAdapterHandler<?>> parseFieldAdapters(Set<Class<?>> resources) {
@@ -300,8 +300,8 @@ public class DinaMappingRegistry {
   @SneakyThrows
   private static Class<?> getGenericType(Class<?> source, String fieldName) {
     ParameterizedType genericType = (ParameterizedType) source
-      .getDeclaredField(fieldName)
-      .getGenericType();
+        .getDeclaredField(fieldName)
+        .getGenericType();
     return (Class<?>) genericType.getActualTypeArguments()[0];
   }
 

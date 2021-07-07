@@ -25,8 +25,8 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
   private final ObjectMapper crnkMapper;
 
   public ValidationRepository(
-    @NonNull ValidationResourceConfiguration validationResourceConfiguration,
-    @NonNull ObjectMapper crnkMapper
+      @NonNull ValidationResourceConfiguration validationResourceConfiguration,
+      @NonNull ObjectMapper crnkMapper
   ) {
     super(ValidationDto.class);
     if (CollectionUtils.isEmpty(validationResourceConfiguration.getValidationHandlers())) {

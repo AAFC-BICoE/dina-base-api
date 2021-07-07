@@ -27,8 +27,8 @@ public class ValidationResourceHandler<D> {
   private final String typeName;
 
   public ValidationResourceHandler(
-    @NonNull Class<D> resourceClass,
-    @NonNull DinaRepository<D, ? extends DinaEntity> dinaRepo
+      @NonNull Class<D> resourceClass,
+      @NonNull DinaRepository<D, ? extends DinaEntity> dinaRepo
   ) {
     this.resourceClass = resourceClass;
 
@@ -75,12 +75,12 @@ public class ValidationResourceHandler<D> {
   }
 
   private void setRelations(
-    JsonNode data,
-    Object dto,
-    Set<DinaMappingRegistry.InternalRelation> mappableRelationsForClass
+      JsonNode data,
+      Object dto,
+      Set<DinaMappingRegistry.InternalRelation> mappableRelationsForClass
   ) {
     boolean hasValidRelationBlock = !ValidationNodeHelper.isBlank(data) && data.has(ValidationNodeHelper.RELATIONSHIPS_KEY)
-      && !ValidationNodeHelper.isBlank(data.get(ValidationNodeHelper.RELATIONSHIPS_KEY));
+        && !ValidationNodeHelper.isBlank(data.get(ValidationNodeHelper.RELATIONSHIPS_KEY));
     if (hasValidRelationBlock) {
       JsonNode relations = data.get(ValidationNodeHelper.RELATIONSHIPS_KEY);
       if (relations.isObject()) {
@@ -88,7 +88,7 @@ public class ValidationResourceHandler<D> {
           String relationFieldName = relation.getKey();
           if (StringUtils.isNotBlank(relationFieldName)) {
             findInternalRelation(mappableRelationsForClass, relationFieldName).ifPresent(internalRelation ->
-              setRelation(dto, relationFieldName, internalRelation.getElementType()));
+                setRelation(dto, relationFieldName, internalRelation.getElementType()));
           }
         });
       }
@@ -101,8 +101,8 @@ public class ValidationResourceHandler<D> {
   }
 
   private static Optional<DinaMappingRegistry.InternalRelation> findInternalRelation(
-    Set<DinaMappingRegistry.InternalRelation> relations,
-    String relationFieldName
+      Set<DinaMappingRegistry.InternalRelation> relations,
+      String relationFieldName
   ) {
     if (StringUtils.isBlank(relationFieldName) || CollectionUtils.isEmpty(relations)) {
       return Optional.empty();

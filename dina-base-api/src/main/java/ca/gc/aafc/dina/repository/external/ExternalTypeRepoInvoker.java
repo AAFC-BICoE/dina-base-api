@@ -27,9 +27,9 @@ public class ExternalTypeRepoInvoker implements InitializingModule {
   @Override
   public void init() {
     externalResourceProvider.getTypes().forEach(aClass ->
-      context.addRegistryEntry(getRegistryEntryForType(aClass, context.newRegistryEntryBuilder())));
+        context.addRegistryEntry(getRegistryEntryForType(aClass, context.newRegistryEntryBuilder())));
     context.addRegistryEntry(
-      getRegistryEntryForType("external-type", context.newRegistryEntryBuilder()));
+        getRegistryEntryForType("external-type", context.newRegistryEntryBuilder()));
   }
 
   private static RegistryEntry getRegistryEntryForType(String type, RegistryEntryBuilder builder) {
@@ -37,7 +37,7 @@ public class ExternalTypeRepoInvoker implements InitializingModule {
     builder.resource()
       .resourceType(type)
       .implementationType(ExternalRelationDto.class)
-      .addField("id", ResourceFieldType.ID, String.class);
+        .addField("id", ResourceFieldType.ID, String.class);
     return builder.build();
   }
 

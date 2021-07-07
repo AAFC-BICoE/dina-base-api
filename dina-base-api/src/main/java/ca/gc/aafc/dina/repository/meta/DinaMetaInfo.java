@@ -36,8 +36,8 @@ public class DinaMetaInfo extends DefaultPagedMetaInformation {
    * current reference
    */
   public static List<Map<String, String>> parseExternalTypes(
-    @NonNull Class<?> clazz,
-    @NonNull ExternalResourceProvider provider
+      @NonNull Class<?> clazz,
+      @NonNull ExternalResourceProvider provider
   ) {
     return FieldUtils.getFieldsListWithAnnotation(clazz, JsonApiExternalRelation.class)
       .stream()
