@@ -14,6 +14,22 @@ Groups are used to represent ownership access. A user can be in groups like "aaf
 This could be done by checking the metadata of the particular item the user is trying to access against their group membership. New groups could be added without having to recompile or edit the configuration
 of the deployment.
 
+=== Group Attributes
+
+Keycloak groups can have attributes. The dina-user-api is exposing the groupLabel attribute per language. The key must follow the pattern `groupLabel-LANG` where `LANG` should be replaced by the 2 letters ISO code
+of the language.
+
+The following Keycloak configuration of the AAFC group allows the user module to expose the group using the English or French label:
+```
+"attributes": {
+    "groupLabel-en": [
+      "AAFC"
+    ],
+    "groupLabel-fr": [
+      "AAC"
+    ]
+```
+
 == Roles per group
 
 Roles per group are not directly supported by KeyCloak. Groups are mostly used to assign a set of Roles to users inside a group. For example, a user with the role “Collection Manager” could be in 2 groups “CNC” and “DAO”
@@ -24,3 +40,5 @@ Since Keycloak supports subgroups we can have subgroups like /aafc/admin (subgro
 separation of using roles for functional access and groups for ownership, but it still represents a functional solution that mixes both concepts.
 Groups, including subgroups, can also have role mappings, which assign a specified role to all members of a group. As an example, a group-admin role which would be role-mapped to each of the .../admins groups.
 That would let us use the native role-based features of Spring Security as an initial check, then verify in code that the user belongs to the correct admin subgroup for whatever they're trying to do.
+
+
