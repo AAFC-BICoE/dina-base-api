@@ -3,7 +3,7 @@
 This section explains how roles and groups are structured in DINA-AAFC project in order to guide authorization. Keycloak is only responsible for the authentication but provides information about
 roles and groups of the logged-in users to all the modules through the token. Each module is responsible to apply the authorization based on the information in the token.
 
-A complete example is available in the dina-local-deployment[https://github.com/AAFC-BICoE/dina-local-deployment/blob/master/keycloak-dina-starter-realm.json] repository.
+A complete example is available in the https://github.com/AAFC-BICoE/dina-local-deployment/blob/master/keycloak-dina-starter-realm.json[dina-local-deployment] repository.
 
 == Roles
 
@@ -12,7 +12,7 @@ Role is the Primary authorization method used by KeyCloak.
 
 == Groups
 
-Groups are used to represent ownership access. A user can be in groups like "aafc", "cnc", "dao", etc, which would let them access certain collections and data sets but not others.
+Groups are used to represent ownership access. A user can be in groups like `aafc`, `cnc`, `dao`, etc, which would let them access certain collections and data sets but not others.
 This could be done by checking the metadata of the particular item the user is trying to access against their group membership. New groups could be added without having to recompile or edit the configuration
 of the deployment.
 
@@ -34,11 +34,11 @@ The following Keycloak configuration of the AAFC group allows the user module to
 
 == Roles per group
 
-Roles per group are not directly supported by KeyCloak. Groups are mostly used to assign a set of Roles to users inside a group. For example, a user with the role “Collection Manager” could be in 2 groups “CNC” and “DAO”
+Roles per group are not directly supported by KeyCloak. Groups are mostly used to assign a set of Roles to users inside a group. For example, a user with the role “Collection Manager” could be in 2 groups `cnc` and `DAO`
 but we would have no way to restrict to role to a certain groups so the user would be a “Collection Manager” in both groups. Creating very specific roles like “CNC Collection Manager” is not really an option since it
 would make the implementation quite complex in all the modules.
 
-Since Keycloak supports subgroups we can have subgroups like /aafc/admin (subgroup of aafc) and use that to determine access in group-specific situations. It breaks away somewhat from the conceptual
+Since Keycloak supports subgroups we can have subgroups like `/aafc/admin` (subgroup of `aafc`) and use that to determine access in group-specific situations. It breaks away somewhat from the conceptual
 separation of using roles for functional access and groups for ownership, but it still represents a functional solution that mixes both concepts.
 Groups, including subgroups, can also have role mappings, which assign a specified role to all members of a group. As an example, a group-admin role which would be role-mapped to each of the .../admins groups.
 That would let us use the native role-based features of Spring Security as an initial check, then verify in code that the user belongs to the correct admin subgroup for whatever they're trying to do.
