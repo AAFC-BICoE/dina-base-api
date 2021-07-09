@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jpa.PredicateSupplier;
+import ca.gc.aafc.dina.search.messaging.producer.MessageProducer;
 import ca.gc.aafc.dina.validation.ValidationErrorsHelper;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import javax.validation.groups.Default;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 
@@ -44,6 +46,12 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
 
   @NonNull
   private final SmartValidator validator;
+
+  protected final Optional<MessageProducer> producer;
+
+  public DefaultDinaService(@NonNull BaseDAO baseDAO, @NonNull SmartValidator validator) {
+    this(baseDAO, validator, Optional.empty());
+  }
 
   /**
    * Persist an instance of the provided entity in the database.
