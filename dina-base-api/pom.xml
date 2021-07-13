@@ -116,6 +116,12 @@
       <artifactId>postgresql</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/io.github.aafc-bicoe/search-messaging -->
+    <dependency>
+      <groupId>io.github.aafc-bicoe</groupId>
+      <artifactId>search-messaging</artifactId>
+      <version>0.2</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
