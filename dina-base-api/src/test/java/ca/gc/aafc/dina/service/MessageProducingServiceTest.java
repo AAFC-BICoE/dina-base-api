@@ -17,13 +17,18 @@ import lombok.NonNull;
 import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.SmartValidator;
+import org.testcontainers.containers.RabbitMQContainer;
 
 import javax.inject.Inject;
 import javax.persistence.Column;
@@ -37,24 +42,51 @@ import java.util.UUID;
 
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, MessageProducingServiceTest.TestConfig.class},
-properties = {
-  "messaging.isProducer=true",
-  "rabbitmq.queue=que",
-  "rabbitmq.exchange=que",
-  "rabbitmq.routingkey=que",
-  "rabbitmq.username=que",
-  "rabbitmq.password=que",
-  "rabbitmq.host=host"  ,
-  "rabbitmq.port=port"
-})
+  properties = {
+    "messaging.isProducer=true",
+    "rabbitmq.queue=que",
+    "rabbitmq.exchange=exchange",
+    "rabbitmq.routingkey=routingkey",
+    "rabbitmq.username=guest",
+    "rabbitmq.password=guest",
+    "rabbitmq.host=localhost",
+    "rabbitmq.port=49198"
+  })
 class MessageProducingServiceTest {
 
   @Inject
   private DefaultDinaService<TestConfig.Item> itemService;
 
+  @Inject
+  private RabbitTemplate template;
+  public static final RabbitMQContainer CONTAINER = new RabbitMQContainer("rabbitmq:3-management-alpine");
+
+  @BeforeAll
+  static void beforeAll() {
+    CONTAINER.withQueue("que");
+    CONTAINER.start();
+  }
+
+  @BeforeEach
+  void setUp() {
+    template.setConnectionFactory(new CachingConnectionFactory(
+      CONTAINER.getHost(),
+      CONTAINER.getMappedPort(5672)));
+  }
+
+  @AfterAll
+  static void afterAll() {
+    CONTAINER.stop();
+  }
+
   @Test
   void name() {
-    Assertions.assertNotNull(itemService);
+    TestConfig.Item item = TestConfig.Item.builder()
+      .uuid(UUID.randomUUID())
+      .group("CNC")
+      .build();
+
+    itemService.create(item);
   }
 
   @TestConfiguration
