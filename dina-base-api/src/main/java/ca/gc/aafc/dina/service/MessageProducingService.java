@@ -6,12 +6,10 @@ import ca.gc.aafc.dina.search.messaging.producer.MessageProducer;
 import ca.gc.aafc.dina.search.messaging.types.DocumentOperationNotification;
 import ca.gc.aafc.dina.search.messaging.types.DocumentOperationType;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
 import org.springframework.validation.SmartValidator;
 
 import java.util.Optional;
 
-@Service
 public class MessageProducingService<E extends DinaEntity> extends DefaultDinaService<E> {
 
   private final String resourceType;
