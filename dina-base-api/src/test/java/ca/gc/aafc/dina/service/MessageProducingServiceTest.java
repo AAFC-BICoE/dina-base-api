@@ -36,7 +36,17 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Transactional
-@SpringBootTest(classes = {TestDinaBaseApp.class, MessageProducingServiceTest.TestConfig.class})
+@SpringBootTest(classes = {TestDinaBaseApp.class, MessageProducingServiceTest.TestConfig.class},
+properties = {
+  "messaging.isProducer=true",
+  "rabbitmq.queue=que",
+  "rabbitmq.exchange=que",
+  "rabbitmq.routingkey=que",
+  "rabbitmq.username=que",
+  "rabbitmq.password=que",
+  "rabbitmq.host=host"  ,
+  "rabbitmq.port=port"
+})
 class MessageProducingServiceTest {
 
   @Inject
