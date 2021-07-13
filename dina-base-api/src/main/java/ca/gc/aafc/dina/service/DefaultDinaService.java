@@ -7,7 +7,6 @@ import ca.gc.aafc.dina.search.messaging.producer.MessageProducer;
 import ca.gc.aafc.dina.validation.ValidationErrorsHelper;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ObjectError;
@@ -24,7 +23,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
 import javax.validation.groups.Default;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -49,7 +47,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
 
   protected final Optional<MessageProducer> producer;
 
-  public DefaultDinaService(@NonNull BaseDAO baseDAO, @NonNull SmartValidator validator) {
+  public DefaultDinaService(BaseDAO baseDAO, SmartValidator validator) {
     this(baseDAO, validator, Optional.empty());
   }
 
