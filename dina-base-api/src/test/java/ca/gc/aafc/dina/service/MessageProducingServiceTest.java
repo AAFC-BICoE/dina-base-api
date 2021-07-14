@@ -6,6 +6,8 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
 import ca.gc.aafc.dina.search.messaging.producer.MessageProducer;
+import ca.gc.aafc.dina.search.messaging.types.DocumentOperationNotification;
+import ca.gc.aafc.dina.search.messaging.types.DocumentOperationType;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.AllArgsConstructor;
@@ -15,6 +17,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
@@ -40,6 +43,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.SmartValidator;
 import org.testcontainers.containers.RabbitMQContainer;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.inject.Inject;
 import javax.persistence.Column;
@@ -91,6 +95,8 @@ class MessageProducingServiceTest {
   @BeforeEach
   void setUp() {
     template.setConnectionFactory(factory);
+    listener.getMessages().clear();
+    listener.setLatch(new CountDownLatch(1));
   }
 
   @AfterAll
@@ -100,14 +106,61 @@ class MessageProducingServiceTest {
 
   @SneakyThrows
   @Test
-  void name() {
+  void create() {
     TestConfig.Item item = TestConfig.Item.builder()
       .uuid(UUID.randomUUID())
       .group("CNC")
       .build();
     itemService.create(item);
     listener.getLatch().await();
-    Assertions.assertFalse(listener.getMessages().isEmpty());
+
+    assertResult(DocumentOperationType.ADD, item.getUuid().toString());
+  }
+
+  @SneakyThrows
+  @Test
+  void update() {
+    TestConfig.Item item = TestConfig.Item.builder()
+      .uuid(UUID.randomUUID())
+      .group("CNC")
+      .build();
+    itemService.create(item);
+    listener.getLatch().await();
+    listener.setLatch(new CountDownLatch(1));
+
+    itemService.update(item);
+    listener.getLatch().await();
+
+    assertResult(DocumentOperationType.UPDATE, item.getUuid().toString());
+  }
+
+  @SneakyThrows
+  @Test
+  void delete() {
+    TestConfig.Item item = TestConfig.Item.builder()
+      .uuid(UUID.randomUUID())
+      .group("CNC")
+      .build();
+    itemService.create(item);
+    listener.getLatch().await();
+    listener.setLatch(new CountDownLatch(1));
+
+    itemService.delete(item);
+    listener.getLatch().await();
+
+    assertResult(DocumentOperationType.DELETE, item.getUuid().toString());
+  }
+
+  private void assertResult(DocumentOperationType op, String id) throws java.io.IOException {
+    DocumentOperationNotification result = mapResult(listener.getMessages().get(0));
+    Assertions.assertFalse(result.isDryRun());
+    Assertions.assertEquals(op, result.getOperationType());
+    Assertions.assertEquals(id, result.getDocumentId());
+    Assertions.assertEquals("item", result.getDocumentType());
+  }
+
+  private static DocumentOperationNotification mapResult(String content) throws java.io.IOException {
+    return new ObjectMapper().readValue(content, DocumentOperationNotification.class);
   }
 
   @TestConfiguration
@@ -182,7 +235,8 @@ class MessageProducingServiceTest {
     @Component
     @Getter
     public static class Listener {
-      private final CountDownLatch latch = new CountDownLatch(1);
+      @Setter
+      private CountDownLatch latch = new CountDownLatch(1);
       private final List<String> messages = new ArrayList<>();
 
       @RabbitListener(bindings = @QueueBinding(
