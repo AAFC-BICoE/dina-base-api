@@ -12,12 +12,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,8 +48,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, MessageProducingServiceTest.TestConfig.class},
@@ -71,6 +77,9 @@ class MessageProducingServiceTest {
   @Inject
   private CachingConnectionFactory factory;
 
+  @Inject
+  private TestConfig.Listener listener;
+
   public static final RabbitMQContainer CONTAINER = new RabbitMQContainer("rabbitmq:3-management-alpine");
 
   @BeforeAll
@@ -89,6 +98,7 @@ class MessageProducingServiceTest {
     CONTAINER.stop();
   }
 
+  @SneakyThrows
   @Test
   void name() {
     TestConfig.Item item = TestConfig.Item.builder()
@@ -96,6 +106,8 @@ class MessageProducingServiceTest {
       .group("CNC")
       .build();
     itemService.create(item);
+    listener.getLatch().await();
+    Assertions.assertFalse(listener.getMessages().isEmpty());
   }
 
   @TestConfiguration
@@ -168,7 +180,10 @@ class MessageProducingServiceTest {
     }
 
     @Component
-    public static class MyService {
+    @Getter
+    public static class Listener {
+      private final CountDownLatch latch = new CountDownLatch(1);
+      private final List<String> messages = new ArrayList<>();
 
       @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "que"),
@@ -177,8 +192,9 @@ class MessageProducingServiceTest {
         containerFactory = "rabbitListenerContainerFactory"
       )
       public void processOrder(String data) {
-        System.out.println("============================================");
-        System.out.println(data);
+        messages.clear();
+        messages.add(data);
+        latch.countDown();
       }
 
     }
