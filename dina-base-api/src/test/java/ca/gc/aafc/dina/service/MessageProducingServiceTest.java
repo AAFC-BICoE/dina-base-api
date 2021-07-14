@@ -1,27 +1,20 @@
 package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
 import ca.gc.aafc.dina.search.messaging.producer.MessageProducer;
 import ca.gc.aafc.dina.search.messaging.types.DocumentOperationNotification;
 import ca.gc.aafc.dina.search.messaging.types.DocumentOperationType;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.hibernate.annotations.NaturalId;
-import org.javers.core.metamodel.annotation.PropertyName;
-import org.javers.core.metamodel.annotation.TypeName;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -185,25 +178,6 @@ class MessageProducingServiceTest {
       private UUID uuid;
     }
 
-    @Data
-    @EqualsAndHashCode(callSuper = true)
-    @JsonApiResource(type = TestConfig.ItemDto.TYPE_NAME)
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @RelatedEntity(TestConfig.Item.class)
-    @TypeName(TestConfig.ItemDto.TYPE_NAME)
-    public static class ItemDto extends AttributeMetaInfoProvider {
-      private static final String TYPE_NAME = "item";
-      @JsonApiId
-      @org.javers.core.metamodel.annotation.Id
-      @PropertyName("id")
-      private UUID uuid;
-      private String group;
-      private String createdBy;
-      private OffsetDateTime createdOn;
-    }
-
     @Service
     public static class ItemService extends MessageProducingService<TestConfig.Item> {
 
@@ -212,7 +186,7 @@ class MessageProducingServiceTest {
         @NonNull SmartValidator sv,
         Optional<MessageProducer> producer
       ) {
-        super(baseDAO, sv, producer, ItemDto.TYPE_NAME);
+        super(baseDAO, sv, producer, "item");
       }
 
       @Override
