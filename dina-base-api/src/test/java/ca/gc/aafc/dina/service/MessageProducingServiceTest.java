@@ -21,11 +21,19 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.rabbit.annotation.Exchange;
+import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.rabbit.annotation.QueueBinding;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.SmartValidator;
 import org.testcontainers.containers.RabbitMQContainer;
@@ -59,6 +67,10 @@ class MessageProducingServiceTest {
 
   @Inject
   private RabbitTemplate template;
+
+  @Inject
+  private CachingConnectionFactory factory;
+
   public static final RabbitMQContainer CONTAINER = new RabbitMQContainer("rabbitmq:3-management-alpine");
 
   @BeforeAll
@@ -69,9 +81,7 @@ class MessageProducingServiceTest {
 
   @BeforeEach
   void setUp() {
-    template.setConnectionFactory(new CachingConnectionFactory(
-      CONTAINER.getHost(),
-      CONTAINER.getMappedPort(5672)));
+    template.setConnectionFactory(factory);
   }
 
   @AfterAll
@@ -85,12 +95,12 @@ class MessageProducingServiceTest {
       .uuid(UUID.randomUUID())
       .group("CNC")
       .build();
-
     itemService.create(item);
   }
 
   @TestConfiguration
   @EntityScan(basePackageClasses = TestConfig.class)
+  @EnableRabbit
   static class TestConfig {
 
     @Data
@@ -144,6 +154,33 @@ class MessageProducingServiceTest {
       protected void preCreate(TestConfig.Item entity) {
         entity.setUuid(UUID.randomUUID());
       }
+    }
+
+    @Bean
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(CachingConnectionFactory f) {
+      f.setPort(CONTAINER.getMappedPort(5672));
+      f.setHost(CONTAINER.getHost());
+      SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+      factory.setConnectionFactory(f);
+      factory.setConcurrentConsumers(3);
+      factory.setMaxConcurrentConsumers(10);
+      return factory;
+    }
+
+    @Component
+    public static class MyService {
+
+      @RabbitListener(bindings = @QueueBinding(
+        value = @Queue(value = "que"),
+        exchange = @Exchange(value = "exchange", ignoreDeclarationExceptions = "true"),
+        key = "routingkey"),
+        containerFactory = "rabbitListenerContainerFactory"
+      )
+      public void processOrder(String data) {
+        System.out.println("============================================");
+        System.out.println(data);
+      }
+
     }
 
   }
