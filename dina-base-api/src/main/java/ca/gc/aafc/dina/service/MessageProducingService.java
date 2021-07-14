@@ -5,7 +5,6 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.search.messaging.producer.MessageProducer;
 import ca.gc.aafc.dina.search.messaging.types.DocumentOperationNotification;
 import ca.gc.aafc.dina.search.messaging.types.DocumentOperationType;
-import lombok.NonNull;
 import org.springframework.validation.SmartValidator;
 
 import java.util.Optional;
@@ -15,8 +14,8 @@ public class MessageProducingService<E extends DinaEntity> extends DefaultDinaSe
   private final String resourceType;
 
   public MessageProducingService(
-    @NonNull BaseDAO baseDAO,
-    @NonNull SmartValidator validator,
+    BaseDAO baseDAO,
+    SmartValidator validator,
     Optional<MessageProducer> producer,
     String resourceType
   ) {
