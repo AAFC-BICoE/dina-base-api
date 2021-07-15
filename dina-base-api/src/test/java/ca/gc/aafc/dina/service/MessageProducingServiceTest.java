@@ -47,7 +47,6 @@ import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
@@ -184,7 +183,7 @@ class MessageProducingServiceTest {
       public ItemService(
         @NonNull BaseDAO baseDAO,
         @NonNull SmartValidator sv,
-        Optional<MessageProducer> producer
+        MessageProducer producer
       ) {
         super(baseDAO, sv, producer, "item");
       }

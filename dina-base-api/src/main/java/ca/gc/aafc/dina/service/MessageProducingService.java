@@ -16,10 +16,10 @@ public class MessageProducingService<E extends DinaEntity> extends DefaultDinaSe
   public MessageProducingService(
     BaseDAO baseDAO,
     SmartValidator validator,
-    Optional<MessageProducer> producer,
+    MessageProducer producer,
     String resourceType
   ) {
-    super(baseDAO, validator, producer);
+    super(baseDAO, validator, Optional.ofNullable(producer));
     this.resourceType = resourceType;
   }
 
