@@ -11,5 +11,9 @@ public interface DinaAuthorizationService {
   void authorizeDelete(Object entity);
 
   Set<String> getPermissionsForObject(Object target);
-    
+
+  default String getSimpleName() {
+    return this.getClass().getSimpleName();
+  }
+
 }
