@@ -25,6 +25,8 @@
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
     <javers.version>6.2.3</javers.version>
     <mybatis.version>2.2.0</mybatis.version>
+    <aafc.search.messaging.version>0.2</aafc.search.messaging.version>
+    <rabbitmq.testcontainers.version>1.15.3</rabbitmq.testcontainers.version>
   </properties>
 
   <dependencies>
@@ -114,6 +116,18 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/io.github.aafc-bicoe/search-messaging -->
+    <dependency>
+      <groupId>io.github.aafc-bicoe</groupId>
+      <artifactId>search-messaging</artifactId>
+      <version>${aafc.search.messaging.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>rabbitmq</artifactId>
+      <version>${rabbitmq.testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
