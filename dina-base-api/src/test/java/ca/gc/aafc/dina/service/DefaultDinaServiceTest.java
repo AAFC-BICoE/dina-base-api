@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -242,6 +243,12 @@ public class DefaultDinaServiceTest {
   @Test
   public void exists_whenRecordDoesNotExist_returnsFalse() {
     assertFalse(serviceUnderTest.exists(Department.class, UUID.randomUUID()));
+  }
+
+  @Test
+  public void findOneById_whenRecordExists_returnsRecord() {
+    Department result = persistDepartment();
+    assertNotNull(serviceUnderTest.findOneById(result.getId(), Department.class));
   }
 
   @Test

@@ -169,15 +169,26 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
-   * Find an entity by it's NaturalId. The method assumes that the naturalId is unique.
+   * Find an entity by its NaturalId. The method assumes that the naturalId is unique.
    *
-   * @param naturalId   - id of entity
+   * @param naturalId   - natural id of entity
    * @param entityClass - class of entity
    * @return the matched entity
    */
   @Override
   public <T> T findOne(Object naturalId, Class<T> entityClass) {
     return baseDAO.findOneByNaturalId(naturalId, entityClass);
+  }
+
+  /**
+   * Find an entity by its database id.
+   *
+   * @param id   - id of entity
+   * @param entityClass - class of entity
+   * @return the matched entity
+   */
+  public <T> T findOneById(Object id, Class<T> entityClass) {
+    return baseDAO.findOneByDatabaseId(id, entityClass);
   }
 
   /**

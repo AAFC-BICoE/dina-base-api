@@ -78,8 +78,7 @@ public class BaseDAO {
   }
 
   /**
-   * Find an entity by it's natural ID or database ID. The method assumes that the
-   * naturalId is unique.
+   * Find an entity by its primary key.
    *
    * @param id
    * @param entityClass
@@ -90,7 +89,7 @@ public class BaseDAO {
   }
 
   /**
-   * Find an entity by it's {@link NaturalId}. The method assumes that the
+   * Find an entity by its {@link NaturalId}. The method assumes that the
    * naturalId is unique.
    *
    * @param id
