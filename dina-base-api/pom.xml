@@ -25,6 +25,8 @@
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
     <javers.version>6.1.1</javers.version>
     <mybatis.version>2.1.4</mybatis.version>
+    <aafc.search.messaging>0.2</aafc.search.messaging>
+    <rabbitmq.testcontainers>1.15.3</rabbitmq.testcontainers>
   </properties>
 
   <dependencies>
@@ -120,12 +122,12 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>search-messaging</artifactId>
-      <version>0.2</version>
+      <version>${aafc.search.messaging}</version>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>rabbitmq</artifactId>
-      <version>1.15.3</version>
+      <version>${rabbitmq.testcontainers}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
