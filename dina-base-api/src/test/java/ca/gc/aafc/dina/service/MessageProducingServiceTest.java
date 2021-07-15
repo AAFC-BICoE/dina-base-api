@@ -185,7 +185,7 @@ class MessageProducingServiceTest {
         @NonNull SmartValidator sv,
         MessageProducer producer
       ) {
-        super(baseDAO, sv, producer, "item");
+        super(baseDAO, sv, "item", producer);
       }
 
       @Override

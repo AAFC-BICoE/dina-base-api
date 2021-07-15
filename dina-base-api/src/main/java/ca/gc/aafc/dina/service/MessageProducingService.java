@@ -7,20 +7,20 @@ import ca.gc.aafc.dina.search.messaging.types.DocumentOperationNotification;
 import ca.gc.aafc.dina.search.messaging.types.DocumentOperationType;
 import org.springframework.validation.SmartValidator;
 
-import java.util.Optional;
-
 public class MessageProducingService<E extends DinaEntity> extends DefaultDinaService<E> {
 
   private final String resourceType;
+  private final MessageProducer producer;
 
   public MessageProducingService(
     BaseDAO baseDAO,
     SmartValidator validator,
-    MessageProducer producer,
-    String resourceType
+    String resourceType,
+    MessageProducer messageProducer
   ) {
-    super(baseDAO, validator, Optional.ofNullable(producer));
+    super(baseDAO, validator);
     this.resourceType = resourceType;
+    this.producer = messageProducer;
   }
 
   @Override
@@ -44,11 +44,10 @@ public class MessageProducingService<E extends DinaEntity> extends DefaultDinaSe
   }
 
   private void sendMessage(E persisted, DocumentOperationType add) {
-    producer.ifPresent(messageProducer ->
-      messageProducer.send(DocumentOperationNotification.builder()
-        .operationType(add)
-        .documentId(persisted.getUuid().toString())
-        .documentType(resourceType)
-        .build()));
+    producer.send(DocumentOperationNotification.builder()
+      .operationType(add)
+      .documentId(persisted.getUuid().toString())
+      .documentType(resourceType)
+      .build());
   }
 }
