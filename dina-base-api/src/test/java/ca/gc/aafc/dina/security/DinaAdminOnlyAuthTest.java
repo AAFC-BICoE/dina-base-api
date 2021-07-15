@@ -109,7 +109,7 @@ public class DinaAdminOnlyAuthTest {
 
   @Test
   void getSimpleName() {
-    Assertions.assertEquals("DinaAdminOnlyAuthorizationService", authorizationService.getSimpleName());
+    Assertions.assertEquals("DinaAdminOnlyAuthorizationService", authorizationService.getName());
   }
 
   @TestConfiguration

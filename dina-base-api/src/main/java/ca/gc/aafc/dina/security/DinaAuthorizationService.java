@@ -12,8 +12,8 @@ public interface DinaAuthorizationService {
 
   Set<String> getPermissionsForObject(Object target);
 
-  default String getSimpleName() {
-    return this.getClass().getSimpleName();
+  default String getName() {
+    return "";
   }
 
 }
