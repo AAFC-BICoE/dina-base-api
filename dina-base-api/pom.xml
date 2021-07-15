@@ -24,7 +24,7 @@
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
     <javers.version>6.2.3</javers.version>
-    <mybatis.version>2.1.4</mybatis.version>
+    <mybatis.version>2.2.0</mybatis.version>
   </properties>
 
   <dependencies>
