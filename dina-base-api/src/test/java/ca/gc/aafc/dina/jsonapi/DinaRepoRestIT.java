@@ -192,6 +192,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   }
 
   @Test
+  // Test fails for CRNK 3.3.x and 3.4.x https://github.com/crnk-project/crnk-framework/issues/790
   void jsonIncludeNonEmpty_WhenCollectionPresent_SerializesCollection() {
     ValidatableResponse findOne = super.sendGet(
       ProjectDTO.RESOURCE_TYPE,
