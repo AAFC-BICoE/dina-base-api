@@ -20,6 +20,7 @@ import lombok.NonNull;
 import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -51,6 +52,9 @@ public class DinaAdminOnlyAuthTest {
 
   @Inject
   private DefaultDinaService<Item> defaultService;
+
+  @Inject
+  private DinaAdminOnlyAuthorizationService authorizationService;
 
   public Item persisted;
 
@@ -101,6 +105,11 @@ public class DinaAdminOnlyAuthTest {
   @WithMockKeycloakUser(groupRole = {"CNC:CNC:COLLECTION_MANAGER", "GNG:CNC:STAFF", "BNB:CNC:STUDENT"})
   public void delete_WhenNotAdmin_AccessDenied() {
     assertThrows(AccessDeniedException.class, () -> testRepo.delete(persisted.getUuid()));
+  }
+
+  @Test
+  void getName() {
+    Assertions.assertEquals("DinaAdminOnlyAuthorizationService", authorizationService.getName());
   }
 
   @TestConfiguration

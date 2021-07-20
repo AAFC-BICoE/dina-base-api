@@ -24,4 +24,9 @@ public class DinaAdminOnlyAuthorizationService extends PermissionAuthorizationSe
 
   }
 
+  @Override
+  public String getName() {
+    return "DinaAdminOnlyAuthorizationService";
+  }
+
 }
