@@ -63,13 +63,13 @@ public class ConstraintViolationExceptionMapperIT {
       assertEquals(2, errors.size());
       
       // Assert correct error message, status and title (@NotNull location error)
-      assertEquals("location cannot be null.", errors.get(0).getDetail());
+      assertEquals("ca.gc.aafc.dina.entity.Department location cannot be null.", errors.get(0).getDetail());
       assertEquals("422", errors.get(0).getStatus());
       assertEquals("Constraint violation", errors.get(0).getTitle());
       assertEquals("location", errors.get(0).getSourcePointer());
       
       // Assert correct error message, status and title (@Size name length error)
-      assertEquals("name size must be between 1 and 50", errors.get(1).getDetail());
+      assertEquals("ca.gc.aafc.dina.entity.Department name size must be between 1 and 50", errors.get(1).getDetail());
       assertEquals("422", errors.get(1).getStatus());
       assertEquals("Constraint violation", errors.get(1).getTitle());
       assertEquals("name", errors.get(1).getSourcePointer());

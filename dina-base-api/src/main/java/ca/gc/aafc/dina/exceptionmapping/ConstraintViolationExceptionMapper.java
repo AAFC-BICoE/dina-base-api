@@ -31,7 +31,7 @@ public class ConstraintViolationExceptionMapper
             .map(cv -> ErrorData.builder()
                 .setStatus(STATUS_ON_ERROR.toString())
                 .setTitle("Constraint violation")
-                .setDetail(String.join(" ", violationName(cv), cv.getMessage()))
+                .setDetail(String.join(" ", cv.getLeafBean().getClass().getName(), violationName(cv), cv.getMessage()))
                 .setSourcePointer(violationName(cv))
                 .build())
             .collect(Collectors.toList()),
