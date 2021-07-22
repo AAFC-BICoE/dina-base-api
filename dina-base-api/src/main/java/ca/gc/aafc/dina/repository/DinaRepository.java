@@ -190,7 +190,10 @@ public class DinaRepository<D, E extends DinaEntity>
       // but apply response to the DTO.
       providers.stream().filter(d -> d.getUuid().equals(e.getUuid())).findFirst()
         .ifPresent(provider -> provider.setMeta(
-          AttributeMetaInfoProvider.DinaJsonMetaInfo.builder().permissions(permissions).build())
+          AttributeMetaInfoProvider.DinaJsonMetaInfo.builder()
+            .permissionsProvider(authorizationService.getName())
+            .permissions(permissions)
+            .build())
       );
     });
   }
