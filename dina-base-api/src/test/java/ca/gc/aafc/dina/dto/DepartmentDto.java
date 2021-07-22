@@ -54,6 +54,8 @@ public class DepartmentDto {
   @IgnoreDinaMapping(reason = "simply derived from location")
   private String derivedFromLocation;
 
+  private Department.DepartmentDetails departmentDetails;
+
   public static class DerivedAdapter implements DinaFieldAdapter<DepartmentDto, Department, String, String> {
 
     @Override

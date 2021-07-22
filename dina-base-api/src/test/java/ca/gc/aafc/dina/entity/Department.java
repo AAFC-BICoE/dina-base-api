@@ -12,6 +12,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -39,7 +42,8 @@ public class Department implements DinaEntity {
 
   @Size(min = 1, max = 50)
   private String name;
-  
+
+
   @ManyToOne
   private DepartmentType departmentType;
 
@@ -58,8 +62,20 @@ public class Department implements DinaEntity {
 
   private OffsetDateTime createdOn;
 
+  // Simulates a possible jsonb field
+  @Valid
+  @Transient
+  private DepartmentDetails departmentDetails;
+
   public String toString() {
     return super.toString();
+  }
+
+  @Data
+  @AllArgsConstructor
+  public static class DepartmentDetails {
+    @Max(10)
+    private String note;
   }
 
 }
