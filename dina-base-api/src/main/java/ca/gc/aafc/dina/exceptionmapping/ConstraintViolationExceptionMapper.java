@@ -50,14 +50,13 @@ public class ConstraintViolationExceptionMapper
   }
 
   private String generateDetail(ConstraintViolation<?> cv) {
-    return String.join(" ", cv.getRootBean().getClass().getSimpleName(),
-        cv.getPropertyPath().toString(), cv.getMessage());
+    return String.join(" ", cv.getPropertyPath().toString(), cv.getMessage());
   }
 
   private String generateSourcePointer(ConstraintViolation<?> cv) {
     return StreamSupport.stream(cv.getPropertyPath().spliterator(), false)
         .map(Path.Node::getName)
-        .collect( Collectors.joining("/"));
+        .collect(Collectors.joining("/"));
   }
   
 }

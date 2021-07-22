@@ -13,7 +13,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.validation.constraints.Max;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
