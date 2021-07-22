@@ -33,4 +33,9 @@ public class AllowAllAuthorizationService implements DinaAuthorizationService {
     );
   }
 
+  @Override
+  public String getName() {
+    return "AllowAllAuthorizationService";
+  }
+
 }

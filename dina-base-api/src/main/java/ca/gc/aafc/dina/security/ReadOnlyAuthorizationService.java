@@ -27,4 +27,9 @@ public class ReadOnlyAuthorizationService implements DinaAuthorizationService {
     return NO_PERMISSIONS;
   }
 
+  @Override
+  public String getName() {
+    return "ReadOnlyAuthorizationService";
+  }
+
 }

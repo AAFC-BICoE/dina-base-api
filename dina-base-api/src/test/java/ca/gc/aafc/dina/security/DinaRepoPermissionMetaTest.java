@@ -222,6 +222,11 @@ public class DinaRepoPermissionMetaTest {
       public void authorizeDelete(Object entity) {
 
       }
+
+      @Override
+      public String getName() {
+        return "SpecialAuthServiceUnderTest";
+      }
     }
   }
 
