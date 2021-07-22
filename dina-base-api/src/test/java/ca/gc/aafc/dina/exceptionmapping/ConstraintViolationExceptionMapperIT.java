@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 
+import ca.gc.aafc.dina.entity.Department;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -41,7 +42,7 @@ public class ConstraintViolationExceptionMapperIT {
     DepartmentDto testDepartment = new DepartmentDto();
     testDepartment.setName(stringWith51Chars);
     testDepartment.setUuid(UUID.randomUUID());
-    
+
     try {
       // Attempt the create.
       this.departmentRepository.create(testDepartment);
@@ -63,13 +64,13 @@ public class ConstraintViolationExceptionMapperIT {
       assertEquals(2, errors.size());
       
       // Assert correct error message, status and title (@NotNull location error)
-      assertEquals("ca.gc.aafc.dina.entity.Department location cannot be null.", errors.get(0).getDetail());
+      assertEquals("Department location cannot be null.", errors.get(0).getDetail());
       assertEquals("422", errors.get(0).getStatus());
       assertEquals("Constraint violation", errors.get(0).getTitle());
       assertEquals("location", errors.get(0).getSourcePointer());
       
       // Assert correct error message, status and title (@Size name length error)
-      assertEquals("ca.gc.aafc.dina.entity.Department name size must be between 1 and 50", errors.get(1).getDetail());
+      assertEquals("Department name size must be between 1 and 50", errors.get(1).getDetail());
       assertEquals("422", errors.get(1).getStatus());
       assertEquals("Constraint violation", errors.get(1).getTitle());
       assertEquals("name", errors.get(1).getSourcePointer());
@@ -80,5 +81,43 @@ public class ConstraintViolationExceptionMapperIT {
     // This test method should end at the "return" in the catch block.
     fail("ConstraintViolationException not thrown");
   }
-  
+
+  @Test
+  public void persistDepartment_whenNestedStructure_errorDataIsAccurate() {
+    // Create the department
+    DepartmentDto testDepartment = new DepartmentDto();
+    testDepartment.setName("Dep1");
+    testDepartment.setLocation("Loc1");
+    testDepartment.setUuid(UUID.randomUUID());
+    testDepartment.setDepartmentDetails(new Department.DepartmentDetails("noteWithMoreThan10Chars"));
+
+    try {
+      // Attempt the create.
+      this.departmentRepository.create(testDepartment);
+    } catch (ConstraintViolationException exception) {
+      // This test expects the ConstraintViolationException to be thrown, it will fail otherwise.
+      // Generate the error response here:
+      ErrorResponse errorResponse = constraintViolationExceptionMapper.toErrorResponse(exception);
+
+      // Assert correct http status.
+      assertEquals(422, errorResponse.getHttpStatus());
+
+      // Get the errors sorted by detail. The default error order is not consistent.
+      List<ErrorData> errors = errorResponse.getErrors()
+          .stream()
+          .sorted((a, b) -> a.getDetail().compareTo(b.getDetail()))
+          .collect(Collectors.toList());
+
+      assertEquals(1, errors.size());
+
+      assertEquals("422", errors.get(0).getStatus());
+      assertEquals("Department departmentDetails.note must be less than or equal to 10", errors.get(0).getDetail());
+      assertEquals("departmentDetails/note", errors.get(0).getSourcePointer());
+
+      return;
+    }
+
+    // This test method should end at the "return" in the catch block.
+    fail("ConstraintViolationException not thrown");
+  }
 }

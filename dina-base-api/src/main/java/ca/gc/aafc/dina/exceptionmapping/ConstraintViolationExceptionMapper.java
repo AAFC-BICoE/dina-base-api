@@ -31,8 +31,8 @@ public class ConstraintViolationExceptionMapper
             .map(cv -> ErrorData.builder()
                 .setStatus(STATUS_ON_ERROR.toString())
                 .setTitle("Constraint violation")
-                .setDetail(String.join(" ", cv.getLeafBean().getClass().getName(), violationName(cv), cv.getMessage()))
-                .setSourcePointer(violationName(cv))
+                .setDetail(generateDetail(cv))
+                .setSourcePointer(generateSourcePointer(cv))
                 .build())
             .collect(Collectors.toList()),
             STATUS_ON_ERROR
@@ -49,12 +49,15 @@ public class ConstraintViolationExceptionMapper
     throw new UnsupportedOperationException("Crnk client not supported");
   }
 
-  private String violationName(ConstraintViolation<?> cv) {
-    String name = StreamSupport.stream(cv.getPropertyPath().spliterator(), false)
-      .map(Path.Node::getName)
-      .reduce((head, tail) -> tail)
-      .orElseGet(() -> cv.getPropertyPath().toString());
-    return name;
+  private String generateDetail(ConstraintViolation<?> cv) {
+    return String.join(" ", cv.getRootBean().getClass().getSimpleName(),
+        cv.getPropertyPath().toString(), cv.getMessage());
+  }
+
+  private String generateSourcePointer(ConstraintViolation<?> cv) {
+    return StreamSupport.stream(cv.getPropertyPath().spliterator(), false)
+        .map(Path.Node::getName)
+        .collect( Collectors.joining("/"));
   }
   
 }
