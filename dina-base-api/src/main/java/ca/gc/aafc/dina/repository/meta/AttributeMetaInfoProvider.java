@@ -28,6 +28,7 @@ public abstract class AttributeMetaInfoProvider {
   @Getter
   @Setter
   public static class DinaJsonMetaInfo implements MetaInformation {
+    private String permissionsProvider;
     private Set<String> permissions;
     private Map<String, Object> warnings;
 

@@ -11,5 +11,7 @@ public interface DinaAuthorizationService {
   void authorizeDelete(Object entity);
 
   Set<String> getPermissionsForObject(Object target);
-    
+
+  String getName();
+
 }

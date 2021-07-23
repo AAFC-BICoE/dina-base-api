@@ -57,4 +57,9 @@ public class GroupAuthorizationService extends PermissionAuthorizationService {
   @PreAuthorize("hasGroupPermission(@currentUser, #entity)")
   public void authorizeDelete(Object entity) {
   }
+
+  @Override
+  public String getName() {
+    return "GroupAuthorizationService";
+  }
 }

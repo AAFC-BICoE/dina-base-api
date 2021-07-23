@@ -79,9 +79,10 @@ public class DinaRepoPermissionMetaTest {
   void permissionsTest_WhenHasPermissions_PermissionsReturned() {
     mockHttpHeader(DinaRepository.PERMISSION_META_HEADER_KEY, "true");
     ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
-    all.forEach(result -> MatcherAssert.assertThat(
-      result.getMeta().getPermissions(),
-      Matchers.hasItems("create", "update")));
+    all.forEach(result -> {
+      MatcherAssert.assertThat(result.getMeta().getPermissions(), Matchers.hasItems("create", "update"));
+      MatcherAssert.assertThat(result.getMeta().getPermissionsProvider(), Matchers.is("SpecialAuthServiceUnderTest"));
+    });
   }
 
   @Test
@@ -221,6 +222,11 @@ public class DinaRepoPermissionMetaTest {
       @PreAuthorize("hasDinaRole(@currentUser, 'STUDENT')")
       public void authorizeDelete(Object entity) {
 
+      }
+
+      @Override
+      public String getName() {
+        return "SpecialAuthServiceUnderTest";
       }
     }
   }
