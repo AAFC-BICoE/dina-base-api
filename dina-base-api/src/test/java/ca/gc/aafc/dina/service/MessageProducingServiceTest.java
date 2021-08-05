@@ -81,6 +81,7 @@ class MessageProducingServiceTest {
   @BeforeAll
   static void beforeAll() {
     CONTAINER.withQueue("que");
+    CONTAINER.withAdminPassword(null);
     CONTAINER.start();
   }
 
