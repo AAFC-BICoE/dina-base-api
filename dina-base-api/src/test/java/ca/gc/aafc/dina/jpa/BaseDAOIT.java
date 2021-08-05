@@ -12,6 +12,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import ca.gc.aafc.dina.testsupport.DatabaseSupportService;
 import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,9 @@ public class BaseDAOIT {
   
   @Inject
   private BaseDAO baseDAO;
+
+  @Inject
+  private DatabaseSupportService dbSupport;
   
   @Test
   public void getFieldName_onCallWithEntityClass_returnRightFieldName() {
@@ -136,6 +140,66 @@ public class BaseDAOIT {
     Department result = baseDAO.findOneByNaturalId(dep.getUuid(), Department.class);
     assertEquals(expectedName, result.getName());
     assertEquals(expectedLocation, result.getLocation());
+  }
+
+  @Test
+  public void refresh_OnRefresh_EntityReloaded() {
+    final Department dep = Department.builder().name("depToBeRefreshed").location("dep location").build();
+
+    // add an entity in another transaction so it exists in the database outside of the test's transaction
+    dbSupport.runInNewTransaction( em -> em.persist(dep));
+    Integer depId = dep.getId();
+    assertNotNull(depId);
+
+    // load the entity from the database
+    Department departmentUnderTest = baseDAO.findOneByDatabaseId(depId, Department.class);
+    assertNotNull(departmentUnderTest);
+
+    // change the entity outside the test's context
+    dbSupport.runInNewTransaction( (em -> {
+      Department outsideTransactionDep = em.find(Department.class, depId);
+      outsideTransactionDep.setName("depChanged");
+    }));
+
+    // validate that the name is not changed
+    assertEquals("depToBeRefreshed", departmentUnderTest.getName());
+    // the name is not changed even if we ask to find it again
+    departmentUnderTest = baseDAO.findOneByDatabaseId(depId, Department.class);
+    assertEquals("depToBeRefreshed", departmentUnderTest.getName());
+
+    // this is what refresh will do
+    baseDAO.refresh(departmentUnderTest);
+    assertEquals("depChanged", departmentUnderTest.getName());
+  }
+
+  @Test
+  public void detach_OnDetach_FindReloadTheEntity() {
+    final Department dep = Department.builder().name("depToBeRefreshed").location("dep location").build();
+
+    // add an entity in another transaction so it exists in the database outside of the test's transaction
+    dbSupport.runInNewTransaction( em -> em.persist(dep));
+    Integer depId = dep.getId();
+    assertNotNull(depId);
+
+    // load the entity from the database
+    Department departmentUnderTest = baseDAO.findOneByDatabaseId(depId, Department.class);
+    assertNotNull(departmentUnderTest);
+
+    // change the entity outside the test's context
+    dbSupport.runInNewTransaction( (em -> {
+      Department outsideTransactionDep = em.find(Department.class, depId);
+      outsideTransactionDep.setName("depChanged");
+    }));
+
+    // validate that the name is not changed
+    assertEquals("depToBeRefreshed", departmentUnderTest.getName());
+
+    // tell JPA to detach the object since we are not sure it's still up-to-date
+    baseDAO.detach(departmentUnderTest);
+
+    // then find will reload it from the database
+    departmentUnderTest = baseDAO.findOneByDatabaseId(depId, Department.class);
+    assertEquals("depChanged", departmentUnderTest.getName());
   }
 
 }
