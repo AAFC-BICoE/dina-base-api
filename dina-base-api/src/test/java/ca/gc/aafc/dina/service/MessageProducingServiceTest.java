@@ -76,7 +76,7 @@ class MessageProducingServiceTest {
   @Inject
   private TestConfig.Listener listener;
 
-  public static final RabbitMQContainer CONTAINER = new RabbitMQContainer("rabbitmq:3-management-alpine");
+  public static final RabbitMQContainer CONTAINER = new RabbitMQContainer("rabbitmq:3-management-alpine").withExposedPorts(5672);
 
   @BeforeAll
   static void beforeAll() {
