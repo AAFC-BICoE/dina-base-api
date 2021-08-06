@@ -41,6 +41,11 @@ public abstract class ManagedAttributeService<T extends ManagedAttribute>
     }
   }
 
+  @Override
+  protected void preDelete(T entity) {
+    throw new UnsupportedOperationException("DELETE");
+  }
+
   public Map<String, T> findAttributesForKeys(Set<String> keySet) {
     if (CollectionUtils.isEmpty(keySet)) {
       return Map.of();
