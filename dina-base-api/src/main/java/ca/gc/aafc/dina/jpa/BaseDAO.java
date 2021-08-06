@@ -270,6 +270,26 @@ public class BaseDAO {
   }
 
   /**
+   * Refresh an entity from the database.
+   * This will revert any non-flushed changes made in the current transaction to the entity, and refresh its state to what is currently defined on the database.
+   * @param entity
+   */
+  public void refresh(Object entity) {
+    entityManager.refresh(entity);
+  }
+
+  /**
+   * Remove the given entity from the persistence context, causing a managed entity to become detached.
+   * This will revert any non-flushed changes made in the current transaction to the entity.
+   *
+   * Also used to remove the object from the first-level cache.
+   * @param entity
+   */
+  public void detach(Object entity) {
+    entityManager.detach(entity);
+  }
+
+  /**
    * Given a class, this method will return the name of the field annotated with {@link Id}.
    *
    * @param entityClass
