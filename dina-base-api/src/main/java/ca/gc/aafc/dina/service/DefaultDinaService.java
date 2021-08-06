@@ -108,6 +108,20 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
+   * See {@link BaseDAO#refresh(Object)}
+   */
+  public void refresh(Object entity) {
+    baseDAO.refresh(entity);
+  }
+
+  /**
+   * See {@link BaseDAO#detach(Object)}
+   */
+  public void detach(Object entity) {
+    baseDAO.detach(entity);
+  }
+
+  /**
    * Returns a list of Entities of a given class restricted by the predicates returned by a given function.
    *
    * @param entityClass - entity class to query cannot be null
