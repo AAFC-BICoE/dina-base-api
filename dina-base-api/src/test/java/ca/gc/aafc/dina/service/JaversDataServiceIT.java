@@ -1,0 +1,71 @@
+package ca.gc.aafc.dina.service;
+
+import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.dto.EmployeeDto;
+import org.apache.commons.lang3.RandomUtils;
+import org.javers.core.Javers;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+
+import javax.inject.Inject;
+import java.util.Collections;
+
+@SpringBootTest(classes = TestDinaBaseApp.class, properties = "dina.auditing.enabled = true")
+class JaversDataServiceIT {
+
+  private static final String AUTHOR = "dina_user";
+  private static final Integer INSTANCE_ID = RandomUtils.nextInt();
+
+  @Inject
+  private JaversDataService javersDataService;
+
+  @Inject
+  private Javers javers;
+
+  @Inject
+  private NamedParameterJdbcTemplate jdbcTemplate;
+
+  @BeforeEach
+  public void beforeEachTest() {
+    cleanSnapShotRepo();
+
+    // Has Author 2 Commits
+    EmployeeDto hasAuthor = createDto();
+    javers.commit(AUTHOR, hasAuthor);
+    hasAuthor.setName("update");
+    javers.commit(AUTHOR, hasAuthor);
+
+    // Anonymous Author 2 Commits
+    EmployeeDto noAuthor = createDto();
+    javers.commit("Anonymous", noAuthor);
+    noAuthor.setName("update");
+    javers.commit("Anonymous", noAuthor);
+
+    // Has Author With specific instance id 2 commits
+    EmployeeDto withInstanceID = createDto();
+    withInstanceID.setId(INSTANCE_ID);
+    javers.commit(AUTHOR, withInstanceID);
+    withInstanceID.setName("update");
+    javers.commit(AUTHOR, withInstanceID);
+  }
+
+  @Test
+  void getResourceCount() {
+    Assertions.assertEquals(6, javersDataService.getResourceCount());
+  }
+
+  private void cleanSnapShotRepo() {
+    jdbcTemplate.update("DELETE FROM jv_snapshot where commit_fk IS NOT null", Collections.emptyMap());
+    jdbcTemplate.update("DELETE FROM jv_commit where commit_pk IS NOT null", Collections.emptyMap());
+  }
+
+  private static EmployeeDto createDto() {
+    EmployeeDto dto = new EmployeeDto();
+    dto.setId(RandomUtils.nextInt());
+    return dto;
+  }
+
+}
