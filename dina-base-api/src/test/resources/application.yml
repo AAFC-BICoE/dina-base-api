@@ -8,5 +8,5 @@ keycloak.enabled: false
 embedded.postgresql:
   enabled: true
   # Need to specify the version the same as in Production
-  image: postgres:10
+  image: postgis/postgis:12-2.5-alpine
   init-script-file: create-test-data.sql
