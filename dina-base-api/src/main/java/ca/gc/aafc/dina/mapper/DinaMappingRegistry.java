@@ -13,6 +13,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,6 +56,31 @@ public class DinaMappingRegistry {
     this.mappableRelationsPerClass = parseMappableRelations(resources);
     this.jsonIdFieldNamePerClass = parseJsonIds(resources);
     this.fieldAdaptersPerClass = parseFieldAdapters(resources);
+    validateGenericDataTypes(this.attributesPerClass);
+  }
+
+  @SneakyThrows
+  private static void validateGenericDataTypes(Map<Class<?>, Set<String>> attributesPerClass) {
+    for (Map.Entry<Class<?>, Set<String>> entry : attributesPerClass.entrySet()) {
+      Class<?> dto = entry.getKey();
+      Set<String> attributes = entry.getValue();
+
+      RelatedEntity relatedEntity = dto.getAnnotation(RelatedEntity.class);
+      if (relatedEntity != null) {
+
+        for (String attrib : attributes) {
+          Type typeOnDto = dto.getDeclaredField(attrib).getGenericType();
+          Type typeOnEntity = relatedEntity.value().getDeclaredField(attrib).getGenericType();
+
+          if (typeOnDto instanceof ParameterizedType && typeOnEntity instanceof ParameterizedType) {
+            if (getGenericType(dto, attrib) != getGenericType(relatedEntity.value(), attrib)) {
+              throw new IllegalStateException("data type on field " + attrib + " for dto " + dto.getSimpleName()
+                + " does not match the field from entity  " + relatedEntity.value().getSimpleName());
+            }
+          }
+        }
+      }
+    }
   }
 
   /**

@@ -5,13 +5,20 @@ import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.dto.ProjectDTO;
+import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.dto.TaskDTO;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.entity.Task;
+import io.crnk.core.resource.annotations.JsonApiResource;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.javers.core.metamodel.annotation.TypeName;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -19,6 +26,13 @@ import java.util.List;
 import java.util.Set;
 
 public class DinaMappingRegistryTest {
+
+  @Test
+  void init_WhenInvalidGenericTypes_ThrowsIllegalStateException() {
+    Assertions.assertThrows(
+      IllegalStateException.class,
+      () -> new DinaMappingRegistry(InvalidGenericDataTypeDto.class));
+  }
 
   @Test
   void findJsonIdFieldName() {
@@ -128,6 +142,25 @@ public class DinaMappingRegistryTest {
     Assertions.assertEquals(
       EmployeeDto.class,
       registry.resolveNestedResourceFromPath(PersonDTO.class, List.of("department", "employees", "job")));
+  }
+
+  @Data
+  @JsonApiResource(type = ProjectDTO.RESOURCE_TYPE)
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @RelatedEntity(InvalidGenericDataTypeEntity.class)
+  @TypeName("invalid")
+  static class InvalidGenericDataTypeDto {
+    private List<String> invalidList;
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  static class InvalidGenericDataTypeEntity {
+    private List<Integer> invalidList;
   }
 
 }
