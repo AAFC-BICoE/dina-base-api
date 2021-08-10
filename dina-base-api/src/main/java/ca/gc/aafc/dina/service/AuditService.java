@@ -13,7 +13,6 @@ import org.javers.repository.jql.QueryBuilder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -29,6 +28,7 @@ public class AuditService {
   private final Javers javers;
   private final NamedParameterJdbcTemplate jdbcTemplate;
   private final Optional<DinaAuthenticatedUser> user;
+  private final JaversDataService javersDataService;
 
   public static final String ANONYMOUS = "anonymous";
 
@@ -68,7 +68,7 @@ public class AuditService {
    * @return the total resource count
    */
   public Long getResouceCount(String author, AuditInstance instance) {
-    return AuditService.getResouceCount(this.jdbcTemplate, author, instance);
+    return AuditService.getResouceCount(this.javersDataService, author, instance);
   }
 
   /**
@@ -165,13 +165,16 @@ public class AuditService {
    * Get the total resource count by a given Author and/or Audit Instance. Author
    * and instance can be null for un-filtered counts.
    *
-   * @param jdbc     - NamedParameterJdbcTemplate for the query
+   * @param dataService     - JaversDataService to execute query
    * @param author   - author to filter
    * @param instance - instance filter to apply
    * @return the total resource count
    */
-  public static Long getResouceCount(@NonNull NamedParameterJdbcTemplate jdbc, String author, AuditInstance instance) {
-
+  public static Long getResouceCount(
+    @NonNull JaversDataService dataService,
+    String author,
+    AuditInstance instance
+  ) {
     String id = null;
     String type = null;
 
@@ -180,31 +183,7 @@ public class AuditService {
       type = instance.getType();
     }
 
-    SqlParameterSource parameters = new MapSqlParameterSource()
-      .addValue("author", author)
-      .addValue("id", id)
-      .addValue("type", type);
-
-    String sql = getResouceCountSql(author, id);
-    return jdbc.queryForObject(sql, parameters, Long.class);
-  }
-
-  /**
-   * Returns the needed SQL String to return a resouce count for a specific author
-   * and id. Author and id can be null for un-filtered counts.
-   *
-   * @param author - author filter to apply
-   * @param id     - id filter to apply
-   * @return SQL String to return a resouce count
-   */
-  private static String getResouceCountSql(String author, String id) {
-    String baseSql = "select count(*) from jv_snapshot s join jv_commit c on s.commit_fk = c.commit_pk where 1=1 %s %s ;";
-    return String.format(
-      baseSql,
-      StringUtils.isNotBlank(author) ? "and c.author = :author" : "",
-      StringUtils.isNotBlank(id)
-        ? "and global_id_fk = (select global_id_pk from jv_global_id where local_id = :id and type_name = :type)"
-        : "");
+    return dataService.getResourceCount(id, type, author);
   }
 
   @Builder
