@@ -2,8 +2,11 @@ package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.EmployeeDto;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.javers.core.Javers;
+import org.javers.core.metamodel.object.CdoSnapshot;
+import org.javers.repository.jql.QueryBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +15,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.inject.Inject;
 import java.util.Collections;
+import java.util.List;
 
 @SpringBootTest(classes = TestDinaBaseApp.class, properties = "dina.auditing.enabled = true")
 class JaversDataServiceIT {
@@ -70,6 +74,27 @@ class JaversDataServiceIT {
     Assertions.assertEquals(
       4,
       javersDataService.getResourceCount(null, null, AUTHOR));
+  }
+
+  @Test
+  void removeSnapshots() {
+    EmployeeDto dto = createDto();
+    javers.commit(AUTHOR, dto);
+    dto.setName(RandomStringUtils.randomAlphabetic(4));
+    javers.commit(AUTHOR, dto);
+    String id = Integer.toString(dto.getId());
+
+    List<CdoSnapshot> snapshots = javers.findSnapshots(QueryBuilder.byInstanceId(id, TYPE).build());
+    Assertions.assertEquals(2, snapshots.size());
+
+    snapshots.forEach(snap -> javersDataService.removeSnapshots(snap.getCommitId().valueAsNumber(), TYPE));
+
+    Assertions.assertEquals(
+      0,
+      javers.findSnapshots(QueryBuilder.byInstanceId(id, TYPE).build()).size());
+    Assertions.assertTrue(
+      javers.getLatestSnapshot(dto.getId(), EmployeeDto.class).isEmpty(),
+      "There should be no more snapshots for this object");
   }
 
   private void cleanSnapShotRepo() {
