@@ -18,6 +18,7 @@ class JaversDataServiceIT {
 
   private static final String AUTHOR = "dina_user";
   private static final Integer INSTANCE_ID = RandomUtils.nextInt();
+  private static final String TYPE = EmployeeDto.TYPENAME;
 
   @Inject
   private JaversDataService javersDataService;
@@ -53,8 +54,22 @@ class JaversDataServiceIT {
   }
 
   @Test
-  void getResourceCount() {
-    Assertions.assertEquals(6, javersDataService.getResourceCount());
+  void getResourceCount_NoFilters() {
+    Assertions.assertEquals(6, javersDataService.getResourceCount(null, null, null));
+  }
+
+  @Test
+  void getResourceCount_FilterByInstanceId() {
+    Assertions.assertEquals(
+      2,
+      javersDataService.getResourceCount(Integer.toString(INSTANCE_ID), TYPE, null));
+  }
+
+  @Test
+  void getResourceCount_FilterByAuthor() {
+    Assertions.assertEquals(
+      4,
+      javersDataService.getResourceCount(null, AUTHOR, null));
   }
 
   private void cleanSnapShotRepo() {
