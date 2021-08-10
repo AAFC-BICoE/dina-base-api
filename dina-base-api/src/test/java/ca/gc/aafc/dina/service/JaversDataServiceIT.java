@@ -69,7 +69,7 @@ class JaversDataServiceIT {
   void getResourceCount_FilterByAuthor() {
     Assertions.assertEquals(
       4,
-      javersDataService.getResourceCount(null, AUTHOR, null));
+      javersDataService.getResourceCount(null, null, AUTHOR));
   }
 
   private void cleanSnapShotRepo() {
