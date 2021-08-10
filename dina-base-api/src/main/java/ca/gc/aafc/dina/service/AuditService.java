@@ -7,18 +7,15 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.javers.core.Javers;
-import org.javers.core.commit.CommitId;
 import org.javers.core.metamodel.object.CdoSnapshot;
 import org.javers.repository.jql.QueryBuilder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +23,6 @@ import java.util.Optional;
 public class AuditService {
 
   private final Javers javers;
-  private final NamedParameterJdbcTemplate jdbcTemplate;
   private final Optional<DinaAuthenticatedUser> user;
   private final JaversDataService javersDataService;
 
@@ -80,25 +76,9 @@ public class AuditService {
   public void removeSnapshots(@NonNull AuditInstance instance) {
     List<CdoSnapshot> snapshots = javers.findSnapshots(
       QueryBuilder.byInstanceId(instance.getId(), instance.getType()).build());
-    for (CdoSnapshot snap : snapshots) {
-      CommitId commitId = snap.getCommitId();
-      MapSqlParameterSource idMap = new MapSqlParameterSource(Map.of(
-        "id",
-        commitId.valueAsNumber()));
-
-      String snapShotDelete = "delete from jv_snapshot where commit_fk = (select commit_pk from jv_commit where commit_id = :id)";
-      jdbcTemplate.update(snapShotDelete, idMap);
-
-      String commitDelete = "delete from jv_commit where commit_id = :id";
-      jdbcTemplate.update(commitDelete, idMap);
-
-      String commitPropertiesDelete = "delete from jv_commit_property where commit_fk = (select commit_pk from jv_commit where commit_id = :id)";
-      jdbcTemplate.update(commitPropertiesDelete, idMap);
-    }
-
-    String globalDelete = "delete from jv_global_id where local_id = :id and type_name = :type";
-    jdbcTemplate.update(globalDelete, new MapSqlParameterSource(
-      Map.of("id", instance.getId(), "type", instance.getType())));
+    javersDataService.removeSnapshots(snapshots.stream()
+      .map(c -> c.getCommitId().valueAsNumber())
+      .collect(Collectors.toList()), instance.getId(), instance.getType());
   }
 
   /**
