@@ -65,16 +65,12 @@ class JaversDataServiceIT {
 
   @Test
   void getResourceCount_FilterByInstanceId() {
-    Assertions.assertEquals(
-      2,
-      javersDataService.getResourceCount(Integer.toString(INSTANCE_ID), TYPE, null));
+    Assertions.assertEquals(2, javersDataService.getResourceCount(Integer.toString(INSTANCE_ID), TYPE, null));
   }
 
   @Test
   void getResourceCount_FilterByAuthor() {
-    Assertions.assertEquals(
-      4,
-      javersDataService.getResourceCount(null, null, AUTHOR));
+    Assertions.assertEquals(4, javersDataService.getResourceCount(null, null, AUTHOR));
   }
 
   @Test
