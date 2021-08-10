@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import javax.inject.Inject;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @SpringBootTest(classes = TestDinaBaseApp.class, properties = "dina.auditing.enabled = true")
 class JaversDataServiceIT {
@@ -87,7 +88,9 @@ class JaversDataServiceIT {
     List<CdoSnapshot> snapshots = javers.findSnapshots(QueryBuilder.byInstanceId(id, TYPE).build());
     Assertions.assertEquals(2, snapshots.size());
 
-    snapshots.forEach(snap -> javersDataService.removeSnapshots(snap.getCommitId().valueAsNumber(), TYPE));
+    javersDataService.removeSnapshots(snapshots.stream()
+      .map(c -> c.getCommitId().valueAsNumber())
+      .collect(Collectors.toList()), id, TYPE);
 
     Assertions.assertEquals(
       0,
