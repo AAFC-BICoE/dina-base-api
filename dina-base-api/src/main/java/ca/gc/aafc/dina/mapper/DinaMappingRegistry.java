@@ -13,6 +13,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,6 +56,40 @@ public class DinaMappingRegistry {
     this.mappableRelationsPerClass = parseMappableRelations(resources);
     this.jsonIdFieldNamePerClass = parseJsonIds(resources);
     this.fieldAdaptersPerClass = parseFieldAdapters(resources);
+    validateDataTypesForAttributes(this.attributesPerClass);
+  }
+
+  @SneakyThrows
+  private static void validateDataTypesForAttributes(Map<Class<?>, Set<String>> attributesPerClass) {
+    for (Map.Entry<Class<?>, Set<String>> entry : attributesPerClass.entrySet()) {
+      Class<?> dto = entry.getKey();
+      Set<String> attributes = entry.getValue();
+      RelatedEntity relatedEntity = dto.getAnnotation(RelatedEntity.class);
+
+      if (relatedEntity != null) {
+        Class<?> entity = relatedEntity.value();
+
+        for (String attrib : attributes) {
+          Type typeOnDto = dto.getDeclaredField(attrib).getGenericType();
+          Type typeOnEntity = entity.getDeclaredField(attrib).getGenericType();
+
+          if (!typeOnEntity.equals(typeOnDto)) { // Data types must match!
+            throwDataTypeMismatchException(dto, entity, attrib);
+          }
+
+          if (typeOnDto instanceof ParameterizedType) { // If parameterized generic type must match
+            if (!getGenericType(dto, attrib).equals(getGenericType(entity, attrib))) {
+              throwDataTypeMismatchException(dto, entity, attrib);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private static void throwDataTypeMismatchException(Class<?> dto, Class<?> entity, String attrib) {
+    throw new IllegalStateException("data type for Field:{" + attrib + "} on DTO:{" + dto.getSimpleName()
+      + "} does not match the field from Entity:{" + entity.getSimpleName() + "}");
   }
 
   /**

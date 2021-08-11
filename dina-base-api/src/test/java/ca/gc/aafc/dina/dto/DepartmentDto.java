@@ -49,6 +49,7 @@ public class DepartmentDto {
   @JsonApiRelation(mappedBy = "department")
   private List<EmployeeDto> employees;
 
+  @IgnoreDinaMapping()
   private PersonDTO departmentHead;
 
   @IgnoreDinaMapping(reason = "simply derived from location")

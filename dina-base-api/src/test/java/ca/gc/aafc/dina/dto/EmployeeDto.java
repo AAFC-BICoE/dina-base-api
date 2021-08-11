@@ -39,6 +39,7 @@ public class EmployeeDto {
 
   private String job;
 
+  @IgnoreDinaMapping()
   private String customField;
 
   @JsonApiRelation
