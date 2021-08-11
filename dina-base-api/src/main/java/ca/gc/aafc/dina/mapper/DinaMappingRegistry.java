@@ -88,8 +88,8 @@ public class DinaMappingRegistry {
   }
 
   private static void throwDataTypeMismatchException(Class<?> dto, Class<?> entity, String attrib) {
-    throw new IllegalStateException("data type on field " + attrib + " for dto " + dto.getSimpleName()
-      + " does not match the field from entity  " + entity.getSimpleName());
+    throw new IllegalStateException("data type for Field:{" + attrib + "} on DTO:{" + dto.getSimpleName()
+      + "} does not match the field from Entity:{" + entity.getSimpleName() + "}");
   }
 
   /**
