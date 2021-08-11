@@ -78,7 +78,7 @@ public class DinaMappingRegistry {
           }
 
           if (typeOnDto instanceof ParameterizedType) { // If parameterized generic type must match
-            if (getGenericType(dto, attrib) != getGenericType(entity, attrib)) {
+            if (!getGenericType(dto, attrib).equals(getGenericType(entity, attrib))) {
               throwDataTypeMismatchException(dto, entity, attrib);
             }
           }
