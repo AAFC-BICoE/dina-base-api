@@ -28,8 +28,11 @@ import java.util.Set;
 public class DinaMappingRegistryTest {
 
   @Test
-  void init_WhenInvalidGenericTypes_ThrowsIllegalStateException() {
-    Assertions.assertThrows(
+  void init_WhenInvalidDataTypes_ThrowsIllegalStateException() {
+    Assertions.assertThrows( // Invalid data type
+      IllegalStateException.class,
+      () -> new DinaMappingRegistry(InvalidDataTypeDto.class));
+    Assertions.assertThrows( // Invalid generic type
       IllegalStateException.class,
       () -> new DinaMappingRegistry(InvalidGenericDataTypeDto.class));
   }
@@ -161,6 +164,25 @@ public class DinaMappingRegistryTest {
   @AllArgsConstructor
   static class InvalidGenericDataTypeEntity {
     private List<Integer> invalidList;
+  }
+
+  @Data
+  @JsonApiResource(type = ProjectDTO.RESOURCE_TYPE)
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @RelatedEntity(InvalidDataTypeEntity.class)
+  @TypeName("invalid")
+  static class InvalidDataTypeDto {
+    private String invalidList;
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  static class InvalidDataTypeEntity {
+    private Integer invalidList;
   }
 
 }
