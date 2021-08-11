@@ -18,7 +18,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.javers.core.metamodel.annotation.TypeName;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -153,7 +152,6 @@ public class DinaMappingRegistryTest {
   @NoArgsConstructor
   @AllArgsConstructor
   @RelatedEntity(InvalidGenericDataTypeEntity.class)
-  @TypeName("invalid")
   static class InvalidGenericDataTypeDto {
     private List<String> invalidList;
   }
@@ -172,7 +170,6 @@ public class DinaMappingRegistryTest {
   @NoArgsConstructor
   @AllArgsConstructor
   @RelatedEntity(InvalidDataTypeEntity.class)
-  @TypeName("invalid")
   static class InvalidDataTypeDto {
     private String invalidList;
   }
