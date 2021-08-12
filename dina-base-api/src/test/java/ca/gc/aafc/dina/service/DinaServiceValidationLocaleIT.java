@@ -49,7 +49,7 @@ public class DinaServiceValidationLocaleIT {
       .post("/department")
       .then()
       .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
-      .body("errors[0].detail", Matchers.endsWith("location cannot be null."));
+      .body("errors[0].detail", Matchers.endsWith("location cannot be null. Single quote test'."));
   }
 
   private RequestSpecification newRequest() {
