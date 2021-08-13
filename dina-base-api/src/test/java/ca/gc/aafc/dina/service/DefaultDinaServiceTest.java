@@ -284,6 +284,7 @@ public class DefaultDinaServiceTest {
     // should be a business rule validation but for testing we are using a default validator
     Validator defaultValidator = new SpringValidatorAdapter(Validation.buildDefaultValidatorFactory().getValidator());
     assertThrows(ValidationException.class, () -> serviceUnderTest.applyBusinessRule(d, defaultValidator));
+    assertThrows(ValidationException.class, () -> DefaultDinaService.applyBusinessRule("123", d, defaultValidator));
 
     assertThrows(ConstraintViolationException.class, () -> serviceUnderTest.validateBusinessRules(d));
   }

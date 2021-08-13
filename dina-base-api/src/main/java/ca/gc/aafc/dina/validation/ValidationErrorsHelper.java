@@ -20,14 +20,25 @@ public final class ValidationErrorsHelper {
   }
 
   /**
-   * Create a new Errors object with the DinaEntity as object name.
+   * Create a new {@link Errors} object with the {@link DinaEntity} as object name.
    *
    * @param entity
    * @param <E>
    */
   public static <E extends DinaEntity> Errors newErrorsObject(E entity) {
-    return new BeanPropertyBindingResult(entity,
-        entity.getUuid() != null ? entity.getUuid().toString() : "");
+    return newErrorsObject(
+        entity.getUuid() != null ? entity.getUuid().toString() : "", entity);
+  }
+
+  /**
+   * Create a new {@link Errors} object with a specific object name.
+   *
+   * @param identifier
+   * @param target
+   * @return
+   */
+  public static Errors newErrorsObject(String identifier, Object target) {
+    return new BeanPropertyBindingResult(target, identifier);
   }
 
   /**

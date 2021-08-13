@@ -286,13 +286,28 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    */
   protected void applyBusinessRule(E entity, Validator validator) {
     Objects.requireNonNull(entity);
-
-    Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
-    validator.validate(entity, errors);
-
-    ValidationErrorsHelper.errorsToValidationException(errors);
+    applyBusinessRule(entity, validator, ValidationErrorsHelper.newErrorsObject(entity));
   }
 
+  /**
+   * Function that validates an object against a specific validator to check business rules.
+   * This function should be used to validate objects that are not {@link DinaEntity}.
+   * @param objIdentifier
+   * @param target
+   * @param validator
+   */
+  protected static void applyBusinessRule(String objIdentifier, Object target, Validator validator) {
+    Objects.requireNonNull(target);
+    applyBusinessRule(target, validator, ValidationErrorsHelper.newErrorsObject(objIdentifier, target));
+  }
+
+  private static void applyBusinessRule(Object target, Validator validator, Errors errors) {
+    Objects.requireNonNull(target);
+    Objects.requireNonNull(errors);
+
+    validator.validate(target, errors);
+    ValidationErrorsHelper.errorsToValidationException(errors);
+  }
 
   @Override
   public void validateBusinessRules(E entity) {
