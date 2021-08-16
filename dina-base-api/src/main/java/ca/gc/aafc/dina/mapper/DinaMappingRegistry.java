@@ -219,7 +219,7 @@ public class DinaMappingRegistry {
       RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
       if (relatedEntity != null) {
         Set<String> fieldsToInclude = FieldUtils.getAllFieldsList(dtoClass).stream()
-          .filter(DinaMappingRegistry::isFieldMappable)
+          .filter(field -> isFieldValidAttribute(dtoClass, relatedEntity.value(), field))
           .map(Field::getName)
           .collect(Collectors.toSet());
         map.put(dtoClass, Set.copyOf(fieldsToInclude));
@@ -289,17 +289,41 @@ public class DinaMappingRegistry {
   }
 
   /**
-   * Returns true if the dina repo should map the given field. currently that means if the field is not
-   * generated (Marked with {@link IgnoreDinaMapping}), final, or is a {@link JsonApiRelation}.
+   * Returns true if the dina repo should map the given field as an attribute. An attribute in this context is
+   * a field that has its value mapped directly.
    *
-   * @param field - field to evaluate
+   * @param dtoClass    dto class to validate against
+   * @param entityClass entity class to validate against
+   * @param field       field to evaluate
    * @return - true if the dina repo should not map the given field
    */
-  private static boolean isFieldMappable(Field field) {
-    return !field.isAnnotationPresent(IgnoreDinaMapping.class) &&
-      !field.isAnnotationPresent(JsonApiRelation.class)
+  private static boolean isFieldValidAttribute(Class<?> dtoClass, Class<?> entityClass, Field field) {
+    return !field.isAnnotationPresent(IgnoreDinaMapping.class)
+      && !field.isAnnotationPresent(JsonApiRelation.class)
+      && fieldExistsInBothClasses(dtoClass, entityClass, field.getName())
+      && fieldHasSameDataType(dtoClass, entityClass, field.getName())
       && !Modifier.isFinal(field.getModifiers())
       && !field.isSynthetic();
+  }
+
+  private static boolean fieldExistsInBothClasses(Class<?> dtoClass, Class<?> entityClass, String fieldName) {
+    return Stream.of(dtoClass.getDeclaredFields()).anyMatch(field -> fieldName.equals(field.getName()))
+      && Stream.of(entityClass.getDeclaredFields()).anyMatch(field -> fieldName.equals(field.getName()));
+  }
+
+  @SneakyThrows
+  private static boolean fieldHasSameDataType(Class<?> dtoClass, Class<?> entityClass, String fieldName) {
+    Type typeOnDto = dtoClass.getDeclaredField(fieldName).getGenericType();
+    Type typeOnEntity = entityClass.getDeclaredField(fieldName).getGenericType();
+
+    if (!typeOnEntity.equals(typeOnDto)) { // Data types must match!
+      return false;
+    }
+
+    if (typeOnDto instanceof ParameterizedType) { // If parameterized generic type must match
+      return getGenericType(dtoClass, fieldName).equals(getGenericType(entityClass, fieldName));
+    }
+    return true;
   }
 
   /**
