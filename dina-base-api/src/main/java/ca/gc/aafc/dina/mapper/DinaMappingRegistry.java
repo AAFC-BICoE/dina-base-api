@@ -56,31 +56,21 @@ public class DinaMappingRegistry {
     this.mappableRelationsPerClass = parseMappableRelations(resources);
     this.jsonIdFieldNamePerClass = parseJsonIds(resources);
     this.fieldAdaptersPerClass = parseFieldAdapters(resources);
-    validateDataTypesForAttributes(this.attributesPerClass);
+    validateDataTypesForAttributes(resources);
   }
 
   @SneakyThrows
-  private static void validateDataTypesForAttributes(Map<Class<?>, Set<String>> attributesPerClass) {
-    for (Map.Entry<Class<?>, Set<String>> entry : attributesPerClass.entrySet()) {
-      Class<?> dto = entry.getKey();
-      Set<String> attributes = entry.getValue();
-      RelatedEntity relatedEntity = dto.getAnnotation(RelatedEntity.class);
-
+  private static void validateDataTypesForAttributes(Set<Class<?>> classSet) {
+    for (Class<?> dtoClass : classSet) {
+      RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
+      Field[] dtoClassDeclaredFields = dtoClass.getDeclaredFields();
       if (relatedEntity != null) {
-        Class<?> entity = relatedEntity.value();
-
-        for (String attrib : attributes) {
-          Type typeOnDto = dto.getDeclaredField(attrib).getGenericType();
-          Type typeOnEntity = entity.getDeclaredField(attrib).getGenericType();
-
-          if (!typeOnEntity.equals(typeOnDto)) { // Data types must match!
-            throwDataTypeMismatchException(dto, entity, attrib);
-          }
-
-          if (typeOnDto instanceof ParameterizedType) { // If parameterized generic type must match
-            if (!getGenericType(dto, attrib).equals(getGenericType(entity, attrib))) {
-              throwDataTypeMismatchException(dto, entity, attrib);
-            }
+        for (Field field : dtoClassDeclaredFields) {
+          Class<?> entityClass = relatedEntity.value();
+          if (isFieldValidAttribute(dtoClass, relatedEntity.value(), field, false)
+            && !fieldHasSameDataType(dtoClass, entityClass, field.getName())
+            && !parseGenericTypeForField(field).isAnnotationPresent(RelatedEntity.class)) {
+            throwDataTypeMismatchException(dtoClass, entityClass, field.getName());
           }
         }
       }
@@ -219,7 +209,7 @@ public class DinaMappingRegistry {
       RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
       if (relatedEntity != null) {
         Set<String> fieldsToInclude = FieldUtils.getAllFieldsList(dtoClass).stream()
-          .filter(field -> isFieldValidAttribute(dtoClass, relatedEntity.value(), field))
+          .filter(field -> isFieldValidAttribute(dtoClass, relatedEntity.value(), field, true))
           .map(Field::getName)
           .collect(Collectors.toSet());
         map.put(dtoClass, Set.copyOf(fieldsToInclude));
@@ -270,7 +260,8 @@ public class DinaMappingRegistry {
   private static Map<String, String> parseExternalRelationNamesToType(Class<?> resourceClass) {
     return Map.copyOf(
       FieldUtils.getFieldsListWithAnnotation(resourceClass, JsonApiExternalRelation.class)
-        .stream().collect(Collectors.toMap(Field::getName,
+        .stream().collect(Collectors.toMap(
+          Field::getName,
           field -> field.getAnnotation(JsonApiExternalRelation.class).type())));
   }
 
@@ -297,13 +288,21 @@ public class DinaMappingRegistry {
    * @param field       field to evaluate
    * @return - true if the dina repo should not map the given field
    */
-  private static boolean isFieldValidAttribute(Class<?> dtoClass, Class<?> entityClass, Field field) {
-    return !field.isAnnotationPresent(IgnoreDinaMapping.class)
+  private static boolean isFieldValidAttribute(
+    Class<?> dtoClass,
+    Class<?> entityClass,
+    Field field,
+    boolean compareDataType
+  ) {
+    boolean isConsideredAsAttribute = !field.isAnnotationPresent(IgnoreDinaMapping.class)
       && !field.isAnnotationPresent(JsonApiRelation.class)
       && fieldExistsInBothClasses(dtoClass, entityClass, field.getName())
-      && fieldHasSameDataType(dtoClass, entityClass, field.getName())
       && !Modifier.isFinal(field.getModifiers())
       && !field.isSynthetic();
+    if (compareDataType) {
+      return isConsideredAsAttribute && fieldHasSameDataType(dtoClass, entityClass, field.getName());
+    }
+    return isConsideredAsAttribute;
   }
 
   private static boolean fieldExistsInBothClasses(Class<?> dtoClass, Class<?> entityClass, String fieldName) {
@@ -361,6 +360,14 @@ public class DinaMappingRegistry {
       .getDeclaredField(fieldName)
       .getGenericType();
     return (Class<?>) genericType.getActualTypeArguments()[0];
+  }
+
+  private static Class<?> parseGenericTypeForField(Field field) {
+    if (field.getGenericType() instanceof ParameterizedType) {
+      return (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+    } else {
+      return field.getGenericType().getClass();
+    }
   }
 
   /**
