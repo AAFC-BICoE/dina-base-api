@@ -108,23 +108,23 @@ public class DinaMappingRegistryTest {
   @Test
   void isRelationExternal() {
     DinaMappingRegistry registry = new DinaMappingRegistry(ProjectDTO.class);
-    Assertions.assertTrue(registry.isRelationExternal("acMetaDataCreator"));
-    Assertions.assertTrue(registry.isRelationExternal("originalAuthor"));
-    Assertions.assertFalse(registry.isRelationExternal("task"));
+    Assertions.assertTrue(registry.isRelationExternal(ProjectDTO.class, "acMetaDataCreator"));
+    Assertions.assertTrue(registry.isRelationExternal(ProjectDTO.class, "originalAuthor"));
+    Assertions.assertFalse(registry.isRelationExternal(ProjectDTO.class, "task"));
   }
 
   @Test
   void findExternalType() {
     DinaMappingRegistry registry = new DinaMappingRegistry(ProjectDTO.class);
-    Assertions.assertEquals("agent", registry.findExternalType("acMetaDataCreator"));
-    Assertions.assertEquals("author", registry.findExternalType("originalAuthor"));
+    Assertions.assertEquals("agent", registry.findExternalType(ProjectDTO.class, "acMetaDataCreator"));
+    Assertions.assertEquals("author", registry.findExternalType(ProjectDTO.class, "originalAuthor"));
   }
 
   @Test
   void getExternalRelations() {
     DinaMappingRegistry registry = new DinaMappingRegistry(ProjectDTO.class);
     MatcherAssert.assertThat(
-      registry.getExternalRelations(),
+      registry.getExternalRelations(ProjectDTO.class),
       Matchers.containsInAnyOrder("acMetaDataCreator", "originalAuthor", "authors"));
   }
 

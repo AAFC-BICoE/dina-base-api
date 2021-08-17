@@ -35,8 +35,6 @@ public class DinaMappingRegistry {
   private final Map<Class<?>, Set<String>> attributesPerClass;
   // Tracks the mappable relations per class
   private final Map<Class<?>, Set<InternalRelation>> mappableRelationsPerClass;
-  // Tracks external relation types per field name for external relations mapping
-  private final Map<String, String> externalNameToTypeMap;
   // Track Field adapters per class
   @Getter
   private final Map<Class<?>, DinaFieldAdapterHandler<?>> fieldAdaptersPerClass;
@@ -51,7 +49,6 @@ public class DinaMappingRegistry {
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
     resourceGraph = initGraph(resourceClass, new HashSet<>());
     Set<Class<?>> resources = parseGraph(resourceClass, new HashSet<>());
-    this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
     this.attributesPerClass = parseAttributesPerClass(resources);
     this.mappableRelationsPerClass = parseMappableRelations(resources);
     this.fieldAdaptersPerClass = parseFieldAdapters(resources);
@@ -137,8 +134,9 @@ public class DinaMappingRegistry {
    *
    * @return set of external relation field names.
    */
-  public Set<String> getExternalRelations() {
-    return this.externalNameToTypeMap.keySet();
+  public Set<String> getExternalRelations(Class<?> cls){
+    checkClassTracked(cls);
+    return this.resourceGraph.get(cls).getExternalNameToTypeMap().keySet();
   }
 
   /**
@@ -149,12 +147,13 @@ public class DinaMappingRegistry {
    * @return type of the given external relation.
    * @throws IllegalArgumentException if the relationFieldName is not tracked by the registry
    */
-  public String findExternalType(String relationFieldName) {
-    if (!this.externalNameToTypeMap.containsKey(relationFieldName)) {
+  public String findExternalType(Class<?> cls , String relationFieldName) {
+    checkClassTracked(cls);
+    if (!this.resourceGraph.get(cls).getExternalNameToTypeMap().containsKey(relationFieldName)) {
       throw new IllegalArgumentException(
         "external relation with name: " + relationFieldName + " is not tracked by the registry");
     }
-    return this.externalNameToTypeMap.get(relationFieldName);
+    return  this.resourceGraph.get(cls).getExternalNameToTypeMap().get(relationFieldName);
   }
 
   /**
@@ -163,8 +162,9 @@ public class DinaMappingRegistry {
    * @param relationFieldName - field name of the external relation.
    * @return Returns true if the relation with the given field name is external.
    */
-  public boolean isRelationExternal(String relationFieldName) {
-    return this.externalNameToTypeMap.keySet().stream()
+  public boolean isRelationExternal(Class<?> cls , String relationFieldName) {
+    checkClassTracked(cls);
+    return this.resourceGraph.get(cls).getExternalNameToTypeMap().keySet().stream()
       .anyMatch(relationFieldName::equalsIgnoreCase);
   }
 
@@ -176,10 +176,14 @@ public class DinaMappingRegistry {
    * @throws IllegalArgumentException if the class is not tracked by the registry
    */
   public String findJsonIdFieldName(Class<?> cls) {
+    checkClassTracked(cls);
+    return this.resourceGraph.get(cls).getJsonIdFieldName();
+  }
+
+  private void checkClassTracked(Class<?> cls) {
     if (!this.resourceGraph.containsKey(cls)) {
       throw new IllegalArgumentException(cls.getSimpleName() + " is not tracked by the registry");
     }
-    return this.resourceGraph.get(cls).jsonIdFieldName;
   }
 
   /**
@@ -415,13 +419,14 @@ public class DinaMappingRegistry {
   }
 
   @Builder
+  @Getter
   public static class DinaResourceEntry {
-    public Class<?> dtoClass;
-    public Class<?> entityClass;
-    public String jsonIdFieldName;
-    public Set<String> attributeNames;
-    public Set<InternalRelation> internalRelations;
-    public Map<String, String> externalNameToTypeMap;
-    public DinaFieldAdapterHandler<?> fieldAdapterHandler;
+    private Class<?> dtoClass;
+    private Class<?> entityClass;
+    private String jsonIdFieldName;
+    private Set<String> attributeNames;
+    private Set<InternalRelation> internalRelations;
+    private Map<String, String> externalNameToTypeMap;
+    private DinaFieldAdapterHandler<?> fieldAdapterHandler;
   }
 }
