@@ -9,7 +9,6 @@ import ca.gc.aafc.dina.dto.TaskDTO;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
-import ca.gc.aafc.dina.entity.Task;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,8 +40,6 @@ public class DinaMappingRegistryTest {
     Assertions.assertEquals("uuid", registry.findJsonIdFieldName(ProjectDTO.class));
     Assertions.assertEquals("uuid", registry.findJsonIdFieldName(TaskDTO.class));
     Assertions.assertEquals("id", registry.findJsonIdFieldName(EmployeeDto.class));
-    Assertions.assertThrows(
-      IllegalArgumentException.class, () -> registry.findJsonIdFieldName(Task.class));
   }
 
   @Test

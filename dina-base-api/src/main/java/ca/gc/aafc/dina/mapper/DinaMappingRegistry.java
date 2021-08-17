@@ -36,8 +36,6 @@ public class DinaMappingRegistry {
   // Tracks the mappable relations per class
   private final Map<Class<?>, Set<InternalRelation>> mappableRelationsPerClass;
   // Track Field adapters per class
-  @Getter
-  private final Map<Class<?>, DinaFieldAdapterHandler<?>> fieldAdaptersPerClass;
   private final Map<Class<?>, DinaResourceEntry> resourceGraph;
 
   /**
@@ -51,7 +49,6 @@ public class DinaMappingRegistry {
     Set<Class<?>> resources = parseGraph(resourceClass, new HashSet<>());
     this.attributesPerClass = parseAttributesPerClass(resources);
     this.mappableRelationsPerClass = parseMappableRelations(resources);
-    this.fieldAdaptersPerClass = parseFieldAdapters(resources);
   }
 
   private Map<Class<?>, DinaResourceEntry> initGraph(Class<?> resourceClass, HashSet<Class<?>> visited) {
@@ -88,7 +85,7 @@ public class DinaMappingRegistry {
         }
       }
 
-      graph.put(resourceClass, DinaResourceEntry.builder()
+      DinaResourceEntry resourceEntry = DinaResourceEntry.builder()
         .dtoClass(resourceClass)
         .entityClass(entityClass)
         .externalNameToTypeMap(parseExternalRelationNamesToType(resourceClass))
@@ -96,7 +93,9 @@ public class DinaMappingRegistry {
         .internalRelations(internalRelations)
         .jsonIdFieldName(parseJsonIdFieldName(resourceClass))
         .fieldAdapterHandler(new DinaFieldAdapterHandler<>(resourceClass))
-        .build());
+        .build();
+      graph.put(resourceClass, resourceEntry);
+      graph.put(entityClass, resourceEntry);
     }
     return graph;
   }
@@ -134,7 +133,7 @@ public class DinaMappingRegistry {
    *
    * @return set of external relation field names.
    */
-  public Set<String> getExternalRelations(Class<?> cls){
+  public Set<String> getExternalRelations(Class<?> cls) {
     checkClassTracked(cls);
     return this.resourceGraph.get(cls).getExternalNameToTypeMap().keySet();
   }
@@ -184,6 +183,20 @@ public class DinaMappingRegistry {
     if (!this.resourceGraph.containsKey(cls)) {
       throw new IllegalArgumentException(cls.getSimpleName() + " is not tracked by the registry");
     }
+  }
+
+  public Optional<DinaFieldAdapterHandler<?>> findFieldAdapterForClass(Class<?> cls) {
+    if (!this.resourceGraph.containsKey(cls)) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(this.resourceGraph.get(cls).getFieldAdapterHandler());
+  }
+
+  public Set<DinaFieldAdapterHandler<?>> getFieldAdapters() {
+    return this.resourceGraph.values()
+      .stream()
+      .map(DinaResourceEntry::getFieldAdapterHandler)
+      .collect(Collectors.toSet());
   }
 
   /**
@@ -290,20 +303,6 @@ public class DinaMappingRegistry {
         .stream().collect(Collectors.toMap(
           Field::getName,
           field -> field.getAnnotation(JsonApiExternalRelation.class).type())));
-  }
-
-  private Map<Class<?>, DinaFieldAdapterHandler<?>> parseFieldAdapters(Set<Class<?>> resources) {
-    Map<Class<?>, DinaFieldAdapterHandler<?>> adapterPerClass = new HashMap<>();
-    for (Class<?> dto : resources) {
-      RelatedEntity annotation = dto.getAnnotation(RelatedEntity.class);
-      if (annotation != null && dto.isAnnotationPresent(CustomFieldAdapter.class)) {
-        Class<?> relatedEntity = annotation.value();
-        DinaFieldAdapterHandler<?> handler = new DinaFieldAdapterHandler<>(dto);
-        adapterPerClass.put(dto, handler);
-        adapterPerClass.put(relatedEntity, handler);
-      }
-    }
-    return Map.copyOf(adapterPerClass);
   }
 
   /**

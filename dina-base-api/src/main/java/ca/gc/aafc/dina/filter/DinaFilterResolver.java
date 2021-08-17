@@ -80,8 +80,8 @@ public class DinaFilterResolver {
       // find nested resource class
       Class<?> dtoClass = registry.resolveNestedResourceFromPath(resource, path);
 
-      if (CollectionUtils.isNotEmpty(path) && registry.getFieldAdaptersPerClass().containsKey(dtoClass)) {
-        registry.getFieldAdaptersPerClass().get(dtoClass).findFilterSpec(path.get(path.size() - 1))
+      if (CollectionUtils.isNotEmpty(path) && registry.findFieldAdapterForClass(dtoClass).isPresent()) {
+        registry.findFieldAdapterForClass(dtoClass).get().findFilterSpec(path.get(path.size() - 1))
           .ifPresentOrElse(
             specs -> newFilters.addAll(resolveSpecs(filterSpec, specs)),
             () -> newFilters.add(filterSpec));

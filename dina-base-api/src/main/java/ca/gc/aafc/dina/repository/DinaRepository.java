@@ -100,7 +100,7 @@ public class DinaRepository<D, E extends DinaEntity>
     }
     this.registry = new DinaMappingRegistry(resourceClass);
     this.mappingLayer = new DinaMappingLayer<>(resourceClass, dinaMapper, dinaService, this.registry);
-    this.hasFieldAdapters = CollectionUtils.isNotEmpty(registry.getFieldAdaptersPerClass().keySet());
+    this.hasFieldAdapters = CollectionUtils.isNotEmpty(registry.getFieldAdapters());
   }
 
   /**
