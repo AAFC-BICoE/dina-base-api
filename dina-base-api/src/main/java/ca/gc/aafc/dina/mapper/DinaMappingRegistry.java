@@ -37,8 +37,6 @@ public class DinaMappingRegistry {
   private final Map<Class<?>, Set<InternalRelation>> mappableRelationsPerClass;
   // Tracks external relation types per field name for external relations mapping
   private final Map<String, String> externalNameToTypeMap;
-  // Track Json Id field names for mapping
-  private final Map<Class<?>, String> jsonIdFieldNamePerClass;
   // Track Field adapters per class
   @Getter
   private final Map<Class<?>, DinaFieldAdapterHandler<?>> fieldAdaptersPerClass;
@@ -56,7 +54,6 @@ public class DinaMappingRegistry {
     this.externalNameToTypeMap = parseExternalRelationNamesToType(resourceClass);
     this.attributesPerClass = parseAttributesPerClass(resources);
     this.mappableRelationsPerClass = parseMappableRelations(resources);
-    this.jsonIdFieldNamePerClass = parseJsonIds(resources);
     this.fieldAdaptersPerClass = parseFieldAdapters(resources);
   }
 
@@ -115,7 +112,6 @@ public class DinaMappingRegistry {
     }
     return null;
   }
-
 
   private static void throwDataTypeMismatchException(Class<?> dto, Class<?> entity, String attrib) {
     throw new IllegalStateException("data type for Field:{" + attrib + "} on DTO:{" + dto.getSimpleName()
@@ -180,10 +176,10 @@ public class DinaMappingRegistry {
    * @throws IllegalArgumentException if the class is not tracked by the registry
    */
   public String findJsonIdFieldName(Class<?> cls) {
-    if (!this.jsonIdFieldNamePerClass.containsKey(cls)) {
+    if (!this.resourceGraph.containsKey(cls)) {
       throw new IllegalArgumentException(cls.getSimpleName() + " is not tracked by the registry");
     }
-    return this.jsonIdFieldNamePerClass.get(cls);
+    return this.resourceGraph.get(cls).jsonIdFieldName;
   }
 
   /**
@@ -228,19 +224,6 @@ public class DinaMappingRegistry {
       }
     }
     return visited;
-  }
-
-  private Map<Class<?>, String> parseJsonIds(Set<Class<?>> resources) {
-    Map<Class<?>, String> map = new HashMap<>();
-    resources.forEach(dtoClass -> {
-      for (Field field : FieldUtils.getAllFieldsList(dtoClass)) {
-        if (field.isAnnotationPresent(JsonApiId.class)) {
-          map.put(dtoClass, field.getName());
-          break;
-        }
-      }
-    });
-    return Map.copyOf(map);
   }
 
   private Map<Class<?>, Set<String>> parseAttributesPerClass(Set<Class<?>> resources) {

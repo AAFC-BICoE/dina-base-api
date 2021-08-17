@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
-import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.RelatedEntity;
@@ -41,7 +40,7 @@ public class DinaMappingRegistryTest {
     DinaMappingRegistry registry = new DinaMappingRegistry(ProjectDTO.class);
     Assertions.assertEquals("uuid", registry.findJsonIdFieldName(ProjectDTO.class));
     Assertions.assertEquals("uuid", registry.findJsonIdFieldName(TaskDTO.class));
-    Assertions.assertEquals("id", registry.findJsonIdFieldName(ExternalRelationDto.class));
+    Assertions.assertEquals("id", registry.findJsonIdFieldName(EmployeeDto.class));
     Assertions.assertThrows(
       IllegalArgumentException.class, () -> registry.findJsonIdFieldName(Task.class));
   }
