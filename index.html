@@ -516,7 +516,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_field_adapters">12. Field adapters</a>
 <ul class="sectlevel2">
 <li><a href="#_implement_a_dina_field_adapter_for_the_field">12.1. Implement a Dina Field Adapter for the field.</a></li>
-<li><a href="#_annotate_your_field">12.2. Annotate your field</a></li>
+<li><a href="#_annotate_your_field_with_ignoredinamapping">12.2. Annotate your field with IgnoreDinaMapping</a></li>
+<li><a href="#_annotate_your_class_with_customfieldadapter">12.3. Annotate your class with CustomFieldAdapter</a></li>
 </ul>
 </li>
 <li><a href="#_custom_rsql_filtering">13. Custom Rsql Filtering</a>
@@ -1499,18 +1500,34 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect2">
-<h3 id="_annotate_your_field">12.2. Annotate your field</h3>
+<h3 id="_annotate_your_field_with_ignoredinamapping">12.2. Annotate your field with IgnoreDinaMapping</h3>
 <div class="ulist">
 <ul>
 <li>
-<p>Mark your field in your DTO with the <code>CustomFieldAdapter</code> annotation and give it the adapter you created in step one.</p>
+<p>Mark your field in your DTO with the <code>IgnoreDinaMapping</code> annotation.</p>
 </li>
 </ul>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-java" data-lang="java">    @CustomFieldAdapter(adapter = CustomFieldAdapterImpl.class)
-    int customField;</code></pre>
+<pre class="highlight"><code class="language-java" data-lang="java">    @IgnoreDinaMapping(reason = "Custom resolved field")
+    private String customField;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_annotate_your_class_with_customfieldadapter">12.3. Annotate your class with CustomFieldAdapter</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Mark your DTO with the <code>CustomFieldAdapter</code> annotation and give it the adapter you created in step one.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">  @CustomFieldAdapter(adapters = CustomFieldAdapterImp.class)
+  public static final class StudentDto {</code></pre>
 </div>
 </div>
 </div>
@@ -1627,7 +1644,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-08-06 16:20:42 UTC
+Last updated 2021-08-17 17:14:14 UTC
 </div>
 </div>
 </body>
