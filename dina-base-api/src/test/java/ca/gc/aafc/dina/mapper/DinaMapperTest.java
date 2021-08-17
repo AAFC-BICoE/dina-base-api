@@ -101,6 +101,22 @@ public class DinaMapperTest {
   }
 
   @Test
+  public void toDto_HiddenRelationShipTest_RelationsMapped() {
+    Student hidden = createEntity();
+    Student friend = Student.builder().name("Friend").hiddenRelation(List.of(hidden)).build();
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
+      Student.class,
+      Set.of("name", "iq"));
+    Set<String> relations = Set.of("hiddenRelation");
+
+    StudentDto dto = mapper.toDto(friend, selectedFieldPerClass, relations);
+
+    assertEquals(hidden.getName(), dto.getHiddenRelation().get(0).getName());
+    assertEquals(hidden.getIq(), dto.getHiddenRelation().get(0).getIq());
+  }
+
+  @Test
   public void toDto_CollectionRelation_RelationsMapped() {
     Student entityToMap = createEntity();
     entityToMap.getClassMates()
@@ -468,6 +484,9 @@ public class DinaMapperTest {
     @JsonApiRelation
     private NoRelatedEntityDTO noRelatedEntityDTO;
 
+    // Hidden relation is like an attribute but does not map to same type and has Related entity
+    private List<StudentDto> hiddenRelation;
+
   }
 
   @Data
@@ -493,6 +512,8 @@ public class DinaMapperTest {
 
     // Many to - Relation to test
     private List<Student> classMates;
+
+    private List<Student> hiddenRelation;
 
   }
 
