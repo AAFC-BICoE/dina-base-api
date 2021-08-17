@@ -33,8 +33,6 @@ public class DinaMappingRegistry {
   // Tracks Attributes per class for bean mapping
   @Getter
   private final Map<Class<?>, Set<String>> attributesPerClass;
-  // Tracks the mappable relations per class
-  private final Map<Class<?>, Set<InternalRelation>> mappableRelationsPerClass;
   // Track Field adapters per class
   private final Map<Class<?>, DinaResourceEntry> resourceGraph;
 
@@ -48,7 +46,6 @@ public class DinaMappingRegistry {
     resourceGraph = initGraph(resourceClass, new HashSet<>());
     Set<Class<?>> resources = parseGraph(resourceClass, new HashSet<>());
     this.attributesPerClass = parseAttributesPerClass(resources);
-    this.mappableRelationsPerClass = parseMappableRelations(resources);
   }
 
   private Map<Class<?>, DinaResourceEntry> initGraph(Class<?> resourceClass, HashSet<Class<?>> visited) {
@@ -122,10 +119,8 @@ public class DinaMappingRegistry {
    * @throws IllegalArgumentException if the class is not tracked by the registry
    */
   public Set<InternalRelation> findMappableRelationsForClass(Class<?> cls) {
-    if (!this.mappableRelationsPerClass.containsKey(cls)) {
-      throw new IllegalArgumentException(cls.getSimpleName() + " is not tracked by the registry");
-    }
-    return this.mappableRelationsPerClass.get(cls);
+    checkClassTracked(cls);
+    return this.resourceGraph.get(cls).getInternalRelations();
   }
 
   /**
@@ -218,7 +213,7 @@ public class DinaMappingRegistry {
         .filter(internalRelation -> internalRelation.getName().equalsIgnoreCase(attribute))
         .findAny();
       if (relation.isPresent()) {
-        nested = relation.get().getElementType();
+        nested = relation.get().getDtoType();
       } else {
         break;
       }
@@ -259,35 +254,23 @@ public class DinaMappingRegistry {
     return Map.copyOf(map);
   }
 
-  private Map<Class<?>, Set<InternalRelation>> parseMappableRelations(Set<Class<?>> resources) {
-    Map<Class<?>, Set<InternalRelation>> map = new HashMap<>();
-    resources.forEach(dtoClass -> {
-      RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
-      if (relatedEntity != null) {
-        Set<InternalRelation> mappableRelations = FieldUtils
-          .getFieldsListWithAnnotation(dtoClass, JsonApiRelation.class).stream()
-          .filter(field -> isMappableRelation(dtoClass, relatedEntity.value(), field))
-          .map(DinaMappingRegistry::mapToInternalRelation)
-          .collect(Collectors.toSet());
-        Set<InternalRelation> entityRelations = mappableRelations.stream().map(
-          ir -> InternalRelation.builder().name(ir.getName()).isCollection(ir.isCollection())
-            .elementType(ir.getElementType().getAnnotation(RelatedEntity.class).value()).build()
-        ).collect(Collectors.toSet());
-        map.put(dtoClass, Set.copyOf(mappableRelations));
-        map.put(relatedEntity.value(), Set.copyOf(entityRelations));
-      }
-    });
-    return Map.copyOf(map);
-  }
-
   private static InternalRelation mapToInternalRelation(Field field) {
-    if (isCollection(field.getType())) {
+    Class<?> fieldType = field.getType();
+    if (isCollection(fieldType)) {
       Class<?> genericType = getGenericType(field.getDeclaringClass(), field.getName());
       return InternalRelation.builder()
-        .name(field.getName()).isCollection(true).elementType(genericType).build();
+        .name(field.getName())
+        .isCollection(true)
+        .dtoType(genericType)
+        .entityType(genericType.getAnnotation(RelatedEntity.class).value())
+        .build();
     } else {
       return InternalRelation.builder()
-        .name(field.getName()).isCollection(false).elementType(field.getType()).build();
+        .name(field.getName())
+        .isCollection(false)
+        .dtoType(fieldType)
+        .entityType(fieldType.getAnnotation(RelatedEntity.class).value())
+        .build();
     }
   }
 
@@ -413,7 +396,8 @@ public class DinaMappingRegistry {
   @Getter
   public static class InternalRelation {
     private final String name;
-    private final Class<?> elementType;
+    private final Class<?> dtoType;
+    private final Class<?> entityType;
     private final boolean isCollection;
   }
 

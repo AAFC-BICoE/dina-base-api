@@ -88,7 +88,7 @@ public class ValidationResourceHandler<D> {
           String relationFieldName = relation.getKey();
           if (StringUtils.isNotBlank(relationFieldName)) {
             findInternalRelation(mappableRelationsForClass, relationFieldName).ifPresent(internalRelation ->
-              setRelation(dto, relationFieldName, internalRelation.getElementType()));
+              setRelation(dto, relationFieldName, internalRelation.getDtoType()));
           }
         });
       }

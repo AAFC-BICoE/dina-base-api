@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.mapper;
 
+import ca.gc.aafc.dina.dto.RelatedEntity;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -178,7 +179,8 @@ public class DinaMapper<D, E> {
         // Each relation requires a separate tracking set
         Map<Object, Object> currentVisited = new IdentityHashMap<>(visited);
 
-        Class<?> targetType = internalRelation.getElementType();
+        Class<?> targetType =  target.getClass().isAnnotationPresent(RelatedEntity.class)
+          ? internalRelation.getDtoType() : internalRelation.getEntityType();
         Object sourceRelation = PropertyUtils.getProperty(source, relationFieldName);
         Object targetRelation = null;
 

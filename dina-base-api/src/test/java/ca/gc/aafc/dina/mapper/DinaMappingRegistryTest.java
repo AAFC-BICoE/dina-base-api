@@ -54,13 +54,13 @@ public class DinaMappingRegistryTest {
     DinaMappingRegistry.InternalRelation resultRelation = results.stream()
       .filter(ir -> ir.getName().equals("department")).findFirst().orElse(null);
     Assertions.assertNotNull(resultRelation);
-    Assertions.assertEquals(DepartmentDto.class, resultRelation.getElementType());
+    Assertions.assertEquals(DepartmentDto.class, resultRelation.getDtoType());
     Assertions.assertFalse(resultRelation.isCollection());
 
     DinaMappingRegistry.InternalRelation resultCollectionRelation = results.stream()
       .filter(ir -> ir.getName().equals("departments")).findFirst().orElse(null);
     Assertions.assertNotNull(resultCollectionRelation);
-    Assertions.assertEquals(DepartmentDto.class, resultCollectionRelation.getElementType());
+    Assertions.assertEquals(DepartmentDto.class, resultCollectionRelation.getDtoType());
     Assertions.assertTrue(resultCollectionRelation.isCollection());
   }
 
@@ -76,13 +76,15 @@ public class DinaMappingRegistryTest {
     DinaMappingRegistry.InternalRelation resultRelation = results.stream()
       .filter(ir -> ir.getName().equals("department")).findFirst().orElse(null);
     Assertions.assertNotNull(resultRelation);
-    Assertions.assertEquals(Department.class, resultRelation.getElementType());
+    Assertions.assertEquals(DepartmentDto.class, resultRelation.getDtoType());
+    Assertions.assertEquals(Department.class, resultRelation.getEntityType());
     Assertions.assertFalse(resultRelation.isCollection());
 
     DinaMappingRegistry.InternalRelation resultCollectionRelation = results.stream()
       .filter(ir -> ir.getName().equals("departments")).findFirst().orElse(null);
     Assertions.assertNotNull(resultCollectionRelation);
-    Assertions.assertEquals(Department.class, resultCollectionRelation.getElementType());
+    Assertions.assertEquals(DepartmentDto.class, resultCollectionRelation.getDtoType());
+    Assertions.assertEquals(Department.class, resultCollectionRelation.getEntityType());
     Assertions.assertTrue(resultCollectionRelation.isCollection());
   }
 
@@ -98,7 +100,8 @@ public class DinaMappingRegistryTest {
     DinaMappingRegistry.InternalRelation resultRelation = results.stream()
       .filter(ir -> ir.getName().equals("employees")).findFirst().orElse(null);
     Assertions.assertNotNull(resultRelation);
-    Assertions.assertEquals(Employee.class, resultRelation.getElementType());
+    Assertions.assertEquals(Employee.class, resultRelation.getEntityType());
+    Assertions.assertEquals(EmployeeDto.class, resultRelation.getDtoType());
     Assertions.assertTrue(resultRelation.isCollection());
   }
 
