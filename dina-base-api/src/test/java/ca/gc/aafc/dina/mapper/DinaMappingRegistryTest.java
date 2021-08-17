@@ -39,7 +39,6 @@ public class DinaMappingRegistryTest {
     DinaMappingRegistry registry = new DinaMappingRegistry(ProjectDTO.class);
     Assertions.assertEquals("uuid", registry.findJsonIdFieldName(ProjectDTO.class));
     Assertions.assertEquals("uuid", registry.findJsonIdFieldName(TaskDTO.class));
-    Assertions.assertEquals("id", registry.findJsonIdFieldName(EmployeeDto.class));
   }
 
   @Test
