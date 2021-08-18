@@ -180,15 +180,15 @@ public class DinaMappingRegistry {
   }
 
   /**
-   * Returns all field adapters tracked by the registry
-   * @return all field adapters tracked by the registry
+   * Returns true if the registry is tracking a registered field adapter.
+   *
+   * @return true if the registry is tracking a registered field adapter.
    */
-  public Set<DinaFieldAdapterHandler<?>> getFieldAdapters() {
-    return this.resourceGraph.values()
-      .stream()
-      .map(DinaResourceEntry::getFieldAdapterHandler)
-      .collect(Collectors.toSet());
+  public boolean hasFieldAdapters() {
+    return this.resourceGraph.values().stream()
+      .map(DinaResourceEntry::getFieldAdapterHandler).findFirst().isPresent();
   }
+
 
   /**
    * Returns the nested resource type from a given base resource type and attribute path. The deepest nested
