@@ -44,8 +44,8 @@ public class DinaMappingRegistry {
    */
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
     resourceGraph = initGraph(resourceClass, new HashSet<>());
-    this.attributesPerClass = this.resourceGraph.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry->entry.getValue()
-      .getAttributeNames()));
+    this.attributesPerClass = this.resourceGraph.entrySet().stream()
+      .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getAttributeNames()));
   }
 
   private Map<Class<?>, DinaResourceEntry> initGraph(Class<?> resourceClass, HashSet<Class<?>> visited) {
