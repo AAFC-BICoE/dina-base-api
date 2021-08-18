@@ -36,8 +36,7 @@ public class DinaMappingRegistry {
 
   /**
    * <p>The given resource class will have its graph traversed and registered into the registry. All
-   * relations
-   * will be considered a node of the graph and traversed accordingly. </p>
+   * relations will be considered a node of the graph and traversed accordingly. </p>
    *
    * <p>Parsing a given resource graph requires the use of reflection. A DinaMappingRegistry should not be
    * constructed in a repetitive manner where performance is needed.</p>
