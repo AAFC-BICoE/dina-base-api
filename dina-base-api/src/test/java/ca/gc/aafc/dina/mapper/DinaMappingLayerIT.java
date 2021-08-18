@@ -3,8 +3,10 @@ package ca.gc.aafc.dina.mapper;
 import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
+import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.TaskDTO;
+import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.entity.Project;
 import ca.gc.aafc.dina.entity.Task;
 import ca.gc.aafc.dina.jpa.BaseDAO;
@@ -44,9 +46,13 @@ public class DinaMappingLayerIT {
   @Inject
   private DefaultDinaService<Task> service;
 
+  @Inject
+  private DefaultDinaService<Person> personDefaultDinaService;
+
   private DinaMappingLayer<ProjectDTO, Project> mappingLayer;
 
   private Task persistedTask;
+  private Person hiddenRelation;
 
   @BeforeEach
   void setUp() {
@@ -56,7 +62,12 @@ public class DinaMappingLayerIT {
       .uuid(UUID.randomUUID())
       .powerLevel(RandomUtils.nextInt())
       .build();
+    hiddenRelation = Person.builder()
+      .uuid(UUID.randomUUID())
+      .name(RandomStringUtils.randomAlphabetic(4))
+      .build();
     service.create(persistedTask);
+    personDefaultDinaService.create(hiddenRelation);
     Assertions.assertNotNull(service.findOne(persistedTask.getUuid(), Task.class));
   }
 
@@ -99,10 +110,12 @@ public class DinaMappingLayerIT {
 
     Project entity1 = newProject();
     entity1.setTask(expectedTask);
+    entity1.setHiddenRelation(List.of(hiddenRelation));
     Project entity2 = newProject();
 
     QuerySpec query = new QuerySpec(ProjectDTO.class);
     query.includeRelation(PathSpec.of("task"));
+    query.includeRelation(PathSpec.of("hiddenRelation"));
     List<ProjectDTO> results = mappingLayer.mapEntitiesToDto(
       query,
       Arrays.asList(entity1, entity2));
@@ -112,6 +125,8 @@ public class DinaMappingLayerIT {
     Assertions.assertEquals(expectedTask.getUuid(), results.get(0).getTask().getUuid());
     Assertions.assertEquals(expectedTask.getPowerLevel(), results.get(0).getTask().getPowerLevel());
     Assertions.assertNull(results.get(1).getTask());
+    Assertions.assertEquals(entity1.getHiddenRelation().get(0).getName(),
+      results.get(0).getHiddenRelation().get(0).getName());
   }
 
   @Test
@@ -145,6 +160,7 @@ public class DinaMappingLayerIT {
     dto.setAcMetaDataCreator(ExternalRelationDto.builder().id(UUID.randomUUID().toString())
       .build());
     dto.setOriginalAuthor(ExternalRelationDto.builder().id(UUID.randomUUID().toString()).build());
+    dto.setHiddenRelation(List.of(PersonDTO.builder().uuid(hiddenRelation.getUuid()).build()));
 
     Project result = new Project();
     mappingLayer.mapToEntity(dto, result);
@@ -159,6 +175,8 @@ public class DinaMappingLayerIT {
     Assertions.assertEquals(persistedTask.getUuid(), result.getTask().getUuid());
     Assertions.assertEquals(persistedTask.getPowerLevel(), result.getTask().getPowerLevel(),
       "Internal Relation should of been linked");
+    Assertions.assertEquals(dto.getHiddenRelation().get(0).getUuid(),
+      result.getHiddenRelation().get(0).getUuid());
   }
 
   private static void validateProjectAttributes(ProjectDTO dto, Project result) {

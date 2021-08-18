@@ -45,4 +45,6 @@ public final class Project implements DinaEntity {
   private List<ComplexObject> nameTranslations;
   @Transient
   private List<UUID> authors;
+  @Transient
+  private List<Person> hiddenRelation;
 }
