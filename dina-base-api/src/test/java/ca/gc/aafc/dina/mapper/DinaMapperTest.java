@@ -1,7 +1,9 @@
 package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
+import ca.gc.aafc.dina.dto.TaskDTO;
 import ca.gc.aafc.dina.entity.ComplexObject;
+import ca.gc.aafc.dina.entity.Task;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -102,18 +104,17 @@ public class DinaMapperTest {
 
   @Test
   public void toDto_HiddenRelationShipTest_RelationsMapped() {
-    Student hidden = createEntity();
+    Task hidden = Task.builder().powerLevel(9000).build();
     Student friend = Student.builder().name("Friend").hiddenRelation(List.of(hidden)).build();
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
-      Student.class,
-      Set.of("name", "iq"));
+      Task.class,
+      Set.of("powerLevel"));
     Set<String> relations = Set.of("hiddenRelation");
 
     StudentDto dto = mapper.toDto(friend, selectedFieldPerClass, relations);
 
-    assertEquals(hidden.getName(), dto.getHiddenRelation().get(0).getName());
-    assertEquals(hidden.getIq(), dto.getHiddenRelation().get(0).getIq());
+    assertEquals(hidden.getPowerLevel(), dto.getHiddenRelation().get(0).getPowerLevel());
   }
 
   @Test
@@ -485,7 +486,7 @@ public class DinaMapperTest {
     private NoRelatedEntityDTO noRelatedEntityDTO;
 
     // Hidden relation is like an attribute but does not map to same type and has Related entity
-    private List<StudentDto> hiddenRelation;
+    private List<TaskDTO> hiddenRelation;
 
   }
 
@@ -513,7 +514,7 @@ public class DinaMapperTest {
     // Many to - Relation to test
     private List<Student> classMates;
 
-    private List<Student> hiddenRelation;
+    private List<Task> hiddenRelation;
 
   }
 
