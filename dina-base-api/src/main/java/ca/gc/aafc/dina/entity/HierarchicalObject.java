@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.service;
+package ca.gc.aafc.dina.entity;
 
 import java.util.UUID;
 
