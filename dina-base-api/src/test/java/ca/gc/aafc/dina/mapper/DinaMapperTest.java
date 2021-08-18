@@ -49,7 +49,9 @@ public class DinaMapperTest {
   public void simpleToDto_RelationShipTest_RelationsMapped() {
     Student friend = createEntity();
     Student entity = createEntity();
+    Task hidden = Task.builder().powerLevel(9000).build();
     entity.setFriend(friend);
+    entity.setHiddenRelation(List.of(hidden));
     entity.getClassMates().addAll(Arrays.asList(createEntity(), createEntity(), createEntity()));
 
     StudentDto dto = mapper.toDto(entity);
@@ -69,6 +71,8 @@ public class DinaMapperTest {
     }
     // Assert custom fields mapped
     assertStudentCustomFields(entity, dto);
+    // Assert hidden relation mapped
+    assertEquals(hidden.getPowerLevel(), dto.getHiddenRelation().get(0).getPowerLevel());
   }
 
   @Test

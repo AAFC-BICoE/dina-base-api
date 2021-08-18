@@ -44,8 +44,8 @@ public class DinaMappingRegistry {
    */
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
     resourceGraph = initGraph(resourceClass, new HashSet<>());
-    Set<Class<?>> resources = parseGraph(resourceClass, new HashSet<>());
-    this.attributesPerClass = parseAttributesPerClass(resources);
+    this.attributesPerClass = this.resourceGraph.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry->entry.getValue()
+      .getAttributeNames()));
   }
 
   private Map<Class<?>, DinaResourceEntry> initGraph(Class<?> resourceClass, HashSet<Class<?>> visited) {
@@ -221,38 +221,6 @@ public class DinaMappingRegistry {
     return nested;
   }
 
-  private Set<Class<?>> parseGraph(Class<?> dto, Set<Class<?>> visited) {
-    if (visited.contains(dto)) {
-      return visited;
-    }
-    visited.add(dto);
-
-    for (Field field : FieldUtils.getFieldsListWithAnnotation(dto, JsonApiRelation.class)) {
-      if (isCollection(field.getType())) {
-        Class<?> genericType = getGenericType(field.getDeclaringClass(), field.getName());
-        parseGraph(genericType, visited);
-      } else {
-        parseGraph(field.getType(), visited);
-      }
-    }
-    return visited;
-  }
-
-  private Map<Class<?>, Set<String>> parseAttributesPerClass(Set<Class<?>> resources) {
-    Map<Class<?>, Set<String>> map = new HashMap<>();
-    resources.forEach(dtoClass -> {
-      RelatedEntity relatedEntity = dtoClass.getAnnotation(RelatedEntity.class);
-      if (relatedEntity != null) {
-        Set<String> fieldsToInclude = FieldUtils.getAllFieldsList(dtoClass).stream()
-          .filter(field -> isFieldValidAttribute(dtoClass, relatedEntity.value(), field, true))
-          .map(Field::getName)
-          .collect(Collectors.toSet());
-        map.put(dtoClass, Set.copyOf(fieldsToInclude));
-        map.put(relatedEntity.value(), Set.copyOf(fieldsToInclude));
-      }
-    });
-    return Map.copyOf(map);
-  }
 
   private static InternalRelation mapToInternalRelation(Field field) {
     Class<?> fieldType = field.getType();
