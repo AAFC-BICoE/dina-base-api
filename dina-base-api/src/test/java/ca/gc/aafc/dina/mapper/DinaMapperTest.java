@@ -337,6 +337,22 @@ public class DinaMapperTest {
   }
 
   @Test
+  public void applyDtoToEntity_HiddenRelationShipTest_RelationsMapped() {
+    TaskDTO hidden = TaskDTO.builder().powerLevel(9000).build();
+    StudentDto friend = StudentDto.builder().name("Friend").hiddenRelation(List.of(hidden)).build();
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
+      TaskDTO.class,
+      Set.of("powerLevel"));
+    Set<String> relations = Set.of("hiddenRelation");
+
+    Student result = new Student();
+    mapper.applyDtoToEntity(friend, result, selectedFieldPerClass, relations);
+
+    assertEquals(hidden.getPowerLevel(), result.getHiddenRelation().get(0).getPowerLevel());
+  }
+
+  @Test
   public void applyDtoToEntity_NothingSelected_NothingMapped() {
     Student result = new Student();
     StudentDto dtoToMap = createDTO();
