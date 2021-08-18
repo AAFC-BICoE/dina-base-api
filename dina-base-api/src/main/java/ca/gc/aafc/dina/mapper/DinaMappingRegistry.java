@@ -30,17 +30,33 @@ import java.util.stream.Stream;
  */
 public class DinaMappingRegistry {
 
-  // Tracks Attributes per class for bean mapping
   @Getter
   private final Map<Class<?>, Set<String>> attributesPerClass;
-  // Track Field adapters per class
   private final Map<Class<?>, DinaResourceEntry> resourceGraph;
 
   /**
-   * Parsing a given resource graph requires the use of reflection. A DinaMappingRegistry should not be
-   * constructed in a repetitive manner where performance is needed.
+   * <p>The given resource class will have its graph traversed and registered into the registry. All
+   * relations
+   * will be considered a node of the graph and traversed accordingly. </p>
    *
-   * @param resourceClass - resource class to track
+   * <p>Parsing a given resource graph requires the use of reflection. A DinaMappingRegistry should not be
+   * constructed in a repetitive manner where performance is needed.</p>
+   *
+   * <br>
+   * <h2>Concepts</h2>
+   *
+   * <list>
+   * <li>A relation is a field that is marked as a {@link JsonApiRelation}</li>
+   * <li>A relation is considered internal unless marked with {@link JsonApiExternalRelation}</li>
+   * <li>An attribute is a field that is not {@link IgnoreDinaMapping} or marked as a relation and will be
+   * mapped directly as a value.</li>
+   * <li>An attribute must have the same data type on the DTO class and its related entity</li>
+   * <li>A field that is considered an attribute but with a different data type will throw an {@link
+   * IllegalStateException}, unless the data type of the field is a valid DTO/RelatedEntity mapping between
+   * the classes</li>
+   * </list>
+   *
+   * @param resourceClass - resource traverse and register
    */
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
     resourceGraph = initGraph(resourceClass, new HashSet<>());
@@ -62,13 +78,16 @@ public class DinaMappingRegistry {
       Set<InternalRelation> internalRelations = new HashSet<>();
 
       for (Field field : resourceClass.getDeclaredFields()) {
-        if (isMappableRelation(resourceClass, entityClass, field)) { // If relation register and traverse
+        if (isMappableRelation(resourceClass, entityClass, field)) {
+          // If relation register and traverse graph
           internalRelations.add(mapToInternalRelation(field));
           graph.putAll(initGraph(parseGenericTypeForField(field), visited));
-        } else if (isFieldValidAttribute(resourceClass, entityClass, field)) {
+        } else if (isFieldConsideredAnAttribute(resourceClass, entityClass, field)) {
           if (fieldHasSameDataType(resourceClass, entityClass, field.getName())) {
+            // Un marked field with same data type considered attribute
             attributes.add(field.getName());
-          } else { // Attributes without the same data type and a related entity are considered a relation
+          } else {
+            // Un marked field without the same data type but have a related entity are considered a hidden relation
             if (!parseGenericTypeForField(field).isAnnotationPresent(RelatedEntity.class)) {
               throwDataTypeMismatchException(resourceClass, entityClass, field.getName());
             } else {
@@ -79,10 +98,9 @@ public class DinaMappingRegistry {
         }
       }
 
-      DinaResourceEntry resourceEntry = buildResourceEntry(
-        resourceClass, entityClass, attributes, internalRelations);
-      graph.put(resourceClass, resourceEntry);
-      graph.put(entityClass, resourceEntry);
+      DinaResourceEntry entry = buildResourceEntry(resourceClass, entityClass, attributes, internalRelations);
+      graph.put(resourceClass, entry);
+      graph.put(entityClass, entry);
     }
     return graph;
   }
@@ -150,6 +168,11 @@ public class DinaMappingRegistry {
     return this.resourceGraph.get(cls).getJsonIdFieldName();
   }
 
+  /**
+   * Returns the Dina field adapter for a given class or optional empty if it does not exist.
+   * @param cls - class of the {@link DinaFieldAdapterHandler}
+   * @return the {@link DinaFieldAdapterHandler} for a given class
+   */
   public Optional<DinaFieldAdapterHandler<?>> findFieldAdapterForClass(Class<?> cls) {
     if (!this.resourceGraph.containsKey(cls)) {
       return Optional.empty();
@@ -157,6 +180,10 @@ public class DinaMappingRegistry {
     return Optional.ofNullable(this.resourceGraph.get(cls).getFieldAdapterHandler());
   }
 
+  /**
+   * Returns all field adapters tracked by the registry
+   * @return all field adapters tracked by the registry
+   */
   public Set<DinaFieldAdapterHandler<?>> getFieldAdapters() {
     return this.resourceGraph.values()
       .stream()
@@ -234,7 +261,7 @@ public class DinaMappingRegistry {
    * @param field       field to evaluate
    * @return - true if the dina repo should not map the given field
    */
-  private static boolean isFieldValidAttribute(Class<?> dtoClass, Class<?> entityClass, Field field) {
+  private static boolean isFieldConsideredAnAttribute(Class<?> dtoClass, Class<?> entityClass, Field field) {
     return !field.isAnnotationPresent(IgnoreDinaMapping.class)
       && !field.isAnnotationPresent(JsonApiRelation.class)
       && fieldExistsInBothClasses(dtoClass, entityClass, field.getName())
