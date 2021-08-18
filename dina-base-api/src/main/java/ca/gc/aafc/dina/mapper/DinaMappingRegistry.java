@@ -56,23 +56,20 @@ public class DinaMappingRegistry {
     }
     visited.add(resourceClass);
 
-    RelatedEntity relatedEntity = resourceClass.getAnnotation(RelatedEntity.class);
-    if (relatedEntity != null) {
-      Class<?> entityClass = relatedEntity.value();
-      Field[] dtoClassDeclaredFields = resourceClass.getDeclaredFields();
-
+    if (resourceClass.getAnnotation(RelatedEntity.class) != null) {
+      Class<?> entityClass = resourceClass.getAnnotation(RelatedEntity.class).value();
       Set<String> attributes = new HashSet<>();
       Set<InternalRelation> internalRelations = new HashSet<>();
 
-      for (Field field : dtoClassDeclaredFields) {
-        if (isMappableRelation(resourceClass, entityClass, field)) {
+      for (Field field : resourceClass.getDeclaredFields()) {
+        if (isMappableRelation(resourceClass, entityClass, field)) { // If relation register and traverse
           internalRelations.add(mapToInternalRelation(field));
           graph.putAll(initGraph(parseGenericTypeForField(field), visited));
         } else if (isFieldValidAttribute(resourceClass, entityClass, field)) {
           if (fieldHasSameDataType(resourceClass, entityClass, field.getName())) {
             attributes.add(field.getName());
-          } else {
-            if (!isRelatedEntityPresentForField(field)) {
+          } else { // Attributes without the same data type and a related entity are considered a relation
+            if (!parseGenericTypeForField(field).isAnnotationPresent(RelatedEntity.class)) {
               throwDataTypeMismatchException(resourceClass, entityClass, field.getName());
             } else {
               internalRelations.add(mapToInternalRelation(field));
@@ -82,33 +79,12 @@ public class DinaMappingRegistry {
         }
       }
 
-      DinaResourceEntry resourceEntry = DinaResourceEntry.builder()
-        .dtoClass(resourceClass)
-        .entityClass(entityClass)
-        .externalNameToTypeMap(parseExternalRelationNamesToType(resourceClass))
-        .attributeNames(attributes)
-        .internalRelations(internalRelations)
-        .jsonIdFieldName(parseJsonIdFieldName(resourceClass))
-        .fieldAdapterHandler(new DinaFieldAdapterHandler<>(resourceClass))
-        .build();
+      DinaResourceEntry resourceEntry = buildResourceEntry(
+        resourceClass, entityClass, attributes, internalRelations);
       graph.put(resourceClass, resourceEntry);
       graph.put(entityClass, resourceEntry);
     }
     return graph;
-  }
-
-  private String parseJsonIdFieldName(Class<?> resourceClass) {
-    for (Field field : FieldUtils.getAllFieldsList(resourceClass)) {
-      if (field.isAnnotationPresent(JsonApiId.class)) {
-        return field.getName();
-      }
-    }
-    return null;
-  }
-
-  private static void throwDataTypeMismatchException(Class<?> dto, Class<?> entity, String attrib) {
-    throw new IllegalStateException("data type for Field:{" + attrib + "} on DTO:{" + dto.getSimpleName()
-      + "} does not match the field from Entity:{" + entity.getSimpleName() + "}");
   }
 
   /**
@@ -141,13 +117,13 @@ public class DinaMappingRegistry {
    * @return type of the given external relation.
    * @throws IllegalArgumentException if the relationFieldName is not tracked by the registry
    */
-  public String findExternalType(Class<?> cls , String relationFieldName) {
+  public String findExternalType(Class<?> cls, String relationFieldName) {
     checkClassTracked(cls);
     if (!this.resourceGraph.get(cls).getExternalNameToTypeMap().containsKey(relationFieldName)) {
       throw new IllegalArgumentException(
         "external relation with name: " + relationFieldName + " is not tracked by the registry");
     }
-    return  this.resourceGraph.get(cls).getExternalNameToTypeMap().get(relationFieldName);
+    return this.resourceGraph.get(cls).getExternalNameToTypeMap().get(relationFieldName);
   }
 
   /**
@@ -156,7 +132,7 @@ public class DinaMappingRegistry {
    * @param relationFieldName - field name of the external relation.
    * @return Returns true if the relation with the given field name is external.
    */
-  public boolean isRelationExternal(Class<?> cls , String relationFieldName) {
+  public boolean isRelationExternal(Class<?> cls, String relationFieldName) {
     checkClassTracked(cls);
     return this.resourceGraph.get(cls).getExternalNameToTypeMap().keySet().stream()
       .anyMatch(relationFieldName::equalsIgnoreCase);
@@ -172,12 +148,6 @@ public class DinaMappingRegistry {
   public String findJsonIdFieldName(Class<?> cls) {
     checkClassTracked(cls);
     return this.resourceGraph.get(cls).getJsonIdFieldName();
-  }
-
-  private void checkClassTracked(Class<?> cls) {
-    if (!this.resourceGraph.containsKey(cls)) {
-      throw new IllegalArgumentException(cls.getSimpleName() + " is not tracked by the registry");
-    }
   }
 
   public Optional<DinaFieldAdapterHandler<?>> findFieldAdapterForClass(Class<?> cls) {
@@ -221,11 +191,10 @@ public class DinaMappingRegistry {
     return nested;
   }
 
-
   private static InternalRelation mapToInternalRelation(Field field) {
     Class<?> fieldType = field.getType();
     if (isCollection(fieldType)) {
-      Class<?> genericType = getGenericType(field.getDeclaringClass(), field.getName());
+      Class<?> genericType = parseGenericTypeForField(field);
       return InternalRelation.builder()
         .name(field.getName())
         .isCollection(true)
@@ -296,38 +265,19 @@ public class DinaMappingRegistry {
 
   @SneakyThrows
   private static boolean fieldHasSameDataType(Class<?> dtoClass, Class<?> entityClass, String fieldName) {
-    Type typeOnDto = dtoClass.getDeclaredField(fieldName).getGenericType();
-    Type typeOnEntity = entityClass.getDeclaredField(fieldName).getGenericType();
+    Field dtoClassDeclaredField = dtoClass.getDeclaredField(fieldName);
+    Type typeOnDto = dtoClassDeclaredField.getGenericType();
+    Field entityClassDeclaredField = entityClass.getDeclaredField(fieldName);
 
-    if (!typeOnEntity.equals(typeOnDto)) { // Data types must match!
+    if (!entityClassDeclaredField.getGenericType().equals(typeOnDto)) { // Data types must match!
       return false;
     }
 
     if (typeOnDto instanceof ParameterizedType) { // If parameterized generic type must match
-      return getGenericType(dtoClass, fieldName).equals(getGenericType(entityClass, fieldName));
+      return parseGenericTypeForField(dtoClassDeclaredField)
+        .equals(parseGenericTypeForField(entityClassDeclaredField));
     }
     return true;
-  }
-
-  /**
-   * Returns the class of the parameterized type at the first position of a given class's given field.
-   * <p>
-   * given class is assumed to be a {@link ParameterizedType}
-   *
-   * @param source    given class
-   * @param fieldName field name of the given class to parse
-   * @return class of the paramterized type at the first position
-   */
-  @SneakyThrows
-  private static Class<?> getGenericType(Class<?> source, String fieldName) {
-    ParameterizedType genericType = (ParameterizedType) source
-      .getDeclaredField(fieldName)
-      .getGenericType();
-    return (Class<?>) genericType.getActualTypeArguments()[0];
-  }
-
-  private static boolean isRelatedEntityPresentForField(Field field) {
-    return parseGenericTypeForField(field).isAnnotationPresent(RelatedEntity.class);
   }
 
   private static Class<?> parseGenericTypeForField(Field field) {
@@ -336,6 +286,43 @@ public class DinaMappingRegistry {
     } else {
       return field.getType();
     }
+  }
+
+  private static String parseJsonIdFieldName(Class<?> resourceClass) {
+    for (Field field : FieldUtils.getAllFieldsList(resourceClass)) {
+      if (field.isAnnotationPresent(JsonApiId.class)) {
+        return field.getName();
+      }
+    }
+    return null;
+  }
+
+  private static DinaResourceEntry buildResourceEntry(
+    Class<?> resourceClass,
+    Class<?> entityClass,
+    Set<String> attributes,
+    Set<InternalRelation> internalRelations
+  ) {
+    return DinaResourceEntry.builder()
+      .dtoClass(resourceClass)
+      .entityClass(entityClass)
+      .externalNameToTypeMap(parseExternalRelationNamesToType(resourceClass))
+      .attributeNames(attributes)
+      .internalRelations(internalRelations)
+      .jsonIdFieldName(parseJsonIdFieldName(resourceClass))
+      .fieldAdapterHandler(new DinaFieldAdapterHandler<>(resourceClass))
+      .build();
+  }
+
+  private void checkClassTracked(Class<?> cls) {
+    if (!this.resourceGraph.containsKey(cls)) {
+      throw new IllegalArgumentException(cls.getSimpleName() + " is not tracked by the registry");
+    }
+  }
+
+  private static void throwDataTypeMismatchException(Class<?> dto, Class<?> entity, String attrib) {
+    throw new IllegalStateException("data type for Field:{" + attrib + "} on DTO:{" + dto.getSimpleName()
+      + "} does not match the field from Entity:{" + entity.getSimpleName() + "}");
   }
 
   /**
