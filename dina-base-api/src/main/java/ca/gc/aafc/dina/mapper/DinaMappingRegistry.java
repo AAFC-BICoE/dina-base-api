@@ -68,7 +68,7 @@ public class DinaMappingRegistry {
         if (isMappableRelation(resourceClass, entityClass, field)) {
           internalRelations.add(mapToInternalRelation(field));
           graph.putAll(initGraph(parseGenericTypeForField(field), visited));
-        } else if (isFieldValidAttribute(resourceClass, entityClass, field, false)) {
+        } else if (isFieldValidAttribute(resourceClass, entityClass, field)) {
           if (fieldHasSameDataType(resourceClass, entityClass, field.getName())) {
             attributes.add(field.getName());
           } else {
@@ -265,21 +265,12 @@ public class DinaMappingRegistry {
    * @param field       field to evaluate
    * @return - true if the dina repo should not map the given field
    */
-  private static boolean isFieldValidAttribute(
-    Class<?> dtoClass,
-    Class<?> entityClass,
-    Field field,
-    boolean compareDataType
-  ) {
-    boolean isConsideredAsAttribute = !field.isAnnotationPresent(IgnoreDinaMapping.class)
+  private static boolean isFieldValidAttribute(Class<?> dtoClass, Class<?> entityClass, Field field) {
+    return !field.isAnnotationPresent(IgnoreDinaMapping.class)
       && !field.isAnnotationPresent(JsonApiRelation.class)
       && fieldExistsInBothClasses(dtoClass, entityClass, field.getName())
       && !Modifier.isFinal(field.getModifiers())
       && !field.isSynthetic();
-    if (compareDataType) {
-      return isConsideredAsAttribute && fieldHasSameDataType(dtoClass, entityClass, field.getName());
-    }
-    return isConsideredAsAttribute;
   }
 
   /**
