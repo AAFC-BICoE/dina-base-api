@@ -1,0 +1,13 @@
+@startuml
+DinaMappingRegistry <-- DinaMapper
+DinaMappingRegistry <-- DinaMappingLayer
+
+DinaMappingRegistry : findExternalType()
+DinaMappingRegistry : findFieldAdapterForClass()
+DinaMappingRegistry : findJsonIdFieldName()
+DinaMappingRegistry : findMappableRelationsForClass()
+DinaMappingRegistry : getAttributesPerClass()
+DinaMappingRegistry : getExternalRelations()
+DinaMappingRegistry : hasFieldAdapters()
+DinaMappingRegistry : isRelationExternal()
+@enduml
