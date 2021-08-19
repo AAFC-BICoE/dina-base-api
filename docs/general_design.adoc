@@ -49,13 +49,34 @@ The Mapping Layer involves three main components:
 ** Mappers should not communicate with the service layer to map relations directly.
 
 .Mapping Layer Overview
-[plantuml,svg,align="center"]
+[plantuml, target=MappingOverview, format=svg, align="center"]
 ----
 include::plantumls/MappingOverview.puml[]
 ----
 
 === Mapping Layer concepts
-When mapping between an entity and a Dto, each field needs to transferred from one object to another. However, the values do not map directly. There are a few concepts to consider.
+When mapping between an entity and a Dto, each field needs to transferred from one object to another. However, the values do not map directly.
+
+==== Resource Graph
+All of the attributes of a resource can be mapped directly however the resources associations with other resources must also be mapped between their own DTO/entity equivalents.
+
+These associations are referred to as relations.
+
+.Simple Mapping Operation
+[plantuml, target=SimpleMappingOperation, format=svg, align="center"]
+----
+include::plantumls/SimpleMappingOperation.puml[]
+----
+
+You can visualize a resource and all of it's associations as a graph.
+
+.Resource Graph Visualization
+[plantuml, target=ResourceGraphVisualization, format=svg, align="center"]
+----
+include::plantumls/ResourceGraphVisualization.puml[]
+----
+
+If ResourceA has a ResourceB, ResourceB has a ResourceC, and ResourceC has a ResourceA, they each need to mapped appropriately when mapping ResourceA
 
 ==== Relation
 * A relation is a field that is marked as a `@JsonApiRelation`.
