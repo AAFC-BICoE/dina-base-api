@@ -1,7 +1,7 @@
 @startuml
 DinaMappingRegistry <-- DinaMapper
 DinaMappingRegistry <-- DinaMappingLayer
-DinaMapper <-- DinaMappingLayer
+DinaMapper <- DinaMappingLayer
 
 DinaMappingRegistry : findExternalType()
 DinaMappingRegistry : findFieldAdapterForClass()
@@ -11,4 +11,6 @@ DinaMappingRegistry : getAttributesPerClass()
 DinaMappingRegistry : getExternalRelations()
 DinaMappingRegistry : hasFieldAdapters()
 DinaMappingRegistry : isRelationExternal()
+
+note bottom of DinaMappingLayer: "Dina repo will request a mapping from the layer"
 @enduml
