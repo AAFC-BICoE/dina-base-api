@@ -91,10 +91,10 @@ The Mapping Layer needs to distinguish between relations and attributes when rea
 ----
   public static final class StudentDto { // DTO Class
 
-    @JsonApiRelation // normal relation
+    @JsonApiRelation // normal relation marked with annotation
     private StudentDto normalRelation;
 
-    // This is also a relation, (unmarked by annotations) but has Related entity
+    // This is also a relation ( different data types between DTO/Entity but with a related entity )
     private List<TaskDTO> hiddenRelation;
 
     @JsonApiExternalRelation(type = "agent")
@@ -117,6 +117,22 @@ The Mapping Layer needs to distinguish between relations and attributes when rea
 * An attribute is a field that is not `@IgnoreDinaMapping` or marked as a relation and will be mapped directly as a value.
 * An attribute must have the same data type on the DTO class and its related entity.
 * A field that is considered an attribute (Unmarked) but has a valid DTO/RelatedEntity mapping between the data types will be considered a relation.
+
+.Example Attribute
+[java]
+----
+  public static final class StudentDto { // DTO Class
+
+    private String name; // attribute, has same data type
+
+  }
+
+  public static class Student { // Entity Class
+
+    private String name; // attribute, has same data type
+
+  }
+----
 
 == Resource Id as UUID
 All database identifiers should be numerical based since it`s efficient and easier to manage at the database level. Even if there is no issue about leaking business information we will still expose UUID instead of the database key in the API. This will give us more flexibility at the database level while reducing potential issues with API users iterating over ids or using a wrong set of ids. Based on the “Inter-module foreign key” module, UUID’s will help detect wrong linkages by making it almost impossible to reuse a key of the wrong resource. Numerical id’s can be reused in different resources (even if this can be solved by using a global sequence) while UUID are more likely to be unique across the system.
