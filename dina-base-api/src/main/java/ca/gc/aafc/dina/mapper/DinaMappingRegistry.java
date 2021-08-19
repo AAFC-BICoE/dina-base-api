@@ -32,6 +32,7 @@ public class DinaMappingRegistry {
 
   @Getter
   private final Map<Class<?>, Set<String>> attributesPerClass;
+  // Set of entries tracked by class for faster lookup.
   private final Map<Class<?>, DinaResourceEntry> resourceGraph;
 
   /**
@@ -63,7 +64,7 @@ public class DinaMappingRegistry {
       .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getAttributeNames()));
   }
 
-  private Map<Class<?>, DinaResourceEntry> initGraph(Class<?> resourceClass, HashSet<Class<?>> visited) {
+  private static Map<Class<?>, DinaResourceEntry> initGraph(Class<?> resourceClass, HashSet<Class<?>> visited) {
     HashMap<Class<?>, DinaResourceEntry> graph = new HashMap<>();
 
     if (visited.contains(resourceClass)) {
@@ -73,35 +74,43 @@ public class DinaMappingRegistry {
 
     if (resourceClass.getAnnotation(RelatedEntity.class) != null) {
       Class<?> entityClass = resourceClass.getAnnotation(RelatedEntity.class).value();
-      Set<String> attributes = new HashSet<>();
-      Set<InternalRelation> internalRelations = new HashSet<>();
-
-      for (Field field : resourceClass.getDeclaredFields()) {
-        if (isMappableRelation(resourceClass, entityClass, field)) {
-          // If relation register and traverse graph
-          internalRelations.add(mapToInternalRelation(field));
-          graph.putAll(initGraph(parseGenericTypeForField(field), visited));
-        } else if (isFieldConsideredAnAttribute(resourceClass, entityClass, field)) {
-          if (fieldHasSameDataType(resourceClass, entityClass, field.getName())) {
-            // Un marked field with same data type considered attribute
-            attributes.add(field.getName());
-          } else {
-            // Un marked field without the same data type but have a related entity are considered a hidden relation
-            if (!parseGenericTypeForField(field).isAnnotationPresent(RelatedEntity.class)) {
-              throwDataTypeMismatchException(resourceClass, entityClass, field.getName());
-            } else {
-              internalRelations.add(mapToInternalRelation(field));
-              graph.putAll(initGraph(parseGenericTypeForField(field), visited));
-            }
-          }
-        }
-      }
-
-      DinaResourceEntry entry = buildResourceEntry(resourceClass, entityClass, attributes, internalRelations);
+      DinaResourceEntry entry = parseRegistryEntry(entityClass, resourceClass, visited, graph);
       graph.put(resourceClass, entry);
       graph.put(entityClass, entry);
     }
     return graph;
+  }
+
+  private static DinaResourceEntry parseRegistryEntry(
+    Class<?> entityClass,
+    Class<?> resourceClass,
+    HashSet<Class<?>> visited,
+    HashMap<Class<?>, DinaResourceEntry> graph
+  ) {
+    Set<String> attributes = new HashSet<>();
+    Set<InternalRelation> internalRelations = new HashSet<>();
+
+    for (Field field : resourceClass.getDeclaredFields()) {
+      if (isMappableRelation(resourceClass, entityClass, field)) {
+        // If relation register and traverse graph
+        internalRelations.add(mapToInternalRelation(field));
+        graph.putAll(initGraph(parseGenericTypeForField(field), visited));
+      } else if (isFieldConsideredAnAttribute(resourceClass, entityClass, field)) {
+        if (fieldHasSameDataType(resourceClass, entityClass, field.getName())) {
+          // Un marked field with same data type considered attribute
+          attributes.add(field.getName());
+        } else {
+          // Un marked field without the same data type but have a related entity are considered a hidden relation
+          if (!parseGenericTypeForField(field).isAnnotationPresent(RelatedEntity.class)) {
+            throwDataTypeMismatchException(resourceClass, entityClass, field.getName());
+          } else {
+            internalRelations.add(mapToInternalRelation(field));
+            graph.putAll(initGraph(parseGenericTypeForField(field), visited));
+          }
+        }
+      }
+    }
+    return buildResourceEntry(resourceClass, entityClass, attributes, internalRelations);
   }
 
   /**
@@ -169,6 +178,7 @@ public class DinaMappingRegistry {
 
   /**
    * Returns the Dina field adapter for a given class or optional empty if it does not exist.
+   *
    * @param cls - class of the {@link DinaFieldAdapterHandler}
    * @return the {@link DinaFieldAdapterHandler} for a given class
    */
@@ -188,7 +198,6 @@ public class DinaMappingRegistry {
     return this.resourceGraph.values().stream()
       .map(DinaResourceEntry::getFieldAdapterHandler).findFirst().isPresent();
   }
-
 
   /**
    * Returns the nested resource type from a given base resource type and attribute path. The deepest nested
