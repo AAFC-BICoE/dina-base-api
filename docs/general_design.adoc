@@ -78,11 +78,40 @@ include::plantumls/ResourceGraphVisualization.puml[]
 
 If ResourceA has a ResourceB, ResourceB has a ResourceC, and ResourceC has a ResourceA, they each need to mapped appropriately when mapping ResourceA
 
+The Mapping Layer needs to distinguish between relations and attributes when reading the associated java classes.
+
 ==== Relation
-* A relation is a field that is marked as a `@JsonApiRelation`.
+* A relation is a field that is marked as a `@JsonApiRelation` on The DTO and is not marked with `@IgnoreDinaMapping`.
 * These fields are not mapped directly instead the values themselves must also be mapped and transferred.
 * A relation is considered internal unless marked with `@JsonApiExternalRelation`.
 * External relations represent an association with a resource in a separate module and will not be mapped to their database equivalent.
+
+.Example Relations
+[java]
+----
+  public static final class StudentDto {
+
+    @JsonApiRelation // normal relation
+    private StudentDto normalRelation;
+
+    // This is also a relation, (unmarked by annotations) but has Related entity
+    private List<TaskDTO> hiddenRelation;
+
+    @JsonApiExternalRelation(type = "agent")
+    @JsonApiRelation // External Relations always map between ExternalRelationDto and UUID
+    private ExternalRelationDto externalRelation;
+
+  }
+
+  public static class Student {
+
+    private Student normalRelation; // normal relation
+
+    private List<Task> hiddenRelation; // normal relation
+
+    private UUID externalRelation; // External Relations
+  }
+----
 
 ==== Attribute
 * An attribute is a field that is not `@IgnoreDinaMapping` or marked as a relation and will be mapped directly as a value.
