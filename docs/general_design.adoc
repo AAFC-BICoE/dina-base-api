@@ -89,7 +89,7 @@ The Mapping Layer needs to distinguish between relations and attributes when rea
 .Example Relations
 [java]
 ----
-  public static final class StudentDto {
+  public static final class StudentDto { // DTO Class
 
     @JsonApiRelation // normal relation
     private StudentDto normalRelation;
@@ -103,7 +103,7 @@ The Mapping Layer needs to distinguish between relations and attributes when rea
 
   }
 
-  public static class Student {
+  public static class Student { // Entity Class
 
     private Student normalRelation; // normal relation
 
