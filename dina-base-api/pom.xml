@@ -25,7 +25,7 @@
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
     <javers.version>6.2.3</javers.version>
     <mybatis.version>2.2.0</mybatis.version>
-    <aafc.search.messaging.version>0.2</aafc.search.messaging.version>
+    <aafc.search.messaging.version>0.3</aafc.search.messaging.version>
     <rabbitmq.testcontainers.version>1.15.3</rabbitmq.testcontainers.version>
   </properties>
 
