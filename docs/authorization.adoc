@@ -87,32 +87,22 @@ Send a GET request to a resource and add the Header `include-dina-permission` to
 [source,json]
 ----
 {
-  "data": [
-    {
-      "id": "475c1dc4-99c0-4a56-8177-3f00e4f151e1",
-      "type": "person",
-      "links": {
-        "self": "/api/v1/person/475c1dc4-99c0-4a56-8177-3f00e4f151e1"
-      },
-      "meta": {
-        "permissions": [
-            create,
-            update,
-            delete
-        ],
-        "warnings": null
-      },
-      "attributes": {
-        ... // shortened
-        ]
-      },
-      "relationships": {
-        ... // shortened
+   "data":[
+      {
+         "id":"475c1dc4-99c0-4a56-8177-3f00e4f151e1",
+         "type":"person",
+         "meta":{
+            "permissionsProvider":"SpecialAuthServiceUnderTest",
+            "permissions":[
+               "create",
+               "update"
+            ],
+            "warnings":null
+         },
+         "attributes":{
+            "name":"jim"
+         }
       }
-    }
-  ],
-  "meta": {
-    ... // shortened
-  }
+   ]
 }
 ----
