@@ -22,11 +22,11 @@ int attribute1
 
 Resource_A_EntityClass <-> Resource_A_ResourceClass
 
-note on link: "Attributes can be mapped directly as values"
+note on link: Attributes can be mapped directly as values
 
 Resource_B_EntityClass <-> Resource_B_ResourceClass
 
-note on link: "A relation will need to be mapped before transfer"
+note on link: A relation will need to be mapped before transfer
 
 Resource_A_EntityClass -- Resource_B_EntityClass
 Resource_A_ResourceClass -- Resource_B_ResourceClass

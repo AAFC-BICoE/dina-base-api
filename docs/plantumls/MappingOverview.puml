@@ -12,5 +12,5 @@ DinaMappingRegistry : getExternalRelations()
 DinaMappingRegistry : hasFieldAdapters()
 DinaMappingRegistry : isRelationExternal()
 
-note bottom of DinaMappingLayer: "Dina repo will request a mapping from the layer"
+note bottom of DinaMappingLayer: Dina repo will request a mapping from the layer
 @enduml

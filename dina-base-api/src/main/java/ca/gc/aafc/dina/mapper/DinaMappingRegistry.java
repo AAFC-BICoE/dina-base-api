@@ -64,7 +64,7 @@ public class DinaMappingRegistry {
       .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getAttributeNames()));
   }
 
-  private static Map<Class<?>, DinaResourceEntry> initGraph(Class<?> resourceClass, HashSet<Class<?>> visited) {
+  private static Map<Class<?>, DinaResourceEntry> initGraph(Class<?> resourceClass, Set<Class<?>> visited) {
     HashMap<Class<?>, DinaResourceEntry> graph = new HashMap<>();
 
     if (visited.contains(resourceClass)) {
@@ -82,10 +82,8 @@ public class DinaMappingRegistry {
   }
 
   private static DinaResourceEntry parseRegistryEntry(
-    Class<?> entityClass,
-    Class<?> resourceClass,
-    HashSet<Class<?>> visited,
-    HashMap<Class<?>, DinaResourceEntry> graph
+    Class<?> entityClass, Class<?> resourceClass,
+    Set<Class<?>> visited, Map<Class<?>, DinaResourceEntry> graph
   ) {
     Set<String> attributes = new HashSet<>();
     Set<InternalRelation> internalRelations = new HashSet<>();
@@ -228,22 +226,19 @@ public class DinaMappingRegistry {
 
   private static InternalRelation mapToInternalRelation(Field field) {
     Class<?> fieldType = field.getType();
+    boolean isCollection = false;
+
     if (isCollection(fieldType)) {
-      Class<?> genericType = parseGenericTypeForField(field);
-      return InternalRelation.builder()
+      fieldType = parseGenericTypeForField(field);
+      isCollection = true;
+    }
+
+    return InternalRelation.builder()
         .name(field.getName())
-        .isCollection(true)
-        .dtoType(genericType)
-        .entityType(genericType.getAnnotation(RelatedEntity.class).value())
-        .build();
-    } else {
-      return InternalRelation.builder()
-        .name(field.getName())
-        .isCollection(false)
+        .isCollection(isCollection)
         .dtoType(fieldType)
         .entityType(fieldType.getAnnotation(RelatedEntity.class).value())
         .build();
-    }
   }
 
   /**
