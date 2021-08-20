@@ -148,7 +148,7 @@ public class DinaMapper<D, E> {
     mapRelationsToTarget(unproxied, target, selectedFieldPerClass, relations, visited);
 
     registry.findFieldAdapterForClass(sourceType)
-        .ifPresent(fs -> fs.resolveFields(unproxied, target));
+        .ifPresent(fa -> fa.resolveFields(unproxied, target));
   }
 
   /**

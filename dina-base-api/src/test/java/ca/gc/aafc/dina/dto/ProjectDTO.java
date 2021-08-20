@@ -55,5 +55,6 @@ public final class ProjectDTO {
   @JsonApiRelation
   private List<ExternalRelationDto> authors;
 
-  private List<PersonDTO> hiddenRelation;
+  // list of people but not exposed as relationship
+  private List<PersonDTO> randomPeople;
 }

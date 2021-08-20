@@ -33,18 +33,26 @@ public final class Project implements DinaEntity {
   private String name;
   private OffsetDateTime createdOn;
   private String createdBy;
+
   //Internal Relation
   @OneToOne
   @JoinColumn(name = "task_id")
   private Task task;
+
   // External Relation
   private UUID acMetaDataCreator;
+
   // External Relation
   private UUID originalAuthor;
+
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<ComplexObject> nameTranslations;
+
   @Transient
   private List<UUID> authors;
+
+  // list of people but not exposed as relationship
   @Transient
-  private List<Person> hiddenRelation;
+  private List<Person> randomPeople;
+
 }

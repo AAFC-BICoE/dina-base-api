@@ -52,7 +52,7 @@ public class DinaMappingLayerIT {
   private DinaMappingLayer<ProjectDTO, Project> mappingLayer;
 
   private Task persistedTask;
-  private Person hiddenRelation;
+  private Person randomPerson;
 
   @BeforeEach
   void setUp() {
@@ -62,12 +62,12 @@ public class DinaMappingLayerIT {
       .uuid(UUID.randomUUID())
       .powerLevel(RandomUtils.nextInt())
       .build();
-    hiddenRelation = Person.builder()
+    randomPerson = Person.builder()
       .uuid(UUID.randomUUID())
       .name(RandomStringUtils.randomAlphabetic(4))
       .build();
     service.create(persistedTask);
-    personDefaultDinaService.create(hiddenRelation);
+    personDefaultDinaService.create(randomPerson);
     Assertions.assertNotNull(service.findOne(persistedTask.getUuid(), Task.class));
   }
 
@@ -110,12 +110,12 @@ public class DinaMappingLayerIT {
 
     Project entity1 = newProject();
     entity1.setTask(expectedTask);
-    entity1.setHiddenRelation(List.of(hiddenRelation));
+    entity1.setRandomPeople(List.of(randomPerson));
     Project entity2 = newProject();
 
     QuerySpec query = new QuerySpec(ProjectDTO.class);
     query.includeRelation(PathSpec.of("task"));
-    query.includeRelation(PathSpec.of("hiddenRelation"));
+    query.includeRelation(PathSpec.of("randomPeople"));
     List<ProjectDTO> results = mappingLayer.mapEntitiesToDto(
       query,
       Arrays.asList(entity1, entity2));
@@ -125,8 +125,8 @@ public class DinaMappingLayerIT {
     Assertions.assertEquals(expectedTask.getUuid(), results.get(0).getTask().getUuid());
     Assertions.assertEquals(expectedTask.getPowerLevel(), results.get(0).getTask().getPowerLevel());
     Assertions.assertNull(results.get(1).getTask());
-    Assertions.assertEquals(entity1.getHiddenRelation().get(0).getName(),
-      results.get(0).getHiddenRelation().get(0).getName());
+    Assertions.assertEquals(entity1.getRandomPeople().get(0).getName(),
+      results.get(0).getRandomPeople().get(0).getName());
   }
 
   @Test
@@ -160,7 +160,7 @@ public class DinaMappingLayerIT {
     dto.setAcMetaDataCreator(ExternalRelationDto.builder().id(UUID.randomUUID().toString())
       .build());
     dto.setOriginalAuthor(ExternalRelationDto.builder().id(UUID.randomUUID().toString()).build());
-    dto.setHiddenRelation(List.of(PersonDTO.builder().uuid(hiddenRelation.getUuid()).build()));
+    dto.setRandomPeople(List.of(PersonDTO.builder().uuid(randomPerson.getUuid()).build()));
 
     Project result = new Project();
     mappingLayer.mapToEntity(dto, result);
@@ -175,8 +175,8 @@ public class DinaMappingLayerIT {
     Assertions.assertEquals(persistedTask.getUuid(), result.getTask().getUuid());
     Assertions.assertEquals(persistedTask.getPowerLevel(), result.getTask().getPowerLevel(),
       "Internal Relation should of been linked");
-    Assertions.assertEquals(dto.getHiddenRelation().get(0).getUuid(),
-      result.getHiddenRelation().get(0).getUuid());
+    Assertions.assertEquals(dto.getRandomPeople().get(0).getUuid(),
+      result.getRandomPeople().get(0).getUuid());
   }
 
   private static void validateProjectAttributes(ProjectDTO dto, Project result) {
@@ -237,7 +237,6 @@ public class DinaMappingLayerIT {
   static class DinaMappingLayerITITConfig {
     @Bean
     public DinaRepository<ProjectDTO, Project> projectRepo(
-      BaseDAO baseDAO,
       ExternalResourceProvider externalResourceProvider,
       BuildProperties buildProperties,
       ProjectDinaService projectDinaService
@@ -257,7 +256,6 @@ public class DinaMappingLayerIT {
 
     @Bean
     public DinaRepository<TaskDTO, Task> taskRepo(
-      BaseDAO baseDAO,
       ExternalResourceProvider externalResourceProvider,
       BuildProperties buildProperties,
       TaskDinaService taskDinaService
@@ -276,7 +274,7 @@ public class DinaMappingLayerIT {
     }
 
     @Service
-    class ProjectDinaService extends DefaultDinaService<Project> {
+    static class ProjectDinaService extends DefaultDinaService<Project> {
   
       public ProjectDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
         super(baseDAO, sv);
@@ -285,7 +283,7 @@ public class DinaMappingLayerIT {
   
     
     @Service
-    class TaskDinaService extends DefaultDinaService<Task> {
+    static class TaskDinaService extends DefaultDinaService<Task> {
   
       public TaskDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
         super(baseDAO, sv);
