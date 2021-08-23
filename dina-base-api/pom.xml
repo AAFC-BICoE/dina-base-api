@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.64-SNAPSHOT</version>
+    <version>0.65-SNAPSHOT</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -25,7 +25,7 @@
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
     <javers.version>6.2.3</javers.version>
     <mybatis.version>2.2.0</mybatis.version>
-    <aafc.search.messaging.version>0.2</aafc.search.messaging.version>
+    <aafc.search.messaging.version>0.3</aafc.search.messaging.version>
     <rabbitmq.testcontainers.version>1.15.3</rabbitmq.testcontainers.version>
   </properties>
 
@@ -103,7 +103,7 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.64-SNAPSHOT</version>
+      <version>0.65-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <!-- Spring mybatis -->
