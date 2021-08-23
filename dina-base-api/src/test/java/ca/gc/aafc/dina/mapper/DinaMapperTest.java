@@ -51,7 +51,7 @@ public class DinaMapperTest {
     Student entity = createEntity();
     Task hidden = Task.builder().powerLevel(9000).build();
     entity.setFriend(friend);
-    entity.setHiddenRelation(List.of(hidden));
+    entity.setUnmarkedRelation(List.of(hidden));
     entity.getClassMates().addAll(Arrays.asList(createEntity(), createEntity(), createEntity()));
 
     StudentDto dto = mapper.toDto(entity);
@@ -72,7 +72,7 @@ public class DinaMapperTest {
     // Assert custom fields mapped
     assertStudentCustomFields(entity, dto);
     // Assert hidden relation mapped
-    assertEquals(hidden.getPowerLevel(), dto.getHiddenRelation().get(0).getPowerLevel());
+    assertEquals(hidden.getPowerLevel(), dto.getUnmarkedRelation().get(0).getPowerLevel());
   }
 
   @Test
@@ -109,16 +109,16 @@ public class DinaMapperTest {
   @Test
   public void toDto_HiddenRelationShipTest_RelationsMapped() {
     Task hidden = Task.builder().powerLevel(9000).build();
-    Student friend = Student.builder().name("Friend").hiddenRelation(List.of(hidden)).build();
+    Student friend = Student.builder().name("Friend").unmarkedRelation(List.of(hidden)).build();
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
       Task.class,
       Set.of("powerLevel"));
-    Set<String> relations = Set.of("hiddenRelation");
+    Set<String> relations = Set.of("unmarkedRelation");
 
     StudentDto dto = mapper.toDto(friend, selectedFieldPerClass, relations);
 
-    assertEquals(hidden.getPowerLevel(), dto.getHiddenRelation().get(0).getPowerLevel());
+    assertEquals(hidden.getPowerLevel(), dto.getUnmarkedRelation().get(0).getPowerLevel());
   }
 
   @Test
@@ -339,17 +339,17 @@ public class DinaMapperTest {
   @Test
   public void applyDtoToEntity_HiddenRelationShipTest_RelationsMapped() {
     TaskDTO hidden = TaskDTO.builder().powerLevel(9000).build();
-    StudentDto friend = StudentDto.builder().name("Friend").hiddenRelation(List.of(hidden)).build();
+    StudentDto friend = StudentDto.builder().name("Friend").unmarkedRelation(List.of(hidden)).build();
 
     Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
       TaskDTO.class,
       Set.of("powerLevel"));
-    Set<String> relations = Set.of("hiddenRelation");
+    Set<String> relations = Set.of("unmarkedRelation");
 
     Student result = new Student();
     mapper.applyDtoToEntity(friend, result, selectedFieldPerClass, relations);
 
-    assertEquals(hidden.getPowerLevel(), result.getHiddenRelation().get(0).getPowerLevel());
+    assertEquals(hidden.getPowerLevel(), result.getUnmarkedRelation().get(0).getPowerLevel());
   }
 
   @Test
@@ -506,7 +506,7 @@ public class DinaMapperTest {
     private NoRelatedEntityDTO noRelatedEntityDTO;
 
     // Hidden relation is like an attribute but does not map to same type and has Related entity
-    private List<TaskDTO> hiddenRelation;
+    private List<TaskDTO> unmarkedRelation;
 
   }
 
@@ -534,7 +534,7 @@ public class DinaMapperTest {
     // Many to - Relation to test
     private List<Student> classMates;
 
-    private List<Task> hiddenRelation;
+    private List<Task> unmarkedRelation;
 
   }
 
