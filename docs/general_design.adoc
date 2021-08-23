@@ -95,7 +95,7 @@ The Mapping Layer needs to distinguish between relations and attributes when rea
     private StudentDto normalRelation;
 
     // This is also a relation ( different data types between DTO/Entity but with a related entity )
-    private List<TaskDTO> hiddenRelation;
+    private List<TaskDTO> anotherRelation;
 
     @JsonApiExternalRelation(type = "agent")
     @JsonApiRelation // External Relations always map between ExternalRelationDto and UUID
@@ -107,7 +107,7 @@ The Mapping Layer needs to distinguish between relations and attributes when rea
 
     private Student normalRelation; // normal relation
 
-    private List<Task> hiddenRelation; // normal relation
+    private List<Task> anotherRelation; // normal relation
 
     private UUID externalRelation; // External Relations
   }
