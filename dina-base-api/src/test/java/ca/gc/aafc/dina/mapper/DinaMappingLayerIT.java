@@ -51,24 +51,9 @@ public class DinaMappingLayerIT {
 
   private DinaMappingLayer<ProjectDTO, Project> mappingLayer;
 
-  private Task persistedTask;
-  private Person randomPerson;
-
   @BeforeEach
   void setUp() {
-    mappingLayer = new DinaMappingLayer<>(
-      ProjectDTO.class, service, new DinaMapper<>(ProjectDTO.class));
-    persistedTask = Task.builder()
-      .uuid(UUID.randomUUID())
-      .powerLevel(RandomUtils.nextInt())
-      .build();
-    randomPerson = Person.builder()
-      .uuid(UUID.randomUUID())
-      .name(RandomStringUtils.randomAlphabetic(4))
-      .build();
-    service.create(persistedTask);
-    personDefaultDinaService.create(randomPerson);
-    Assertions.assertNotNull(service.findOne(persistedTask.getUuid(), Task.class));
+    mappingLayer = new DinaMappingLayer<>(ProjectDTO.class, service, new DinaMapper<>(ProjectDTO.class));
   }
 
   @Test
@@ -106,6 +91,7 @@ public class DinaMappingLayerIT {
 
   @Test
   void mapEntitiesToDto_WhenRelationIncluded_RelationFullyMapped() {
+    Person randomPerson = persistPerson();
     Task expectedTask = newTask();
 
     Project entity1 = newProject();
@@ -125,7 +111,8 @@ public class DinaMappingLayerIT {
     Assertions.assertEquals(expectedTask.getUuid(), results.get(0).getTask().getUuid());
     Assertions.assertEquals(expectedTask.getPowerLevel(), results.get(0).getTask().getPowerLevel());
     Assertions.assertNull(results.get(1).getTask());
-    Assertions.assertEquals(entity1.getRandomPeople().get(0).getName(),
+    Assertions.assertEquals(
+      entity1.getRandomPeople().get(0).getName(),
       results.get(0).getRandomPeople().get(0).getName());
   }
 
@@ -155,6 +142,9 @@ public class DinaMappingLayerIT {
 
   @Test
   void mapToEntity_WithRelations_RelationsMapped() {
+    Person randomPerson = persistPerson();
+    Task persistedTask = service.create(newTask());
+
     ProjectDTO dto = newProjectDto();
     dto.setTask(TaskDTO.builder().uuid(persistedTask.getUuid()).build());
     dto.setAcMetaDataCreator(ExternalRelationDto.builder().id(UUID.randomUUID().toString())
@@ -175,7 +165,8 @@ public class DinaMappingLayerIT {
     Assertions.assertEquals(persistedTask.getUuid(), result.getTask().getUuid());
     Assertions.assertEquals(persistedTask.getPowerLevel(), result.getTask().getPowerLevel(),
       "Internal Relation should of been linked");
-    Assertions.assertEquals(dto.getRandomPeople().get(0).getUuid(),
+    Assertions.assertEquals(
+      dto.getRandomPeople().get(0).getUuid(),
       result.getRandomPeople().get(0).getUuid());
   }
 
@@ -230,6 +221,13 @@ public class DinaMappingLayerIT {
       .powerLevel(RandomUtils.nextInt())
       .uuid(UUID.randomUUID())
       .build();
+  }
+
+  private Person persistPerson() {
+    return personDefaultDinaService.create(Person.builder()
+      .uuid(UUID.randomUUID())
+      .name(RandomStringUtils.randomAlphabetic(4))
+      .build());
   }
 
   @TestConfiguration
