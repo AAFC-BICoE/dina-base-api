@@ -14,6 +14,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,7 +24,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Registry to track information regarding a given resource class. Useful to obtain certain meta information
@@ -88,22 +89,22 @@ public class DinaMappingRegistry {
     Set<String> attributes = new HashSet<>();
     Set<InternalRelation> internalRelations = new HashSet<>();
 
-    for (Field field : resourceClass.getDeclaredFields()) {
-      if (isMappableRelation(resourceClass, entityClass, field)) {
+    for (Field dtoField : getAllFields(new ArrayList<>(), resourceClass)) {
+      if (isMappableRelation(resourceClass, entityClass, dtoField)) {
         // If relation register and traverse graph
-        internalRelations.add(mapToInternalRelation(field));
-        graph.putAll(initGraph(parseGenericTypeForField(field), visited));
-      } else if (isFieldConsideredAnAttribute(resourceClass, entityClass, field)) {
-        if (fieldHasSameDataType(resourceClass, entityClass, field.getName())) {
-          // Un marked field with same data type considered attribute
-          attributes.add(field.getName());
+        internalRelations.add(mapToInternalRelation(dtoField));
+        graph.putAll(initGraph(parseGenericTypeForField(dtoField), visited));
+      } else if (isFieldConsideredAnAttribute(resourceClass, entityClass, dtoField)) {
+        if (fieldHasSameDataType(entityClass, dtoField)) {
+          // Un marked dtoField with same data type considered attribute
+          attributes.add(dtoField.getName());
         } else {
-          // Un marked field without the same data type but have a related entity are considered a hidden relation
-          if (!parseGenericTypeForField(field).isAnnotationPresent(RelatedEntity.class)) {
-            throwDataTypeMismatchException(resourceClass, entityClass, field.getName());
+          // Un marked dtoField without the same data type but have a related entity are considered a hidden relation
+          if (!parseGenericTypeForField(dtoField).isAnnotationPresent(RelatedEntity.class)) {
+            throwDataTypeMismatchException(resourceClass, entityClass, dtoField.getName());
           } else {
-            internalRelations.add(mapToInternalRelation(field));
-            graph.putAll(initGraph(parseGenericTypeForField(field), visited));
+            internalRelations.add(mapToInternalRelation(dtoField));
+            graph.putAll(initGraph(parseGenericTypeForField(dtoField), visited));
           }
         }
       }
@@ -289,22 +290,30 @@ public class DinaMappingRegistry {
   }
 
   private static boolean fieldExistsInBothClasses(Class<?> dtoClass, Class<?> entityClass, String fieldName) {
-    return Stream.of(dtoClass.getDeclaredFields()).anyMatch(field -> fieldName.equals(field.getName()))
-      && Stream.of(entityClass.getDeclaredFields()).anyMatch(field -> fieldName.equals(field.getName()));
+    return getAllFields(new ArrayList<>(), dtoClass).stream()
+      .anyMatch(field -> fieldName.equals(field.getName()))
+      && getAllFields(new ArrayList<>(), entityClass).stream()
+      .anyMatch(field -> fieldName.equals(field.getName()));
   }
 
   @SneakyThrows
-  private static boolean fieldHasSameDataType(Class<?> dtoClass, Class<?> entityClass, String fieldName) {
-    Field dtoClassDeclaredField = dtoClass.getDeclaredField(fieldName);
-    Type typeOnDto = dtoClassDeclaredField.getGenericType();
-    Field entityClassDeclaredField = entityClass.getDeclaredField(fieldName);
+  private static boolean fieldHasSameDataType(Class<?> entityClass, Field dtoField) {
+    Field entityClassDeclaredField = getAllFields(new ArrayList<>(), entityClass).stream()
+      .filter(f -> f.getName().equals(dtoField.getName()))
+      .findFirst()
+      .orElse(null);
 
+    if (entityClassDeclaredField == null) {
+      return false;
+    }
+
+    Type typeOnDto = dtoField.getGenericType();
     if (!entityClassDeclaredField.getGenericType().equals(typeOnDto)) { // Data types must match!
       return false;
     }
 
     if (typeOnDto instanceof ParameterizedType) { // If parameterized generic type must match
-      return parseGenericTypeForField(dtoClassDeclaredField)
+      return parseGenericTypeForField(dtoField)
         .equals(parseGenericTypeForField(entityClassDeclaredField));
     }
     return true;
@@ -319,7 +328,7 @@ public class DinaMappingRegistry {
   }
 
   private static String parseJsonIdFieldName(Class<?> resourceClass) {
-    for (Field field : FieldUtils.getAllFieldsList(resourceClass)) {
+    for (Field field : getAllFields(new ArrayList<>(), resourceClass)) {
       if (field.isAnnotationPresent(JsonApiId.class)) {
         return field.getName();
       }
@@ -342,6 +351,16 @@ public class DinaMappingRegistry {
       .jsonIdFieldName(parseJsonIdFieldName(resourceClass))
       .fieldAdapterHandler(new DinaFieldAdapterHandler<>(resourceClass))
       .build();
+  }
+
+  public static List<Field> getAllFields(List<Field> fields, Class<?> type) {
+    fields.addAll(Arrays.asList(type.getDeclaredFields()));
+
+    if (type.getSuperclass() != null) {
+      getAllFields(fields, type.getSuperclass());
+    }
+
+    return fields;
   }
 
   private void checkClassTracked(Class<?> cls) {

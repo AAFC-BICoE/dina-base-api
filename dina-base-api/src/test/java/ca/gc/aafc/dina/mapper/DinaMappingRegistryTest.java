@@ -2,12 +2,14 @@ package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
+import ca.gc.aafc.dina.dto.InheritedDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.dto.TaskDTO;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
+import ca.gc.aafc.dina.entity.Inherited;
 import ca.gc.aafc.dina.entity.Person;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.AllArgsConstructor;
@@ -39,6 +41,14 @@ public class DinaMappingRegistryTest {
     DinaMappingRegistry registry = new DinaMappingRegistry(ProjectDTO.class);
     Assertions.assertEquals("uuid", registry.findJsonIdFieldName(ProjectDTO.class));
     Assertions.assertEquals("uuid", registry.findJsonIdFieldName(TaskDTO.class));
+  }
+
+  @Test
+  void getAttributePerClass_WhenAttributesInherited() {
+    DinaMappingRegistry registry = new DinaMappingRegistry(InheritedDto.class);
+    String expectedField = "Inherited";
+    Assertions.assertTrue(registry.getAttributesPerClass().get(InheritedDto.class).contains(expectedField));
+    Assertions.assertTrue(registry.getAttributesPerClass().get(Inherited.class).contains(expectedField));
   }
 
   @Test
