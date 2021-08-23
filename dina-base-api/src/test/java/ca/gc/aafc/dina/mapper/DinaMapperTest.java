@@ -71,7 +71,7 @@ public class DinaMapperTest {
     }
     // Assert custom fields mapped
     assertStudentCustomFields(entity, dto);
-    // Assert hidden relation mapped
+    // Assert unmarked related entity mapped
     assertEquals(hidden.getPowerLevel(), dto.getUnmarkedRelation().get(0).getPowerLevel());
   }
 
@@ -505,7 +505,7 @@ public class DinaMapperTest {
     @JsonApiRelation
     private NoRelatedEntityDTO noRelatedEntityDTO;
 
-    // Hidden relation is like an attribute but does not map to same type and has Related entity
+    // unmarked maps to Related entity
     private List<TaskDTO> unmarkedRelation;
 
   }
