@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.repository.meta;
 
 import ca.gc.aafc.dina.mapper.IgnoreDinaMapping;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.crnk.core.resource.annotations.JsonApiMetaInformation;
 import io.crnk.core.resource.meta.MetaInformation;
 import lombok.Builder;
@@ -27,7 +28,9 @@ public abstract class AttributeMetaInfoProvider {
   @Builder
   @Getter
   @Setter
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   public static class DinaJsonMetaInfo implements MetaInformation {
+
     private String permissionsProvider;
     private Set<String> permissions;
     private Map<String, Object> warnings;
