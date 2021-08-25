@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +38,7 @@ public abstract class AttributeMetaInfoProvider {
 
     public void setWarning(String warningKey, Object warningValue) {
       if (warnings == null) {
-        warnings = new HashMap<>();
+        warnings = Collections.emptyMap();
       }
       this.warnings.put(warningKey, warningValue);
     }
