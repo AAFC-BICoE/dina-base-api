@@ -42,4 +42,13 @@ public class WorkbookConverterIT {
       assertEquals(1, content.get(0).getRowNumber());
     }
   }
+
+  @Test
+  public void workbookConverter_onValidFileWithFormatting_ExpectedContentConverted() throws IOException {
+    try (InputStream is = WorkbookConverterIT.class.getClassLoader()
+        .getResourceAsStream("styled_spreadsheet.xlsx")) {
+      List<WorkbookConverter.WorkbookRow> content = WorkbookConverter.convert(is);
+      assertEquals(49, content.size());
+    }
+  }
 }

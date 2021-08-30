@@ -45,9 +45,9 @@ public final class WorkbookConverter {
     List<WorkbookRow> sheetContent = new ArrayList<>();
     Workbook book = WorkbookFactory.create(in);
     Sheet sheet = book.getSheetAt(0); // only convert sheet 0
-    
+
     for (Row row : sheet) {
-      String[] content = new String[row.getLastCellNum()];
+      String[] content = new String[row.getLastCellNum() > 0 ? row.getLastCellNum() : 0];
       for (int i = 0; i < row.getLastCellNum(); i++) {
         // do not include null in the content array, use empty string instead.
         content[i] = Objects.toString(SpreadsheetHelper.getCellAsString(row.getCell(i)), "");
