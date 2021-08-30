@@ -353,7 +353,7 @@ public class DinaMappingRegistry {
       .build();
   }
 
-  public static List<Field> getAllFields(List<Field> fields, Class<?> type) {
+  private static List<Field> getAllFields(List<Field> fields, Class<?> type) {
     fields.addAll(Arrays.asList(type.getDeclaredFields()));
 
     if (type.getSuperclass() != null) {
