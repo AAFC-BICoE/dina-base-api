@@ -3,8 +3,10 @@ package ca.gc.aafc.dina.mapper;
 import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
+import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.TaskDTO;
+import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.entity.Project;
 import ca.gc.aafc.dina.entity.Task;
 import ca.gc.aafc.dina.jpa.BaseDAO;
@@ -44,20 +46,14 @@ public class DinaMappingLayerIT {
   @Inject
   private DefaultDinaService<Task> service;
 
-  private DinaMappingLayer<ProjectDTO, Project> mappingLayer;
+  @Inject
+  private DefaultDinaService<Person> personDefaultDinaService;
 
-  private Task persistedTask;
+  private DinaMappingLayer<ProjectDTO, Project> mappingLayer;
 
   @BeforeEach
   void setUp() {
-    mappingLayer = new DinaMappingLayer<>(
-      ProjectDTO.class, service, new DinaMapper<>(ProjectDTO.class));
-    persistedTask = Task.builder()
-      .uuid(UUID.randomUUID())
-      .powerLevel(RandomUtils.nextInt())
-      .build();
-    service.create(persistedTask);
-    Assertions.assertNotNull(service.findOne(persistedTask.getUuid(), Task.class));
+    mappingLayer = new DinaMappingLayer<>(ProjectDTO.class, service, new DinaMapper<>(ProjectDTO.class));
   }
 
   @Test
@@ -95,14 +91,17 @@ public class DinaMappingLayerIT {
 
   @Test
   void mapEntitiesToDto_WhenRelationIncluded_RelationFullyMapped() {
+    Person randomPerson = persistPerson();
     Task expectedTask = newTask();
 
     Project entity1 = newProject();
     entity1.setTask(expectedTask);
+    entity1.setRandomPeople(List.of(randomPerson));
     Project entity2 = newProject();
 
     QuerySpec query = new QuerySpec(ProjectDTO.class);
     query.includeRelation(PathSpec.of("task"));
+    query.includeRelation(PathSpec.of("randomPeople"));
     List<ProjectDTO> results = mappingLayer.mapEntitiesToDto(
       query,
       Arrays.asList(entity1, entity2));
@@ -112,6 +111,9 @@ public class DinaMappingLayerIT {
     Assertions.assertEquals(expectedTask.getUuid(), results.get(0).getTask().getUuid());
     Assertions.assertEquals(expectedTask.getPowerLevel(), results.get(0).getTask().getPowerLevel());
     Assertions.assertNull(results.get(1).getTask());
+    Assertions.assertEquals(
+      entity1.getRandomPeople().get(0).getName(),
+      results.get(0).getRandomPeople().get(0).getName());
   }
 
   @Test
@@ -140,11 +142,15 @@ public class DinaMappingLayerIT {
 
   @Test
   void mapToEntity_WithRelations_RelationsMapped() {
+    Person randomPerson = persistPerson();
+    Task persistedTask = service.create(newTask());
+
     ProjectDTO dto = newProjectDto();
     dto.setTask(TaskDTO.builder().uuid(persistedTask.getUuid()).build());
     dto.setAcMetaDataCreator(ExternalRelationDto.builder().id(UUID.randomUUID().toString())
       .build());
     dto.setOriginalAuthor(ExternalRelationDto.builder().id(UUID.randomUUID().toString()).build());
+    dto.setRandomPeople(List.of(PersonDTO.builder().uuid(randomPerson.getUuid()).build()));
 
     Project result = new Project();
     mappingLayer.mapToEntity(dto, result);
@@ -159,6 +165,9 @@ public class DinaMappingLayerIT {
     Assertions.assertEquals(persistedTask.getUuid(), result.getTask().getUuid());
     Assertions.assertEquals(persistedTask.getPowerLevel(), result.getTask().getPowerLevel(),
       "Internal Relation should of been linked");
+    Assertions.assertEquals(
+      dto.getRandomPeople().get(0).getUuid(),
+      result.getRandomPeople().get(0).getUuid());
   }
 
   private static void validateProjectAttributes(ProjectDTO dto, Project result) {
@@ -214,12 +223,18 @@ public class DinaMappingLayerIT {
       .build();
   }
 
+  private Person persistPerson() {
+    return personDefaultDinaService.create(Person.builder()
+      .uuid(UUID.randomUUID())
+      .name(RandomStringUtils.randomAlphabetic(4))
+      .build());
+  }
+
   @TestConfiguration
   @Import(ExternalResourceProviderImplementation.class)
   static class DinaMappingLayerITITConfig {
     @Bean
     public DinaRepository<ProjectDTO, Project> projectRepo(
-      BaseDAO baseDAO,
       ExternalResourceProvider externalResourceProvider,
       BuildProperties buildProperties,
       ProjectDinaService projectDinaService
@@ -239,7 +254,6 @@ public class DinaMappingLayerIT {
 
     @Bean
     public DinaRepository<TaskDTO, Task> taskRepo(
-      BaseDAO baseDAO,
       ExternalResourceProvider externalResourceProvider,
       BuildProperties buildProperties,
       TaskDinaService taskDinaService
@@ -258,7 +272,7 @@ public class DinaMappingLayerIT {
     }
 
     @Service
-    class ProjectDinaService extends DefaultDinaService<Project> {
+    static class ProjectDinaService extends DefaultDinaService<Project> {
   
       public ProjectDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
         super(baseDAO, sv);
@@ -267,7 +281,7 @@ public class DinaMappingLayerIT {
   
     
     @Service
-    class TaskDinaService extends DefaultDinaService<Task> {
+    static class TaskDinaService extends DefaultDinaService<Task> {
   
       public TaskDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
         super(baseDAO, sv);

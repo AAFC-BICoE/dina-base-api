@@ -36,11 +36,103 @@ include::layers.plantuml[]
 
 * Should be used for typical pre-persist, pre-update, and pre-delete operations when they can be applied.
 
-=== Mapper Layer
-* Responsible for mapping entities to their DTO equivalents and vice versa.
-* These are simple field to field bean mapping operations that can be extended to apply custom field mappings for specific fields.
-* Mappers have mechanisms in place to allow for the exclusion of fields and/or relationships during the mapping process.
-* Mappers should not communicate with the service layer to map relations directly.
+=== Mapping Layer
+
+The Mapping Layer refers to layer that is responsible for mapping the values of a Resource between its entity and Dto class.
+
+The Mapping Layer involves three main components:
+
+* The DinaMappingRegistry which tracks all the needed information for a Resources domain
+* The DinaMappingLayer which is responsible for mapping a dto to an entity and vice versa using the mapping registry and the DinaMapper. The DinaMappingLayer is also responsible for handling external relations, and will link internal relations to database backed equivalents.
+* The DinaMapper which is responsible for recursive bean to bean mapping for the entire resource graph which can be extended to apply custom field mappings for specific fields.
+** Mapper has mechanisms in place to allow for the exclusion of fields and/or relationships during the mapping process.
+** Mappers should not communicate with the service layer to map relations directly.
+
+.Mapping Layer Overview
+[plantuml, target=MappingOverview, format=svg, align="center"]
+----
+include::plantumls/MappingOverview.puml[]
+----
+
+=== Mapping Layer concepts
+When mapping between an entity and a Dto, each field needs to transferred from one object to another. However, the values do not map directly.
+
+==== Resource Graph
+All of the attributes of a resource can be mapped directly however the resources associations with other resources must also be mapped between their own DTO/entity equivalents.
+
+These associations are referred to as relations.
+
+.Simple Mapping Operation
+[plantuml, target=SimpleMappingOperation, format=svg, align="center"]
+----
+include::plantumls/SimpleMappingOperation.puml[]
+----
+
+You can visualize a resource and all of it's associations as a graph.
+
+.Resource Graph Visualization
+[plantuml, target=ResourceGraphVisualization, format=svg, align="center"]
+----
+include::plantumls/ResourceGraphVisualization.puml[]
+----
+
+If ResourceA has a ResourceB, ResourceB has a ResourceC, and ResourceC has a ResourceA, they each need to mapped appropriately when mapping ResourceA
+
+The Mapping Layer needs to distinguish between relations and attributes when reading the associated java classes.
+
+==== Relation
+* A relation is a field that is marked as a `@JsonApiRelation` on The DTO and is not marked with `@IgnoreDinaMapping`.
+* These fields are not mapped directly instead the values themselves must also be mapped and transferred.
+* A relation is considered internal unless marked with `@JsonApiExternalRelation`.
+* External relations represent an association with a resource in a separate module and will not be mapped to their database equivalent.
+
+.Example Relations
+[java]
+----
+  public static final class StudentDto { // DTO Class
+
+    @JsonApiRelation // Maps to related entity
+    private StudentDto normalRelation;
+
+    // Maps to related entity, un marked
+    private List<TaskDTO> anotherRelation;
+
+    @JsonApiExternalRelation(type = "agent")
+    @JsonApiRelation // External Relations always map between ExternalRelationDto and UUID
+    private ExternalRelationDto externalRelation;
+
+  }
+
+  public static class Student { // Entity Class
+
+    private Student normalRelation; // Maps to related entity
+
+    private List<Task> anotherRelation; // Maps to related entity
+
+    private UUID externalRelation; // External Relations maps to ExternalRelationDto/UUID
+  }
+----
+
+==== Attribute
+* An attribute is a field that is not `@IgnoreDinaMapping` or marked as a relation and will be mapped directly as a value.
+* An attribute must have the same data type on the DTO class and its related entity.
+* A field that is considered an attribute (Unmarked) but has a valid DTO/RelatedEntity mapping between the data types will be considered a relation.
+
+.Example Attribute
+[java]
+----
+  public static final class StudentDto { // DTO Class
+
+    private String name; // attribute, has same data type
+
+  }
+
+  public static class Student { // Entity Class
+
+    private String name; // attribute, has same data type
+
+  }
+----
 
 == Resource Id as UUID
 All database identifiers should be numerical based since it`s efficient and easier to manage at the database level. Even if there is no issue about leaking business information we will still expose UUID instead of the database key in the API. This will give us more flexibility at the database level while reducing potential issues with API users iterating over ids or using a wrong set of ids. Based on the “Inter-module foreign key” module, UUID’s will help detect wrong linkages by making it almost impossible to reuse a key of the wrong resource. Numerical id’s can be reused in different resources (even if this can be solved by using a global sequence) while UUID are more likely to be unique across the system.

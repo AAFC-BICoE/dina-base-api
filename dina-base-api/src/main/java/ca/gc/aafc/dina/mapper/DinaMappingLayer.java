@@ -61,7 +61,7 @@ public class DinaMappingLayer<D, E> {
   public List<D> mapEntitiesToDto(@NonNull QuerySpec query, @NonNull List<E> entities) {
     Set<String> includedRelations = query.getIncludedRelations().stream()
       .map(ir -> ir.getAttributePath().get(0))
-      .filter(Predicate.not(registry::isRelationExternal)).collect(Collectors.toSet());
+      .filter(Predicate.not(s -> registry.isRelationExternal(resourceClass, s))).collect(Collectors.toSet());
 
     Set<DinaMappingRegistry.InternalRelation> shallowRelationsToMap = registry
       .findMappableRelationsForClass(resourceClass)
@@ -134,19 +134,19 @@ public class DinaMappingLayer<D, E> {
    * @param target - target of the mapping
    */
   private void mapExternalRelationsToDto(E source, D target) {
-    registry.getExternalRelations().forEach(external -> {
+    registry.getExternalRelations(resourceClass).forEach(external -> {
       Object id = PropertyUtils.getProperty(source, external);
       if (id != null) {
         if (Collection.class.isAssignableFrom(id.getClass())) {
           PropertyUtils.setProperty(target, external,
             ((Collection<?>) id).stream().map(ids -> ExternalRelationDto.builder()
-              .type(registry.findExternalType(external))
+              .type(registry.findExternalType(resourceClass, external))
               .id(ids.toString())
               .build()).collect(Collectors.toList()));
         } else {
           PropertyUtils.setProperty(target, external,
             ExternalRelationDto.builder()
-              .type(registry.findExternalType(external))
+              .type(registry.findExternalType(resourceClass, external))
               .id(id.toString())
               .build());
         }
@@ -163,10 +163,10 @@ public class DinaMappingLayer<D, E> {
    * @param target - target of the mapping
    */
   private void mapExternalRelationsToEntity(D source, E target) {
-    registry.getExternalRelations().forEach(external -> {
+    registry.getExternalRelations(resourceClass).forEach(external -> {
       Object externalRelation = PropertyUtils.getProperty(source, external);
       if (externalRelation != null) {
-        String jsonIdFieldName = registry.findJsonIdFieldName(ExternalRelationDto.class);
+        String jsonIdFieldName = ExternalRelationDto.ID_FIELD_NAME;
         if (Collection.class.isAssignableFrom(externalRelation.getClass())) {
           PropertyUtils.setProperty(target, external,
             ((Collection<?>) externalRelation).stream()
@@ -229,7 +229,7 @@ public class DinaMappingLayer<D, E> {
   ) {
     for (DinaMappingRegistry.InternalRelation relation : relations) {
       String relationName = relation.getName();
-      Class<?> relationType = relation.getElementType();
+      Class<?> relationType = relation.getDtoType();
       if (relation.isCollection()) {
         Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(
           source, relationName);

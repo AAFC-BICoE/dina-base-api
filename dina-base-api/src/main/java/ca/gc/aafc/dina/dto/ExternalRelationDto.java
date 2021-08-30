@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 public class ExternalRelationDto implements ResourceTypeHolder {
 
   public static final String TYPENAME = "external-relation";
+  public static final String ID_FIELD_NAME = "id";
 
   @JsonApiId
   private String id;

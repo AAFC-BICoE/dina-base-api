@@ -27,7 +27,6 @@ import io.crnk.core.resource.meta.PagedMetaInformation;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -100,7 +99,7 @@ public class DinaRepository<D, E extends DinaEntity>
     }
     this.registry = new DinaMappingRegistry(resourceClass);
     this.mappingLayer = new DinaMappingLayer<>(resourceClass, dinaMapper, dinaService, this.registry);
-    this.hasFieldAdapters = CollectionUtils.isNotEmpty(registry.getFieldAdaptersPerClass().keySet());
+    this.hasFieldAdapters = this.registry.hasFieldAdapters();
   }
 
   /**

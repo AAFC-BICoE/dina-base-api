@@ -54,4 +54,7 @@ public final class ProjectDTO {
   @JsonApiExternalRelation(type = "author")
   @JsonApiRelation
   private List<ExternalRelationDto> authors;
+
+  // list of people but not exposed as relationship
+  private List<PersonDTO> randomPeople;
 }

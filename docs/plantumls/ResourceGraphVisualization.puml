@@ -1,0 +1,14 @@
+@startuml
+class ResourceA
+class ResourceB
+class ResourceC
+
+ResourceA --> ResourceB
+ResourceC --> ResourceA
+ResourceB --> ResourceC
+
+ResourceA : ...various attributes
+ResourceA : ResourceB associationB
+ResourceB : ResourceC associationC
+ResourceC : ResourceA associationA
+@enduml

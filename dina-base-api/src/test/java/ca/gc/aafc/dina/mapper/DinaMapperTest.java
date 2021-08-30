@@ -1,7 +1,9 @@
 package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
+import ca.gc.aafc.dina.dto.TaskDTO;
 import ca.gc.aafc.dina.entity.ComplexObject;
+import ca.gc.aafc.dina.entity.Task;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -47,7 +49,9 @@ public class DinaMapperTest {
   public void simpleToDto_RelationShipTest_RelationsMapped() {
     Student friend = createEntity();
     Student entity = createEntity();
+    Task unmarked = Task.builder().powerLevel(9000).build();
     entity.setFriend(friend);
+    entity.setUnmarkedRelation(List.of(unmarked));
     entity.getClassMates().addAll(Arrays.asList(createEntity(), createEntity(), createEntity()));
 
     StudentDto dto = mapper.toDto(entity);
@@ -67,6 +71,8 @@ public class DinaMapperTest {
     }
     // Assert custom fields mapped
     assertStudentCustomFields(entity, dto);
+    // Assert unmarked related entity mapped
+    assertEquals(unmarked.getPowerLevel(), dto.getUnmarkedRelation().get(0).getPowerLevel());
   }
 
   @Test
@@ -98,6 +104,21 @@ public class DinaMapperTest {
 
     assertEquals(friend.getFriend().getName(), dto.getFriend().getName());
     assertEquals(friend.getFriend().getIq(), dto.getFriend().getIq());
+  }
+
+  @Test
+  public void toDto_UnmarkedRelationShipTest_RelationsMapped() {
+    Task unmarked = Task.builder().powerLevel(9000).build();
+    Student friend = Student.builder().name("Friend").unmarkedRelation(List.of(unmarked)).build();
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
+      Task.class,
+      Set.of("powerLevel"));
+    Set<String> relations = Set.of("unmarkedRelation");
+
+    StudentDto dto = mapper.toDto(friend, selectedFieldPerClass, relations);
+
+    assertEquals(unmarked.getPowerLevel(), dto.getUnmarkedRelation().get(0).getPowerLevel());
   }
 
   @Test
@@ -316,6 +337,22 @@ public class DinaMapperTest {
   }
 
   @Test
+  public void applyDtoToEntity_UnmarkedRelationShipTest_RelationsMapped() {
+    TaskDTO unmarked = TaskDTO.builder().powerLevel(9000).build();
+    StudentDto friend = StudentDto.builder().name("Friend").unmarkedRelation(List.of(unmarked)).build();
+
+    Map<Class<?>, Set<String>> selectedFieldPerClass = Map.of(
+      TaskDTO.class,
+      Set.of("powerLevel"));
+    Set<String> relations = Set.of("unmarkedRelation");
+
+    Student result = new Student();
+    mapper.applyDtoToEntity(friend, result, selectedFieldPerClass, relations);
+
+    assertEquals(unmarked.getPowerLevel(), result.getUnmarkedRelation().get(0).getPowerLevel());
+  }
+
+  @Test
   public void applyDtoToEntity_NothingSelected_NothingMapped() {
     Student result = new Student();
     StudentDto dtoToMap = createDTO();
@@ -468,6 +505,9 @@ public class DinaMapperTest {
     @JsonApiRelation
     private NoRelatedEntityDTO noRelatedEntityDTO;
 
+    // unmarked maps to Related entity
+    private List<TaskDTO> unmarkedRelation;
+
   }
 
   @Data
@@ -493,6 +533,8 @@ public class DinaMapperTest {
 
     // Many to - Relation to test
     private List<Student> classMates;
+
+    private List<Task> unmarkedRelation;
 
   }
 
