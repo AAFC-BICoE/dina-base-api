@@ -13,6 +13,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.dto.HierarchicalObject;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 
 @SpringBootTest(classes = TestDinaBaseApp.class)
