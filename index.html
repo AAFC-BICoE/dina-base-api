@@ -548,7 +548,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div class="imageblock text-center">
 <div class="content">
-<img src="svg.png" alt="svg" width="168" height="325">
+<img src="svg.png" alt="svg" width="175" height="332">
 </div>
 </div>
 <div class="sect3">
@@ -612,22 +612,155 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_mapper_layer">1.1.3. Mapper Layer</h4>
+<h4 id="_mapping_layer">1.1.3. Mapping Layer</h4>
+<div class="paragraph">
+<p>The Mapping Layer refers to layer that is responsible for mapping the values of a Resource between its entity and Dto class.</p>
+</div>
+<div class="paragraph">
+<p>The Mapping Layer involves three main components:</p>
+</div>
 <div class="ulist">
 <ul>
 <li>
-<p>Responsible for mapping entities to their DTO equivalents and vice versa.</p>
+<p>The DinaMappingRegistry which tracks all the needed information for a Resources domain</p>
 </li>
 <li>
-<p>These are simple field to field bean mapping operations that can be extended to apply custom field mappings for specific fields.</p>
+<p>The DinaMappingLayer which is responsible for mapping a dto to an entity and vice versa using the mapping registry and the DinaMapper. The DinaMappingLayer is also responsible for handling external relations, and will link internal relations to database backed equivalents.</p>
 </li>
 <li>
-<p>Mappers have mechanisms in place to allow for the exclusion of fields and/or relationships during the mapping process.</p>
+<p>The DinaMapper which is responsible for recursive bean to bean mapping for the entire resource graph which can be extended to apply custom field mappings for specific fields.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Mapper has mechanisms in place to allow for the exclusion of fields and/or relationships during the mapping process.</p>
 </li>
 <li>
 <p>Mappers should not communicate with the service layer to map relations directly.</p>
 </li>
 </ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="MappingOverview.svg" alt="MappingOverview" width="303" height="206">
+</div>
+<div class="title">Figure 1. Mapping Layer Overview</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_mapping_layer_concepts">1.1.4. Mapping Layer concepts</h4>
+<div class="paragraph">
+<p>When mapping between an entity and a Dto, each field needs to transferred from one object to another. However, the values do not map directly.</p>
+</div>
+<div class="sect4">
+<h5 id="_resource_graph">Resource Graph</h5>
+<div class="paragraph">
+<p>All of the attributes of a resource can be mapped directly however the resources associations with other resources must also be mapped between their own DTO/entity equivalents.</p>
+</div>
+<div class="paragraph">
+<p>These associations are referred to as relations.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="SimpleMappingOperation.svg" alt="SimpleMappingOperation" width="303" height="206">
+</div>
+<div class="title">Figure 2. Simple Mapping Operation</div>
+</div>
+<div class="paragraph">
+<p>You can visualize a resource and all of it&#8217;s associations as a graph.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="ResourceGraphVisualization.svg" alt="ResourceGraphVisualization" width="303" height="206">
+</div>
+<div class="title">Figure 3. Resource Graph Visualization</div>
+</div>
+<div class="paragraph">
+<p>If ResourceA has a ResourceB, ResourceB has a ResourceC, and ResourceC has a ResourceA, they each need to mapped appropriately when mapping ResourceA</p>
+</div>
+<div class="paragraph">
+<p>The Mapping Layer needs to distinguish between relations and attributes when reading the associated java classes.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_relation">Relation</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>A relation is a field that is marked as a <code>@JsonApiRelation</code> on The DTO and is not marked with <code>@IgnoreDinaMapping</code>.</p>
+</li>
+<li>
+<p>These fields are not mapped directly instead the values themselves must also be mapped and transferred.</p>
+</li>
+<li>
+<p>A relation is considered internal unless marked with <code>@JsonApiExternalRelation</code>.</p>
+</li>
+<li>
+<p>External relations represent an association with a resource in a separate module and will not be mapped to their database equivalent.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">Example Relations</div>
+<div class="content">
+<pre>  public static final class StudentDto { // DTO Class
+
+    @JsonApiRelation // Maps to related entity
+    private StudentDto normalRelation;
+
+    // Maps to related entity, un marked
+    private List&lt;TaskDTO&gt; anotherRelation;
+
+    @JsonApiExternalRelation(type = "agent")
+    @JsonApiRelation // External Relations always map between ExternalRelationDto and UUID
+    private ExternalRelationDto externalRelation;
+
+  }
+
+  public static class Student { // Entity Class
+
+    private Student normalRelation; // Maps to related entity
+
+    private List&lt;Task&gt; anotherRelation; // Maps to related entity
+
+    private UUID externalRelation; // External Relations maps to ExternalRelationDto/UUID
+  }</pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_attribute">Attribute</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>An attribute is a field that is not <code>@IgnoreDinaMapping</code> or marked as a relation and will be mapped directly as a value.</p>
+</li>
+<li>
+<p>An attribute must have the same data type on the DTO class and its related entity.</p>
+</li>
+<li>
+<p>A field that is considered an attribute (Unmarked) but has a valid DTO/RelatedEntity mapping between the data types will be considered a relation.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">Example Attribute</div>
+<div class="content">
+<pre>  public static final class StudentDto { // DTO Class
+
+    private String name; // attribute, has same data type
+
+  }
+
+  public static class Student { // Entity Class
+
+    private String name; // attribute, has same data type
+
+  }</pre>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -1049,33 +1182,23 @@ public class CustomAuthorizationService implements DinaAuthorizationService {
 <div class="title">Example Response</div>
 <div class="content">
 <pre class="highlight"><code class="language-json" data-lang="json">{
-  "data": [
-    {
-      "id": "475c1dc4-99c0-4a56-8177-3f00e4f151e1",
-      "type": "person",
-      "links": {
-        "self": "/api/v1/person/475c1dc4-99c0-4a56-8177-3f00e4f151e1"
-      },
-      "meta": {
-        "permissions": [
-            create,
-            update,
-            delete
-        ],
-        "warnings": null
-      },
-      "attributes": {
-        ... // shortened
-        ]
-      },
-      "relationships": {
-        ... // shortened
+   "data":[
+      {
+         "id":"475c1dc4-99c0-4a56-8177-3f00e4f151e1",
+         "type":"person",
+         "meta":{
+            "permissionsProvider":"SpecialAuthServiceUnderTest",
+            "permissions":[
+               "create",
+               "update"
+            ],
+            "warnings":null
+         },
+         "attributes":{
+            "name":"jim"
+         }
       }
-    }
-  ],
-  "meta": {
-    ... // shortened
-  }
+   ]
 }</code></pre>
 </div>
 </div>
@@ -1644,7 +1767,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-08-17 17:14:14 UTC
+Last updated 2021-08-30 15:22:31 UTC
 </div>
 </div>
 </body>

@@ -1,0 +1,37 @@
+@startuml
+note "Mapping Resource A" as N1
+
+class Resource_A_EntityClass {
+int attribute1
+Resource_B_EntityClass ResourceB
+}
+
+class Resource_A_ResourceClass {
+int attribute1
+Resource_B_ResourceClass ResourceB
+}
+
+class Resource_B_EntityClass {
+int attribute1
+}
+
+class Resource_B_ResourceClass {
+int attribute1
+}
+
+
+Resource_A_EntityClass <-> Resource_A_ResourceClass
+
+note on link: Attributes can be mapped directly as values
+
+Resource_B_EntityClass <-> Resource_B_ResourceClass
+
+note on link: A relation will need to be mapped before transfer
+
+Resource_A_EntityClass -- Resource_B_EntityClass
+Resource_A_ResourceClass -- Resource_B_ResourceClass
+
+N1 .. Resource_A_EntityClass
+N1 .. Resource_A_ResourceClass
+
+@enduml
