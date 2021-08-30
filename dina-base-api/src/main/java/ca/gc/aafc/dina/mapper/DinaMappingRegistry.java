@@ -89,7 +89,7 @@ public class DinaMappingRegistry {
     Set<String> attributes = new HashSet<>();
     Set<InternalRelation> internalRelations = new HashSet<>();
 
-    for (Field dtoField : getAllFields(new ArrayList<>(), resourceClass)) {
+    for (Field dtoField : getAllFields(resourceClass)) {
       if (isMappableRelation(resourceClass, entityClass, dtoField)) {
         // If relation register and traverse graph
         internalRelations.add(mapToInternalRelation(dtoField));
@@ -290,15 +290,13 @@ public class DinaMappingRegistry {
   }
 
   private static boolean fieldExistsInBothClasses(Class<?> dtoClass, Class<?> entityClass, String fieldName) {
-    return getAllFields(new ArrayList<>(), dtoClass).stream()
-      .anyMatch(field -> fieldName.equals(field.getName()))
-      && getAllFields(new ArrayList<>(), entityClass).stream()
-      .anyMatch(field -> fieldName.equals(field.getName()));
+    return getAllFields(dtoClass).stream().anyMatch(field -> fieldName.equals(field.getName()))
+      && getAllFields(entityClass).stream().anyMatch(field -> fieldName.equals(field.getName()));
   }
 
   @SneakyThrows
   private static boolean fieldHasSameDataType(Class<?> entityClass, Field dtoField) {
-    Field entityClassDeclaredField = getAllFields(new ArrayList<>(), entityClass).stream()
+    Field entityClassDeclaredField = getAllFields(entityClass).stream()
       .filter(f -> f.getName().equals(dtoField.getName()))
       .findFirst()
       .orElse(null);
@@ -328,7 +326,7 @@ public class DinaMappingRegistry {
   }
 
   private static String parseJsonIdFieldName(Class<?> resourceClass) {
-    for (Field field : getAllFields(new ArrayList<>(), resourceClass)) {
+    for (Field field : getAllFields(resourceClass)) {
       if (field.isAnnotationPresent(JsonApiId.class)) {
         return field.getName();
       }
@@ -353,11 +351,11 @@ public class DinaMappingRegistry {
       .build();
   }
 
-  private static List<Field> getAllFields(List<Field> fields, Class<?> type) {
-    fields.addAll(Arrays.asList(type.getDeclaredFields()));
+  private static List<Field> getAllFields(Class<?> type) {
+    List<Field> fields = new ArrayList<>(Arrays.asList(type.getDeclaredFields()));
 
     if (type.getSuperclass() != null) {
-      getAllFields(fields, type.getSuperclass());
+      fields.addAll(getAllFields(type.getSuperclass()));
     }
 
     return fields;
