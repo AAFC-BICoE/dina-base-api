@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.service;
 
 import java.util.List;
 
+import ca.gc.aafc.dina.dto.HierarchicalObject;
 import ca.gc.aafc.dina.mybatis.UUIDTypeHandler;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
