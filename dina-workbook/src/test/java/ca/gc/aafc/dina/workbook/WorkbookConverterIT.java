@@ -30,6 +30,25 @@ public class WorkbookConverterIT {
       assertFalse(jsonStr.contains("null"));
 
     }
+  }
 
+  @Test
+  public void workbookConverter_onValidFileWithEmptyLine_ExpectedContentConverted() throws IOException {
+    try (InputStream is = WorkbookConverterIT.class.getClassLoader()
+        .getResourceAsStream("empty_first_row.xlsx")) {
+      List<WorkbookConverter.WorkbookRow> content = WorkbookConverter.convert(is);
+      assertEquals(3, content.size());
+      assertEquals("test1", content.get(0).getContent()[0]);
+      assertEquals(1, content.get(0).getRowNumber());
+    }
+  }
+
+  @Test
+  public void workbookConverter_onValidFileWithFormatting_ExpectedContentConverted() throws IOException {
+    try (InputStream is = WorkbookConverterIT.class.getClassLoader()
+        .getResourceAsStream("styled_spreadsheet.xlsx")) {
+      List<WorkbookConverter.WorkbookRow> content = WorkbookConverter.convert(is);
+      assertEquals(49, content.size());
+    }
   }
 }

@@ -46,13 +46,9 @@ public final class WorkbookConverter {
     Workbook book = WorkbookFactory.create(in);
     Sheet sheet = book.getSheetAt(0); // only convert sheet 0
 
-    // The number of column is evaluated from the first row
-    Row firstRow = sheet.getRow(0);
-    short expectedNumberOfColumn = firstRow.getLastCellNum();
-
     for (Row row : sheet) {
-      String[] content = new String[expectedNumberOfColumn];
-      for (int i = 0; i < expectedNumberOfColumn; i++) {
+      String[] content = new String[row.getLastCellNum() > 0 ? row.getLastCellNum() : 0];
+      for (int i = 0; i < row.getLastCellNum(); i++) {
         // do not include null in the content array, use empty string instead.
         content[i] = Objects.toString(SpreadsheetHelper.getCellAsString(row.getCell(i)), "");
       }
