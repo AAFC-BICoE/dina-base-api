@@ -16,6 +16,7 @@ import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.validation.ValidationException;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
 
@@ -35,6 +36,29 @@ public class ManagedAttributeValueValidatorTest {
   private ManagedAttributeValueValidator<ManagedAttributeServiceIT.TestManagedAttribute> validatorUnderTest;
 
   private ManagedAttributeServiceIT.TestManagedAttribute testManagedAttribute;
+
+  @Test
+  void validate_WhenValidDateType_NoExceptionThrown() {
+    testManagedAttribute = testManagedAttributeService.create(ManagedAttributeServiceIT.TestManagedAttribute.builder().
+      name(RandomStringUtils.randomAlphabetic(6))
+      .managedAttributeType(ManagedAttribute.ManagedAttributeType.DATE)
+      .build());
+
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), LocalDate.now().toString());
+    validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"1.2", "", "  ", "\t", "\n", "a"})
+  void validate_WhenInvalidDateType_ExceptionThrown(String value) {
+    testManagedAttribute = testManagedAttributeService.create(ManagedAttributeServiceIT.TestManagedAttribute.builder().
+      name(RandomStringUtils.randomAlphabetic(6))
+      .managedAttributeType(ManagedAttribute.ManagedAttributeType.DATE)
+      .build());
+
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), value);
+    assertThrows(ValidationException.class, () -> validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav));
+  }
 
   @Test
   void validate_WhenValidStringType_NoExceptionThrown() {
