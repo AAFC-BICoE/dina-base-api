@@ -49,7 +49,7 @@ public class ManagedAttributeValueValidatorTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"1.2", "", "  ", "\t", "\n", "a"})
+  @ValueSource(strings = {"1.2", "", "  ", "\t", "\n", "a", "99-02-01", "11-23-2020", "11-1999-01", "01-01-01"})
   void validate_WhenInvalidDateType_ExceptionThrown(String value) {
     testManagedAttribute = testManagedAttributeService.create(ManagedAttributeServiceIT.TestManagedAttribute.builder().
       name(RandomStringUtils.randomAlphabetic(6))
