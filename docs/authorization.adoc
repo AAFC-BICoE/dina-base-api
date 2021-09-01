@@ -81,6 +81,23 @@ You can have permissions for three types of operations as evaluated by the dina 
 
 When keycloak is enabled you can send a GET request and view your permissions for an object.
 
+*Step 1 - Setup your resource*
+
+Your resource DTO must extend the `AttributeMetaInfoProvider`.
+
+.Example AttributeMetaInfoProvider
+[source, java]
+----
+  public static class ThingDTO extends AttributeMetaInfoProvider {
+    @JsonApiId
+    private Integer id;
+    private UUID uuid;
+    private String name;
+  }
+----
+
+*Step 2 - Send your request with `include-dina-permission`*
+
 Send a GET request to a resource and add the Header `include-dina-permission` to your HTTP request.
 
 .Example Response
