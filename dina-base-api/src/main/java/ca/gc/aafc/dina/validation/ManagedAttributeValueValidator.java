@@ -85,7 +85,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
       String assignedValue = attributesAndValues.get(key);
 
       if(preValidateValue(ma, assignedValue, errors, validationContext)) {
-        if(maType == ManagedAttributeType.DATE && isNotValidDate(assignedValue)){
+        if (maType == ManagedAttributeType.DATE && isNotValidDate(assignedValue)) {
           errors.reject(MANAGED_ATTRIBUTE_INVALID_VALUE,
             getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
         }
