@@ -7,7 +7,7 @@ package ca.gc.aafc.dina.entity;
 public interface ManagedAttribute extends DinaEntity {
 
   enum ManagedAttributeType {
-    INTEGER, STRING
+    INTEGER, STRING, DATE
   }
 
   String getName();

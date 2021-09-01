@@ -13,6 +13,8 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import javax.inject.Named;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -83,6 +85,11 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
       String assignedValue = attributesAndValues.get(key);
 
       if(preValidateValue(ma, assignedValue, errors, validationContext)) {
+        if (maType == ManagedAttributeType.DATE && isNotValidDate(assignedValue)) {
+          errors.reject(MANAGED_ATTRIBUTE_INVALID_VALUE,
+            getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
+        }
+
         if (maType == ManagedAttributeType.INTEGER && !INTEGER_PATTERN.matcher(assignedValue).matches()) {
           errors.reject(MANAGED_ATTRIBUTE_INVALID_VALUE,
               getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
@@ -127,6 +134,15 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
   private String getMessageForKey(String key, Object... objects) {
     return messageSource.getMessage(key, objects, LocaleContextHolder.getLocale());
+  }
+
+  private static boolean isNotValidDate(String assignedValue) {
+    try {
+      LocalDate.parse(assignedValue);
+    } catch (DateTimeParseException e) {
+      return true;
+    }
+    return false;
   }
 
 }
