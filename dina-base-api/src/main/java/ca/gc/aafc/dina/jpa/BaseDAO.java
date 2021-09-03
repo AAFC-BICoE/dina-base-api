@@ -226,7 +226,20 @@ public class BaseDAO {
    * @param entity
    */
   public void create(Object entity) {
+    create(entity, false);
+  }
+
+  /**
+   * Save the provided entity.
+   *
+   * @param entity
+   * @param flush should the changes made in the current transaction be flushed immediately to the database
+   */
+  public void create(Object entity, boolean flush) {
     entityManager.persist(entity);
+    if(flush) {
+      entityManager.flush();
+    }
   }
 
   /**

@@ -53,10 +53,31 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    */
   @Override
   public E create(E entity) {
+    return create(entity, false);
+  }
+
+  /**
+   * Persist an instance of the provided entity and flush the content of the current transaction
+   * to the database.
+   *
+   * @param entity entity to persist
+   * @return returns the original entity.
+   */
+  public E createAndFlush(E entity) {
+    return create(entity, true);
+  }
+
+  /**
+   * Private method handling entity create
+   * @param entity
+   * @param flush
+   * @return
+   */
+  private E create(E entity, boolean flush){
     preCreate(entity);
     validateConstraints(entity, OnCreate.class);
     validateBusinessRules(entity);
-    baseDAO.create(entity);
+    baseDAO.create(entity, flush);
     return entity;
   }
 
