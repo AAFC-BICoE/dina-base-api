@@ -73,7 +73,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    * @param flush
    * @return
    */
-  private E create(E entity, boolean flush){
+  private E create(E entity, boolean flush) {
     preCreate(entity);
     validateConstraints(entity, OnCreate.class);
     validateBusinessRules(entity);
