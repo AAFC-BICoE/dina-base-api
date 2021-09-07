@@ -5,11 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 import javax.transaction.Transactional;
 
 import ca.gc.aafc.dina.testsupport.DatabaseSupportService;
@@ -140,6 +143,26 @@ public class BaseDAOIT {
     Department result = baseDAO.findOneByNaturalId(dep.getUuid(), Department.class);
     assertEquals(expectedName, result.getName());
     assertEquals(expectedLocation, result.getLocation());
+  }
+
+  @Test
+  public void create_InvalidEntity_ExceptionThrownWhenFlush() {
+
+    // since the test is using H2 and baseDAO directly we need to set the constraint explicitly
+    dbSupport.runInNewTransaction( em -> {
+      Query q = em.createNativeQuery("ALTER TABLE DEPARTMENT ALTER COLUMN LOCATION SET NOT NULL;");
+      q.executeUpdate();
+    });
+
+    Department newInvalidDep = Department.builder().build();
+    baseDAO.create(newInvalidDep);
+
+    // at the point the INSERT is created but not flushed so the exception would be reported later
+    // in test it would simply not be reported since the transaction would be rolledback
+
+    //create a new one
+    Department newInvalidDep2 = Department.builder().build();
+    assertThrows(PersistenceException.class, () -> baseDAO.create(newInvalidDep2, true));
   }
 
   @Test
