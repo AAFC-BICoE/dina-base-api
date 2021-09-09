@@ -22,6 +22,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Setup Graphviz
+        uses: ts-graphviz/setup-graphviz@v1
+
       - name: Build with Maven
         run: mvn install
 
