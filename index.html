@@ -644,7 +644,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div class="imageblock text-center">
 <div class="content">
-<img src="MappingOverview.svg" alt="MappingOverview" width="303" height="206">
+<img src="MappingOverview.svg" alt="MappingOverview" width="393" height="359">
 </div>
 <div class="title">Figure 1. Mapping Layer Overview</div>
 </div>
@@ -664,7 +664,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div class="imageblock text-center">
 <div class="content">
-<img src="SimpleMappingOperation.svg" alt="SimpleMappingOperation" width="303" height="206">
+<img src="SimpleMappingOperation.svg" alt="SimpleMappingOperation" width="822" height="301">
 </div>
 <div class="title">Figure 2. Simple Mapping Operation</div>
 </div>
@@ -673,7 +673,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div class="imageblock text-center">
 <div class="content">
-<img src="ResourceGraphVisualization.svg" alt="ResourceGraphVisualization" width="303" height="206">
+<img src="ResourceGraphVisualization.svg" alt="ResourceGraphVisualization" width="235" height="336">
 </div>
 <div class="title">Figure 3. Resource Graph Visualization</div>
 </div>
@@ -1174,6 +1174,26 @@ public class CustomAuthorizationService implements DinaAuthorizationService {
 </div>
 <div class="paragraph">
 <p>When keycloak is enabled you can send a GET request and view your permissions for an object.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 1 - Setup your resource</strong></p>
+</div>
+<div class="paragraph">
+<p>Your resource DTO must extend the <code>AttributeMetaInfoProvider</code>.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example AttributeMetaInfoProvider</div>
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">  public static class ThingDTO extends AttributeMetaInfoProvider {
+    @JsonApiId
+    private Integer id;
+    private UUID uuid;
+    private String name;
+  }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Step 2 - Send your request with <code>include-dina-permission</code></strong></p>
 </div>
 <div class="paragraph">
 <p>Send a GET request to a resource and add the Header <code>include-dina-permission</code> to your HTTP request.</p>
@@ -1767,7 +1787,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-08-30 15:22:31 UTC
+Last updated 2021-09-09 15:41:53 UTC
 </div>
 </div>
 </body>
