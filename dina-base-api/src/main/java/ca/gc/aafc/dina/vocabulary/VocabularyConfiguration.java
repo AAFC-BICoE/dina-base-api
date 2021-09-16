@@ -3,10 +3,13 @@ package ca.gc.aafc.dina.vocabulary;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.context.annotation.Configuration;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Configuration
 public class VocabularyConfiguration {
   
   private final Map<String, List<VocabularyElement>> vocabulary;
