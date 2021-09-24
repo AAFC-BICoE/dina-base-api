@@ -22,7 +22,6 @@
     <jackson-datatype-jsr310.version>2.11.0</jackson-datatype-jsr310.version>
     <groovy.version>3.0.6</groovy.version> <!-- Required by rest-assured 4.3 -->
     <rest-assured.version>4.3.2</rest-assured.version>
-    <testcontainers.version>1.15.2</testcontainers.version>
   </properties>
 
   <dependencies>
