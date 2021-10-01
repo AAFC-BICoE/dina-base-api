@@ -35,7 +35,8 @@ public final class WorkbookConverter {
   }
 
   /**
-   * Deprecated: use convertWorkbook or convertSheet
+   * @deprecated use convertWorkbook or convertSheet
+   *
    * Converts the first sheet of a Workbook into a list of WorkbookRow.
    * The method will use the string value of each cells.
    * The entire sheet will be loaded in memory.
