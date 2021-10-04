@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @SuppressFBWarnings({ "EI_EXPOSE_REP", "EI_EXPOSE_REP2" })
@@ -33,6 +35,8 @@ public final class WorkbookConverter {
   }
 
   /**
+   * @deprecated use convertWorkbook or convertSheet
+   *
    * Converts the first sheet of a Workbook into a list of WorkbookRow.
    * The method will use the string value of each cells.
    * The entire sheet will be loaded in memory.
@@ -41,11 +45,45 @@ public final class WorkbookConverter {
    * @return list of all rows or an empty list (never null)
    * @throws IOException
    */
+  @Deprecated
   public static List<WorkbookRow> convert(InputStream in) throws IOException {
-    List<WorkbookRow> sheetContent = new ArrayList<>();
-    Workbook book = WorkbookFactory.create(in);
-    Sheet sheet = book.getSheetAt(0); // only convert sheet 0
+    return convertSheet(in, 0);
+  }
 
+  /**
+   * Converts a Workbook and return a Map where the key is the sheet number (starting at 0) and
+   * the value a list of WorkbookRow.
+   * The method will use the string value of each cells.
+   * The entire workbook will be loaded in memory.
+   * @param in will not be closed by this method
+   * @return map of sheet and list of all rows or an empty map (never null)
+   * @throws IOException
+   */
+  public static Map<Integer, List<WorkbookRow>> convertWorkbook(InputStream in) throws IOException {
+    Map<Integer, List<WorkbookRow>> workbookContent = new HashMap<>();
+    Workbook book = WorkbookFactory.create(in);
+    for (int i = 0; i < book.getNumberOfSheets(); i++) {
+      workbookContent.put(i, convertSheet(book.getSheetAt(i)));
+    }
+    return workbookContent;
+  }
+
+  /**
+   * Converts a specific sheet of a Workbook into a list of WorkbookRow.
+   * The method will use the string value of each cells.
+   * The entire sheet will be loaded in memory.
+   * @param in will not be closed by this method
+   * @param sheetNumber sheet to concert, starts at 0
+   * @return list of all rows or an empty list (never null)
+   * @throws IOException
+   */
+  public static List<WorkbookRow> convertSheet(InputStream in, int sheetNumber) throws IOException {
+    Workbook book = WorkbookFactory.create(in);
+    return convertSheet(book.getSheetAt(sheetNumber));
+  }
+
+  private static List<WorkbookRow> convertSheet(Sheet sheet) {
+    List<WorkbookRow> sheetContent = new ArrayList<>();
     for (Row row : sheet) {
       String[] content = new String[row.getLastCellNum() > 0 ? row.getLastCellNum() : 0];
       for (int i = 0; i < row.getLastCellNum(); i++) {
@@ -58,7 +96,6 @@ public final class WorkbookConverter {
           .build();
       sheetContent.add(currWorkbookRow);
     }
-
     return sheetContent;
   }
 
