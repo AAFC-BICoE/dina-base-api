@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -15,20 +16,32 @@ public class WorkbookConverterIT {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @Test
-  public void workbookConverter_onValidFile_ExpectedContentConverted() throws IOException {
+  public void workbookConverterSheet_onValidFile_ExpectedContentConverted() throws IOException {
 
     try (InputStream is = WorkbookConverterIT.class.getClassLoader()
         .getResourceAsStream("specimenImporterTemplateTest.xlsx")) {
-      List<WorkbookConverter.WorkbookRow> content = WorkbookConverter.convertSheet(is, 0);
+      List<WorkbookConverter.WorkbookRow> sheet = WorkbookConverter.convertSheet(is, 0);
 
-      assertEquals(3, content.size());
-      assertEquals("Collection Code *", content.get(0).getContent()[0]);
+      assertEquals(3, sheet.size());
+      assertEquals("Collection Code *", sheet.get(0).getContent()[0]);
 
-      String jsonStr = OBJECT_MAPPER.writeValueAsString(content);
+      String jsonStr = OBJECT_MAPPER.writeValueAsString(sheet);
 
       //null elements should be included as empty string
       assertFalse(jsonStr.contains("null"));
+    }
+  }
 
+  @Test
+  public void workbookConverterWorkbook_onValidFile_ExpectedContentConverted() throws IOException {
+
+    try (InputStream is = WorkbookConverterIT.class.getClassLoader()
+        .getResourceAsStream("specimenImporterTemplateTest.xlsx")) {
+      Map<Integer, List<WorkbookConverter.WorkbookRow>> workbook = WorkbookConverter.convertWorkbook(is);
+
+      assertEquals(2, workbook.size());
+      assertEquals("Collection Code *", workbook.get(0).get(0).getContent()[0]);
+      assertEquals("sheet", workbook.get(1).get(0).getContent()[0]);
     }
   }
 
