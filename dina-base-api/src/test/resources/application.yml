@@ -11,5 +11,3 @@ embedded.postgresql:
   image: postgis/postgis:12-2.5-alpine
   init-script-file: create-test-data.sql
 
-cors.origins:
-  - github.io

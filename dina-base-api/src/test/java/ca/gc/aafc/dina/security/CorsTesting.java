@@ -12,8 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Integration test making sure CORS configuration are correctly setup.
  */
 @SpringBootTest(
-    classes = TestDinaBaseApp.class,
-    properties = {"dev-user.enabled: true", "keycloak.enabled: false"}
+  classes = TestDinaBaseApp.class,
+  properties = {"dev-user.enabled: true", "keycloak.enabled: false", "cors.origins: git"}
 )
 public class CorsTesting {
 
