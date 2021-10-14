@@ -3,8 +3,6 @@ package ca.gc.aafc.dina.security;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.collections.CollectionUtils;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
