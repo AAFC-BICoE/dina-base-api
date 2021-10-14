@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.security;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,8 +22,8 @@ public class CorsConfiguration {
 
   private final CorsConfig corsConfig;
 
-  //FIXME should have a condition so the bean is only created when cors.origins is not empty
   @Bean
+  @ConditionalOnProperty(name = "cors.origins")
   CorsConfigurationSource corsConfigurationSource() {
     org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
     configuration.setAllowedOrigins(corsConfig.getOrigins());
