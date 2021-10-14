@@ -35,10 +35,5 @@ public class KeycloakDisabledAuthConfig extends WebSecurityConfigurerAdapter {
     http.csrf().disable();
     http.authorizeRequests().antMatchers("/**").permitAll();
   }
-  
-  @Override
-  public void configure(WebSecurity web) throws Exception {
-    web.ignoring().antMatchers("/**");
-  }
 
 }
