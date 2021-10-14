@@ -28,4 +28,17 @@ class CorsConfigurationTest extends BaseRestAssuredTest {
       .get("/person");
     Assertions.assertEquals("foo.example", response.header("Access-Control-Allow-Origin"));
   }
+
+  @Test
+  void onPreflightRequest_AccessControlOptionHeaderReturned() {
+    Response response = given()
+        .header(CRNK_HEADER)
+        .header("Origin", "foo.example")
+        .header("Access-Control-Request-Headers", "authorization")
+        .header("Access-Control-Request-Method","GET")
+        .port(testPort)
+        .basePath(basePath)
+        .options("/person");
+    Assertions.assertEquals("foo.example", response.header("Access-Control-Allow-Origin"));
+  }
 }
