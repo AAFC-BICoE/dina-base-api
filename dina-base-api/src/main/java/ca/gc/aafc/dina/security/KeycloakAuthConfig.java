@@ -19,7 +19,6 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.web.context.annotation.RequestScope;
-import org.springframework.web.cors.CorsConfigurationSource;
 
 import javax.inject.Inject;
 import java.util.Collection;
@@ -34,8 +33,11 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
   private static final String AGENT_IDENTIFIER_CLAIM_KEY = "agent-identifier";
   private static final String GROUPS_CLAIM_KEY = "groups";
 
-  public KeycloakAuthConfig() {
+  private final CorsConfiguration corsConfiguration;
+
+  public KeycloakAuthConfig(CorsConfiguration corsConfiguration) {
     super();
+    this.corsConfiguration = corsConfiguration;
     log.info("KeycloakAuthConfig created");
   }
 
@@ -63,7 +65,9 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     super.configure(http);
 
-    http.cors();
+    if(corsConfiguration.corsEnabled()) {
+      http.cors();
+    }
 
     // Need to disable CSRF for Postman and testing
     http.csrf().disable();
@@ -77,11 +81,6 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
     // should be configurable
     // web.ignoring().antMatchers("/json-schema/**");
     log.debug("Configured WebSecurity");
-  }
-
-  @Bean
-  CorsConfigurationSource corsConfigurationSource() {
-    return CorsConfigurationFactory.buildCorsConfigurationSource();
   }
 
   @Bean
