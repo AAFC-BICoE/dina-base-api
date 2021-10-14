@@ -27,7 +27,6 @@ class CorsConfigurationTest extends BaseRestAssuredTest {
       .basePath(basePath)
       .get("/person");
 
-    response.then().log().all(true);
     Assertions.assertEquals("foo.example", response.header("Access-Control-Allow-Origin"));
   }
 }
