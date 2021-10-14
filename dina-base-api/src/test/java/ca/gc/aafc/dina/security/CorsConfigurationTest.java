@@ -21,12 +21,11 @@ class CorsConfigurationTest extends BaseRestAssuredTest {
   void AccessControlHeaderReturned() {
     Response response = given()
       .header(CRNK_HEADER)
-      .header("host", "bar.other")
-      .header("origin", "foo.example")
+      .header("Host", "bar.other")
+      .header("Origin", "foo.example")
       .port(testPort)
       .basePath(basePath)
       .get("/person");
-
     Assertions.assertEquals("foo.example", response.header("Access-Control-Allow-Origin"));
   }
 }
