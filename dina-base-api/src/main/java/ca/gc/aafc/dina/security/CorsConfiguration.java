@@ -13,9 +13,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Utility method to configure CorsConfigurationSource when required.
- */
 @Configuration
 @AllArgsConstructor
 public class CorsConfiguration {
