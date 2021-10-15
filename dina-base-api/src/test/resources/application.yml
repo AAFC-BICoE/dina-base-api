@@ -10,3 +10,4 @@ embedded.postgresql:
   # Need to specify the version the same as in Production
   image: postgis/postgis:12-2.5-alpine
   init-script-file: create-test-data.sql
+
