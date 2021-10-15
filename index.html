@@ -485,50 +485,55 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_returning_your_permissions_for_an_object">6.3. Returning your permissions for an object</a></li>
 </ul>
 </li>
-<li><a href="#_validation">7. Validation</a>
+<li><a href="#_cors_cross_origin_resource_sharing">7. CORS: Cross-Origin Resource Sharing</a>
 <ul class="sectlevel2">
-<li><a href="#_the_principles">7.1. The Principles</a></li>
-<li><a href="#_implementation">7.2. Implementation</a></li>
+<li><a href="#_enabling_cors">7.1. Enabling CORS</a></li>
 </ul>
 </li>
-<li><a href="#_validation_endpoint">8. Validation Endpoint</a>
+<li><a href="#_validation">8. Validation</a>
 <ul class="sectlevel2">
-<li><a href="#_set_the_configuration_properties">8.1. Set the configuration properties</a></li>
-<li><a href="#_create_a_validation_resource_configuration">8.2. Create a Validation Resource Configuration</a></li>
-<li><a href="#_using_the_endpoint">8.3. Using the Endpoint</a></li>
+<li><a href="#_the_principles">8.1. The Principles</a></li>
+<li><a href="#_implementation">8.2. Implementation</a></li>
 </ul>
 </li>
-<li><a href="#_setting_up_your_dina_repo_for_auditing">9. Setting up your Dina Repo for auditing</a>
+<li><a href="#_validation_endpoint">9. Validation Endpoint</a>
 <ul class="sectlevel2">
-<li><a href="#_prepare_your_dto">9.1. Prepare your DTO</a></li>
-<li><a href="#_pass_the_auditing_service_bean_to_your_dina_repo">9.2. Pass the Auditing service bean to your Dina repo</a></li>
-<li><a href="#_accessing_the_auditing_endpoint">9.3. Accessing the Auditing Endpoint</a></li>
+<li><a href="#_set_the_configuration_properties">9.1. Set the configuration properties</a></li>
+<li><a href="#_create_a_validation_resource_configuration">9.2. Create a Validation Resource Configuration</a></li>
+<li><a href="#_using_the_endpoint">9.3. Using the Endpoint</a></li>
 </ul>
 </li>
-<li><a href="#_external_types_guide">10. External Types Guide</a>
+<li><a href="#_setting_up_your_dina_repo_for_auditing">10. Setting up your Dina Repo for auditing</a>
 <ul class="sectlevel2">
-<li><a href="#_set_up_your_entity">10.1. Set up your entity</a></li>
-<li><a href="#_set_up_your_dto">10.2. Set up your DTO</a></li>
-<li><a href="#_set_up_your_external_resource_provider_component">10.3. Set up your External Resource Provider Component</a></li>
+<li><a href="#_prepare_your_dto">10.1. Prepare your DTO</a></li>
+<li><a href="#_pass_the_auditing_service_bean_to_your_dina_repo">10.2. Pass the Auditing service bean to your Dina repo</a></li>
+<li><a href="#_accessing_the_auditing_endpoint">10.3. Accessing the Auditing Endpoint</a></li>
 </ul>
 </li>
-<li><a href="#_releasing_dina_base_api">11. Releasing dina-base-api</a></li>
-<li><a href="#_field_adapters">12. Field adapters</a>
+<li><a href="#_external_types_guide">11. External Types Guide</a>
 <ul class="sectlevel2">
-<li><a href="#_implement_a_dina_field_adapter_for_the_field">12.1. Implement a Dina Field Adapter for the field.</a></li>
-<li><a href="#_annotate_your_field_with_ignoredinamapping">12.2. Annotate your field with IgnoreDinaMapping</a></li>
-<li><a href="#_annotate_your_class_with_customfieldadapter">12.3. Annotate your class with CustomFieldAdapter</a></li>
+<li><a href="#_set_up_your_entity">11.1. Set up your entity</a></li>
+<li><a href="#_set_up_your_dto">11.2. Set up your DTO</a></li>
+<li><a href="#_set_up_your_external_resource_provider_component">11.3. Set up your External Resource Provider Component</a></li>
 </ul>
 </li>
-<li><a href="#_custom_rsql_filtering">13. Custom Rsql Filtering</a>
+<li><a href="#_releasing_dina_base_api">12. Releasing dina-base-api</a></li>
+<li><a href="#_field_adapters">13. Field adapters</a>
 <ul class="sectlevel2">
-<li><a href="#_current_specs">13.1. Current Specs</a></li>
+<li><a href="#_implement_a_dina_field_adapter_for_the_field">13.1. Implement a Dina Field Adapter for the field.</a></li>
+<li><a href="#_annotate_your_field_with_ignoredinamapping">13.2. Annotate your field with IgnoreDinaMapping</a></li>
+<li><a href="#_annotate_your_class_with_customfieldadapter">13.3. Annotate your class with CustomFieldAdapter</a></li>
 </ul>
 </li>
-<li><a href="#_one_to_many_associations">14. One to Many Associations</a>
+<li><a href="#_custom_rsql_filtering">14. Custom Rsql Filtering</a>
 <ul class="sectlevel2">
-<li><a href="#_using_the_onetomanydinaservice">14.1. Using the OneToManyDinaService</a></li>
-<li><a href="#_using_onetomanyfieldhandler_directly">14.2. Using OneToManyFieldHandler directly</a></li>
+<li><a href="#_current_specs">14.1. Current Specs</a></li>
+</ul>
+</li>
+<li><a href="#_one_to_many_associations">15. One to Many Associations</a>
+<ul class="sectlevel2">
+<li><a href="#_using_the_onetomanydinaservice">15.1. Using the OneToManyDinaService</a></li>
+<li><a href="#_using_onetomanyfieldhandler_directly">15.2. Using OneToManyFieldHandler directly</a></li>
 </ul>
 </li>
 </ul>
@@ -1226,10 +1231,45 @@ public class CustomAuthorizationService implements DinaAuthorizationService {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_validation">7. Validation</h2>
+<h2 id="_cors_cross_origin_resource_sharing">7. CORS: Cross-Origin Resource Sharing</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_the_principles">7.1. The Principles</h3>
+<h3 id="_enabling_cors">7.1. Enabling CORS</h3>
+<div class="paragraph">
+<p>When a dina-base-api based application is running behind Keycloak, CORS must be enabled through
+a Keycloak configuration.</p>
+</div>
+<div class="paragraph">
+<p>In an <code>application.yml</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>keycloak.cors: true</code></pre>
+</div>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>Keycloak&#8217;s CORS support is configured per client. You specify the allowed origins in the client&#8217;s configuration page in the admin console.
+You can add as many you want. The value must be what the browser would send as a value in the Origin header.
+For example <a href="http://example.com" class="bare">http://example.com</a> is what you must specify to allow CORS requests from example.com. When an access token is created for the client, these allowed origins are
+embedded within the token. On authenticated CORS requests, your application&#8217;s Keycloak adapter will handle the CORS protocol and validate the Origin header against
+the allowed origins embedded in the token. If there is no match, then the request is denied.</p>
+</div>
+</blockquote>
+<div class="attribution">
+&#8212; Keycloak Reference Guide<br>
+<cite>Chapter 15.  <a href="https://smartling.github.io/keycloak/docs/1.2.1.Smartling-SNAPSHOT/reference/en-US/html_single/#cors">CORS</a></cite>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_validation">8. Validation</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_the_principles">8.1. The Principles</h3>
 <div class="paragraph">
 <p>From dina-base 0.51 onward, we disable the automatic validation and move it to the Service layer where Spring integration is better.</p>
 </div>
@@ -1238,7 +1278,7 @@ public class CustomAuthorizationService implements DinaAuthorizationService {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_implementation">7.2. Implementation</h3>
+<h3 id="_implementation">8.2. Implementation</h3>
 <div class="paragraph">
 <p>Validation is done at the Service level and is automatically handled by <code>DefaultDinaService</code>.</p>
 </div>
@@ -1262,22 +1302,22 @@ public class CustomAuthorizationService implements DinaAuthorizationService {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_validation_endpoint">8. Validation Endpoint</h2>
+<h2 id="_validation_endpoint">9. Validation Endpoint</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_set_the_configuration_properties">8.1. Set the configuration properties</h3>
+<h3 id="_set_the_configuration_properties">9.1. Set the configuration properties</h3>
 <div class="paragraph">
 <p>To activate the validation endpoint, the configuration property <code>dina.validationEndpoint.enabled: true</code> will need to be added to the application.yml.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_create_a_validation_resource_configuration">8.2. Create a Validation Resource Configuration</h3>
+<h3 id="_create_a_validation_resource_configuration">9.2. Create a Validation Resource Configuration</h3>
 <div class="paragraph">
 <p>You will need to create a component implementing the <code>ValidationResourceConfiguration</code> interface to supply the validation endpoint with the appropriate types to validate.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_using_the_endpoint">8.3. Using the Endpoint</h3>
+<h3 id="_using_the_endpoint">9.3. Using the Endpoint</h3>
 <div class="paragraph">
 <p>When the application starts you will have access to the validation endpoint at <code>/validation</code>.</p>
 </div>
@@ -1371,7 +1411,7 @@ Connection: keep-alive</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_setting_up_your_dina_repo_for_auditing">9. Setting up your Dina Repo for auditing</h2>
+<h2 id="_setting_up_your_dina_repo_for_auditing">10. Setting up your Dina Repo for auditing</h2>
 <div class="sectionbody">
 <div class="literalblock">
 <div class="content">
@@ -1379,7 +1419,7 @@ Connection: keep-alive</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_prepare_your_dto">9.1. Prepare your DTO</h3>
+<h3 id="_prepare_your_dto">10.1. Prepare your DTO</h3>
 <div class="paragraph">
 <p>Your DTO must be prepared with specific annotations specifically @TypeName, @Id, @PropertyName.</p>
 </div>
@@ -1411,7 +1451,7 @@ public class PersonDTO {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_pass_the_auditing_service_bean_to_your_dina_repo">9.2. Pass the Auditing service bean to your Dina repo</h3>
+<h3 id="_pass_the_auditing_service_bean_to_your_dina_repo">10.2. Pass the Auditing service bean to your Dina repo</h3>
 <div class="paragraph">
 <p>When the application runs with the property <code>dina.auditing.enabled = true</code>, an AuditService bean is available in the application context.</p>
 </div>
@@ -1420,7 +1460,7 @@ public class PersonDTO {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_accessing_the_auditing_endpoint">9.3. Accessing the Auditing Endpoint</h3>
+<h3 id="_accessing_the_auditing_endpoint">10.3. Accessing the Auditing Endpoint</h3>
 <div class="paragraph">
 <p>When the application runs with the property <code>dina.auditing.enabled = true</code>, the audit endpoint automatically starts.</p>
 </div>
@@ -1451,10 +1491,10 @@ public class PersonDTO {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_external_types_guide">10. External Types Guide</h2>
+<h2 id="_external_types_guide">11. External Types Guide</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_set_up_your_entity">10.1. Set up your entity</h3>
+<h3 id="_set_up_your_entity">11.1. Set up your entity</h3>
 <div class="paragraph">
 <p>Your entity needs to hold the identifier of the resource in a field.</p>
 </div>
@@ -1465,7 +1505,7 @@ public class PersonDTO {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_set_up_your_dto">10.2. Set up your DTO</h3>
+<h3 id="_set_up_your_dto">11.2. Set up your DTO</h3>
 <div class="paragraph">
 <p>Your Dto needs to declare the type of the field as a <code>ExternalRelationDto</code> and provide the needed annotations. The <code>JsonApiExternalRelation</code> type is the name of the resource type.</p>
 </div>
@@ -1478,7 +1518,7 @@ public class PersonDTO {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_set_up_your_external_resource_provider_component">10.3. Set up your External Resource Provider Component</h3>
+<h3 id="_set_up_your_external_resource_provider_component">11.3. Set up your External Resource Provider Component</h3>
 <div class="paragraph">
 <p>You need to create a component implementing an <code>ExternalResourceProvider</code>. A simple example would look like the following.</p>
 </div>
@@ -1522,7 +1562,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releasing_dina_base_api">11. Releasing dina-base-api</h2>
+<h2 id="_releasing_dina_base_api">12. Releasing dina-base-api</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The process of releasing dina-base-api is partially automated.</p>
@@ -1592,7 +1632,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect1">
-<h2 id="_field_adapters">12. Field adapters</h2>
+<h2 id="_field_adapters">13. Field adapters</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Field adapters allow you to provide custom mappings between fields.</p>
@@ -1604,7 +1644,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 <p>We will need to provide a custom mapping.</p>
 </div>
 <div class="sect2">
-<h3 id="_implement_a_dina_field_adapter_for_the_field">12.1. Implement a Dina Field Adapter for the field.</h3>
+<h3 id="_implement_a_dina_field_adapter_for_the_field">13.1. Implement a Dina Field Adapter for the field.</h3>
 <div class="paragraph">
 <p>Example Implementation:</p>
 </div>
@@ -1643,7 +1683,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect2">
-<h3 id="_annotate_your_field_with_ignoredinamapping">12.2. Annotate your field with IgnoreDinaMapping</h3>
+<h3 id="_annotate_your_field_with_ignoredinamapping">13.2. Annotate your field with IgnoreDinaMapping</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -1659,7 +1699,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect2">
-<h3 id="_annotate_your_class_with_customfieldadapter">12.3. Annotate your class with CustomFieldAdapter</h3>
+<h3 id="_annotate_your_class_with_customfieldadapter">13.3. Annotate your class with CustomFieldAdapter</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -1677,15 +1717,15 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect1">
-<h2 id="_custom_rsql_filtering">13. Custom Rsql Filtering</h2>
+<h2 id="_custom_rsql_filtering">14. Custom Rsql Filtering</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_current_specs">13.1. Current Specs</h3>
+<h3 id="_current_specs">14.1. Current Specs</h3>
 <div class="paragraph">
 <p>You can add custom rsql filtering for your resource in order to manipulate how Rsql filters will be processed.</p>
 </div>
 <div class="sect3">
-<h4 id="_step_1_create_a_rsqlfilteradapter_for_your_class">13.1.1. Step 1: Create a RsqlFilterAdapter for your class.</h4>
+<h4 id="_step_1_create_a_rsqlfilteradapter_for_your_class">14.1.1. Step 1: Create a RsqlFilterAdapter for your class.</h4>
 <div class="paragraph">
 <p>This is a simple Functional interface which will provide the entry point to run your business logic to process the Rsql filters.</p>
 </div>
@@ -1699,7 +1739,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect3">
-<h4 id="_step_2_pass_your_filter_adapter_to_the_dina_filter_resolver">13.1.2. Step 2: Pass your filter adapter to the Dina filter resolver.</h4>
+<h4 id="_step_2_pass_your_filter_adapter_to_the_dina_filter_resolver">14.1.2. Step 2: Pass your filter adapter to the Dina filter resolver.</h4>
 <div class="paragraph">
 <p>The DinaFilterResolver will allow you to pass your adapter to the resolver in the constructor.</p>
 </div>
@@ -1717,7 +1757,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect1">
-<h2 id="_one_to_many_associations">14. One to Many Associations</h2>
+<h2 id="_one_to_many_associations">15. One to Many Associations</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>There is some common functionality the currently needs to be run to resolve associations between child and parent resources.</p>
@@ -1729,7 +1769,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 <p>Basic information around Hibernates requirements for Bi directional associations : <a href="https://vladmihalcea.com/the-best-way-to-map-a-onetomany-association-with-jpa-and-hibernate/">Article</a></p>
 </div>
 <div class="sect2">
-<h3 id="_using_the_onetomanydinaservice">14.1. Using the OneToManyDinaService</h3>
+<h3 id="_using_the_onetomanydinaservice">15.1. Using the OneToManyDinaService</h3>
 <div class="paragraph">
 <p>The simplest way would be to extend the OneToManyDinaService. After extending a OneToManyDinaService, the constructor will require you to supply a list of OneToManyFieldHandler as shown in the example service below.</p>
 </div>
@@ -1762,7 +1802,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect2">
-<h3 id="_using_onetomanyfieldhandler_directly">14.2. Using OneToManyFieldHandler directly</h3>
+<h3 id="_using_onetomanyfieldhandler_directly">15.2. Using OneToManyFieldHandler directly</h3>
 <div class="paragraph">
 <p>OneToManyFieldHandlers can handle parent/child associations for a single field.</p>
 </div>
@@ -1787,7 +1827,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-10-04 14:59:12 UTC
+Last updated 2021-10-15 19:15:13 UTC
 </div>
 </div>
 </body>
