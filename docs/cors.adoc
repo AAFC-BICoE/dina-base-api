@@ -1,0 +1,21 @@
+= CORS: Cross-Origin Resource Sharing
+
+== Enabling CORS
+
+When a dina-base-api based application is running behind Keycloak, CORS must be enabled through
+a Keycloak configuration.
+
+In an `application.yml`:
+
+```
+keycloak.cors: true
+```
+
+[quote, Keycloak Reference Guide, 'Chapter 15.  https://smartling.github.io/keycloak/docs/1.2.1.Smartling-SNAPSHOT/reference/en-US/html_single/#cors[CORS]']
+____
+Keycloak's CORS support is configured per client. You specify the allowed origins in the client's configuration page in the admin console.
+You can add as many you want. The value must be what the browser would send as a value in the Origin header.
+For example http://example.com is what you must specify to allow CORS requests from example.com. When an access token is created for the client, these allowed origins are
+embedded within the token. On authenticated CORS requests, your application's Keycloak adapter will handle the CORS protocol and validate the Origin header against
+the allowed origins embedded in the token. If there is no match, then the request is denied.
+____

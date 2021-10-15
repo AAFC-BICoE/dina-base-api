@@ -16,6 +16,8 @@ include::authentication.adoc[]
 
 include::authorization.adoc[]
 
+include::cors.adoc[]
+
 include::validation.adoc[]
 
 include::validationEndpoint.adoc[]
