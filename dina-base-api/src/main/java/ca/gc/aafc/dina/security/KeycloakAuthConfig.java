@@ -33,11 +33,8 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
   private static final String AGENT_IDENTIFIER_CLAIM_KEY = "agent-identifier";
   private static final String GROUPS_CLAIM_KEY = "groups";
 
-  private final CorsConfiguration corsConfiguration;
-
-  public KeycloakAuthConfig(CorsConfiguration corsConfiguration) {
+  public KeycloakAuthConfig() {
     super();
-    this.corsConfiguration = corsConfiguration;
     log.info("KeycloakAuthConfig created");
   }
 
@@ -64,10 +61,6 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     super.configure(http);
-
-    if(corsConfiguration.corsEnabled()) {
-      http.cors();
-    }
 
     // Need to disable CSRF for Postman and testing
     http.csrf().disable();
