@@ -7,15 +7,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-public class VocabularyConfiguration {
+public class VocabularyConfiguration<T extends VocabularyConfiguration.VocabularyElement> {
   
-  private final Map<String, List<VocabularyElement>> vocabulary;
+  private final Map<String, List<T>> vocabulary;
 
-  public VocabularyConfiguration(Map<String, List<VocabularyElement>> vocabulary) {
+  public VocabularyConfiguration(Map<String, List<T>> vocabulary) {
     this.vocabulary = vocabulary;
   }
 
-  public Map<String, List<VocabularyElement>> getVocabulary() {
+  public Map<String, List<T>> getVocabulary() {
     return vocabulary;
   }
 
