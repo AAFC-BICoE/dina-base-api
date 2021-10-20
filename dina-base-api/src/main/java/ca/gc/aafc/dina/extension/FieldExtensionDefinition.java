@@ -1,7 +1,9 @@
 package ca.gc.aafc.dina.extension;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +12,7 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
+@AllArgsConstructor
 @NoArgsConstructor
 public class FieldExtensionDefinition {
   
@@ -18,18 +21,20 @@ public class FieldExtensionDefinition {
   @Builder
   @Getter
   @Setter
+  @AllArgsConstructor
   @NoArgsConstructor
   public static class Extension {
   
     private String name;
     private String key;
     private String version;
-    private List<Field> fields;
+    private List<Field> fields = new ArrayList<>();
   }
   
   @Builder
   @Getter
   @Setter
+  @AllArgsConstructor
   @NoArgsConstructor
   public static class Field {
   
