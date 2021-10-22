@@ -26,6 +26,7 @@
     <javers.version>6.2.5</javers.version>
     <mybatis.version>2.2.0</mybatis.version>
     <aafc.search.messaging.version>0.5</aafc.search.messaging.version>
+    <hibernate-types-52.version>2.10.2</hibernate-types-52.version>
   </properties>
 
   <dependencies>
@@ -126,6 +127,12 @@
       <groupId>org.testcontainers</groupId>
       <artifactId>rabbitmq</artifactId>
       <version>${testcontainers.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.vladmihalcea</groupId>
+      <artifactId>hibernate-types-52</artifactId>
+      <version>${hibernate-types-52.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
