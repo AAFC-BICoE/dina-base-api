@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.jpa;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.entity.JsonbValueSpecification;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.AllArgsConstructor;

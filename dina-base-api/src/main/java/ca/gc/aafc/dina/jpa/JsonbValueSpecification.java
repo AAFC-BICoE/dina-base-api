@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.entity;
+package ca.gc.aafc.dina.jpa;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
