@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.repository;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.JoinType;
@@ -8,7 +10,9 @@ import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.Type;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * Provides methods for handling sparse field sets and inclusion of related resources.
@@ -28,6 +32,10 @@ public final class SelectionHandler {
    * @return the expression
    */
   public static Expression<?> getExpression(Root<?> basePath, List<String> attributePath) {
+    if (CollectionUtils.isEmpty(attributePath)) {
+      return basePath;
+    }
+
     From<?, ?> from = basePath;
     for (String pathElement : attributePath.subList(0, attributePath.size() - 1)) {
       Path<Object> objectPath = from.get(pathElement);
@@ -35,6 +43,8 @@ public final class SelectionHandler {
         && !Type.PersistenceType.BASIC.equals(((SingularAttribute<?, ?>) objectPath).getType()
         .getPersistenceType())) {
         from = from.join(pathElement, JoinType.LEFT);
+      } else {
+        return from.get(pathElement); // Exit for basic value, no more joins are possible.
       }
     }
     return from.get(attributePath.get(attributePath.size() - 1));
