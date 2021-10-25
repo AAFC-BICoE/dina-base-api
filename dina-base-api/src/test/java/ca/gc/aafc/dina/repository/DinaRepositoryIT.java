@@ -256,13 +256,18 @@ public class DinaRepositoryIT {
 
   @Test
   public void findAll_SortingByName_ReturnsSortedCaseSensitiveOrNot() {
+
+    List<String> shuffledNames = Arrays.asList("b", "a", "d", "C");
+    List<Integer> matchingRooms = Arrays.asList(6, 2, 1, 11);
+
     List<String> namesCaseInsensitive = Arrays.asList("a", "b", "C", "d");
     List<String> namesCaseSensitive = Arrays.asList("C", "a", "b", "d");
-    List<String> shuffledNames = Arrays.asList("b", "a", "d", "C");
+    List<String> byRoom = Arrays.asList("d", "a", "b", "C");
 
-    for (String name : shuffledNames) {
+    for (int i=0; i < shuffledNames.size(); i++) {
       PersonDTO toPersist = createPersonDto();
-      toPersist.setName(name);
+      toPersist.setName(shuffledNames.get(i));
+      toPersist.setRoom(matchingRooms.get(i));
       dinaRepository.create(toPersist);
     }
 
@@ -287,7 +292,12 @@ public class DinaRepositoryIT {
     dinaRepository.setCaseSensitiveOrderBy(false);
 
     // sorting on non text field should have no effect
-
+    querySpec.setSort(Collections.singletonList(
+        new SortSpec(Collections.singletonList("room"), Direction.ASC)));
+    resultList = dinaRepository.findAll(null, querySpec);
+    for (int i = 0; i < namesCaseSensitive.size(); i++) {
+      assertEquals(byRoom.get(i), resultList.get(i).getName());
+    }
   }
 
   @Test
