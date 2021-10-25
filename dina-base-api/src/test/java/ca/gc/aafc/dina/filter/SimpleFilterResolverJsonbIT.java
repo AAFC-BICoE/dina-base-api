@@ -10,9 +10,12 @@ import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import io.crnk.core.queryspec.FilterOperator;
+import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiResource;
+import io.crnk.core.resource.list.ResourceList;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -36,41 +39,52 @@ import org.springframework.validation.SmartValidator;
 import javax.inject.Inject;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.metamodel.EntityType;
-import javax.persistence.metamodel.Metamodel;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 @SpringBootTest(classes = {
-  TestDinaBaseApp.class, DinaFilterResolverJsonbIT.DinaFilterResolverJsonbITConfig.class},
+  TestDinaBaseApp.class, SimpleFilterResolverJsonbIT.DinaFilterResolverJsonbITConfig.class},
   properties = "spring.jpa.hibernate.ddl-auto=create-drop")
 @ContextConfiguration(initializers = {PostgresTestContainerInitializer.class})
 @ExtendWith(SpringExtension.class)
 @Transactional
-public class DinaFilterResolverJsonbIT {
+public class SimpleFilterResolverJsonbIT {
+
+  private static final String KEY = "customKey";
 
   @Inject
   private DinaRepository<DinaFilterResolverJsonbITConfig.SubmarineDto,
     DinaFilterResolverJsonbITConfig.Submarine> subRepo;
 
   @Test
-  void name() {
-    DinaFilterResolverJsonbITConfig.SubmarineDto dto = subRepo.create(
-      DinaFilterResolverJsonbITConfig.SubmarineDto.builder().build());
+  void simpleFilter_FilterOnJsonB() {
+    String expectedValue = "CustomValue";
+    DinaFilterResolverJsonbITConfig.SubmarineDto dto = createSub(newSub(expectedValue));
+    DinaFilterResolverJsonbITConfig.SubmarineDto anotherSubDto = createSub(newSub("AnotherValue"));
 
-    DinaFilterResolverJsonbITConfig.SubmarineDto result = subRepo.findOne(
-      dto.getUuid(),
-      new QuerySpec(DinaFilterResolverJsonbITConfig.SubmarineDto.class));
+    QuerySpec querySpec = new QuerySpec(DinaFilterResolverJsonbITConfig.SubmarineDto.class);
+    querySpec.addFilter(PathSpec.of("jsonData", KEY).filter(FilterOperator.EQ, expectedValue));
 
-    Assertions.assertEquals(dto.getUuid(), result.getUuid());
+    ResourceList<DinaFilterResolverJsonbITConfig.SubmarineDto> results = subRepo.findAll(querySpec);
+    Assertions.assertEquals(1, results.size());
+  }
 
+  private DinaFilterResolverJsonbITConfig.SubmarineDto newSub(String expectedValue) {
+    return DinaFilterResolverJsonbITConfig.SubmarineDto.builder()
+      .jsonData(Map.of(KEY, expectedValue))
+      .build();
+  }
+
+  private DinaFilterResolverJsonbITConfig.SubmarineDto createSub(DinaFilterResolverJsonbITConfig.SubmarineDto submarineDto) {
+    DinaFilterResolverJsonbITConfig.SubmarineDto dto = subRepo.create(submarineDto);
+    Assertions.assertEquals(dto.getUuid(), subRepo.findOne(
+      dto.getUuid(), new QuerySpec(DinaFilterResolverJsonbITConfig.SubmarineDto.class)).getUuid());
+    return dto;
   }
 
   @TestConfiguration
