@@ -10,9 +10,7 @@ import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.Type;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 /**
  * Provides methods for handling sparse field sets and inclusion of related resources.
