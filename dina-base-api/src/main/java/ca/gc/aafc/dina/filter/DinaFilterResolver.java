@@ -243,10 +243,9 @@ public class DinaFilterResolver {
         from = from.get(path);
       }
 
-      if(!caseSensitive && from.getJavaType() == String.class) {
+      if (!caseSensitive && from.getJavaType() == String.class) {
         orderByExpression = cb.lower(from.as(String.class));
-      }
-      else {
+      } else {
         orderByExpression = from;
       }
 
