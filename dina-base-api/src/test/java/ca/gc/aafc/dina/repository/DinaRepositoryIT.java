@@ -245,12 +245,49 @@ public class DinaRepositoryIT {
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
-    querySpec.setSort(Arrays.asList(new SortSpec(Arrays.asList("name"), Direction.ASC)));
+    querySpec.setSort(Collections.singletonList(
+        new SortSpec(Collections.singletonList("name"), Direction.ASC)));
 
     List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
     for (int i = 0; i < names.size(); i++) {
       assertEquals(names.get(i), resultList.get(i).getName());
     }
+  }
+
+  @Test
+  public void findAll_SortingByName_ReturnsSortedCaseSensitiveOrNot() {
+    List<String> namesCaseInsensitive = Arrays.asList("a", "b", "C", "d");
+    List<String> namesCaseSensitive = Arrays.asList("C", "a", "b", "d");
+    List<String> shuffledNames = Arrays.asList("b", "a", "d", "C");
+
+    for (String name : shuffledNames) {
+      PersonDTO toPersist = createPersonDto();
+      toPersist.setName(name);
+      dinaRepository.create(toPersist);
+    }
+
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.setSort(Collections.singletonList(
+        new SortSpec(Collections.singletonList("name"), Direction.ASC)));
+
+    //case insensitive by default
+    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    for (int i = 0; i < namesCaseInsensitive.size(); i++) {
+      assertEquals(namesCaseInsensitive.get(i), resultList.get(i).getName());
+    }
+
+    //test case sensitive
+    dinaRepository.setCaseSensitiveOrderBy(true);
+    resultList = dinaRepository.findAll(null, querySpec);
+    for (int i = 0; i < namesCaseSensitive.size(); i++) {
+      assertEquals(namesCaseSensitive.get(i), resultList.get(i).getName());
+    }
+
+    // revert to default
+    dinaRepository.setCaseSensitiveOrderBy(false);
+
+    // sorting on non text field should have no effect
+
   }
 
   @Test
@@ -269,8 +306,7 @@ public class DinaRepositoryIT {
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setIncludedRelations(createIncludeRelationSpecs("department"));
     querySpec.setSort(
-      Arrays.asList(new SortSpec(Arrays.asList("department", "name"),
-      Direction.ASC)));
+        Collections.singletonList(new SortSpec(Arrays.asList("department", "name"), Direction.ASC)));
 
     List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
     for (int i = 0; i < names.size(); i++) {
