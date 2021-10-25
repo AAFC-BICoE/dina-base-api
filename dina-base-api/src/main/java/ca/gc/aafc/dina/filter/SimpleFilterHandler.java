@@ -9,8 +9,8 @@ import lombok.NonNull;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.From;
 import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +36,7 @@ public final class SimpleFilterHandler {
    */
   public static Predicate getRestriction(
     @NonNull QuerySpec querySpec,
-    @NonNull From<?, ?> root,
+    @NonNull Root<?> root,
     @NonNull CriteriaBuilder cb,
     @NonNull ArgumentParser argumentParser
   ) {

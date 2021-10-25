@@ -3,6 +3,11 @@ package ca.gc.aafc.dina.repository;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Root;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.SingularAttribute;
+import javax.persistence.metamodel.Type;
 import java.util.List;
 
 /**
@@ -22,10 +27,15 @@ public final class SelectionHandler {
    * @param attributePath the attribute path
    * @return the expression
    */
-  public static Expression<?> getExpression(From<?, ?> basePath, List<String> attributePath) {
+  public static Expression<?> getExpression(Root<?> basePath, List<String> attributePath) {
     From<?, ?> from = basePath;
     for (String pathElement : attributePath.subList(0, attributePath.size() - 1)) {
-      from = from.join(pathElement, JoinType.LEFT);
+      Path<Object> objectPath = from.get(pathElement);
+      if (objectPath instanceof Attribute
+        && !Type.PersistenceType.BASIC.equals(((SingularAttribute<?, ?>) objectPath).getType()
+        .getPersistenceType())) {
+        from = from.join(pathElement, JoinType.LEFT);
+      }
     }
     return from.get(attributePath.get(attributePath.size() - 1));
   }
