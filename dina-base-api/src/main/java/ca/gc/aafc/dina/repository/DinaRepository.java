@@ -26,6 +26,7 @@ import io.crnk.core.resource.meta.MetaInformation;
 import io.crnk.core.resource.meta.PagedMetaInformation;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,6 +72,9 @@ public class DinaRepository<D, E extends DinaEntity>
   private final DinaMappingRegistry registry;
   private final boolean hasFieldAdapters;
   private HttpRequestContextProvider httpRequestContextProvider;
+
+  @Setter
+  private boolean caseSensitiveOrderBy = false;
 
   public DinaRepository(
     @NonNull DinaService<E> dinaService,
@@ -231,7 +235,7 @@ public class DinaRepository<D, E extends DinaEntity>
         DinaFilterResolver.leftJoinRelations(root, querySpec, registry);
         return filterResolver.buildPredicates(querySpec, criteriaBuilder, root, ids, idName, em);
       },
-      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
+      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root, caseSensitiveOrderBy),
       Math.toIntExact(querySpec.getOffset()),
       Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
   }
