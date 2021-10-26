@@ -38,11 +38,11 @@ public final class SelectionHandler {
     for (String pathElement : attributePath.subList(0, attributePath.size() - 1)) {
       Path<Object> objectPath = from.get(pathElement);
       if (objectPath instanceof Attribute
-        && !Type.PersistenceType.BASIC.equals(((SingularAttribute<?, ?>) objectPath).getType()
+        && Type.PersistenceType.BASIC.equals(((SingularAttribute<?, ?>) objectPath).getType()
         .getPersistenceType())) {
-        from = from.join(pathElement, JoinType.LEFT);
+        return from.get(pathElement); // Exit at basic element no more joins possible
       } else {
-        return from.get(pathElement); // Exit for basic value, no more joins are possible.
+        from = from.join(pathElement, JoinType.LEFT);
       }
     }
     return from.get(attributePath.get(attributePath.size() - 1));

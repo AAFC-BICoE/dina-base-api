@@ -13,7 +13,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Simple filter handler for filtering by a value in a single attribute. Example GET request where pcrPrimer's
