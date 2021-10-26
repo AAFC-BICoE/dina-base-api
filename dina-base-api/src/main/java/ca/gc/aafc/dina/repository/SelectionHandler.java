@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.repository;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.hibernate.query.criteria.internal.path.SingularAttributePath;
 
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
@@ -40,6 +41,10 @@ public final class SelectionHandler {
       if (objectPath instanceof Attribute
         && Type.PersistenceType.BASIC.equals(((SingularAttribute<?, ?>) objectPath).getType()
         .getPersistenceType())) {
+        return from.get(pathElement); // Exit at basic element no more joins possible
+      } else if (objectPath instanceof SingularAttributePath &&
+        Type.PersistenceType.BASIC.equals((((SingularAttributePath<?>) objectPath).getAttribute()
+          .getType().getPersistenceType()))) {
         return from.get(pathElement); // Exit at basic element no more joins possible
       } else {
         from = from.join(pathElement, JoinType.LEFT);
