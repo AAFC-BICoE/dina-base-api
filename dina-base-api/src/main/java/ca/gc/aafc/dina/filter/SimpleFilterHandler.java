@@ -16,6 +16,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.metamodel.Metamodel;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.util.ArrayList;
@@ -44,7 +45,8 @@ public final class SimpleFilterHandler {
     @NonNull QuerySpec querySpec,
     @NonNull Root<E> root,
     @NonNull CriteriaBuilder cb,
-    @NonNull ArgumentParser argumentParser
+    @NonNull ArgumentParser argumentParser,
+    @NonNull Metamodel metamodel
   ) {
     List<FilterSpec> filterSpecs = querySpec.getFilters();
     List<Predicate> predicates = new ArrayList<>();
@@ -52,7 +54,7 @@ public final class SimpleFilterHandler {
     for (FilterSpec filterSpec : filterSpecs) {
       Path<?> attributePath;
       try {
-        attributePath = SelectionHandler.getExpression(root, filterSpec.getAttributePath());
+        attributePath = SelectionHandler.getExpression(root, filterSpec.getAttributePath(), metamodel);
         predicates.add(generatePredicate(filterSpec, attributePath, cb, argumentParser, root));
       } catch (IllegalArgumentException e) {
         // This FilterHandler will ignore filter parameters that do not map to fields on the DTO,
@@ -91,7 +93,7 @@ public final class SimpleFilterHandler {
         String memberName = javaMember.getName();
         if (isJsonb(javaMember.getDeclaringClass().getDeclaredField(memberName))) {
           List<String> jsonbPath = new ArrayList<>(filter.getAttributePath());
-          jsonbPath.removeIf(s -> s.equalsIgnoreCase(memberName));
+          jsonbPath.removeIf(s -> s.equalsIgnoreCase(memberName)); // todo wrong use sublist
           return new JsonbValueSpecification<E>(memberName, StringUtils.join(jsonbPath, "."))
             .toPredicate(root, cb, filterValue.toString());
         }

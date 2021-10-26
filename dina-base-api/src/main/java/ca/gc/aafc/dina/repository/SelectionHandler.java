@@ -1,15 +1,14 @@
 package ca.gc.aafc.dina.repository;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.hibernate.query.criteria.internal.path.SingularAttributePath;
 
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.Attribute;
-import javax.persistence.metamodel.SingularAttribute;
-import javax.persistence.metamodel.Type;
+import javax.persistence.metamodel.ManagedType;
+import javax.persistence.metamodel.Metamodel;
 import java.util.List;
 
 /**
@@ -29,21 +28,16 @@ public final class SelectionHandler {
    * @param attributePath the attribute path
    * @return the expression
    */
-  public static Path<?> getExpression(Root<?> basePath, List<String> attributePath) {
+  public static Path<?> getExpression(Root<?> basePath, List<String> attributePath, Metamodel metamodel) {
     if (CollectionUtils.isEmpty(attributePath)) {
       return basePath;
     }
-
     From<?, ?> from = basePath;
     for (String pathElement : attributePath.subList(0, attributePath.size() - 1)) {
-      Path<Object> objectPath = from.get(pathElement);
-      if (objectPath instanceof Attribute
-        && Type.PersistenceType.BASIC.equals(((SingularAttribute<?, ?>) objectPath).getType()
-        .getPersistenceType())) {
-        return from.get(pathElement); // Exit at basic element no more joins possible
-      } else if (objectPath instanceof SingularAttributePath &&
-        Type.PersistenceType.BASIC.equals(((SingularAttributePath<?>) objectPath).getAttribute()
-          .getType().getPersistenceType())) {
+      ManagedType<?> managedType = metamodel.managedType(from.getJavaType());
+      Attribute<?, ?> attribute = managedType.getAttribute(pathElement);
+      Attribute.PersistentAttributeType persistentAttributeType = attribute.getPersistentAttributeType();
+      if (Attribute.PersistentAttributeType.BASIC.equals(persistentAttributeType)) {
         return from.get(pathElement); // Exit at basic element no more joins possible
       } else {
         from = from.join(pathElement, JoinType.LEFT);
