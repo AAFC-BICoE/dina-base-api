@@ -68,7 +68,7 @@ public final class SimpleFilterHandler {
    * the given criteria builder.
    *
    * @param filter         - filter to parse
-   * @param attributePath  - path to the attribute
+   * @param path  - path to the attribute
    * @param cb             - criteria builder to build the predicate
    * @param argumentParser - the argument parser
    * @return a predicate for a given crnk filter spec
@@ -76,35 +76,36 @@ public final class SimpleFilterHandler {
   @SneakyThrows
   private static <E> Predicate generatePredicate(
     @NonNull FilterSpec filter,
-    @NonNull Path<?> attributePath,
+    @NonNull Path<?> path,
     @NonNull CriteriaBuilder cb,
     @NonNull ArgumentParser argumentParser,
     @NonNull Root<E> root
   ) {
     Object filterValue = filter.getValue();
     if (filterValue == null) {
-      return filter.getOperator() == FilterOperator.NEQ
-        ? cb.isNotNull(attributePath)
-        : cb.isNull(attributePath);
+      return filter.getOperator() == FilterOperator.NEQ ? cb.isNotNull(path) : cb.isNull(path);
     } else {
-      if(attributePath instanceof SingularAttributePath){
-        SingularAttributePath<?> singularAttributePath = (SingularAttributePath<?>) attributePath;
+      if (path instanceof SingularAttributePath) {
+        SingularAttributePath<?> singularAttributePath = (SingularAttributePath<?>) path;
         Member javaMember = singularAttributePath.getAttribute().getJavaMember();
         String memberName = javaMember.getName();
-        Field declaredField = javaMember.getDeclaringClass().getDeclaredField(memberName);
-        Type annotation = declaredField.getAnnotation(Type.class);
-        if(annotation != null
-          && StringUtils.isNotBlank(annotation.type())
-          && annotation.type().equalsIgnoreCase("jsonb")) {
-          List<String> path = new ArrayList<>(filter.getAttributePath());
-          path.removeIf(s -> s.equalsIgnoreCase(memberName));
-          return new JsonbValueSpecification<E>(memberName,StringUtils.join(path,"."))
-            .toPredicate(root,cb, filterValue.toString());
+        if (isJsonb(javaMember.getDeclaringClass().getDeclaredField(memberName))) {
+          List<String> jsonbPath = new ArrayList<>(filter.getAttributePath());
+          jsonbPath.removeIf(s -> s.equalsIgnoreCase(memberName));
+          return new JsonbValueSpecification<E>(memberName, StringUtils.join(jsonbPath, "."))
+            .toPredicate(root, cb, filterValue.toString());
         }
       }
-      Object value = argumentParser.parse(filterValue.toString(), attributePath.getJavaType());
-      return cb.equal(attributePath, value);
+      Object value = argumentParser.parse(filterValue.toString(), path.getJavaType());
+      return cb.equal(path, value);
     }
+  }
+
+  private static boolean isJsonb(Field declaredField) {
+    return declaredField != null
+      && declaredField.getAnnotation(Type.class) != null
+      && StringUtils.isNotBlank(declaredField.getAnnotation(Type.class).type())
+      && declaredField.getAnnotation(Type.class).type().equalsIgnoreCase("jsonb");
   }
 
 }
