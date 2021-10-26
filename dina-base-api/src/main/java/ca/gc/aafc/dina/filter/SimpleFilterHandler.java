@@ -1,16 +1,23 @@
 package ca.gc.aafc.dina.filter;
 
+import ca.gc.aafc.dina.jpa.JsonbValueSpecification;
 import ca.gc.aafc.dina.repository.SelectionHandler;
 import com.github.tennaito.rsql.misc.ArgumentParser;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
+import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.annotations.Type;
+import org.hibernate.query.criteria.internal.path.SingularAttributePath;
 
 import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,9 +40,9 @@ public final class SimpleFilterHandler {
    *                       DinaFilterArgumentParser}
    * @return Generates a predicate for a given crnk filter.
    */
-  public static Predicate getRestriction(
+  public static <E> Predicate getRestriction(
     @NonNull QuerySpec querySpec,
-    @NonNull Root<?> root,
+    @NonNull Root<E> root,
     @NonNull CriteriaBuilder cb,
     @NonNull ArgumentParser argumentParser
   ) {
@@ -43,10 +50,10 @@ public final class SimpleFilterHandler {
     List<Predicate> predicates = new ArrayList<>();
 
     for (FilterSpec filterSpec : filterSpecs) {
-      Expression<?> attributePath;
+      Path<?> attributePath;
       try {
         attributePath = SelectionHandler.getExpression(root, filterSpec.getAttributePath());
-        predicates.add(generatePredicate(filterSpec, attributePath, cb, argumentParser));
+        predicates.add(generatePredicate(filterSpec, attributePath, cb, argumentParser, root));
       } catch (IllegalArgumentException e) {
         // This FilterHandler will ignore filter parameters that do not map to fields on the DTO,
         // like "rsql" or others that are only handled by other FilterHandlers.
@@ -66,11 +73,13 @@ public final class SimpleFilterHandler {
    * @param argumentParser - the argument parser
    * @return a predicate for a given crnk filter spec
    */
-  private static Predicate generatePredicate(
+  @SneakyThrows
+  private static <E> Predicate generatePredicate(
     @NonNull FilterSpec filter,
-    @NonNull Expression<?> attributePath,
+    @NonNull Path<?> attributePath,
     @NonNull CriteriaBuilder cb,
-    @NonNull ArgumentParser argumentParser
+    @NonNull ArgumentParser argumentParser,
+    @NonNull Root<E> root
   ) {
     Object filterValue = filter.getValue();
     if (filterValue == null) {
@@ -78,6 +87,21 @@ public final class SimpleFilterHandler {
         ? cb.isNotNull(attributePath)
         : cb.isNull(attributePath);
     } else {
+      if(attributePath instanceof SingularAttributePath){
+        SingularAttributePath<?> singularAttributePath = (SingularAttributePath<?>) attributePath;
+        Member javaMember = singularAttributePath.getAttribute().getJavaMember();
+        String memberName = javaMember.getName();
+        Field declaredField = javaMember.getDeclaringClass().getDeclaredField(memberName);
+        Type annotation = declaredField.getAnnotation(Type.class);
+        if(annotation != null
+          && StringUtils.isNotBlank(annotation.type())
+          && annotation.type().equalsIgnoreCase("jsonb")) {
+          List<String> path = new ArrayList<>(filter.getAttributePath());
+          path.removeIf(s -> s.equalsIgnoreCase(memberName));
+          return new JsonbValueSpecification<E>(memberName,StringUtils.join(path,"."))
+            .toPredicate(root,cb, filterValue.toString());
+        }
+      }
       Object value = argumentParser.parse(filterValue.toString(), attributePath.getJavaType());
       return cb.equal(attributePath, value);
     }

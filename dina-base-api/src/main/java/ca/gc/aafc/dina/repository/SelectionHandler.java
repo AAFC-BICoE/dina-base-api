@@ -30,7 +30,7 @@ public final class SelectionHandler {
    * @param attributePath the attribute path
    * @return the expression
    */
-  public static Expression<?> getExpression(Root<?> basePath, List<String> attributePath) {
+  public static Path<?> getExpression(Root<?> basePath, List<String> attributePath) {
     if (CollectionUtils.isEmpty(attributePath)) {
       return basePath;
     }
