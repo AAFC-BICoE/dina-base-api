@@ -8,9 +8,11 @@ import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Type;
 
+import javax.persistence.TupleElement;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
@@ -56,7 +58,7 @@ public final class SimpleFilterHandler {
     for (FilterSpec filterSpec : filterSpecs) {
       Path<?> attributePath;
       try {
-        attributePath = SelectionHandler.getExpression(root, filterSpec.getAttributePath(), metamodel);
+        attributePath = SelectionHandler.handleJoins(root, filterSpec.getAttributePath(), metamodel);
         predicates.add(generatePredicate(filterSpec, attributePath, cb, argumentParser, root, metamodel));
       } catch (IllegalArgumentException e) {
         // This FilterHandler will ignore filter parameters that do not map to fields on the DTO,
@@ -110,11 +112,15 @@ public final class SimpleFilterHandler {
     }
   }
 
-  private static <E> Optional<Attribute<?, ?>> findBasicAttribute(
-    @NonNull Root<E> root,
+  public static <E> Optional<Attribute<?, ?>> findBasicAttribute(
+    @NonNull TupleElement<E> root,
     @NonNull Metamodel metamodel,
     @NonNull List<String> attributePath
   ) {
+    if (CollectionUtils.isEmpty(attributePath)) {
+      return Optional.empty();
+    }
+
     Class<?> rootJavaType = root.getJavaType();
     Attribute<?, ?> attribute = null;
     for (String pathField : attributePath) {
@@ -131,7 +137,7 @@ public final class SimpleFilterHandler {
     return Optional.ofNullable(attribute);
   }
 
-  private static boolean isBasicAttribute(Attribute<?, ?> attribute) {
+  public static boolean isBasicAttribute(Attribute<?, ?> attribute) {
     return Attribute.PersistentAttributeType.BASIC.equals(attribute.getPersistentAttributeType());
   }
 
