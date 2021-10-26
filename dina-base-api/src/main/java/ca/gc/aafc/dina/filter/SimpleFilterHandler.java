@@ -47,13 +47,11 @@ public final class SimpleFilterHandler {
       Expression<?> attributePath;
       try {
         attributePath = SelectionHandler.getExpression(root, filterSpec.getAttributePath());
+        predicates.add(generatePredicate(filterSpec, attributePath, cb, argumentParser));
       } catch (IllegalArgumentException e) {
         // This FilterHandler will ignore filter parameters that do not map to fields on the DTO,
         // like "rsql" or others that are only handled by other FilterHandlers.
-        continue;
       }
-
-      predicates.add(generatePredicate(filterSpec, attributePath, cb, argumentParser));
     }
 
     return cb.and(predicates.toArray(Predicate[]::new));
@@ -76,15 +74,13 @@ public final class SimpleFilterHandler {
     @NonNull ArgumentParser argumentParser
   ) {
     // Convert the value to the target type:
-    Object value = argumentParser.parse(
-      Optional.ofNullable(filter.getValue()).map(Object::toString).orElse(null),
-      attributePath.getJavaType()
-    );
-    if (value == null) {
+    Object filterValue = filter.getValue();
+    if (filterValue == null) {
       return filter.getOperator() == FilterOperator.NEQ
         ? cb.isNotNull(attributePath)
         : cb.isNull(attributePath);
     } else {
+      Object value = argumentParser.parse(filterValue.toString(), attributePath.getJavaType());
       return cb.equal(attributePath, value);
     }
   }
