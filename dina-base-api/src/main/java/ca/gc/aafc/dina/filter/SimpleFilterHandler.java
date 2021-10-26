@@ -10,17 +10,18 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Type;
-import org.hibernate.query.criteria.internal.path.SingularAttributePath;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.Metamodel;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Simple filter handler for filtering by a value in a single attribute. Example GET request where pcrPrimer's
@@ -39,6 +40,7 @@ public final class SimpleFilterHandler {
    * @param root           - the root type, cannot be null
    * @param argumentParser - used to parse the arguments into there given types. See {@link
    *                       DinaFilterArgumentParser}
+   * @param metamodel      - JPA Metamodel
    * @return Generates a predicate for a given crnk filter.
    */
   public static <E> Predicate getRestriction(
@@ -55,10 +57,11 @@ public final class SimpleFilterHandler {
       Path<?> attributePath;
       try {
         attributePath = SelectionHandler.getExpression(root, filterSpec.getAttributePath(), metamodel);
-        predicates.add(generatePredicate(filterSpec, attributePath, cb, argumentParser, root));
+        predicates.add(generatePredicate(filterSpec, attributePath, cb, argumentParser, root, metamodel));
       } catch (IllegalArgumentException e) {
         // This FilterHandler will ignore filter parameters that do not map to fields on the DTO,
         // like "rsql" or others that are only handled by other FilterHandlers.
+        e.printStackTrace();
       }
     }
 
@@ -70,9 +73,10 @@ public final class SimpleFilterHandler {
    * the given criteria builder.
    *
    * @param filter         - filter to parse
-   * @param path  - path to the attribute
+   * @param path           - path to the attribute
    * @param cb             - criteria builder to build the predicate
    * @param argumentParser - the argument parser
+   * @param metamodel      - JPA Metamodel
    * @return a predicate for a given crnk filter spec
    */
   @SneakyThrows
@@ -81,18 +85,21 @@ public final class SimpleFilterHandler {
     @NonNull Path<?> path,
     @NonNull CriteriaBuilder cb,
     @NonNull ArgumentParser argumentParser,
-    @NonNull Root<E> root
+    @NonNull Root<E> root,
+    Metamodel metamodel
   ) {
     Object filterValue = filter.getValue();
+    List<String> attributePath = filter.getAttributePath();
+
     if (filterValue == null) {
       return filter.getOperator() == FilterOperator.NEQ ? cb.isNotNull(path) : cb.isNull(path);
     } else {
-      if (path instanceof SingularAttributePath) {
-        SingularAttributePath<?> singularAttributePath = (SingularAttributePath<?>) path;
-        Member javaMember = singularAttributePath.getAttribute().getJavaMember();
+      Optional<Attribute<?, ?>> attribute = findBasicAttribute(root, metamodel, attributePath);
+      if (attribute.isPresent()) {
+        Member javaMember = attribute.get().getJavaMember();
         String memberName = javaMember.getName();
         if (isJsonb(javaMember.getDeclaringClass().getDeclaredField(memberName))) {
-          List<String> jsonbPath = new ArrayList<>(filter.getAttributePath());
+          List<String> jsonbPath = new ArrayList<>(attributePath);
           jsonbPath.removeIf(s -> s.equalsIgnoreCase(memberName)); // todo wrong use sublist
           return new JsonbValueSpecification<E>(memberName, StringUtils.join(jsonbPath, "."))
             .toPredicate(root, cb, filterValue.toString());
@@ -103,11 +110,39 @@ public final class SimpleFilterHandler {
     }
   }
 
+  private static <E> Optional<Attribute<?, ?>> findBasicAttribute(
+    @NonNull Root<E> root,
+    @NonNull Metamodel metamodel,
+    @NonNull List<String> attributePath
+  ) {
+    Class<?> rootJavaType = root.getJavaType();
+    Attribute<?, ?> attribute = null;
+    for (String pathField : attributePath) {
+      attribute = metamodel.managedType(rootJavaType).getAttributes()
+        .stream()
+        .filter(a -> a.getJavaMember().getName().equalsIgnoreCase(pathField))
+        .findFirst().orElse(null);
+      if (attribute == null || isBasicAttribute(attribute)) {
+        break;
+      } else {
+        rootJavaType = attribute.getJavaType();
+      }
+    }
+    return Optional.ofNullable(attribute);
+  }
+
+  private static boolean isBasicAttribute(Attribute<?, ?> attribute) {
+    return Attribute.PersistentAttributeType.BASIC.equals(attribute.getPersistentAttributeType());
+  }
+
   private static boolean isJsonb(Field declaredField) {
-    return declaredField != null
-      && declaredField.getAnnotation(Type.class) != null
-      && StringUtils.isNotBlank(declaredField.getAnnotation(Type.class).type())
-      && declaredField.getAnnotation(Type.class).type().equalsIgnoreCase("jsonb");
+    if (declaredField == null) {
+      return false;
+    }
+    Type fieldAnnotation = declaredField.getAnnotation(Type.class);
+    return fieldAnnotation != null
+      && StringUtils.isNotBlank(fieldAnnotation.type())
+      && fieldAnnotation.type().equalsIgnoreCase("jsonb");
   }
 
 }
