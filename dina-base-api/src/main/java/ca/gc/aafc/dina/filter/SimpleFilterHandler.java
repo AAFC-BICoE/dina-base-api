@@ -73,7 +73,6 @@ public final class SimpleFilterHandler {
     @NonNull CriteriaBuilder cb,
     @NonNull ArgumentParser argumentParser
   ) {
-    // Convert the value to the target type:
     Object filterValue = filter.getValue();
     if (filterValue == null) {
       return filter.getOperator() == FilterOperator.NEQ
