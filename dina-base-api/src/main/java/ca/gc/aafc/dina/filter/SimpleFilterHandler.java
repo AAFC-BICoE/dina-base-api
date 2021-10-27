@@ -4,7 +4,6 @@ import ca.gc.aafc.dina.jpa.JsonbValueSpecification;
 import com.github.tennaito.rsql.misc.ArgumentParser;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
-import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -19,7 +18,6 @@ import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.Metamodel;
 import java.lang.reflect.Field;
-import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +34,6 @@ public final class SimpleFilterHandler {
   /**
    * Generates a predicate for a given crnk filter.
    *
-   * @param querySpec      - crnk query spec with filters, cannot be null
    * @param cb             - the criteria builder, cannot be null
    * @param root           - the root type, cannot be null
    * @param argumentParser - used to parse the arguments into there given types. See {@link
@@ -45,46 +42,34 @@ public final class SimpleFilterHandler {
    * @return Generates a predicate for a given crnk filter.
    */
   public static <E> Predicate getRestriction(
-    @NonNull QuerySpec querySpec,
     @NonNull Root<E> root,
     @NonNull CriteriaBuilder cb,
     @NonNull ArgumentParser argumentParser,
-    @NonNull Metamodel metamodel
+    @NonNull Metamodel metamodel,
+    @NonNull List<FilterSpec> filters
   ) {
-    List<FilterSpec> filterSpecs = querySpec.getFilters();
     List<Predicate> predicates = new ArrayList<>();
-
-    for (FilterSpec filterSpec : filterSpecs) {
+    for (FilterSpec filterSpec : filters) {
       try {
         List<String> attributePath = filterSpec.getAttributePath();
 
         if (CollectionUtils.isEmpty(attributePath)) {
-          break;
+          continue; // move to next filter spec
         }
 
         Path<?> path = root;
         for (String pathElement : attributePath) {
           Optional<Attribute<?, ?>> attribute = SimpleFilterHandler.findBasicAttribute(
             path, metamodel, List.of(pathElement));
+
           if (attribute.isEmpty()) {
-            break;
+            break; // attribute path is invalid break without adding predicates
           }
+
           path = path.get(pathElement);
           if (SimpleFilterHandler.isBasicAttribute(attribute.get())) {
-            Object filterValue = filterSpec.getValue();
-            if (filterValue == null) {
-              predicates.add(generateNullComparisonPredicate(cb, path, filterSpec.getOperator()));
-            } else {
-              Member javaMember = attribute.get().getJavaMember();
-              String memberName = javaMember.getName();
-              if (isJsonb(javaMember.getDeclaringClass().getDeclaredField(memberName))) {
-                predicates.add(
-                  generateJsonbPredicate(root, cb, attributePath, memberName, filterValue.toString()));
-              } else {
-                Object value = argumentParser.parse(filterValue.toString(), path.getJavaType());
-                predicates.add(cb.equal(path, value));
-              }
-            }
+            generatePredicates( // basic attribute start generating predicates
+              root, cb, argumentParser, predicates, filterSpec, attributePath, path, attribute.get());
           }
         }
       } catch (IllegalArgumentException | NoSuchFieldException e) {
@@ -93,6 +78,31 @@ public final class SimpleFilterHandler {
       }
     }
     return cb.and(predicates.toArray(Predicate[]::new));
+  }
+
+  private static <E> void generatePredicates(
+    Root<E> root,
+    CriteriaBuilder cb,
+    ArgumentParser argumentParser,
+    List<Predicate> predicates,
+    FilterSpec filterSpec,
+    List<String> attributePath,
+    Path<?> path,
+    Attribute<?, ?> attribute
+  ) throws NoSuchFieldException {
+    Object filterValue = filterSpec.getValue();
+    if (filterValue == null) {
+      predicates.add(generateNullComparisonPredicate(cb, path, filterSpec.getOperator()));
+    } else {
+      String memberName = attribute.getJavaMember().getName();
+      if (isJsonb(attribute.getJavaMember().getDeclaringClass().getDeclaredField(memberName))) {
+        predicates.add(
+          generateJsonbPredicate(root, cb, attributePath, memberName, filterValue.toString()));
+      } else {
+        Object value = argumentParser.parse(filterValue.toString(), path.getJavaType());
+        predicates.add(cb.equal(path, value));
+      }
+    }
   }
 
   private static Predicate generateNullComparisonPredicate(
