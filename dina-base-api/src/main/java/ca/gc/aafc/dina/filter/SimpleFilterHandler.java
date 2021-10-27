@@ -62,18 +62,18 @@ public final class SimpleFilterHandler {
           break;
         }
 
-        Path<?> basicPath = root;
+        Path<?> path = root;
         for (String pathElement : attributePath) {
           Optional<Attribute<?, ?>> attribute = SimpleFilterHandler.findBasicAttribute(
-            basicPath, metamodel, List.of(pathElement));
+            path, metamodel, List.of(pathElement));
           if (attribute.isEmpty()) {
             break;
           }
-          basicPath = basicPath.get(pathElement);
+          path = path.get(pathElement);
           if (SimpleFilterHandler.isBasicAttribute(attribute.get())) {
             Object filterValue = filterSpec.getValue();
             if (filterValue == null) {
-              predicates.add(generateNullComparisonPredicate(cb, basicPath, filterSpec.getOperator()));
+              predicates.add(generateNullComparisonPredicate(cb, path, filterSpec.getOperator()));
             } else {
               Member javaMember = attribute.get().getJavaMember();
               String memberName = javaMember.getName();
@@ -81,8 +81,8 @@ public final class SimpleFilterHandler {
                 predicates.add(
                   generateJsonbPredicate(root, cb, attributePath, memberName, filterValue.toString()));
               } else {
-                Object value = argumentParser.parse(filterValue.toString(), basicPath.getJavaType());
-                predicates.add(cb.equal(basicPath, value));
+                Object value = argumentParser.parse(filterValue.toString(), path.getJavaType());
+                predicates.add(cb.equal(path, value));
               }
             }
           }
