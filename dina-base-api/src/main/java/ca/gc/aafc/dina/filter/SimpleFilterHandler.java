@@ -13,8 +13,6 @@ import org.hibernate.annotations.Type;
 import javax.annotation.Nullable;
 import javax.persistence.TupleElement;
 import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.From;
-import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
@@ -64,25 +62,20 @@ public final class SimpleFilterHandler {
           break;
         }
 
-        From<?, ?> from = root;
-        Path<?> basicPath = null;
+        Path<?> basicPath = root;
         Optional<Attribute<?, ?>> attribute = Optional.empty();
         for (String pathElement : attributePath) {
-          attribute = SimpleFilterHandler.findBasicAttribute(from, metamodel, List.of(pathElement));
-
+          attribute = SimpleFilterHandler.findBasicAttribute(basicPath, metamodel, List.of(pathElement));
           if (attribute.isEmpty()) {
             break;
           }
-
+          basicPath = basicPath.get(pathElement);
           if (SimpleFilterHandler.isBasicAttribute(attribute.get())) {
-            basicPath = from.get(pathElement);
             break;
-          } else {
-            from = from.join(pathElement, JoinType.LEFT);
           }
         }
 
-        if (basicPath != null) {
+        if (attribute.isPresent()) {
           Object filterValue = filterSpec.getValue();
           if (filterValue == null) {
             predicates.add(generateNullComparisonPredicate(cb, basicPath, filterSpec.getOperator()));
