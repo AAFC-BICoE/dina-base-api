@@ -116,7 +116,7 @@ public final class SimpleFilterHandler {
       .toPredicate(root, cb, value);
   }
 
-  public static <E> Optional<Attribute<?, ?>> findBasicAttribute(
+  private static <E> Optional<Attribute<?, ?>> findBasicAttribute(
     @NonNull TupleElement<E> root, @NonNull Metamodel metamodel, @NonNull List<String> attributePath
   ) {
     if (CollectionUtils.isEmpty(attributePath)) {
@@ -139,7 +139,7 @@ public final class SimpleFilterHandler {
     return Optional.ofNullable(attribute);
   }
 
-  public static boolean isBasicAttribute(@NonNull Attribute<?, ?> attribute) {
+  private static boolean isBasicAttribute(@NonNull Attribute<?, ?> attribute) {
     return Attribute.PersistentAttributeType.BASIC.equals(attribute.getPersistentAttributeType());
   }
 
