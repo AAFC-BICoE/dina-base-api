@@ -18,6 +18,7 @@ import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.Metamodel;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -69,7 +70,7 @@ public final class SimpleFilterHandler {
           path = path.get(pathElement);
           if (SimpleFilterHandler.isBasicAttribute(attribute.get())) {
             generatePredicates( // basic attribute start generating predicates
-              root, cb, argumentParser, predicates, filterSpec, attributePath, path, attribute.get());
+              root, cb, argumentParser, predicates, filterSpec, path, attribute.get().getJavaMember());
           }
         }
       } catch (IllegalArgumentException | NoSuchFieldException e) {
@@ -85,19 +86,18 @@ public final class SimpleFilterHandler {
     CriteriaBuilder cb,
     ArgumentParser argumentParser,
     List<Predicate> predicates,
-    FilterSpec filterSpec,
-    List<String> attributePath,
+    FilterSpec spec,
     Path<?> path,
-    Attribute<?, ?> attribute
+    Member member
   ) throws NoSuchFieldException {
-    Object filterValue = filterSpec.getValue();
+    Object filterValue = spec.getValue();
     if (filterValue == null) {
-      predicates.add(generateNullComparisonPredicate(cb, path, filterSpec.getOperator()));
+      predicates.add(generateNullComparisonPredicate(cb, path, spec.getOperator()));
     } else {
-      String memberName = attribute.getJavaMember().getName();
-      if (isJsonb(attribute.getJavaMember().getDeclaringClass().getDeclaredField(memberName))) {
+      String memberName = member.getName();
+      if (isJsonb(member.getDeclaringClass().getDeclaredField(memberName))) {
         predicates.add(
-          generateJsonbPredicate(root, cb, attributePath, memberName, filterValue.toString()));
+          generateJsonbPredicate(root, cb, spec.getAttributePath(), memberName, filterValue.toString()));
       } else {
         Object value = argumentParser.parse(filterValue.toString(), path.getJavaType());
         predicates.add(cb.equal(path, value));
