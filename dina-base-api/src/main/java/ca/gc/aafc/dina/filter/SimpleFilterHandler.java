@@ -127,7 +127,7 @@ public final class SimpleFilterHandler {
       }
     }
     jsonbPath = jsonbPath.subList(pathIndex, jsonbPath.size());
-    return new JsonbValueSpecification<E>(columnName, StringUtils.join(jsonbPath, "."))
+    return new JsonbValueSpecification<E>(columnName, jsonbPath.toArray(String[]::new))
       .toPredicate(root, cb, value);
   }
 
