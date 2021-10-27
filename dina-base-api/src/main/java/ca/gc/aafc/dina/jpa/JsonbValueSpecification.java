@@ -3,8 +3,8 @@ package ca.gc.aafc.dina.jpa;
 import lombok.RequiredArgsConstructor;
 
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
 /**
  * Allows to create JPA Predicate matching a value on a specific jsonb key.
@@ -19,7 +19,7 @@ public class JsonbValueSpecification<T> {
   private final String columnName;
   private final String keyName;
 
-  public Predicate toPredicate(Root<T> root, CriteriaBuilder builder, String value) {
+  public Predicate toPredicate(Path<T> root, CriteriaBuilder builder, String value) {
     return builder.equal(builder
         .function(JSONB_EXTRACT_PATH_PG_FUNCTION_NAME,
             String.class,

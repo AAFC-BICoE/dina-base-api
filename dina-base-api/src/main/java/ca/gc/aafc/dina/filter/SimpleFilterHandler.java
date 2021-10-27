@@ -70,7 +70,7 @@ public final class SimpleFilterHandler {
           path = path.get(pathElement);
           if (SimpleFilterHandler.isBasicAttribute(attribute.get())) {
             generatePredicates( // basic attribute start generating predicates
-              root, cb, argumentParser, predicates, filterSpec, path, attribute.get().getJavaMember());
+              cb, argumentParser, predicates, filterSpec, path, attribute.get().getJavaMember());
           }
         }
       } catch (IllegalArgumentException | NoSuchFieldException e) {
@@ -81,8 +81,7 @@ public final class SimpleFilterHandler {
     return cb.and(predicates.toArray(Predicate[]::new));
   }
 
-  private static <E> void generatePredicates(
-    Root<E> root,
+  private static void generatePredicates(
     CriteriaBuilder cb,
     ArgumentParser argumentParser,
     List<Predicate> predicates,
@@ -97,7 +96,7 @@ public final class SimpleFilterHandler {
       String memberName = member.getName();
       if (isJsonb(member.getDeclaringClass().getDeclaredField(memberName))) {
         predicates.add(
-          generateJsonbPredicate(root, cb, spec.getAttributePath(), memberName, filterValue.toString()));
+          generateJsonbPredicate(path.getParentPath(), cb, spec.getAttributePath(), memberName, filterValue.toString()));
       } else {
         Object value = argumentParser.parse(filterValue.toString(), path.getJavaType());
         predicates.add(cb.equal(path, value));
@@ -118,7 +117,7 @@ public final class SimpleFilterHandler {
   }
 
   private static <E> Predicate generateJsonbPredicate(
-    Root<E> root, CriteriaBuilder cb, List<String> attributePath, String columnName, String value
+    Path<E> root, CriteriaBuilder cb, List<String> attributePath, String columnName, String value
   ) {
     List<String> jsonbPath = new ArrayList<>(attributePath);
     jsonbPath.removeIf(s -> s.equalsIgnoreCase(columnName)); // todo wrong use sublist
