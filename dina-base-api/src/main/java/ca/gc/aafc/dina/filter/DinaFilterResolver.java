@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.FetchParent;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
@@ -230,17 +231,26 @@ public class DinaFilterResolver {
    *
    * @param <T>  - root type
    * @param qs   - crnk query spec to parse
-   * @param cb   - critera builder to build orders
+   * @param cb   - criteria builder to build orders
    * @param root - root path of entity
+   * @param caseSensitive - Should order by on text fields be case sensitive or no ?
    * @return a list of {@link Order} from a given {@link CriteriaBuilder} and {@link Path}
    */
-  public static <T> List<Order> getOrders(QuerySpec qs, CriteriaBuilder cb, Path<T> root) {
+  public static <T> List<Order> getOrders(QuerySpec qs, CriteriaBuilder cb, Path<T> root, boolean caseSensitive) {
     return qs.getSort().stream().map(sort -> {
+      Expression<?> orderByExpression;
       Path<T> from = root;
       for (String path : sort.getAttributePath()) {
         from = from.get(path);
       }
-      return sort.getDirection() == Direction.ASC ? cb.asc(from) : cb.desc(from);
+
+      if (!caseSensitive && from.getJavaType() == String.class) {
+        orderByExpression = cb.lower(from.as(String.class));
+      } else {
+        orderByExpression = from;
+      }
+
+      return sort.getDirection() == Direction.ASC ? cb.asc(orderByExpression) : cb.desc(orderByExpression);
     }).collect(Collectors.toList());
   }
 
