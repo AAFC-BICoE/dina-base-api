@@ -63,31 +63,27 @@ public final class SimpleFilterHandler {
         }
 
         Path<?> basicPath = root;
-        Optional<Attribute<?, ?>> attribute = Optional.empty();
         for (String pathElement : attributePath) {
-          attribute = SimpleFilterHandler.findBasicAttribute(basicPath, metamodel, List.of(pathElement));
+          Optional<Attribute<?, ?>> attribute = SimpleFilterHandler.findBasicAttribute(
+            basicPath, metamodel, List.of(pathElement));
           if (attribute.isEmpty()) {
             break;
           }
           basicPath = basicPath.get(pathElement);
           if (SimpleFilterHandler.isBasicAttribute(attribute.get())) {
-            break;
-          }
-        }
-
-        if (attribute.isPresent()) {
-          Object filterValue = filterSpec.getValue();
-          if (filterValue == null) {
-            predicates.add(generateNullComparisonPredicate(cb, basicPath, filterSpec.getOperator()));
-          } else {
-            Member javaMember = attribute.get().getJavaMember();
-            String memberName = javaMember.getName();
-            if (isJsonb(javaMember.getDeclaringClass().getDeclaredField(memberName))) {
-              predicates.add(
-                generateJsonbPredicate(root, cb, attributePath, memberName, filterValue.toString()));
+            Object filterValue = filterSpec.getValue();
+            if (filterValue == null) {
+              predicates.add(generateNullComparisonPredicate(cb, basicPath, filterSpec.getOperator()));
             } else {
-              Object value = argumentParser.parse(filterValue.toString(), basicPath.getJavaType());
-              predicates.add(cb.equal(basicPath, value));
+              Member javaMember = attribute.get().getJavaMember();
+              String memberName = javaMember.getName();
+              if (isJsonb(javaMember.getDeclaringClass().getDeclaredField(memberName))) {
+                predicates.add(
+                  generateJsonbPredicate(root, cb, attributePath, memberName, filterValue.toString()));
+              } else {
+                Object value = argumentParser.parse(filterValue.toString(), basicPath.getJavaType());
+                predicates.add(cb.equal(basicPath, value));
+              }
             }
           }
         }
