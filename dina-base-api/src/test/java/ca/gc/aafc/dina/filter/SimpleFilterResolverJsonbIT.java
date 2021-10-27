@@ -65,13 +65,18 @@ public class SimpleFilterResolverJsonbIT {
   void simpleFilter_FilterOnJsonB() {
     String expectedValue = "CustomValue";
     DinaFilterResolverJsonbITConfig.SubmarineDto dto = createSub(newSub(expectedValue));
-    DinaFilterResolverJsonbITConfig.SubmarineDto anotherSubDto = createSub(newSub("AnotherValue"));
+    createSub(newSub("AnotherValue"));
+
+    Assertions.assertEquals(
+      2,
+      subRepo.findAll(new QuerySpec(DinaFilterResolverJsonbITConfig.SubmarineDto.class)).size());
 
     QuerySpec querySpec = new QuerySpec(DinaFilterResolverJsonbITConfig.SubmarineDto.class);
     querySpec.addFilter(PathSpec.of("jsonData", KEY).filter(FilterOperator.EQ, expectedValue));
 
     ResourceList<DinaFilterResolverJsonbITConfig.SubmarineDto> results = subRepo.findAll(querySpec);
     Assertions.assertEquals(1, results.size());
+    Assertions.assertEquals(dto.getUuid(), results.get(0).getUuid());
   }
 
   private DinaFilterResolverJsonbITConfig.SubmarineDto newSub(String expectedValue) {
