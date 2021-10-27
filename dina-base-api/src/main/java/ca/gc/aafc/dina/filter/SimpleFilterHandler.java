@@ -68,9 +68,9 @@ public final class SimpleFilterHandler {
           }
 
           path = path.get(pathElement);
-          if (SimpleFilterHandler.isBasicAttribute(attribute.get())) {
-            generatePredicates( // basic attribute start generating predicates
-              cb, argumentParser, predicates, filterSpec, path, attribute.get().getJavaMember());
+          if (SimpleFilterHandler.isBasicAttribute(attribute.get())) { // basic attribute start generating predicates
+            addPredicates(cb, argumentParser, predicates, filterSpec, path, attribute.get().getJavaMember());
+
           }
         }
       } catch (IllegalArgumentException | NoSuchFieldException e) {
@@ -81,11 +81,11 @@ public final class SimpleFilterHandler {
     return cb.and(predicates.toArray(Predicate[]::new));
   }
 
-  private static void generatePredicates(
+  private static void addPredicates(
     CriteriaBuilder cb,
-    ArgumentParser argumentParser,
+    ArgumentParser parser,
     List<Predicate> predicates,
-    FilterSpec spec,
+    @NonNull FilterSpec spec,
     Path<?> path,
     Member member
   ) throws NoSuchFieldException {
@@ -95,11 +95,10 @@ public final class SimpleFilterHandler {
     } else {
       String memberName = member.getName();
       if (isJsonb(member.getDeclaringClass().getDeclaredField(memberName))) {
-        predicates.add(
-          generateJsonbPredicate(path.getParentPath(), cb, spec.getAttributePath(), memberName, filterValue.toString()));
+        predicates.add(generateJsonbPredicate(
+          path.getParentPath(), cb, spec.getAttributePath(), memberName, filterValue.toString()));
       } else {
-        Object value = argumentParser.parse(filterValue.toString(), path.getJavaType());
-        predicates.add(cb.equal(path, value));
+        predicates.add(cb.equal(path, parser.parse(filterValue.toString(), path.getJavaType())));
       }
     }
   }
