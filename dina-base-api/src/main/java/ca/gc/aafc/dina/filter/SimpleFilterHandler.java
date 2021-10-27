@@ -119,7 +119,14 @@ public final class SimpleFilterHandler {
     Path<E> root, CriteriaBuilder cb, List<String> attributePath, String columnName, String value
   ) {
     List<String> jsonbPath = new ArrayList<>(attributePath);
-    jsonbPath.removeIf(s -> s.equalsIgnoreCase(columnName)); // todo wrong use sublist
+    int pathIndex = 0;
+    for (int j = 0; j < jsonbPath.size(); j++) {
+      String p = jsonbPath.get(j);
+      if (p.equalsIgnoreCase(columnName) && j < jsonbPath.size() - 1) {
+        pathIndex = j + 1;
+      }
+    }
+    jsonbPath = jsonbPath.subList(pathIndex, jsonbPath.size());
     return new JsonbValueSpecification<E>(columnName, StringUtils.join(jsonbPath, "."))
       .toPredicate(root, cb, value);
   }

@@ -14,6 +14,7 @@ import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.annotations.JsonApiId;
+import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import io.crnk.core.resource.list.ResourceList;
 import lombok.AllArgsConstructor;
@@ -40,6 +41,7 @@ import javax.inject.Inject;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
@@ -60,6 +62,33 @@ public class SimpleFilterResolverJsonbIT {
   @Inject
   private DinaRepository<DinaFilterResolverJsonbITConfig.SubmarineDto,
     DinaFilterResolverJsonbITConfig.Submarine> subRepo;
+  @Inject
+  private DinaRepository<DinaFilterResolverJsonbITConfig.SubCommanderDto,
+    DinaFilterResolverJsonbITConfig.SubCommander> commanderRepo;
+
+  @Test
+  void simpleFilter_NestedJsonbField() {
+    String expectedValue = "CustomValue";
+    DinaFilterResolverJsonbITConfig.SubmarineDto sub = createSub(newSub(expectedValue));
+    DinaFilterResolverJsonbITConfig.SubmarineDto anotherSub = createSub(newSub("AnotherValue"));
+
+    DinaFilterResolverJsonbITConfig.SubCommanderDto expectedCommander = commanderRepo.create(
+      DinaFilterResolverJsonbITConfig.SubCommanderDto.builder().submarine(sub).build());
+    commanderRepo.create(
+      DinaFilterResolverJsonbITConfig.SubCommanderDto.builder().submarine(anotherSub).build());
+
+    Assertions.assertEquals(
+      2,
+      commanderRepo.findAll(new QuerySpec(DinaFilterResolverJsonbITConfig.SubCommanderDto.class)).size());
+
+    QuerySpec querySpec = new QuerySpec(DinaFilterResolverJsonbITConfig.SubCommanderDto.class);
+    querySpec.addFilter(PathSpec.of("submarine", "jsonData", KEY).filter(FilterOperator.EQ, expectedValue));
+    querySpec.includeRelation(PathSpec.of("submarine"));
+
+    ResourceList<DinaFilterResolverJsonbITConfig.SubCommanderDto> results = commanderRepo.findAll(querySpec);
+    Assertions.assertEquals(1, results.size());
+    Assertions.assertEquals(expectedCommander.getUuid(), results.get(0).getUuid());
+  }
 
   @Test
   void simpleFilter_FilterOnJsonB() {
@@ -95,6 +124,58 @@ public class SimpleFilterResolverJsonbIT {
   @TestConfiguration
   @EntityScan(basePackageClasses = DinaFilterResolverJsonbITConfig.class)
   public static class DinaFilterResolverJsonbITConfig {
+
+    @Data
+    @Entity
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Table(name = "commander")
+    public static class SubCommander implements DinaEntity {
+      private String createdBy;
+      private OffsetDateTime createdOn;
+      @Id
+      private Integer id;
+      @NaturalId
+      private UUID uuid;
+      @OneToOne
+      private Submarine submarine;
+    }
+
+    @Data
+    @JsonApiResource(type = "commander")
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @RelatedEntity(SubCommander.class)
+    public static class SubCommanderDto {
+      @JsonApiId
+      private UUID uuid;
+      @JsonApiRelation
+      private SubmarineDto submarine;
+    }
+
+    @Bean
+    public DinaRepository<SubCommanderDto, SubCommander> commanderRepo(
+      BaseDAO baseDAO, SmartValidator val, BuildProperties props
+    ) {
+      return new DinaRepository<>(
+        new DefaultDinaService<>(baseDAO, val) {
+          @Override
+          protected void preCreate(SubCommander entity) {
+            entity.setId(RandomUtils.nextInt(0, 1000));
+            entity.setUuid(UUID.randomUUID());
+          }
+        },
+        new AllowAllAuthorizationService(),
+        Optional.empty(),
+        new DinaMapper<>(SubCommanderDto.class),
+        SubCommanderDto.class,
+        SubCommander.class,
+        null,
+        null,
+        props);
+    }
 
     @Data
     @Entity
