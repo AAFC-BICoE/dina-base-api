@@ -108,6 +108,31 @@ public class SimpleFilterResolverJsonbIT {
     Assertions.assertEquals(dto.getUuid(), results.get(0).getUuid());
   }
 
+  @Test
+  void simpleFilter_NestedJsonbKey() {
+    String nestedKey = "nestedKey";
+    String expectedValue = "CustomValue";
+
+    DinaFilterResolverJsonbITConfig.SubmarineDto expectedSub = newSub(expectedValue);
+    expectedSub.setJsonData(Map.of(KEY, Map.of(nestedKey, expectedValue)));
+    expectedSub = createSub(expectedSub);
+
+    DinaFilterResolverJsonbITConfig.SubmarineDto anotherSub = newSub("AnotherValue");
+    anotherSub.setJsonData(Map.of(KEY, Map.of(nestedKey, "AnotherValue")));
+    createSub(anotherSub);
+
+    Assertions.assertEquals(
+      2,
+      subRepo.findAll(new QuerySpec(DinaFilterResolverJsonbITConfig.SubmarineDto.class)).size());
+
+    QuerySpec querySpec = new QuerySpec(DinaFilterResolverJsonbITConfig.SubmarineDto.class);
+    querySpec.addFilter(PathSpec.of("jsonData", KEY, nestedKey).filter(FilterOperator.EQ, expectedValue));
+
+    ResourceList<DinaFilterResolverJsonbITConfig.SubmarineDto> results = subRepo.findAll(querySpec);
+    Assertions.assertEquals(1, results.size());
+    Assertions.assertEquals(expectedSub.getUuid(), results.get(0).getUuid());
+  }
+
   private DinaFilterResolverJsonbITConfig.SubmarineDto newSub(String expectedValue) {
     return DinaFilterResolverJsonbITConfig.SubmarineDto.builder()
       .jsonData(Map.of(KEY, expectedValue))
@@ -194,7 +219,7 @@ public class SimpleFilterResolverJsonbIT {
 
       @Type(type = "jsonb")
       @Column(columnDefinition = "jsonb")
-      private Map<String, String> jsonData;
+      private Map<String, Object> jsonData;
 
     }
 
@@ -207,7 +232,7 @@ public class SimpleFilterResolverJsonbIT {
     public static class SubmarineDto {
       @JsonApiId
       private UUID uuid;
-      private Map<String, String> jsonData;
+      private Map<String, Object> jsonData;
     }
 
     @Bean
