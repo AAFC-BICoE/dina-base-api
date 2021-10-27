@@ -1,19 +1,20 @@
 package ca.gc.aafc.dina.filter;
 
 import ca.gc.aafc.dina.jpa.JsonbValueSpecification;
-import ca.gc.aafc.dina.repository.SelectionHandler;
 import com.github.tennaito.rsql.misc.ArgumentParser;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Type;
 
+import javax.annotation.Nullable;
 import javax.persistence.TupleElement;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.From;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
@@ -56,66 +57,78 @@ public final class SimpleFilterHandler {
     List<Predicate> predicates = new ArrayList<>();
 
     for (FilterSpec filterSpec : filterSpecs) {
-      Path<?> attributePath;
       try {
-        attributePath = SelectionHandler.handleJoins(root, filterSpec.getAttributePath(), metamodel);
-        predicates.add(generatePredicate(filterSpec, attributePath, cb, argumentParser, root, metamodel));
-      } catch (IllegalArgumentException e) {
+        List<String> attributePath = filterSpec.getAttributePath();
+
+        if (CollectionUtils.isEmpty(attributePath)) {
+          break;
+        }
+
+        From<?, ?> from = root;
+        Path<?> basicPath = null;
+        Optional<Attribute<?, ?>> attribute = Optional.empty();
+        for (String pathElement : attributePath) {
+          attribute = SimpleFilterHandler.findBasicAttribute(from, metamodel, List.of(pathElement));
+
+          if (attribute.isEmpty()) {
+            break;
+          }
+
+          if (SimpleFilterHandler.isBasicAttribute(attribute.get())) {
+            basicPath = from.get(pathElement);
+            break;
+          } else {
+            from = from.join(pathElement, JoinType.LEFT);
+          }
+        }
+
+        if (basicPath != null) {
+          Object filterValue = filterSpec.getValue();
+          if (filterValue == null) {
+            predicates.add(generateNullComparisonPredicate(cb, basicPath, filterSpec.getOperator()));
+          } else {
+            Member javaMember = attribute.get().getJavaMember();
+            String memberName = javaMember.getName();
+            if (isJsonb(javaMember.getDeclaringClass().getDeclaredField(memberName))) {
+              predicates.add(
+                generateJsonbPredicate(root, cb, attributePath, memberName, filterValue.toString()));
+            } else {
+              Object value = argumentParser.parse(filterValue.toString(), basicPath.getJavaType());
+              predicates.add(cb.equal(basicPath, value));
+            }
+          }
+        }
+      } catch (IllegalArgumentException | NoSuchFieldException e) {
         // This FilterHandler will ignore filter parameters that do not map to fields on the DTO,
         // like "rsql" or others that are only handled by other FilterHandlers.
-        e.printStackTrace();
       }
     }
-
     return cb.and(predicates.toArray(Predicate[]::new));
   }
 
-  /**
-   * Generates a predicate for a given crnk filter spec for a given attribute path. Predicate is built with
-   * the given criteria builder.
-   *
-   * @param filter         - filter to parse
-   * @param path           - path to the attribute
-   * @param cb             - criteria builder to build the predicate
-   * @param argumentParser - the argument parser
-   * @param metamodel      - JPA Metamodel
-   * @return a predicate for a given crnk filter spec
-   */
-  @SneakyThrows
-  private static <E> Predicate generatePredicate(
-    @NonNull FilterSpec filter,
-    @NonNull Path<?> path,
-    @NonNull CriteriaBuilder cb,
-    @NonNull ArgumentParser argumentParser,
-    @NonNull Root<E> root,
-    Metamodel metamodel
+  private static Predicate generateNullComparisonPredicate(
+    CriteriaBuilder cb, @NonNull Path<?> basicPath, @NonNull FilterOperator operator
   ) {
-    Object filterValue = filter.getValue();
-    List<String> attributePath = filter.getAttributePath();
-
-    if (filterValue == null) {
-      return filter.getOperator() == FilterOperator.NEQ ? cb.isNotNull(path) : cb.isNull(path);
+    if (FilterOperator.NEQ.equals(operator)) {
+      return cb.isNotNull(basicPath);
+    } else if (FilterOperator.EQ.equals(operator) || FilterOperator.LIKE.equals(operator)) {
+      return cb.isNull(basicPath);
     } else {
-      Optional<Attribute<?, ?>> attribute = findBasicAttribute(root, metamodel, attributePath);
-      if (attribute.isPresent()) {
-        Member javaMember = attribute.get().getJavaMember();
-        String memberName = javaMember.getName();
-        if (isJsonb(javaMember.getDeclaringClass().getDeclaredField(memberName))) {
-          List<String> jsonbPath = new ArrayList<>(attributePath);
-          jsonbPath.removeIf(s -> s.equalsIgnoreCase(memberName)); // todo wrong use sublist
-          return new JsonbValueSpecification<E>(memberName, StringUtils.join(jsonbPath, "."))
-            .toPredicate(root, cb, filterValue.toString());
-        }
-      }
-      Object value = argumentParser.parse(filterValue.toString(), path.getJavaType());
-      return cb.equal(path, value);
+      return cb.and();
     }
   }
 
+  private static <E> Predicate generateJsonbPredicate(
+    Root<E> root, CriteriaBuilder cb, List<String> attributePath, String columnName, String value
+  ) {
+    List<String> jsonbPath = new ArrayList<>(attributePath);
+    jsonbPath.removeIf(s -> s.equalsIgnoreCase(columnName)); // todo wrong use sublist
+    return new JsonbValueSpecification<E>(columnName, StringUtils.join(jsonbPath, "."))
+      .toPredicate(root, cb, value);
+  }
+
   public static <E> Optional<Attribute<?, ?>> findBasicAttribute(
-    @NonNull TupleElement<E> root,
-    @NonNull Metamodel metamodel,
-    @NonNull List<String> attributePath
+    @NonNull TupleElement<E> root, @NonNull Metamodel metamodel, @NonNull List<String> attributePath
   ) {
     if (CollectionUtils.isEmpty(attributePath)) {
       return Optional.empty();
@@ -137,11 +150,11 @@ public final class SimpleFilterHandler {
     return Optional.ofNullable(attribute);
   }
 
-  public static boolean isBasicAttribute(Attribute<?, ?> attribute) {
+  public static boolean isBasicAttribute(@NonNull Attribute<?, ?> attribute) {
     return Attribute.PersistentAttributeType.BASIC.equals(attribute.getPersistentAttributeType());
   }
 
-  private static boolean isJsonb(Field declaredField) {
+  private static boolean isJsonb(@Nullable Field declaredField) {
     if (declaredField == null) {
       return false;
     }
