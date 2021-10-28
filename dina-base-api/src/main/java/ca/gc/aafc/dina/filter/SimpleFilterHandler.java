@@ -70,7 +70,6 @@ public final class SimpleFilterHandler {
           path = path.get(pathElement);
           if (SimpleFilterHandler.isBasicAttribute(attribute.get())) { // basic attribute start generating predicates
             addPredicates(cb, argumentParser, predicates, filterSpec, path, attribute.get().getJavaMember());
-
           }
         }
       } catch (IllegalArgumentException | NoSuchFieldException e) {
@@ -84,10 +83,10 @@ public final class SimpleFilterHandler {
   private static void addPredicates(
     CriteriaBuilder cb,
     ArgumentParser parser,
-    List<Predicate> predicates,
+    @NonNull List<Predicate> predicates,
     @NonNull FilterSpec spec,
-    Path<?> path,
-    Member member
+    @NonNull Path<?> path,
+    @NonNull Member member
   ) throws NoSuchFieldException {
     Object filterValue = spec.getValue();
     if (filterValue == null) {
@@ -104,7 +103,7 @@ public final class SimpleFilterHandler {
   }
 
   private static Predicate generateNullComparisonPredicate(
-    CriteriaBuilder cb, @NonNull Path<?> basicPath, @NonNull FilterOperator operator
+    @NonNull CriteriaBuilder cb, @NonNull Path<?> basicPath, @NonNull FilterOperator operator
   ) {
     if (FilterOperator.NEQ.equals(operator)) {
       return cb.isNotNull(basicPath);
