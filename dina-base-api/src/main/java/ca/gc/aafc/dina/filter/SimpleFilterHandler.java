@@ -36,17 +36,17 @@ public final class SimpleFilterHandler {
   /**
    * Generates a predicate for a given crnk filter.
    *
-   * @param cb             - the criteria builder, cannot be null
-   * @param root           - the root type, cannot be null
-   * @param argumentParser - used to parse the arguments into there given types. See {@link
-   *                       DinaFilterArgumentParser}
-   * @param metamodel      - JPA Metamodel
+   * @param cb        - the criteria builder, cannot be null
+   * @param root      - the root type, cannot be null
+   * @param parser    - used to parse the arguments into there given types. See {@link
+   *                  DinaFilterArgumentParser}
+   * @param metamodel - JPA Metamodel
    * @return Generates a predicate for a given crnk filter.
    */
   public static <E> Predicate getRestriction(
     @NonNull Root<E> root,
     @NonNull CriteriaBuilder cb,
-    @NonNull ArgumentParser argumentParser,
+    @NonNull ArgumentParser parser,
     @NonNull Metamodel metamodel,
     @NonNull List<FilterSpec> filters
   ) {
@@ -64,13 +64,12 @@ public final class SimpleFilterHandler {
           Optional<Attribute<?, ?>> attribute = SimpleFilterHandler.findAttribute(
             metamodel, List.of(pathElement), path.getJavaType());
 
-          if (attribute.isEmpty()) {
-            break; // attribute path is invalid break without adding predicates
-          }
-
-          path = path.get(pathElement);
-          if (SimpleFilterHandler.isBasicAttribute(attribute.get())) { // basic attribute start generating predicates
-            addPredicates(cb, argumentParser, predicates, filterSpec, path, attribute.get().getJavaMember());
+          if (attribute.isPresent()) {
+            path = path.get(pathElement);
+            if (SimpleFilterHandler.isBasicAttribute(attribute.get())) {
+              // basic attribute start generating predicates
+              addPredicates(cb, parser, predicates, filterSpec, path, attribute.get().getJavaMember());
+            }
           }
         }
       } catch (IllegalArgumentException | NoSuchFieldException e) {
