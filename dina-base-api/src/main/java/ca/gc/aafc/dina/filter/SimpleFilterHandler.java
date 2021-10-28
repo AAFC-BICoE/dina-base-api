@@ -121,8 +121,7 @@ public final class SimpleFilterHandler {
   ) {
     Queue<String> jsonbPath = new LinkedList<>(attributePath);
     while (!jsonbPath.isEmpty()) {
-      String poll = jsonbPath.poll();
-      if (poll.equalsIgnoreCase(columnName)) {
+      if (jsonbPath.poll().equalsIgnoreCase(columnName)) {
         return new JsonbValueSpecification<E>(columnName, jsonbPath.toArray(String[]::new))
           .toPredicate(root, cb, value);
       }
