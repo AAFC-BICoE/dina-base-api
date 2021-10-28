@@ -49,6 +49,7 @@ import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @TestConfiguration
 @SpringBootTest(
@@ -153,6 +154,8 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
 
     //Assert correct state
     assertProject(expected, projectRepo.findOne(expected.getUuid(), createProjectQuerySpec()));
+
+    assertNotNull(expected.getAlias());
 
     //Send empty patch
     super.sendPatch(ProjectDTO.RESOURCE_TYPE, expected.getUuid().toString(),
