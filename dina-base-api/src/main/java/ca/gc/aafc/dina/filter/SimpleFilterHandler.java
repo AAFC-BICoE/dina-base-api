@@ -10,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Type;
 
 import javax.annotation.Nullable;
-import javax.persistence.TupleElement;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
@@ -62,8 +61,8 @@ public final class SimpleFilterHandler {
 
         Path<?> path = root;
         for (String pathElement : attributePath) {
-          Optional<Attribute<?, ?>> attribute = SimpleFilterHandler.findBasicAttribute(
-            path, metamodel, List.of(pathElement));
+          Optional<Attribute<?, ?>> attribute = SimpleFilterHandler.findAttribute(
+            metamodel, List.of(pathElement), path.getJavaType());
 
           if (attribute.isEmpty()) {
             break; // attribute path is invalid break without adding predicates
@@ -129,14 +128,16 @@ public final class SimpleFilterHandler {
     return cb.and();
   }
 
-  private static <E> Optional<Attribute<?, ?>> findBasicAttribute(
-    @NonNull TupleElement<E> root, @NonNull Metamodel metamodel, @NonNull List<String> attributePath
+  private static <E> Optional<Attribute<?, ?>> findAttribute(
+    @NonNull Metamodel metamodel,
+    @NonNull List<String> attributePath,
+    @NonNull Class<? extends E> rootType
   ) {
     if (CollectionUtils.isEmpty(attributePath)) {
       return Optional.empty();
     }
 
-    Class<?> rootJavaType = root.getJavaType();
+    Class<?> rootJavaType = rootType;
     Attribute<?, ?> attribute = null;
     for (String pathField : attributePath) {
       attribute = metamodel.managedType(rootJavaType).getAttributes()
@@ -144,7 +145,7 @@ public final class SimpleFilterHandler {
         .filter(a -> a.getJavaMember().getName().equalsIgnoreCase(pathField))
         .findFirst().orElse(null);
       if (attribute == null || isBasicAttribute(attribute)) {
-        break;
+        return Optional.ofNullable(attribute);
       } else {
         rootJavaType = attribute.getJavaType();
       }
