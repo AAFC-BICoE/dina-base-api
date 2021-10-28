@@ -20,8 +20,10 @@ import javax.persistence.metamodel.Metamodel;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 
 /**
  * Simple filter handler for filtering by a value in a single attribute. Example GET request where pcrPrimer's
@@ -117,17 +119,15 @@ public final class SimpleFilterHandler {
   private static <E> Predicate generateJsonbPredicate(
     Path<E> root, CriteriaBuilder cb, List<String> attributePath, String columnName, String value
   ) {
-    List<String> jsonbPath = new ArrayList<>(attributePath);
-    int pathIndex = 0;
-    for (int j = 0; j < jsonbPath.size(); j++) {
-      String p = jsonbPath.get(j);
-      if (p.equalsIgnoreCase(columnName) && j < jsonbPath.size() - 1) {
-        pathIndex = j + 1;
+    Queue<String> jsonbPath = new LinkedList<>(attributePath);
+    while (!jsonbPath.isEmpty()) {
+      String poll = jsonbPath.poll();
+      if (poll.equalsIgnoreCase(columnName)) {
+        return new JsonbValueSpecification<E>(columnName, jsonbPath.toArray(String[]::new))
+          .toPredicate(root, cb, value);
       }
     }
-    jsonbPath = jsonbPath.subList(pathIndex, jsonbPath.size());
-    return new JsonbValueSpecification<E>(columnName, jsonbPath.toArray(String[]::new))
-      .toPredicate(root, cb, value);
+    return cb.and();
   }
 
   private static <E> Optional<Attribute<?, ?>> findBasicAttribute(
