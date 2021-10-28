@@ -245,6 +245,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   private ProjectDTO sendProjectByOperations(TaskDTO task, String alias) {
     ProjectDTO project = ProjectDTO.builder()
       .nameTranslations(Collections.singletonList(ComplexObject.builder().name("complex").build()))
+      .alias(alias)
       .name(RandomStringUtils.randomAlphabetic(5)).build();
     String agentID = UUID.randomUUID().toString();
     String authorID = UUID.randomUUID().toString();
@@ -260,7 +261,6 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     project.setOriginalAuthor(ExternalRelationDto.builder().id(authorID).build());
     project.setAcMetaDataCreator(ExternalRelationDto.builder().id(agentID).build());
     project.setTask(task);
-    project.setAlias(alias);
     return project;
   }
 
