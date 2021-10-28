@@ -48,6 +48,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestConfiguration
 @SpringBootTest(
@@ -146,6 +147,28 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   }
 
   @Test
+  void partialUpdate_SingleFieldPath_Only1FieldChanged() {
+    TaskDTO task = sendTask();
+    ProjectDTO expected = sendProjectByOperations(task, "alias");
+
+    //Assert correct state
+    assertProject(expected, projectRepo.findOne(expected.getUuid(), createProjectQuerySpec()));
+
+    //Send empty patch
+    super.sendPatch(ProjectDTO.RESOURCE_TYPE, expected.getUuid().toString(),
+      Map.of(
+        "data",
+        Map.of(
+          "type", ProjectDTO.RESOURCE_TYPE,
+          "attributes", Map.of("name", "changedName")
+        )));
+
+    //Assert that Alias hasn't Changed
+    ProjectDTO found = projectRepo.findOne(expected.getUuid(), createProjectQuerySpec());
+    assertEquals(expected.getAlias(), found.getAlias());
+  }
+
+  @Test
   void metaInfo_find_metaInfoContainsExternalRelation() {
     validateMetaOfResponse(super.sendGet(
       ProjectDTO.RESOURCE_TYPE,
@@ -213,6 +236,10 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   }
 
   private ProjectDTO sendProjectByOperations(TaskDTO task) {
+    return sendProjectByOperations(task, null);
+  }
+
+  private ProjectDTO sendProjectByOperations(TaskDTO task, String alias) {
     ProjectDTO project = ProjectDTO.builder()
       .nameTranslations(Collections.singletonList(ComplexObject.builder().name("complex").build()))
       .name(RandomStringUtils.randomAlphabetic(5)).build();
@@ -230,6 +257,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     project.setOriginalAuthor(ExternalRelationDto.builder().id(authorID).build());
     project.setAcMetaDataCreator(ExternalRelationDto.builder().id(agentID).build());
     project.setTask(task);
+    project.setAlias(alias);
     return project;
   }
 

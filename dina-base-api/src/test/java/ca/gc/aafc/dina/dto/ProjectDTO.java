@@ -36,6 +36,7 @@ public final class ProjectDTO {
   private String name;
   private OffsetDateTime createdOn;
   private String createdBy;
+  private String alias;
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<ComplexObject> nameTranslations;
