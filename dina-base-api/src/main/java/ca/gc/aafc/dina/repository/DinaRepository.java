@@ -105,7 +105,7 @@ public class DinaRepository<D, E extends DinaEntity>
     this.registry = new DinaMappingRegistry(resourceClass);
     this.mappingLayer = new DinaMappingLayer<>(resourceClass, dinaMapper, dinaService, this.registry);
     this.hasFieldAdapters = this.registry.hasFieldAdapters();
-    this.idFieldName = findIdFieldName(resourceClass);
+    this.idFieldName = this.registry.findJsonIdFieldName(resourceClass);
   }
 
   /**
@@ -323,16 +323,6 @@ public class DinaRepository<D, E extends DinaEntity>
     // validation group should probably be set here
     dinaService.validateConstraints(entity, null);
     dinaService.validateBusinessRules(entity);
-  }
-
-  /**
-   * Returns the id field name for a given class.
-   *
-   * @param clazz - class to find the id field name for
-   * @return - id field name for a given class.
-   */
-  private String findIdFieldName(Class<?> clazz) {
-    return this.registry.findJsonIdFieldName(clazz);
   }
 
   @Override
