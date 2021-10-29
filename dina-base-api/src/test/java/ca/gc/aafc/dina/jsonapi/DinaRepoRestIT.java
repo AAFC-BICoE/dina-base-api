@@ -48,6 +48,10 @@ import java.util.Properties;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @TestConfiguration
 @SpringBootTest(
@@ -87,7 +91,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   void bulkDelete_ResourcesDeleted() {
     TaskDTO task = sendTask();
     ProjectDTO expected = sendProjectByOperations(task);
-    Assertions.assertEquals(1, projectRepo.findAll(createProjectQuerySpec()).size());
+    assertEquals(1, projectRepo.findAll(createProjectQuerySpec()).size());
 
     Map<String, Object> map = JsonAPITestHelper.toJsonAPIMap(
       ProjectDTO.RESOURCE_TYPE, Collections.emptyMap(), null, expected.getUuid().toString());
@@ -96,7 +100,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
       .addOperation(HttpMethod.DELETE, path, map).buildOperation();
 
     sendOperation(operationMap);
-    Assertions.assertEquals(0, projectRepo.findAll(createProjectQuerySpec()).size());
+    assertEquals(0, projectRepo.findAll(createProjectQuerySpec()).size());
   }
 
   @Test
@@ -119,9 +123,9 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
 
     sendOperation(operationMap);
     ProjectDTO result = projectRepo.findOne(persisted.getUuid(), createProjectQuerySpec());
-    Assertions.assertEquals(expectedName, result.getName());
-    Assertions.assertEquals(expectedTask.getUuid(), result.getTask().getUuid());
-    Assertions.assertEquals(expectedTask.getPowerLevel(), result.getTask().getPowerLevel());
+    assertEquals(expectedName, result.getName());
+    assertEquals(expectedTask.getUuid(), result.getTask().getUuid());
+    assertEquals(expectedTask.getPowerLevel(), result.getTask().getPowerLevel());
   }
 
   @Test
@@ -133,16 +137,30 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     assertProject(expected, projectRepo.findOne(expected.getUuid(), createProjectQuerySpec()));
 
     //Send empty patch
-    super.sendPatch(ProjectDTO.RESOURCE_TYPE, expected.getUuid().toString(),
-      Map.of(
-        "data",
-        Map.of(
-          "type", ProjectDTO.RESOURCE_TYPE,
-          "attributes", Collections.emptyMap()
-        )));
+    sendPatch(ProjectDTO.RESOURCE_TYPE, expected.getUuid().toString(),
+        JsonAPITestHelper.toJsonAPIMap(ProjectDTO.RESOURCE_TYPE, Collections.emptyMap()));
 
     //Assert Nothing Changes
     assertProject(expected, projectRepo.findOne(expected.getUuid(), createProjectQuerySpec()));
+  }
+
+  @Test
+  void partialUpdate_SingleFieldPatch_Only1FieldChanged() {
+    TaskDTO task = sendTask();
+    ProjectDTO expected = sendProjectByOperations(task);
+
+    //Assert correct state
+    assertProject(expected, projectRepo.findOne(expected.getUuid(), createProjectQuerySpec()));
+    assertNotNull(expected.getAlias());
+
+    //Patch a single field
+    sendPatch(ProjectDTO.RESOURCE_TYPE, expected.getUuid().toString(),
+        JsonAPITestHelper.toJsonAPIMap(ProjectDTO.RESOURCE_TYPE, Map.of("name", "changedName" )));
+
+    //Assert that Alias hasn't Changed
+    ProjectDTO found = projectRepo.findOne(expected.getUuid(), createProjectQuerySpec());
+    assertEquals(expected.getAlias(), found.getAlias());
+    assertNotEquals(expected.getName(), found.getName());
   }
 
   @Test
@@ -215,6 +233,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   private ProjectDTO sendProjectByOperations(TaskDTO task) {
     ProjectDTO project = ProjectDTO.builder()
       .nameTranslations(Collections.singletonList(ComplexObject.builder().name("complex").build()))
+      .alias(RandomStringUtils.randomAlphabetic(5))
       .name(RandomStringUtils.randomAlphabetic(5)).build();
     String agentID = UUID.randomUUID().toString();
     String authorID = UUID.randomUUID().toString();
@@ -252,24 +271,24 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   }
 
   private void assertProject(ProjectDTO expected, ProjectDTO result) {
-    Assertions.assertEquals(expected.getName(), result.getName());
+    assertEquals(expected.getName(), result.getName());
     assertExternalType(expected.getAcMetaDataCreator(), result.getAcMetaDataCreator());
     assertExternalType(expected.getOriginalAuthor(), result.getOriginalAuthor());
     if (expected.getTask() != null) {
-      Assertions.assertNotNull(result.getTask());
-      Assertions.assertEquals(expected.getTask().getUuid(), result.getTask().getUuid());
-      Assertions.assertEquals(expected.getTask().getPowerLevel(), result.getTask().getPowerLevel());
+      assertNotNull(result.getTask());
+      assertEquals(expected.getTask().getUuid(), result.getTask().getUuid());
+      assertEquals(expected.getTask().getPowerLevel(), result.getTask().getPowerLevel());
     } else {
-      Assertions.assertNull(result.getTask());
+      assertNull(result.getTask());
     }
   }
 
   private static void assertExternalType(ExternalRelationDto expected, ExternalRelationDto result) {
     if (expected == null) {
-      Assertions.assertNull(result);
+      assertNull(result);
     } else {
-      Assertions.assertNotNull(result);
-      Assertions.assertEquals(expected.getId(), result.getId());
+      assertNotNull(result);
+      assertEquals(expected.getId(), result.getId());
     }
   }
 
@@ -287,7 +306,6 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   static class DinaRepoBulkOperationITConfig {
     @Bean
     public DinaRepository<ProjectDTO, Project> projectRepo(
-      BaseDAO baseDAO,
       ExternalResourceProvider externalResourceProvider,
       ProjectDinaService projectDinaService
     ) {
@@ -306,7 +324,6 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
 
     @Bean
     public DinaRepository<TaskDTO, Task> taskRepo(
-      BaseDAO baseDAO,
       ExternalResourceProvider externalResourceProvider,
       TaskDinaService taskDinaService
     ) {
@@ -324,7 +341,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     }
 
     @Service
-    class ProjectDinaService extends DefaultDinaService<Project> {
+    static class ProjectDinaService extends DefaultDinaService<Project> {
   
       public ProjectDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
         super(baseDAO, sv);
@@ -333,7 +350,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
   
     
     @Service
-    class TaskDinaService extends DefaultDinaService<Task> {
+    static class TaskDinaService extends DefaultDinaService<Task> {
   
       public TaskDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
         super(baseDAO, sv);
