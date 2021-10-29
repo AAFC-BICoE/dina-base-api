@@ -32,6 +32,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -45,21 +46,20 @@ public class JsonbPredicateBuildingIT {
 
   private static final String KEY = "customKey";
   private static final JsonbValueSpecification<JsonbPredicateITConfig.Tank> JSONB_VAL_SPECS = new JsonbValueSpecification<>(
-      "jsonData", KEY);
+    "jsonData", KEY);
 
   @Inject
   private BaseDAO baseDAO;
 
   @Test
   void jsonb_predicate_building() {
-
     String expectedValue = "CustomValue";
 
     JsonbPredicateITConfig.Tank tank = newTank(expectedValue);
     JsonbPredicateITConfig.Tank another = newTank("another");
 
     persistTank(expectedValue, tank);
-    persistTank( "another", another);
+    persistTank("another", another);
 
     CriteriaBuilder builder = baseDAO.getCriteriaBuilder();
     CriteriaQuery<JsonbPredicateITConfig.Tank> criteria = builder.createQuery(JsonbPredicateITConfig.Tank.class);
@@ -74,18 +74,46 @@ public class JsonbPredicateBuildingIT {
     Assertions.assertEquals(expectedValue, resultList.get(0).getJsonData().get(KEY));
   }
 
+  @Test
+  void jsonb_arrayPredicate_building() {
+    String expectedValue = "CustomValue";
+
+    JsonbPredicateITConfig.Tank tank = newTank(expectedValue);
+    JsonbPredicateITConfig.Tank another = newTank("another");
+
+    persistTank(expectedValue, tank);
+    persistTank("another", another);
+
+    CriteriaBuilder builder = baseDAO.getCriteriaBuilder();
+    CriteriaQuery<JsonbPredicateITConfig.Tank> criteria = builder.createQuery(JsonbPredicateITConfig.Tank.class);
+    Root<JsonbPredicateITConfig.Tank> root = criteria.from(JsonbPredicateITConfig.Tank.class);
+
+    Predicate predicate = new JsonbValueSpecification<JsonbPredicateITConfig.Tank>(
+      "jsonListData", "value").toPredicate(root, builder, expectedValue);
+    criteria.where(predicate).select(root);
+    List<JsonbPredicateITConfig.Tank> resultList = baseDAO.resultListFromCriteria(criteria, 0, 20);
+
+    Assertions.assertEquals(1, resultList.size());
+    Assertions.assertEquals(tank.getUuid(), resultList.get(0).getUuid());
+    Assertions.assertEquals(expectedValue, resultList.get(0).getJsonData().get(KEY));
+  }
+
   private void persistTank(String expectedValue, JsonbPredicateITConfig.Tank tank) {
     baseDAO.create(tank);
-    Map<String, String> expectedData = baseDAO.findOneByNaturalId(
+    JsonbPredicateITConfig.Tank result = baseDAO.findOneByNaturalId(
       tank.getUuid(),
-      JsonbPredicateITConfig.Tank.class).getJsonData();
-    Assertions.assertEquals(expectedValue, expectedData.get(KEY));
+      JsonbPredicateITConfig.Tank.class);
+    Assertions.assertEquals(expectedValue, result.getJsonData().get(KEY));
+    Assertions.assertEquals(expectedValue, result.getJsonListData().get(0).getValue());
   }
 
   private JsonbPredicateITConfig.Tank newTank(String expectedValue) {
+    Map<String, String> data = Map.of(KEY, expectedValue);
     return JsonbPredicateITConfig.Tank.builder()
       .id(RandomUtils.nextInt(0, 10000))
-      .jsonData(Map.of(KEY, expectedValue))
+      .jsonData(data)
+      .jsonListData(new ArrayList<>(List.of(
+        JsonbPredicateITConfig.Tank.JsonTank.builder().value(expectedValue).build())))
       .uuid(UUID.randomUUID())
       .build();
   }
@@ -113,6 +141,17 @@ public class JsonbPredicateBuildingIT {
       @Column(columnDefinition = "jsonb")
       private Map<String, String> jsonData;
 
+      @Type(type = "jsonb")
+      @Column(columnDefinition = "jsonb")
+      private List<JsonTank> jsonListData;
+
+      @Data
+      @Builder
+      @NoArgsConstructor
+      @AllArgsConstructor
+      public static class JsonTank {
+        private String value;
+      }
     }
 
   }
