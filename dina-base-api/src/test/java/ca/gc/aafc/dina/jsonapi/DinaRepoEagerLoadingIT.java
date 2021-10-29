@@ -61,10 +61,8 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     ChainTemplateDto persistedTemplate = persistTemplate();
     ChainDto chainDto = newChain();
 
-    String chainID = sendPost(CHAIN_PATH, chainToMap(persistedTemplate, chainDto)).extract()
-      .body()
-      .jsonPath()
-      .getString("data.id");
+    String chainID = JsonAPITestHelper.
+        extractId(sendPost(CHAIN_PATH, chainToMap(persistedTemplate, chainDto)));
 
     QuerySpec querySpec = new QuerySpec(ChainDto.class);
     querySpec.includeRelation(PathSpec.of("chainTemplate"));
@@ -79,10 +77,8 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     ChainTemplateDto persistedTemplate = persistTemplate();
     ChainDto chainDto = newChain();
 
-    String chainID = sendPost(CHAIN_PATH, chainToMap(persistedTemplate, chainDto)).extract()
-      .body()
-      .jsonPath()
-      .getString("data.id");
+    String chainID = JsonAPITestHelper.
+        extractId(sendPost(CHAIN_PATH, chainToMap(persistedTemplate, chainDto)));
 
     QuerySpec querySpec = new QuerySpec(ChainDto.class);
     querySpec.includeRelation(PathSpec.of("chainTemplate"));
