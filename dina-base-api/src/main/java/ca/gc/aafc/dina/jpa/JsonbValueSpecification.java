@@ -1,30 +1,42 @@
 package ca.gc.aafc.dina.jpa;
 
-import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
 
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
 /**
- * Allows to create JPA Predicate matching a value on a specific jsonb key.
- * PostgreSQL specific.
+ * Allows to create JPA Predicate matching a value on a specific jsonb key. PostgreSQL specific.
+ *
  * @param <T>
  */
-@RequiredArgsConstructor
 public class JsonbValueSpecification<T> {
 
   static final String JSONB_EXTRACT_PATH_PG_FUNCTION_NAME = "jsonb_extract_path_text";
 
   private final String columnName;
-  private final String keyName;
+  private final String[] keys;
 
-  public Predicate toPredicate(Root<T> root, CriteriaBuilder builder, String value) {
-    return builder.equal(builder
-        .function(JSONB_EXTRACT_PATH_PG_FUNCTION_NAME,
-            String.class,
-            root.get(this.columnName),
-            builder.literal(this.keyName)),
+  public JsonbValueSpecification(String columnName, String... keys) {
+    this.columnName = columnName;
+    this.keys = keys;
+  }
+
+  public Predicate toPredicate(Path<T> root, CriteriaBuilder builder, String value) {
+    if (ArrayUtils.isNotEmpty(keys)) {
+      Expression<?>[] literals = {root.get(this.columnName)};
+      for (String key : keys) {
+        literals = ArrayUtils.add(literals, builder.literal(key));
+      }
+      return builder.equal(
+        builder.function(
+          JSONB_EXTRACT_PATH_PG_FUNCTION_NAME,
+          String.class,
+          literals),
         value);
+    }
+    return builder.and();
   }
 }
