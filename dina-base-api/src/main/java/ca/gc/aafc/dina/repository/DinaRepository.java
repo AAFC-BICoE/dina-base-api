@@ -240,6 +240,14 @@ public class DinaRepository<D, E extends DinaEntity>
       Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
   }
 
+  /**
+   * Save an existing resource.
+   * @param resource resource to update. If the resource to update was received in a PATCH
+   *                 Crnk will give the current DTO (from findOne) with the fields received
+   *                 in the PATCH changed.
+   * @param <S>
+   * @return
+   */
   @Transactional
   @Override
   public <S extends D> S save(S resource) {
