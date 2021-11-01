@@ -51,3 +51,12 @@ VALUES
    (4, '42cb7ad4-6600-4067-90f2-87d81e045172', 'a4', 2, 'bc090507-bcee-48f8-b7bc-4c5551a2c52a'),
    (5, '61a75686-a964-451a-86de-b15a89cbcebd', 'a5', 2, 'bc090507-bcee-48f8-b7bc-4c5551a2c52a'),
    (6, 'ffe87eae-5a10-44d2-8beb-cd2db7b116b9', 'a6', NULL, '02bd39da-5471-4ca2-b82d-b407551c7f31');
+
+CREATE OR REPLACE FUNCTION jsonb_path_exists_varchar(target jsonb, path varchar, vars varchar)
+ RETURNS boolean AS
+'
+ BEGIN
+  RETURN(jsonb_path_exists(target, path::jsonpath, vars::jsonb));
+ END
+'
+LANGUAGE plpgsql IMMUTABLE;
