@@ -13,7 +13,8 @@ import java.util.Map;
  * specific jsonb_path_exists function. Since jsonb_path_exists requires 
  * parameter of type jsonpath and it is not well handled by JPA we are relying on 
  * a custom proxy function jsonb_path_exists_varchar that will be responsible to cast the varchar to jsonpath.
- *
+ * 
+ * Note that jsonb_path_exists cannot use Index so it doesn't scale well.
  */
 public class JsonbKeyValuePredicate<T> {
 
