@@ -8,13 +8,20 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import java.util.Map;
 
+/**
+ * Class that can build JPA Predicates from jsonb field using PostgreSQL
+ * specific jsonb_path_exists function. Since jsonb_path_exists requires 
+ * parameter of type jsonpath and it is not well handled by JPA we are relying on 
+ * a custom proxy function jsonb_path_exists_varchar that will be responsible to cast the varchar to jsonpath.
+ *
+ */
 public class JsonbKeyValuePredicate<T> {
 
   // Custom function that is responsible to cast the parameters
   static final String JSONB_EXTRACT_PATH_PG_FUNCTION_NAME = "jsonb_path_exists_varchar";
+  private static final ObjectMapper OM = new ObjectMapper();
 
   private final String columnName;
-  private static final ObjectMapper OM = new ObjectMapper();
   private final String path;
 
   public JsonbKeyValuePredicate(String columnName, String keyName) {
