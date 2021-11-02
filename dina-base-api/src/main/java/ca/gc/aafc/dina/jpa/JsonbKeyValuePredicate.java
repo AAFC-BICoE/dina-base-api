@@ -14,7 +14,7 @@ public class JsonbKeyValuePredicate<T> {
   static final String JSONB_EXTRACT_PATH_PG_FUNCTION_NAME = "jsonb_path_exists_varchar";
 
   private final String columnName;
-  private final ObjectMapper OM = new ObjectMapper();
+  private static final ObjectMapper OM = new ObjectMapper();
   private final String path;
 
   public JsonbKeyValuePredicate(String columnName, String keyName) {
