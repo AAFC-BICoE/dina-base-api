@@ -88,7 +88,7 @@ public class JsonbKeyValuePredicateIT {
     CriteriaQuery<JsonbPredicateITConfig.Tank> criteria = builder.createQuery(JsonbPredicateITConfig.Tank.class);
     Root<JsonbPredicateITConfig.Tank> root = criteria.from(JsonbPredicateITConfig.Tank.class);
 
-    Predicate predicate = new JsonbValueSpecification<JsonbPredicateITConfig.Tank>(
+    Predicate predicate = new JsonbKeyValuePredicate<JsonbPredicateITConfig.Tank>(
       "jsonListData", "value").toPredicate(root, builder, expectedValue);
     criteria.where(predicate).select(root);
     List<JsonbPredicateITConfig.Tank> resultList = baseDAO.resultListFromCriteria(criteria, 0, 20);
