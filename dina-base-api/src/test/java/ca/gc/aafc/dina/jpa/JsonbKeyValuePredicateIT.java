@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.jpa;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -52,7 +53,7 @@ public class JsonbKeyValuePredicateIT {
   private BaseDAO baseDAO;
 
   @Test
-  void jsonb_predicate_building() {
+  void jsonb_predicate_building() throws JsonProcessingException {
     String expectedValue = "CustomValue";
 
     JsonbPredicateITConfig.Tank tank = newTank(expectedValue);
@@ -75,7 +76,7 @@ public class JsonbKeyValuePredicateIT {
   }
 
   @Test
-  void jsonb_arrayPredicate_building() {
+  void jsonb_arrayPredicate_building() throws JsonProcessingException {
     String expectedValue = "CustomValue";
 
     JsonbPredicateITConfig.Tank tank = newTank(expectedValue);
