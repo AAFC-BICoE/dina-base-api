@@ -19,14 +19,14 @@ public class JsonbKeyValuePredicate<T> {
 
   public Predicate toPredicate(Path<T> root, CriteriaBuilder builder, String value) {
 
-    //TODO ensure proper escaping
-    String val =  "{\"val\":\"" + value +"\"}";
+    String val = "{\"val\":\"" + value + "\"}";
 
     return builder.isTrue(builder
-            .function(JSONB_EXTRACT_PATH_PG_FUNCTION_NAME,
-                Boolean.class,
-                root.get(this.columnName),
-                builder.literal(path),
-                builder.literal(val)));
+      .function(
+        JSONB_EXTRACT_PATH_PG_FUNCTION_NAME,
+        Boolean.class,
+        root.get(this.columnName),
+        builder.literal(path),
+        builder.literal(val)));
   }
 }
