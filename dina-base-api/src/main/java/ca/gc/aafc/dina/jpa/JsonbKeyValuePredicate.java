@@ -22,8 +22,7 @@ public class JsonbKeyValuePredicate<T> {
     this.path = "$[*]." + keyName + " ? (@ == $val)";
   }
 
-  public Predicate toPredicate(Path<T> root, CriteriaBuilder builder, String value)
-    throws JsonProcessingException {
+  public Predicate toPredicate(Path<T> root, CriteriaBuilder builder, String value) throws JsonProcessingException {
     return builder.isTrue(builder
       .function(
         JSONB_EXTRACT_PATH_PG_FUNCTION_NAME,
