@@ -33,6 +33,7 @@ public final class Project implements DinaEntity {
   private String name;
   private OffsetDateTime createdOn;
   private String createdBy;
+  private String alias;
 
   //Internal Relation
   @OneToOne
