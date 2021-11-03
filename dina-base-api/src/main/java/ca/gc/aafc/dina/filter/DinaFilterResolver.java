@@ -206,7 +206,7 @@ public class DinaFilterResolver {
 
     //Simple Filters
     restrictions.add(SimpleFilterHandler.getRestriction(
-      root, cb, rsqlArgumentParser, em.getMetamodel(), querySpec.getFilters()));
+      root, cb, rsqlArgumentParser::parse, em.getMetamodel(), querySpec.getFilters()));
     //Rsql Filters
     Optional<FilterSpec> rsql = querySpec.findFilter(PathSpec.of("rsql"));
     if (rsql.isPresent() && StringUtils.isNotBlank(rsql.get().getValue())) {

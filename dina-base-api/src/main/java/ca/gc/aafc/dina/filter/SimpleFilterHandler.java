@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.filter;
 
 import ca.gc.aafc.dina.jpa.JsonbKeyValuePredicate;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.tennaito.rsql.misc.ArgumentParser;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
 import lombok.NonNull;
@@ -24,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.function.BiFunction;
 
 /**
  * Simple filter handler for filtering by a value in a single attribute. Example GET request where pcrPrimer's
@@ -39,15 +39,15 @@ public final class SimpleFilterHandler {
    *
    * @param cb        - the criteria builder, cannot be null
    * @param root      - the root type, cannot be null
-   * @param parser    - used to parse the arguments into there given types. See {@link
-   *                  DinaFilterArgumentParser}
+   * @param parser    - Lambda Expression to convert a given string value to a given class representation of
+   *                  that value
    * @param metamodel - JPA Metamodel
    * @return Generates a predicate for a given crnk filter.
    */
   public static <E> Predicate getRestriction(
     @NonNull Root<E> root,
     @NonNull CriteriaBuilder cb,
-    @NonNull ArgumentParser parser,
+    @NonNull BiFunction<String , Class<?>, Object > parser,
     @NonNull Metamodel metamodel,
     @NonNull List<FilterSpec> filters
   ) {
@@ -85,7 +85,7 @@ public final class SimpleFilterHandler {
 
   private static void addPredicates(
     CriteriaBuilder cb,
-    ArgumentParser parser,
+    BiFunction<String , Class<?>, Object > parser,
     @NonNull List<Predicate> predicates,
     @NonNull FilterSpec spec,
     @NonNull Path<?> path,
@@ -100,7 +100,7 @@ public final class SimpleFilterHandler {
         predicates.add(generateJsonbPredicate(
           path.getParentPath(), cb, spec.getAttributePath(), memberName, filterValue.toString()));
       } else {
-        predicates.add(cb.equal(path, parser.parse(filterValue.toString(), path.getJavaType())));
+        predicates.add(cb.equal(path, parser.apply(filterValue.toString(), path.getJavaType())));
       }
     }
   }
