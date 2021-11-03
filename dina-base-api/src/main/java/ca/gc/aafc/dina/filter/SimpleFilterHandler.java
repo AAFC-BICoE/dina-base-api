@@ -131,11 +131,11 @@ public final class SimpleFilterHandler {
   }
 
   /**
-   * Returns the attribute found at the given attribute path.
+   * Returns the attribute registered with the given meta-model found at the given attribute path.
    *
    * @param metamodel     - JPA Metamodel
    * @param attributePath - list of attribute names represented by the requested path
-   * @param rootType      - Initial Java class of the attribute to search
+   * @param rootType      - Initial Owning Java class of the attribute to search
    * @return Returns the attribute found and the given attribute path.
    */
   private static <E> Optional<Attribute<?, ?>> findAttribute(
