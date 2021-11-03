@@ -131,7 +131,7 @@ public final class SimpleFilterHandler {
   }
 
   /**
-   * Returns the attribute found and the given attribute path.
+   * Returns the attribute found at the given attribute path.
    *
    * @param metamodel     - JPA Metamodel
    * @param attributePath - list of attribute names represented by the requested path
