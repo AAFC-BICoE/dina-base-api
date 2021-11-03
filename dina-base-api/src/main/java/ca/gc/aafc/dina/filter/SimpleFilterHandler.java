@@ -47,7 +47,7 @@ public final class SimpleFilterHandler {
   public static <E> Predicate getRestriction(
     @NonNull Root<E> root,
     @NonNull CriteriaBuilder cb,
-    @NonNull BiFunction<String , Class<?>, Object > parser,
+    @NonNull BiFunction<String, Class<?>, Object> parser,
     @NonNull Metamodel metamodel,
     @NonNull List<FilterSpec> filters
   ) {
@@ -85,7 +85,7 @@ public final class SimpleFilterHandler {
 
   private static void addPredicates(
     CriteriaBuilder cb,
-    BiFunction<String , Class<?>, Object > parser,
+    BiFunction<String, Class<?>, Object> parser,
     @NonNull List<Predicate> predicates,
     @NonNull FilterSpec spec,
     @NonNull Path<?> path,
@@ -130,6 +130,14 @@ public final class SimpleFilterHandler {
     return cb.and();
   }
 
+  /**
+   * Returns the attribute found and the given attribute path.
+   *
+   * @param metamodel     - JPA Metamodel
+   * @param attributePath - list of attribute names represented by the requested path
+   * @param rootType      - Initial Java class of the attribute to search
+   * @return Returns the attribute found and the given attribute path.
+   */
   private static <E> Optional<Attribute<?, ?>> findAttribute(
     @NonNull Metamodel metamodel,
     @NonNull List<String> attributePath,
@@ -155,6 +163,13 @@ public final class SimpleFilterHandler {
     return Optional.ofNullable(attribute);
   }
 
+  /**
+   * Returns true if the given attribute is basic. A basic attribute's value can map directly to the column
+   * value in the database.
+   *
+   * @param attribute attribute to evaluate
+   * @return true if the given attribute is basic.
+   */
   private static boolean isBasicAttribute(@NonNull Attribute<?, ?> attribute) {
     return Attribute.PersistentAttributeType.BASIC.equals(attribute.getPersistentAttributeType());
   }
