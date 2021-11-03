@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.filter;
 
-import ca.gc.aafc.dina.jpa.JsonbValueSpecification;
+import ca.gc.aafc.dina.jpa.JsonbKeyValuePredicate;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tennaito.rsql.misc.ArgumentParser;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
@@ -75,6 +76,8 @@ public final class SimpleFilterHandler {
       } catch (IllegalArgumentException | NoSuchFieldException e) {
         // This FilterHandler will ignore filter parameters that do not map to fields on the DTO,
         // like "rsql" or others that are only handled by other FilterHandlers.
+      } catch (JsonProcessingException e) {
+        throw new IllegalArgumentException("Invalid Json filter value", e);
       }
     }
     return cb.and(predicates.toArray(Predicate[]::new));
@@ -87,7 +90,7 @@ public final class SimpleFilterHandler {
     @NonNull FilterSpec spec,
     @NonNull Path<?> path,
     @NonNull Member member
-  ) throws NoSuchFieldException {
+  ) throws NoSuchFieldException, JsonProcessingException {
     Object filterValue = spec.getValue();
     if (filterValue == null) {
       predicates.add(generateNullComparisonPredicate(cb, path, spec.getOperator()));
@@ -116,11 +119,11 @@ public final class SimpleFilterHandler {
 
   private static <E> Predicate generateJsonbPredicate(
     Path<E> root, CriteriaBuilder cb, List<String> attributePath, String columnName, String value
-  ) {
+  ) throws JsonProcessingException {
     Queue<String> jsonbPath = new LinkedList<>(attributePath);
     while (!jsonbPath.isEmpty()) {
       if (jsonbPath.poll().equalsIgnoreCase(columnName)) {
-        return new JsonbValueSpecification<E>(columnName, jsonbPath.toArray(String[]::new))
+        return new JsonbKeyValuePredicate<E>(columnName, StringUtils.join(jsonbPath, "."))
           .toPredicate(root, cb, value);
       }
     }
