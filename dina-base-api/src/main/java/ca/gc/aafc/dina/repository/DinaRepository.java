@@ -272,7 +272,8 @@ public class DinaRepository<D, E extends DinaEntity>
    * create an existing resource.
    *
    * @param resource resource to create. If the resource to create was received in a POST Crnk will give the
-   *                 current DTO with the fields received in the POST.
+   *                 current DTO with the fields received in the POST. Fields missing from the request body
+   *                 will default to the values set by the java class.
    * @param <S>
    * @return
    */
