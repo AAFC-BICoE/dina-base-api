@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.72-SNAPSHOT</version>
+    <version>0.72</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -103,7 +103,7 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.72-SNAPSHOT</version>
+      <version>0.72</version>
       <scope>test</scope>
     </dependency>
     <!-- Spring mybatis -->
