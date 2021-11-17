@@ -147,6 +147,40 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
     return roles.get().stream().anyMatch(dinaRole -> dinaRole.isHigherOrEqualThan(minimumDinaRole.get()));
   }
 
+  /**
+   * Returns true if the given authenticated user belongs to any group that is equal or higher than the
+   * given minimum group.
+   * 
+   * @param user                User with roles to check against.
+   * @param minimumRole         The minimum role to check the user has.
+   * @return true if the given user has any group that is equal or higher than the given minimum role.
+   */
+  public boolean hasMinimumDinaRole(
+    DinaAuthenticatedUser user,
+    String minimumRole
+  ) {
+    // Ensure all provided arguments are valid.
+    if (user == null || StringUtils.isBlank(minimumRole)) {
+      return false;
+    }
+
+    // Using the string of the dina role, convert it into a DinaRole object (if possible).
+    Optional<DinaRole> minimumDinaRole = DinaRole.fromString(minimumRole);
+
+    // Retrieve all of the roles for the user.
+    Map<String, Set<DinaRole>> rolesPerGroup = user.getRolesPerGroup();
+    if (MapUtils.isEmpty(rolesPerGroup) || minimumDinaRole.isEmpty()) {
+      return false;
+    }
+
+    // Go through all of the roles the user has, and if any of them are higher or equal to the given
+    // minimum role it will return true.
+    return rolesPerGroup.values()
+      .stream()
+      .flatMap(Set::stream)
+      .anyMatch(dinaRole -> dinaRole.isHigherOrEqualThan(minimumDinaRole.get()));
+  }
+
   @Override
   public Object getThis() {
     return this;

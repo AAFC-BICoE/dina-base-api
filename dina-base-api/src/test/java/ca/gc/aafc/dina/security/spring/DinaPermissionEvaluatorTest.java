@@ -152,6 +152,44 @@ class DinaPermissionEvaluatorTest {
   }
 
   @Test
+  void hasMinimumDinaRole_hasRole_returnsTrue() {
+    // Test a user with the exact role.
+    DinaAuthenticatedUser exactRoleUser = getDinaAuthenticatedUser(DinaRole.COLLECTION_MANAGER);
+    Assertions.assertTrue(evaluator.hasMinimumDinaRole(exactRoleUser, "collection_manager"));
+
+    // Test a user with a higher role.
+    DinaAuthenticatedUser higherRoleUser = getDinaAuthenticatedUser(DinaRole.DINA_ADMIN);
+    Assertions.assertTrue(evaluator.hasMinimumDinaRole(higherRoleUser, "collection_manager"));
+  }
+
+  @Test
+  void hasMinimumDinaRole_lowerRole_returnsFalse() {
+    // Test a user with a lower role.
+    DinaAuthenticatedUser lowerRoleUser = getDinaAuthenticatedUser(DinaRole.STUDENT);
+    Assertions.assertFalse(evaluator.hasMinimumDinaRole(lowerRoleUser, "collection_manager"));
+  }
+
+  @Test
+  void hasMinimumDinaRole_blankRole_returnsFalse() {
+    // Since the minimum role was defined as null it will return null.
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.DINA_ADMIN);
+    Assertions.assertFalse(evaluator.hasMinimumDinaRole(user, null));
+  }
+
+  @Test
+  void hasMinimumDinaRole_roleNotFound_returnsFalse() {
+    // Since the minimum role could not be found, it should return false.
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.DINA_ADMIN);
+    Assertions.assertFalse(evaluator.hasMinimumDinaRole(user, "not_a_real_role"));
+  }
+
+  @Test
+  void hasMinimumDinaRole_blankUser_returnsFalse() {
+    // This should return false since no user was provided.
+    Assertions.assertFalse(evaluator.hasMinimumDinaRole(null, "student"));
+  }
+
+  @Test
   void dinaRolePriorityComparison() {
 
     assertTrue(DinaRole.COLLECTION_MANAGER.isHigherThan(DinaRole.STUDENT));
