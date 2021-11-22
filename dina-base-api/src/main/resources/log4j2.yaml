@@ -18,17 +18,15 @@ Configuration:
       PatternLayout:
         pattern: "%d [%t] %-5p %c - %m%n"
 
-
   Loggers:
       Logger:
-        - name: ca.gc.aafc.dina
+        - name: ca.gc.aafc
           additivity: false
-          level: trace
-          AppenderRef:
-            - ref: LogToConsole
-            - ref: LogToFile
-      Root:
           level: debug
           AppenderRef:
             - ref: LogToConsole
-            - ref: LogToFile
+#            - ref: LogToFile
+      Root:
+          level: warning
+          AppenderRef:
+            - ref: LogToConsole
