@@ -4,6 +4,7 @@ import ca.gc.aafc.dina.dto.RelatedEntity;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.hibernate.Hibernate;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
  * @param <D> Type of Dto
  * @param <E> Type of Entity
  */
+@Log4j2
 @AllArgsConstructor
 public class DinaMapper<D, E> {
 
@@ -197,7 +199,7 @@ public class DinaMapper<D, E> {
               currentVisited);
           }
         }
-
+        log.trace("Mapping relation [{}] of class [{}]", () -> relationFieldName, targetType::toString);
         PropertyUtils.setProperty(target, relationFieldName, targetRelation);
       }
     }
@@ -266,6 +268,7 @@ public class DinaMapper<D, E> {
     Set<String> selectedFields
   ) {
     for (String attribute : selectedFields) {
+      log.trace("Mapping property [{}] of class [{}]", () -> attribute, () -> source.getClass().toString());
       PropertyUtils.setProperty(target, attribute, PropertyUtils.getProperty(source, attribute));
     }
   }
