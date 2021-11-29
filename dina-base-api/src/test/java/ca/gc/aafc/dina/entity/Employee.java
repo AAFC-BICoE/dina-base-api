@@ -15,11 +15,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.NaturalId;
 
-import ca.gc.aafc.dina.validation.ISOPartialDate;
+import ca.gc.aafc.dina.service.OnCreate;
+import ca.gc.aafc.dina.service.OnUpdate;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -36,6 +38,8 @@ public class Employee implements DinaEntity {
   private Integer id;
 
   @NaturalId
+  @Null(groups = OnCreate.class)
+  @NotNull(groups = OnUpdate.class)
   @NotNull
   private UUID uuid;
 
@@ -44,9 +48,6 @@ public class Employee implements DinaEntity {
 
   @Size(min = 1, max = 50)
   private String job;
-
-  @ISOPartialDate
-  private String employedOn;
 
   @OneToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "custom_field_id")
