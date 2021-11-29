@@ -94,7 +94,7 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
     ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
     messageSource.setAlwaysUseMessageFormat(true);
 
-    messageSource.setBasenames("classpath:validation-messages", "classpath:base-validation-messages");
+    messageSource.setBasename("classpath:validation-messages");
     messageSource.setDefaultEncoding("UTF-8");
     return messageSource;
   }
