@@ -16,11 +16,11 @@ import javax.validation.Payload;
 public @interface ISOPartialDate {
   
   //error message
-  public String message() default "{ISO.partial.date.unable.to.parse}";
+  String message() default "{ISO.partial.date.unable.to.parse}";
 
   //represents group of constraints
-  public Class<?>[] groups() default {};
+  Class<?>[] groups() default {};
 
   //represents additional information about annotation
-  public Class<? extends Payload>[] payload() default {};
+  Class<? extends Payload>[] payload() default {};
 }
