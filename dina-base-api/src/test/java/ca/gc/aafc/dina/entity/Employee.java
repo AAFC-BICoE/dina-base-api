@@ -40,7 +40,6 @@ public class Employee implements DinaEntity {
   @NaturalId
   @Null(groups = OnCreate.class)
   @NotNull(groups = OnUpdate.class)
-  @NotNull
   private UUID uuid;
 
   @Column(unique = true)
