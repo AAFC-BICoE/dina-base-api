@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.NaturalId;
@@ -35,6 +36,7 @@ public class Employee implements DinaEntity {
   private Integer id;
 
   @NaturalId
+  @NotNull
   private UUID uuid;
 
   @Column(unique = true)
