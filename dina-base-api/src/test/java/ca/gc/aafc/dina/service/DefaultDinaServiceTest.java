@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -34,8 +35,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.DinaUserConfig.EmployeeDinaService;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.DepartmentType;
+import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import lombok.NonNull;
 import org.springframework.validation.SmartValidator;
@@ -48,6 +51,9 @@ public class DefaultDinaServiceTest {
 
   @Inject
   private DinaServiceTestImplementation serviceUnderTest;
+
+  @Inject
+  private EmployeeDinaService employeeService;
 
   @Test
   public void create_ValidEntity_EntityPersists() {
@@ -307,6 +313,16 @@ public class DefaultDinaServiceTest {
     assertTrue(serviceUnderTest.existsByProperty(Department.class, "location", "dep location 2"));
     assertFalse(serviceUnderTest.existsByProperty(Department.class, "name", "dep3"));
 
+  }
+
+  @Test
+  public void customAnnotationValdiation_InvalidEmployee_ThrowsValidationException() { 
+    Employee employee = Employee.builder()
+      .employedOn("2021-01")
+      .name("Dina")
+      .build();
+    
+    assertDoesNotThrow(() -> employeeService.create(employee));
   }
 
   private static Department createLongNameDepartment() {
