@@ -56,6 +56,34 @@ public class ValidationRestIT {
   }
 
   @Test
+  void validateInvalidEmployee_InvalidPartialISO_ErrorCode422() {
+    EmployeeDto employeeDto = EmployeeDto.builder()
+      .job("job")
+      .employedOn("Twenty Sixteen")
+      .build();
+    newRequest()
+      .body(newValidationDto(EMPLOYEE_TYPE, JsonAPITestHelper.toAttributeMap(employeeDto), null))
+      .post(VALIDATION_ENDPOINT)
+      .then()
+      .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
+      .body("errors[0].detail", Matchers.endsWith("The provided value cannot be parsed to ISO Date Time"));
+  }
+
+  @Test
+  void validateValidEmployee_Code201() {
+    EmployeeDto employeeDto = EmployeeDto.builder()
+      .job("job")
+      .employedOn("2021-01")
+      .build();
+
+    newRequest()
+      .body(newValidationDto(DEPARTMENT_TYPE, JsonAPITestHelper.toAttributeMap(employeeDto), null))
+      .post(VALIDATION_ENDPOINT)
+      .then()
+      .assertThat().statusCode(201);
+  }
+
+  @Test
   void validateValidDepartment_Code201() {
     newRequest()
       .body(newValidationDto(DEPARTMENT_TYPE, newDepartmentDto(), null))

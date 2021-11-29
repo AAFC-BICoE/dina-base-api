@@ -22,6 +22,7 @@ import org.hibernate.annotations.NaturalId;
 
 import ca.gc.aafc.dina.service.OnCreate;
 import ca.gc.aafc.dina.service.OnUpdate;
+import ca.gc.aafc.dina.validation.ISOPartialDate;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -47,6 +48,9 @@ public class Employee implements DinaEntity {
 
   @Size(min = 1, max = 50)
   private String job;
+
+  @ISOPartialDate
+  private String employedOn;
 
   @OneToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "custom_field_id")
