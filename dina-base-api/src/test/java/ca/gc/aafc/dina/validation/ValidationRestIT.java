@@ -56,6 +56,23 @@ public class ValidationRestIT {
   }
 
   @Test
+  void validateInvalidDepartment_InvalidPartialISO_ErrorCode422() {
+    DepartmentDto dto = DepartmentDto.builder()
+      .uuid(UUID.randomUUID())
+      .name("dfadf")
+      .location("Montreal")
+      .establishedOn("Twenty Sixteen")
+      .build();
+
+    newRequest()
+      .body(newValidationDto(DEPARTMENT_TYPE, JsonAPITestHelper.toAttributeMap(dto), null))
+      .post(VALIDATION_ENDPOINT)
+      .then()
+      .body("errors[0].status", Matchers.equalToIgnoringCase("422"))
+      .body("errors[0].detail", Matchers.endsWith("The provided value cannot be parsed to ISO Date"));
+  }
+
+  @Test
   void validateValidDepartment_Code201() {
     newRequest()
       .body(newValidationDto(DEPARTMENT_TYPE, newDepartmentDto(), null))
@@ -168,6 +185,7 @@ public class ValidationRestIT {
       .uuid(UUID.randomUUID())
       .name("dfadf")
       .location("Montreal")
+      .establishedOn("2016-01")
       .build();
     return JsonAPITestHelper.toAttributeMap(dto);
   }
