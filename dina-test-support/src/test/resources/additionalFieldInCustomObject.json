@@ -10,9 +10,9 @@
       "createdDate":"2020-02-14T09:39:11.375928-05:00",
       "name":"OBJECT attr",
       "acceptedValues":[
-        "a",
-        1,
-        2
+      	"a",
+      	1,
+      	2
       ],
       "description":{
         "en":"obj",
@@ -20,16 +20,17 @@
       },
       "customObject": {
         "name": "string",
-        "id": 0
+        "id": 0,
+        "email": "e@mail.com"
       }
     },
     "relationships": {
-      "not_a_relation": {
+      "collectingEvent": {
         "data":
-        {
-          "type": "collecting-event",
-          "id": "f164098c-6c4b-44f6-8112-111a9a309aae"
-        }
+          {
+            "type": "collecting-event",
+            "id": "f164098c-6c4b-44f6-8112-111a9a309aae"
+          }
 
       }
     }

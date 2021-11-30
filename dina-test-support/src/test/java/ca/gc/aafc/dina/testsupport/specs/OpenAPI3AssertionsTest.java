@@ -88,7 +88,7 @@ public class OpenAPI3AssertionsTest {
     OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson,
       ValidationRestrictionOptions.builder()
         .allowAdditionalFields(false)
-        .allowableMissingFields(Set.of("createdDate", "description", "acceptedValues"))
+        .allowableMissingFields(Set.of("createdDate", "description", "acceptedValues", "customObject"))
         .build());
 
     responseJson = TestResourceHelper.readContentAsString("missingRelation.json");
@@ -135,6 +135,16 @@ public class OpenAPI3AssertionsTest {
   public void assertEndPointTest() {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     OpenAPI3Assertions.assertEndpoint(specsUrl, "/v1/managed-attribute", HttpMethod.GET);
+  }
+
+  @Test
+  public void assertSchema_WhenAdditionalFieldInNestedObject() throws IOException {
+    URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
+    String responseJson = TestResourceHelper.readContentAsString("additionalFieldInCustomObject.json");
+    Assertions.assertThrows(
+      AssertionFailedError.class,
+      () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute",
+        responseJson));
   }
 
 }

@@ -198,6 +198,13 @@ components:
                   example: {
                      "fr":  Description en Français,
                      "en":  English description}
+                customObject:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    id:
+                      type: integer
             relationships:
               type: object
               properties:
