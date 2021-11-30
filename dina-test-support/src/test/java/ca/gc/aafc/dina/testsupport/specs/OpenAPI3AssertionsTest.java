@@ -1,7 +1,7 @@
 package ca.gc.aafc.dina.testsupport.specs;
 
 import ca.gc.aafc.dina.testsupport.TestResourceHelper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import org.opentest4j.AssertionFailedError;
 import org.springframework.http.HttpMethod;
