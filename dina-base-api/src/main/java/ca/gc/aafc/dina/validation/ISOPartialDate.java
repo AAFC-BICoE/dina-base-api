@@ -15,12 +15,9 @@ import javax.validation.Payload;
 @Constraint(validatedBy = ISOPartialDateValidator.class)
 public @interface ISOPartialDate {
   
-  //error message
   String message() default "The provided value cannot be parsed to ISO Date";
 
-  //represents group of constraints
   Class<?>[] groups() default {};
 
-  //represents additional information about annotation
   Class<? extends Payload>[] payload() default {};
 }
