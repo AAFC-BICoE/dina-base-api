@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.73-SNAPSHOT</version>
+    <version>0.74-SNAPSHOT</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -33,6 +33,12 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!-- Used by Spotbug annotation -->
     <dependency>
@@ -103,7 +109,7 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.73-SNAPSHOT</version>
+      <version>0.74-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <!-- Spring mybatis -->

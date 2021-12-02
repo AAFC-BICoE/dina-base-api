@@ -20,6 +20,8 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.NaturalId;
 
+import ca.gc.aafc.dina.validation.ISOPartialDate;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -60,6 +62,9 @@ public class Department implements DinaEntity {
   private String createdBy;
 
   private OffsetDateTime createdOn;
+
+  @ISOPartialDate
+  private String establishedOn;
 
   // Simulates a possible jsonb field
   @Valid

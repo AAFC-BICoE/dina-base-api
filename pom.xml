@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.73-SNAPSHOT</version>
+  <version>0.74-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
@@ -41,7 +41,7 @@
     <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.1.0</asciidoctorj.diagram.version>
     <dependency.check.version>6.4.1</dependency.check.version>
-    <lombok-maven-plugin.version>1.18.16.0</lombok-maven-plugin.version>
+    <lombok-maven-plugin.version>1.18.20.0</lombok-maven-plugin.version>
     <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
@@ -69,7 +69,17 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
+ 		<exclusions>
+	        <exclusion>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-starter-logging</artifactId>
+	        </exclusion>
+    	</exclusions>
     </dependency>
+	<dependency>
+	    <groupId>org.springframework.boot</groupId>
+	    <artifactId>spring-boot-starter-log4j2</artifactId>
+	</dependency>    
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -128,6 +138,7 @@
       <version>${spotbugs.version}</version>
       <scope>provided</scope>
     </dependency>
+    
     <!-- TEST Scope -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
