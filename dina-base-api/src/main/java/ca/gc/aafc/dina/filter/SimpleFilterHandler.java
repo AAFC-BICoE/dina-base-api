@@ -123,8 +123,8 @@ public final class SimpleFilterHandler {
     Queue<String> jsonbPath = new LinkedList<>(attributePath);
     while (!jsonbPath.isEmpty()) {
       if (jsonbPath.poll().equalsIgnoreCase(columnName)) {
-        return new JsonbKeyValuePredicate<E>(columnName, StringUtils.join(jsonbPath, "."))
-          .toPredicate(root, cb, value);
+        return new JsonbKeyValuePredicate<E>().onKey(columnName, StringUtils.join(jsonbPath, "."))
+          .buildUsing(root, cb, value);
       }
     }
     return cb.and();

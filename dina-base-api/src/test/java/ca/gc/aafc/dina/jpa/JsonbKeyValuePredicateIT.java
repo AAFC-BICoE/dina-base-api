@@ -45,12 +45,10 @@ import java.util.UUID;
 @Transactional
 public class JsonbKeyValuePredicateIT {
 
-  private static final String KEY = "customKey";
-  private static final JsonbKeyValuePredicate<JsonbPredicateITConfig.Tank> JSONB_VAL_SPECS = new JsonbKeyValuePredicate<>(
-    "jsonData", KEY);
-
   @Inject
   private BaseDAO baseDAO;
+
+  private static final String KEY = "customKey";
 
   @Test
   void jsonb_predicate_building() throws JsonProcessingException {
@@ -61,15 +59,18 @@ public class JsonbKeyValuePredicateIT {
 
     persistTank(expectedValue, tank);
     persistTank("another", another);
-
+  
     CriteriaBuilder builder = baseDAO.getCriteriaBuilder();
     CriteriaQuery<JsonbPredicateITConfig.Tank> criteria = builder.createQuery(JsonbPredicateITConfig.Tank.class);
     Root<JsonbPredicateITConfig.Tank> root = criteria.from(JsonbPredicateITConfig.Tank.class);
 
-    Predicate predicate = JSONB_VAL_SPECS.toPredicate(root, builder, expectedValue);
+    Predicate predicate = new JsonbKeyValuePredicate<JsonbPredicateITConfig.Tank>()
+        .onKey("jsonData", KEY)
+        .buildUsing(root, builder, expectedValue);
+
     criteria.where(predicate).select(root);
     List<JsonbPredicateITConfig.Tank> resultList = baseDAO.resultListFromCriteria(criteria, 0, 20);
-
+  
     Assertions.assertEquals(1, resultList.size());
     Assertions.assertEquals(tank.getUuid(), resultList.get(0).getUuid());
     Assertions.assertEquals(expectedValue, resultList.get(0).getJsonData().get(KEY));
@@ -89,8 +90,10 @@ public class JsonbKeyValuePredicateIT {
     CriteriaQuery<JsonbPredicateITConfig.Tank> criteria = builder.createQuery(JsonbPredicateITConfig.Tank.class);
     Root<JsonbPredicateITConfig.Tank> root = criteria.from(JsonbPredicateITConfig.Tank.class);
 
-    Predicate predicate = new JsonbKeyValuePredicate<JsonbPredicateITConfig.Tank>(
-      "jsonListData", "value").toPredicate(root, builder, expectedValue);
+    Predicate predicate = new JsonbKeyValuePredicate<JsonbPredicateITConfig.Tank>()
+        .onKey("jsonListData", "value")
+        .buildUsing(root, builder, expectedValue);
+
     criteria.where(predicate).select(root);
     List<JsonbPredicateITConfig.Tank> resultList = baseDAO.resultListFromCriteria(criteria, 0, 20);
 
