@@ -52,11 +52,15 @@ VALUES
    (5, '61a75686-a964-451a-86de-b15a89cbcebd', 'a5', 2, 'bc090507-bcee-48f8-b7bc-4c5551a2c52a'),
    (6, 'ffe87eae-5a10-44d2-8beb-cd2db7b116b9', 'a6', NULL, '02bd39da-5471-4ca2-b82d-b407551c7f31');
 
-CREATE OR REPLACE FUNCTION jsonb_path_exists_varchar(target jsonb, path varchar, vars varchar)
+CREATE OR REPLACE FUNCTION jsonb_path_exists_varchar(target jsonb, key varchar, val varchar, caseSensitive boolean)
  RETURNS boolean AS
 '
  BEGIN
-  RETURN(jsonb_path_exists(target, path::jsonpath, vars::jsonb));
+  IF caseSensitive THEN
+    RETURN(target @> (''[{"'' || key || ''": "'' || val ||''"}]'')::jsonb);
+  ELSE
+    RETURN(lower(target::text)::jsonb @> (''[{"'' || key || ''": "'' || val ||''"}]'')::jsonb);
+  END IF;
  END
 '
 LANGUAGE plpgsql IMMUTABLE;

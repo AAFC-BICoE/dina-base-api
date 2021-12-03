@@ -22,6 +22,14 @@ public final class JsonbKeyValuePredicate<T> {
   private static final String JSONB_EXTRACT_PATH_PG_FUNCTION_NAME = "jsonb_path_exists_varchar";
   private static final ObjectMapper OM = new ObjectMapper();
 
+  /**
+   * Generate a predicate builder based on a column name and key name. Once generated you can use
+   * the builder multiple times to generate predicates.
+   * 
+   * @param colName JSONb column name.
+   * @param keyName JSONb key name.
+   * @return JsonbKeyValuePredicateBuilder
+   */
   public JsonbKeyValuePredicateBuilder onKey(String colName, String keyName) {
     return new JsonbKeyValuePredicateBuilder(colName, keyName);
   }
@@ -29,20 +37,21 @@ public final class JsonbKeyValuePredicate<T> {
   public class JsonbKeyValuePredicateBuilder {
 
     private String columnName;
-    private String path;
+    private String key;
 
     public JsonbKeyValuePredicateBuilder(String colName, String keyName) {
       this.columnName = colName;
-      this.path = "$[*]." + keyName + " ? (@ == $val)";      
+      this.key = keyName;
     }
 
-    public Predicate buildUsing(Path<T> root, CriteriaBuilder builder, String value) throws JsonProcessingException {
+    public Predicate buildUsing(Path<T> root, CriteriaBuilder builder, String value, boolean caseSensitive) throws JsonProcessingException {
       return builder.isTrue(builder.function(
         JSONB_EXTRACT_PATH_PG_FUNCTION_NAME, 
         Boolean.class, 
         root.get(this.columnName),
-        builder.literal(path),
-        builder.literal(OM.writeValueAsString(Map.of("val", value)))
+        builder.literal(this.key),
+        builder.literal(caseSensitive ? value : value.toLowerCase()),
+        builder.literal(caseSensitive)
       ));
     }
   }

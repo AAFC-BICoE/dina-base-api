@@ -124,7 +124,7 @@ public final class SimpleFilterHandler {
     while (!jsonbPath.isEmpty()) {
       if (jsonbPath.poll().equalsIgnoreCase(columnName)) {
         return new JsonbKeyValuePredicate<E>().onKey(columnName, StringUtils.join(jsonbPath, "."))
-          .buildUsing(root, cb, value);
+          .buildUsing(root, cb, value, true);
       }
     }
     return cb.and();

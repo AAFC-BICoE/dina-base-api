@@ -66,7 +66,35 @@ public class JsonbKeyValuePredicateIT {
 
     Predicate predicate = new JsonbKeyValuePredicate<JsonbPredicateITConfig.Tank>()
         .onKey("jsonData", KEY)
-        .buildUsing(root, builder, expectedValue);
+        .buildUsing(root, builder, expectedValue, true);
+
+    criteria.where(predicate).select(root);
+    List<JsonbPredicateITConfig.Tank> resultList = baseDAO.resultListFromCriteria(criteria, 0, 20);
+  
+    Assertions.assertEquals(1, resultList.size());
+    Assertions.assertEquals(tank.getUuid(), resultList.get(0).getUuid());
+    Assertions.assertEquals(expectedValue, resultList.get(0).getJsonData().get(KEY));
+  }
+
+  @Test
+  void jsonb_predicate_building_caseInsensitive() throws JsonProcessingException {
+    String expectedValue = "CustomValue";
+
+    // Test using the expected value but in upper case.
+    JsonbPredicateITConfig.Tank tank = newTank(expectedValue.toUpperCase());
+    JsonbPredicateITConfig.Tank another = newTank("another");
+
+    persistTank(expectedValue, tank);
+    persistTank("another", another);
+  
+    CriteriaBuilder builder = baseDAO.getCriteriaBuilder();
+    CriteriaQuery<JsonbPredicateITConfig.Tank> criteria = builder.createQuery(JsonbPredicateITConfig.Tank.class);
+    Root<JsonbPredicateITConfig.Tank> root = criteria.from(JsonbPredicateITConfig.Tank.class);
+
+    // Test with case sensitive turned off. 
+    Predicate predicate = new JsonbKeyValuePredicate<JsonbPredicateITConfig.Tank>()
+        .onKey("jsonData", KEY)
+        .buildUsing(root, builder, expectedValue, false);
 
     criteria.where(predicate).select(root);
     List<JsonbPredicateITConfig.Tank> resultList = baseDAO.resultListFromCriteria(criteria, 0, 20);
@@ -92,14 +120,14 @@ public class JsonbKeyValuePredicateIT {
 
     Predicate predicate = new JsonbKeyValuePredicate<JsonbPredicateITConfig.Tank>()
         .onKey("jsonListData", "value")
-        .buildUsing(root, builder, expectedValue);
+        .buildUsing(root, builder, expectedValue, true);
 
     criteria.where(predicate).select(root);
     List<JsonbPredicateITConfig.Tank> resultList = baseDAO.resultListFromCriteria(criteria, 0, 20);
 
     Assertions.assertEquals(1, resultList.size());
     Assertions.assertEquals(tank.getUuid(), resultList.get(0).getUuid());
-    Assertions.assertEquals(expectedValue, resultList.get(0).getJsonData().get(KEY));
+    Assertions.assertEquals(expectedValue, resultList.get(0).getJsonListData().get(0).getValue());
   }
 
   private void persistTank(String expectedValue, JsonbPredicateITConfig.Tank tank) {
@@ -107,8 +135,10 @@ public class JsonbKeyValuePredicateIT {
     JsonbPredicateITConfig.Tank result = baseDAO.findOneByNaturalId(
       tank.getUuid(),
       JsonbPredicateITConfig.Tank.class);
-    Assertions.assertEquals(expectedValue, result.getJsonData().get(KEY));
-    Assertions.assertEquals(expectedValue, result.getJsonListData().get(0).getValue());
+    
+    // Ensure the tanks were persisted correctly.
+    Assertions.assertEquals(expectedValue.toLowerCase(), result.getJsonData().get(KEY).toLowerCase());
+    Assertions.assertEquals(expectedValue.toLowerCase(), result.getJsonListData().get(0).getValue().toLowerCase());
   }
 
   private JsonbPredicateITConfig.Tank newTank(String expectedValue) {
