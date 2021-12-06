@@ -5,7 +5,10 @@ import io.crnk.core.queryspec.mapper.DefaultQuerySpecUrlMapper;
 import io.crnk.operations.server.OperationsModule;
 import io.crnk.operations.server.TransactionOperationFilter;
 import io.crnk.spring.jpa.SpringTransactionRunner;
+import lombok.extern.log4j.Log4j2;
 
+import org.keycloak.adapters.KeycloakConfigResolver;
+import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +30,7 @@ import java.util.Locale;
 // Must explicitly depend on "querySpecUrlMapper" so Spring can inject it into this class'
 // initQuerySpecUrlMapper method.
 @DependsOn("querySpecUrlMapper")
+@Log4j2
 public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
 
   @Inject
@@ -57,6 +61,12 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
   @Bean
   public TransactionRunner crnkSpringTransactionRunner() {
     return new SpringTransactionRunner();
+  }
+
+  @Bean
+  public KeycloakConfigResolver keycloakConfigResolver() {
+    log.debug("Creating KeycloakSpringBootConfigResolver bean");
+    return new KeycloakSpringBootConfigResolver();
   }
 
   @Bean
