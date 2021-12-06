@@ -231,12 +231,12 @@ public class DinaRepository<D, E extends DinaEntity>
   }
 
   /**
-   *
+   * 
    * @param ids
    * @param querySpec
    * @param idName
-   * @return
-   * @throws UnknownAttributeException if an attribute used in the {@link QuerySpec} is unknown
+   * @return List of fetched entities
+   * @throws UnknownAttributeException - if an attribute used in the {@link QuerySpec} is unknown
    */
   private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName)
       throws UnknownAttributeException {

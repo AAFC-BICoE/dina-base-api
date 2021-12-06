@@ -193,6 +193,7 @@ public class DinaFilterResolver {
    * @param root        - the root type, cannot be null
    * @param ids         - collection of ids, can be null
    * @param idFieldName - collection of ids, can be null if collections is null, else throws null pointer.
+   * @throws UnknownAttributeException if an attribute used in the {@link QuerySpec} rsql filter is unknown
    * @return - array of predicates
    */
   public <E> Predicate[] buildPredicates(
@@ -253,8 +254,7 @@ public class DinaFilterResolver {
         for (String path : sort.getAttributePath()) {
           from = from.get(path);
         }
-      }
-      catch (IllegalArgumentException iaEx) {
+      } catch (IllegalArgumentException iaEx) {
         //  if attribute of the given name does not exist
         throw new UnknownAttributeException(iaEx);
       }
