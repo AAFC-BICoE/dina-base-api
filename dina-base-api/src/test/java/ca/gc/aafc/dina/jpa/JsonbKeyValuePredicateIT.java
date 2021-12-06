@@ -67,8 +67,7 @@ public class JsonbKeyValuePredicateIT {
     CriteriaQuery<JsonbPredicateITConfig.Tank> criteria = builder.createQuery(JsonbPredicateITConfig.Tank.class);
     Root<JsonbPredicateITConfig.Tank> root = criteria.from(JsonbPredicateITConfig.Tank.class);
 
-    Predicate predicate = new JsonbKeyValuePredicate<JsonbPredicateITConfig.Tank>()
-        .onKey("jsonData", KEY)
+    Predicate predicate = JsonbKeyValuePredicate.onKey("jsonData", KEY)
         .buildUsing(root, builder, expectedValue, true);
 
     criteria.where(predicate).select(root);
@@ -95,8 +94,7 @@ public class JsonbKeyValuePredicateIT {
     Root<JsonbPredicateITConfig.Tank> root = criteria.from(JsonbPredicateITConfig.Tank.class);
 
     // Test with case sensitive turned off. 
-    Predicate predicate = new JsonbKeyValuePredicate<JsonbPredicateITConfig.Tank>()
-        .onKey("jsonData", KEY)
+    Predicate predicate = JsonbKeyValuePredicate.onKey("jsonData", KEY)
         .buildUsing(root, builder, expectedValue, false);
 
     criteria.where(predicate).select(root);
@@ -121,8 +119,7 @@ public class JsonbKeyValuePredicateIT {
     CriteriaQuery<JsonbPredicateITConfig.Tank> criteria = builder.createQuery(JsonbPredicateITConfig.Tank.class);
     Root<JsonbPredicateITConfig.Tank> root = criteria.from(JsonbPredicateITConfig.Tank.class);
 
-    Predicate predicate = new JsonbKeyValuePredicate<JsonbPredicateITConfig.Tank>()
-        .onKey("jsonListData", "value")
+    Predicate predicate = JsonbKeyValuePredicate.onKey("jsonListData", "value")
         .buildUsing(root, builder, expectedValue, true);
 
     criteria.where(predicate).select(root);

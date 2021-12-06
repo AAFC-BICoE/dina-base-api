@@ -16,11 +16,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * Note that jsonb_path_exists cannot use Index so it doesn't scale well.
  */
-public final class JsonbKeyValuePredicate<T> {
+public final class JsonbKeyValuePredicate {
 
   // Custom function that is responsible to cast the parameters
   private static final String JSONB_EXTRACT_PATH_PG_FUNCTION_NAME = "jsonb_path_exists_varchar";
   private static final ObjectMapper OM = new ObjectMapper();
+
+  /**
+   * use {@link JsonbKeyValuePredicate#onKey}
+   */
+  private JsonbKeyValuePredicate() {
+  }
 
   /**
    * Generate a predicate builder based on a column name and key name. Once generated you can use
@@ -30,21 +36,21 @@ public final class JsonbKeyValuePredicate<T> {
    * @param keyName JSONb key name.
    * @return JsonbKeyValuePredicateBuilder
    */
-  public JsonbKeyValuePredicateBuilder onKey(String colName, String keyName) {
+  public static JsonbKeyValuePredicateBuilder onKey(String colName, String keyName) {
     return new JsonbKeyValuePredicateBuilder(colName, keyName);
   }
 
-  public class JsonbKeyValuePredicateBuilder {
+  public static class JsonbKeyValuePredicateBuilder {
 
-    private String columnName;
-    private String path;
+    private final String columnName;
+    private final String path;
 
     public JsonbKeyValuePredicateBuilder(String colName, String keyName) {
       this.columnName = colName;
       this.path = "$[*]." + keyName + " ? (@ == $val)";
     }
 
-    public Predicate buildUsing(Path<T> root, CriteriaBuilder builder, String value, boolean caseSensitive) throws JsonProcessingException {
+    public Predicate buildUsing(Path<?> root, CriteriaBuilder builder, String value, boolean caseSensitive) throws JsonProcessingException {
       return builder.isTrue(builder.function(
         JSONB_EXTRACT_PATH_PG_FUNCTION_NAME, 
         Boolean.class, 
