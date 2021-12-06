@@ -23,6 +23,12 @@ public final class JsonbKeyValuePredicate {
   private static final ObjectMapper OM = new ObjectMapper();
 
   /**
+   * use {@link JsonbKeyValuePredicate#onKey}
+   */
+  private JsonbKeyValuePredicate(){
+  }
+
+  /**
    * Generate a predicate builder based on a column name and key name. Once generated you can use
    * the builder multiple times to generate predicates.
    * 
