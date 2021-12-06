@@ -13,7 +13,7 @@ import io.crnk.core.engine.error.ExceptionMapper;
 import io.crnk.core.engine.http.HttpStatus;
 
 /**
- * Maps io.crnk.core.engine.internal.utils.PropertyException to user-friendly errors to be
+ * Maps UnknownAttributeException to user-friendly errors to be
  * displayed in JSONAPI.
  */
 @Named
