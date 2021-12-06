@@ -202,7 +202,7 @@ public class DinaFilterResolver {
     Collection<Serializable> ids,
     String idFieldName,
     @NonNull EntityManager em
-  ) {
+  ) throws UnknownAttributeException {
     final List<Predicate> restrictions = new ArrayList<>();
 
     //Simple Filters
@@ -211,9 +211,14 @@ public class DinaFilterResolver {
     //Rsql Filters
     Optional<FilterSpec> rsql = querySpec.findFilter(PathSpec.of("rsql"));
     if (rsql.isPresent() && StringUtils.isNotBlank(rsql.get().getValue())) {
-      visitor.defineRoot(root);
-      final Node rsqlNode = processRsqlAdapters(rsqlFilterAdapter, rsqlParser.parse(rsql.get().getValue()));
-      restrictions.add(rsqlNode.accept(visitor, em));
+      try {
+        visitor.defineRoot(root);
+        final Node rsqlNode = processRsqlAdapters(rsqlFilterAdapter, rsqlParser.parse(rsql.get().getValue()));
+        restrictions.add(rsqlNode.accept(visitor, em));
+      } catch (IllegalArgumentException iaEx) {
+        //  if attribute of the given name does not exist
+        throw new UnknownAttributeException(iaEx);
+      }
     } else {
       restrictions.add(cb.and());
     }
@@ -236,7 +241,7 @@ public class DinaFilterResolver {
    * @param root - root path of entity
    * @param caseSensitive - Should order by on text fields be case sensitive or no ?
    * @return a list of {@link Order} from a given {@link CriteriaBuilder} and {@link Path}
-   * @throws UnknownAttributeException if ann attribute used in the {@link QuerySpec} sort is unknown
+   * @throws UnknownAttributeException if an attribute used in the {@link QuerySpec} sort is unknown
    */
   public static <T> List<Order> getOrders(QuerySpec qs, CriteriaBuilder cb, Path<T> root, boolean caseSensitive)
       throws UnknownAttributeException {

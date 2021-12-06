@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.exception.UnknownAttributeException;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import io.crnk.core.engine.document.ErrorData;
 import io.crnk.core.engine.error.ErrorResponse;
@@ -23,16 +24,18 @@ import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.queryspec.SortSpec;
+import lombok.extern.log4j.Log4j2;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class)
-public class IllegalArgumentExceptionMapperIT {
+@Log4j2
+public class UnknownAttributeExceptionMapperIT {
 
   @Inject
   private DinaRepository<PersonDTO, Person> dinaRepository;
 
   @Inject
-  private IllegalArgumentExceptionMapper illegalArgumentExceptionMapper;
+  private UnknownAttributeExceptionMapper unknownAttributeExceptionMapper;
   
   @Test
   public void findAll_FilterWithRSQL_FiltersOnNonExistantRSQLfield_mapperCreatesReadableErrorMessages() {
@@ -41,14 +44,14 @@ public class IllegalArgumentExceptionMapperIT {
 
     try {
       dinaRepository.findAll(null, querySpec);
-    } catch (IllegalArgumentException exception) {
+    } catch (UnknownAttributeException exception) {
 
-      ErrorResponse errorResponse = illegalArgumentExceptionMapper.toErrorResponse(exception);
+      ErrorResponse errorResponse = unknownAttributeExceptionMapper.toErrorResponse(exception);
 
       // Assert correct http status.
       assertEquals(400, errorResponse.getHttpStatus());
             
-      // Get the errors sorted by detail. The default error order is not consistent.
+      // Get the errors sorted by detail.
       List<ErrorData> errors = errorResponse.getErrors()
       .stream()
       .sorted((a, b) -> a.getDetail().compareTo(b.getDetail()))
@@ -56,7 +59,7 @@ public class IllegalArgumentExceptionMapperIT {
 
       assertEquals(1, errors.size());
 
-      // Assert correct error message, status and title (@NotNull location error)
+      // Assert correct error message, status and title
       assertEquals("Unknown property: nonExistant from entity ca.gc.aafc.dina.entity.Person", errors.get(0).getDetail());
       assertEquals("400", errors.get(0).getStatus());
       assertEquals("BAD_REQUEST", errors.get(0).getTitle());
@@ -68,16 +71,17 @@ public class IllegalArgumentExceptionMapperIT {
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setSort(Collections.singletonList(
       new SortSpec(Collections.singletonList("nonExistant"), Direction.ASC)));
+
     try {
       dinaRepository.findAll(null, querySpec);
-    } catch (IllegalArgumentException exception) {
+    } catch (UnknownAttributeException exception) {
 
-      ErrorResponse errorResponse = illegalArgumentExceptionMapper.toErrorResponse(exception);
+      ErrorResponse errorResponse = unknownAttributeExceptionMapper.toErrorResponse(exception);
 
       // Assert correct http status.
       assertEquals(400, errorResponse.getHttpStatus());
             
-      // Get the errors sorted by detail. The default error order is not consistent.
+      // Get the errors sorted by detail.
       List<ErrorData> errors = errorResponse.getErrors()
       .stream()
       .sorted((a, b) -> a.getDetail().compareTo(b.getDetail()))
@@ -85,7 +89,7 @@ public class IllegalArgumentExceptionMapperIT {
 
       assertEquals(1, errors.size());
 
-      // Assert correct error message, status and title (@NotNull location error)
+      // Assert correct error message, status and title
       assertEquals("Unable to locate Attribute  with the the given name [nonExistant] on this ManagedType [ca.gc.aafc.dina.entity.Person]", errors.get(0).getDetail());
       assertEquals("400", errors.get(0).getStatus());
       assertEquals("BAD_REQUEST", errors.get(0).getTitle());

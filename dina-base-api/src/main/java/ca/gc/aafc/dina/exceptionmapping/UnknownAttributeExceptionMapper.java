@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import javax.inject.Named;
 
+import ca.gc.aafc.dina.exception.UnknownAttributeException;
 import io.crnk.core.engine.document.ErrorData;
 import io.crnk.core.engine.error.ErrorResponse;
 import io.crnk.core.engine.error.ExceptionMapper;
@@ -14,26 +15,30 @@ import io.crnk.core.engine.http.HttpStatus;
  * displayed in JSONAPI.
  */
 @Named
-public class IllegalArgumentExceptionMapper implements ExceptionMapper<IllegalArgumentException> {
+public class UnknownAttributeExceptionMapper implements ExceptionMapper<UnknownAttributeException> {
 
   private static final Integer STATUS_ON_ERROR = HttpStatus.BAD_REQUEST_400;
 
   @Override
-  public ErrorResponse toErrorResponse(IllegalArgumentException exception) {
+  public ErrorResponse toErrorResponse(UnknownAttributeException exception) {
     return new ErrorResponse(
       Collections.singletonList(
         ErrorData.builder()
           .setStatus(STATUS_ON_ERROR.toString())
           .setTitle("BAD_REQUEST")
-          .setDetail(exception.getMessage())
+          .setDetail(generateDetail(exception))
           .build()
       ),
       STATUS_ON_ERROR
     );
   }
+
+  private String generateDetail(UnknownAttributeException exception) {
+    return exception.getMessage().replaceFirst("^java.lang.IllegalArgumentException: ", "");
+  }
   
   @Override
-  public IllegalArgumentException fromErrorResponse(ErrorResponse errorResponse) {
+  public UnknownAttributeException fromErrorResponse(ErrorResponse errorResponse) {
     throw new UnsupportedOperationException("Crnk client not supported");
   }
   
