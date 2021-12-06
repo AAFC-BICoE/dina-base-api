@@ -1,10 +1,13 @@
 package ca.gc.aafc.dina.security;
 
+import java.util.HashSet;
 import java.util.Set;
+
+import ca.gc.aafc.dina.security.spring.SecurityChecker.Operations;
 
 /**
  * To be used with the {@link ca.gc.aafc.dina.repository.ReadOnlyDinaRepository} to return a correct set of
- * permissions. Does not authorize and will return a set of empty permissions.
+ * permissions. Does not authorize and will return only read permission.
  */
 public class ReadOnlyAuthorizationService implements DinaAuthorizationService {
 
@@ -12,6 +15,10 @@ public class ReadOnlyAuthorizationService implements DinaAuthorizationService {
 
   @Override
   public void authorizeCreate(Object entity) {
+  }
+
+  @Override
+  public void authorizeRead(Object entity) {
   }
 
   @Override
@@ -24,7 +31,10 @@ public class ReadOnlyAuthorizationService implements DinaAuthorizationService {
 
   @Override
   public Set<String> getPermissionsForObject(Object target) {
-    return NO_PERMISSIONS;
+    Set<String> permissions = new HashSet<>();
+    permissions.add(Operations.READ.getValue());
+
+    return permissions;
   }
 
   @Override

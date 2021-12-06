@@ -75,7 +75,7 @@ public class DinaRepoPermissionMetaTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
+  @WithMockKeycloakUser(groupRole = "CNC:DINA_ADMIN")
   void permissionsTest_WhenHasPermissions_PermissionsReturned() {
     mockHttpHeader(DinaRepository.PERMISSION_META_HEADER_KEY, "true");
     ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
@@ -86,7 +86,7 @@ public class DinaRepoPermissionMetaTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
+  @WithMockKeycloakUser(groupRole = "CNC:DINA_ADMIN")
   void permissionsTest_WhenNoContext_PermissionsNotReturned() {
     ModuleRegistry moduleRegistry = Mockito.mock(ModuleRegistry.class);
     ResourceRegistry resourceRegistry = Mockito.mock(ResourceRegistry.class);
@@ -100,7 +100,7 @@ public class DinaRepoPermissionMetaTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
+  @WithMockKeycloakUser(groupRole = "CNC:DINA_ADMIN")
   void permissionsTest_WhenNoHeader_PermissionsNotReturned() {
     mockHttpHeader("wrong header", "true");
     ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
@@ -108,7 +108,7 @@ public class DinaRepoPermissionMetaTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"InvalidGroup:STAFF"})
+  @WithMockKeycloakUser(groupRole = "InvalidGroup:STAFF")
   void permissionsTest_WhenNoPermissions_PermissionsNotReturned() {
     mockHttpHeader(DinaRepository.PERMISSION_META_HEADER_KEY, "true");
     ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
@@ -198,7 +198,7 @@ public class DinaRepoPermissionMetaTest {
 
     @Service
     public static class ItemService extends DefaultDinaService<Item> {
-      public ItemService(@NonNull BaseDAO baseDAO, @NonNull SmartValidator sv) {
+      ItemService(@NonNull BaseDAO baseDAO, @NonNull SmartValidator sv) {
         super(baseDAO, sv);
       }
     }
@@ -209,6 +209,12 @@ public class DinaRepoPermissionMetaTest {
       @Override
       @PreAuthorize("hasGroupPermission(@currentUser, #entity)")
       public void authorizeCreate(Object entity) {
+
+      }
+
+      @Override
+      @PreAuthorize("hasDinaRole(@currentUser, 'STUDENT')")
+      public void authorizeRead(Object entity) {
 
       }
 

@@ -6,6 +6,8 @@ public interface DinaAuthorizationService {
 
   void authorizeCreate(Object entity);
 
+  void authorizeRead(Object entity);
+
   void authorizeUpdate(Object entity);
 
   void authorizeDelete(Object entity);

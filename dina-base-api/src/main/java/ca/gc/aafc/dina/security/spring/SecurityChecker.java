@@ -33,6 +33,7 @@ public final class SecurityChecker {
   @Getter
   public enum Operations {
     CREATE("create"),
+    READ("read"),
     UPDATE("update"),
     DELETE("delete");
     private final String value;
@@ -49,7 +50,7 @@ public final class SecurityChecker {
    * Returns a set of permissions for a given object using a given {@link DinaAuthorizationService}
    *
    * @param target permissions of object to check
-   * @param as     authorization service used in evanluation.
+   * @param as     authorization service used in evaluation.
    * @return Returns a set of permissions for a given object
    */
   public Set<String> getPermissionsForObject(@NonNull Object target, @NonNull DinaAuthorizationService as) {
@@ -61,6 +62,9 @@ public final class SecurityChecker {
 
     if (this.checkObjectPreAuthorized(as, target, "authorizeCreate")) {
       permissions.add(Operations.CREATE.getValue());
+    }
+    if (this.checkObjectPreAuthorized(as, target, "authorizeRead")) {
+      permissions.add(Operations.READ.getValue());
     }
     if (this.checkObjectPreAuthorized(as, target, "authorizeDelete")) {
       permissions.add(Operations.DELETE.getValue());
