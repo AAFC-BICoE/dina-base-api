@@ -25,7 +25,7 @@ public final class JsonbKeyValuePredicate {
   /**
    * use {@link JsonbKeyValuePredicate#onKey}
    */
-  private JsonbKeyValuePredicate(){
+  private JsonbKeyValuePredicate() {
   }
 
   /**
