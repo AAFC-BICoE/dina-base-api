@@ -1,30 +1,15 @@
 package ca.gc.aafc.dina.security;
 
-import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.dto.RelatedEntity;
-import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.mapper.DinaMapper;
-import ca.gc.aafc.dina.repository.DinaRepository;
-import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
-import ca.gc.aafc.dina.service.DefaultDinaService;
-import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
-import io.crnk.core.engine.http.HttpRequestContext;
-import io.crnk.core.engine.http.HttpRequestContextProvider;
-import io.crnk.core.engine.query.QueryContext;
-import io.crnk.core.engine.registry.ResourceRegistry;
-import io.crnk.core.engine.result.ImmediateResultFactory;
-import io.crnk.core.module.ModuleRegistry;
-import io.crnk.core.queryspec.QuerySpec;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiResource;
-import io.crnk.core.resource.list.ResourceList;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.UUID;
+import javax.inject.Inject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.transaction.Transactional;
+
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hibernate.annotations.NaturalId;
@@ -44,15 +29,32 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.SmartValidator;
 
-import javax.inject.Inject;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.transaction.Transactional;
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import java.util.UUID;
+import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.dto.RelatedEntity;
+import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
+import ca.gc.aafc.dina.service.DefaultDinaService;
+import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
+
+import io.crnk.core.engine.http.HttpRequestContext;
+import io.crnk.core.engine.http.HttpRequestContextProvider;
+import io.crnk.core.engine.query.QueryContext;
+import io.crnk.core.engine.registry.ResourceRegistry;
+import io.crnk.core.engine.result.ImmediateResultFactory;
+import io.crnk.core.module.ModuleRegistry;
+import io.crnk.core.queryspec.QuerySpec;
+import io.crnk.core.resource.annotations.JsonApiId;
+import io.crnk.core.resource.annotations.JsonApiResource;
+import io.crnk.core.resource.list.ResourceList;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, DinaRepoPermissionMetaTest.TestConfig.class},
@@ -186,7 +188,7 @@ public class DinaRepoPermissionMetaTest {
     @RelatedEntity(Item.class)
     @TypeName(ItemDto.TYPE_NAME)
     public static class ItemDto extends AttributeMetaInfoProvider {
-      private static final String TYPE_NAME = "item";
+      protected static final String TYPE_NAME = "item";
       @JsonApiId
       @org.javers.core.metamodel.annotation.Id
       @PropertyName("id")
