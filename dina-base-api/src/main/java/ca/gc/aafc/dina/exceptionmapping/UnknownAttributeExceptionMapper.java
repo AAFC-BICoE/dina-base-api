@@ -28,15 +28,11 @@ public class UnknownAttributeExceptionMapper implements ExceptionMapper<UnknownA
         ErrorData.builder()
           .setStatus(STATUS_ON_ERROR.toString())
           .setTitle("BAD_REQUEST")
-          .setDetail(generateDetail(exception))
+          .setDetail(ExceptionUtils.throwableOfType(exception.getCause(), IllegalArgumentException.class).getMessage())
           .build()
       ),
       STATUS_ON_ERROR
     );
-  }
-
-  private String generateDetail(UnknownAttributeException exception) {
-    return ExceptionUtils.throwableOfType(exception.getCause(), IllegalArgumentException.class).getMessage();
   }
   
   @Override
