@@ -169,6 +169,12 @@ public class DinaRepository<D, E extends DinaEntity>
     final QuerySpec spec = resolveFilterAdapters(querySpec);
 
     List<E> entities = fetchEntities(ids, spec, idFieldName);
+
+    // Each of these entities needs to be checked to ensure user has read access.
+    entities.forEach(entity -> {
+      authorizationService.authorizeRead(entity);
+    });
+
     List<D> dList = mappingLayer.mapEntitiesToDto(spec, entities);
 
     handleMetaPermissionsResponse(entities, dList);
@@ -287,6 +293,8 @@ public class DinaRepository<D, E extends DinaEntity>
 
     mappingLayer.mapToEntity(resource, entity);
 
+    // In order to create, you must have read and create access.
+    authorizationService.authorizeRead(entity);
     authorizationService.authorizeCreate(entity);
     dinaService.create(entity);
 

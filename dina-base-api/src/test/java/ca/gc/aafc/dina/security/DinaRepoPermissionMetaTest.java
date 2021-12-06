@@ -80,7 +80,7 @@ public class DinaRepoPermissionMetaTest {
     mockHttpHeader(DinaRepository.PERMISSION_META_HEADER_KEY, "true");
     ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
     all.forEach(result -> {
-      MatcherAssert.assertThat(result.getMeta().getPermissions(), Matchers.hasItems("create", "update"));
+      MatcherAssert.assertThat(result.getMeta().getPermissions(), Matchers.hasItems("create", "update", "read"));
       MatcherAssert.assertThat(result.getMeta().getPermissionsProvider(), Matchers.is("SpecialAuthServiceUnderTest"));
     });
   }

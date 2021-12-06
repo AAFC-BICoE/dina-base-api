@@ -1,13 +1,7 @@
 package ca.gc.aafc.dina.security;
 
-import static org.junit.Assert.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import java.util.Arrays;
 import java.util.UUID;
-
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -26,6 +20,13 @@ import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.DinaRepository;
+
+import io.crnk.core.queryspec.QuerySpec;
+
+import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class, properties = "keycloak.enabled: true")
@@ -47,6 +48,23 @@ public class DinaGroupBasedPermissionsTest {
     TestDinaBaseApp.mockToken(Arrays.asList("/" + GROUP_1 + "/staff"), mockToken);
 
     SecurityContextHolder.getContext().setAuthentication(mockToken);
+  }
+
+  @Test
+  public void read_AuthorizedGroup_ReadObject() {
+    Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
+    baseDAO.create(persisted);
+
+    PersonDTO findPerson = dinaRepository.findOne(persisted.getUuid(), new QuerySpec(PersonDTO.class));
+    assertNotNull(findPerson);
+  }
+
+  @Test
+  public void read_UnAuthorized_ThrowsAccessDeniedException() {
+    Person persisted = Person.builder().uuid(UUID.randomUUID()).group("Invalid_Group").name("name").build();
+    baseDAO.create(persisted);
+
+    assertThrows(AccessDeniedException.class, () -> dinaRepository.findOne(persisted.getUuid(), new QuerySpec(PersonDTO.class)));
   }
 
   @Test
