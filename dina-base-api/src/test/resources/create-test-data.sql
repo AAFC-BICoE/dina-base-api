@@ -57,7 +57,7 @@ CREATE OR REPLACE FUNCTION jsonb_path_exists_varchar(target jsonb, path varchar,
 '
  BEGIN
   IF caseSensitive THEN
-  	RETURN(jsonb_path_exists(target, path::jsonpath, vars::jsonb));  
+    RETURN(jsonb_path_exists(target, path::jsonpath, vars::jsonb));  
   ELSE
     RETURN(jsonb_path_exists(lower(target::text)::jsonb, lower(path::text)::jsonpath, lower(vars::text)::jsonb));
   END IF;
