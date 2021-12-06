@@ -4,6 +4,8 @@ import java.util.Collections;
 
 import javax.inject.Named;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import ca.gc.aafc.dina.exception.UnknownAttributeException;
 import io.crnk.core.engine.document.ErrorData;
 import io.crnk.core.engine.error.ErrorResponse;
@@ -34,7 +36,7 @@ public class UnknownAttributeExceptionMapper implements ExceptionMapper<UnknownA
   }
 
   private String generateDetail(UnknownAttributeException exception) {
-    return exception.getMessage().replaceFirst("^java.lang.IllegalArgumentException: ", "");
+    return ExceptionUtils.throwableOfType(exception.getCause(), IllegalArgumentException.class).getMessage();
   }
   
   @Override
