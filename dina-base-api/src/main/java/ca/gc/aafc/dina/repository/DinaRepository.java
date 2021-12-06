@@ -137,6 +137,9 @@ public class DinaRepository<D, E extends DinaEntity>
         resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
+    // Ensure user has read access to view this record.
+    authorizationService.authorizeRead(resourceList.get(0));
+
     return resourceList.get(0);
   }
 
@@ -169,11 +172,6 @@ public class DinaRepository<D, E extends DinaEntity>
     final QuerySpec spec = resolveFilterAdapters(querySpec);
 
     List<E> entities = fetchEntities(ids, spec, idFieldName);
-
-    // Each of these entities needs to be checked to ensure user has read access.
-    entities.forEach(entity -> {
-      authorizationService.authorizeRead(entity);
-    });
 
     List<D> dList = mappingLayer.mapEntitiesToDto(spec, entities);
 
