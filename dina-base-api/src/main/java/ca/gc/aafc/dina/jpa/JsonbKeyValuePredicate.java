@@ -37,11 +37,11 @@ public final class JsonbKeyValuePredicate<T> {
   public class JsonbKeyValuePredicateBuilder {
 
     private String columnName;
-    private String key;
+    private String path;
 
     public JsonbKeyValuePredicateBuilder(String colName, String keyName) {
       this.columnName = colName;
-      this.key = keyName;
+      this.path = "$[*]." + keyName + " ? (@ == $val)";
     }
 
     public Predicate buildUsing(Path<T> root, CriteriaBuilder builder, String value, boolean caseSensitive) throws JsonProcessingException {
@@ -49,8 +49,8 @@ public final class JsonbKeyValuePredicate<T> {
         JSONB_EXTRACT_PATH_PG_FUNCTION_NAME, 
         Boolean.class, 
         root.get(this.columnName),
-        builder.literal(this.key),
-        builder.literal(caseSensitive ? value : value.toLowerCase()),
+        builder.literal(this.path),
+        builder.literal(OM.writeValueAsString(Map.of("val", value))),
         builder.literal(caseSensitive)
       ));
     }

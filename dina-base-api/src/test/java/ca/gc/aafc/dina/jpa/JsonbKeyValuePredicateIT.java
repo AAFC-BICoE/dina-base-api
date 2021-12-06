@@ -1,14 +1,21 @@
 package ca.gc.aafc.dina.jpa;
 
-import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import javax.inject.Inject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
+
 import org.apache.commons.lang3.RandomUtils;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
@@ -22,25 +29,21 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.inject.Inject;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.transaction.Transactional;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+
+import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @SpringBootTest(classes = {TestDinaBaseApp.class, JsonbKeyValuePredicateIT.JsonbPredicateITConfig.class},
   properties = "spring.jpa.hibernate.ddl-auto=create-drop")
-@ContextConfiguration(initializers = {PostgresTestContainerInitializer.class})
+@ContextConfiguration(initializers = PostgresTestContainerInitializer.class)
 @ExtendWith(SpringExtension.class)
 @Transactional
 public class JsonbKeyValuePredicateIT {
@@ -101,7 +104,7 @@ public class JsonbKeyValuePredicateIT {
   
     Assertions.assertEquals(1, resultList.size());
     Assertions.assertEquals(tank.getUuid(), resultList.get(0).getUuid());
-    Assertions.assertEquals(expectedValue, resultList.get(0).getJsonData().get(KEY));
+    Assertions.assertEquals(expectedValue.toUpperCase(), resultList.get(0).getJsonData().get(KEY));
   }
 
   @Test
