@@ -63,4 +63,4 @@ CREATE OR REPLACE FUNCTION jsonb_path_exists_varchar(target jsonb, path varchar,
   END IF;
  END
 '
-LANGUAGE plpgsql;
+LANGUAGE plpgsql STABLE;
