@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.filter;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.exception.UnknownAttributeException;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import com.github.tennaito.rsql.jpa.JpaPredicateVisitor;
 import com.github.tennaito.rsql.misc.ArgumentParser;
@@ -235,13 +236,22 @@ public class DinaFilterResolver {
    * @param root - root path of entity
    * @param caseSensitive - Should order by on text fields be case sensitive or no ?
    * @return a list of {@link Order} from a given {@link CriteriaBuilder} and {@link Path}
+   * @throws UnknownAttributeException if ann attribute used in the {@link QuerySpec} sort is unknown
    */
-  public static <T> List<Order> getOrders(QuerySpec qs, CriteriaBuilder cb, Path<T> root, boolean caseSensitive) {
+  public static <T> List<Order> getOrders(QuerySpec qs, CriteriaBuilder cb, Path<T> root, boolean caseSensitive)
+      throws UnknownAttributeException {
     return qs.getSort().stream().map(sort -> {
       Expression<?> orderByExpression;
       Path<T> from = root;
-      for (String path : sort.getAttributePath()) {
-        from = from.get(path);
+
+      try {
+        for (String path : sort.getAttributePath()) {
+          from = from.get(path);
+        }
+      }
+      catch (IllegalArgumentException iaEx) {
+        //  if attribute of the given name does not exist
+        throw new UnknownAttributeException(iaEx);
       }
 
       if (!caseSensitive && from.getJavaType() == String.class) {

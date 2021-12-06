@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.repository;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.exception.UnknownAttributeException;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
@@ -229,7 +230,16 @@ public class DinaRepository<D, E extends DinaEntity>
     return querySpec;
   }
 
-  private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName) {
+  /**
+   *
+   * @param ids
+   * @param querySpec
+   * @param idName
+   * @return
+   * @throws UnknownAttributeException if an attribute used in the {@link QuerySpec} is unknown
+   */
+  private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName)
+      throws UnknownAttributeException {
     return dinaService.findAll(
       entityClass,
       (criteriaBuilder, root, em) -> {
