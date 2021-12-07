@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.repository;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.exception.UnknownAttributeException;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
@@ -189,8 +190,9 @@ public class DinaRepository<D, E extends DinaEntity>
    * @param querySpec Query specifications to apply to the request.
    * @param authentication If read authorization should be performed on each of entities found.
    * @return List of DTO Entities
+   * @throws UnknownAttributeException If an attribute used in the {@link QuerySpec} is unknown
    */
-  private List<D> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, boolean authentication) {
+  private List<D> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, boolean authentication) throws UnknownAttributeException {
     // Setup filters for entity searching.
     final QuerySpec spec = resolveFilterAdapters(querySpec);
     if (spec.getLimit() == null) {
