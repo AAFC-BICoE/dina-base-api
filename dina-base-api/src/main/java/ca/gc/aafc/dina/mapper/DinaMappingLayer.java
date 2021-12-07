@@ -82,26 +82,17 @@ public class DinaMappingLayer<D, E> {
       .collect(Collectors.toList());
   }
 
+  /**
+   * Converts a resource entity into a DTO entity. Relations included in the query
+   * spec are fully mapped. External relations are always mapped. Relations not included in the
+   * query spec are shallow mapped (natural id only).
+   * 
+   * @param query
+   * @param entity
+   * @return DTO entity
+   */
   public D mapToDto(@NonNull QuerySpec query, @NonNull E entity) {
-    Set<String> includedRelations = query.getIncludedRelations().stream()
-      .map(ir -> ir.getAttributePath().get(0))
-      .filter(Predicate.not(s -> registry.isRelationExternal(resourceClass, s))).collect(Collectors.toSet());
-
-    Set<DinaMappingRegistry.InternalRelation> shallowRelationsToMap = registry
-      .findMappableRelationsForClass(resourceClass)
-      .stream()
-      .filter(rel -> includedRelations.stream().noneMatch(rel.getName()::equalsIgnoreCase))
-      .collect(Collectors.toSet());
-
-    D dto = dinaMapper.toDto(entity, registry.getAttributesPerClass(), includedRelations);
-
-    // Map shallow ids fo un-included relations
-    mapShallowRelations(entity, dto, shallowRelationsToMap);
-
-    // Map External Relations
-    mapExternalRelationsToDto(entity, dto);
-
-    return dto;
+    return mapEntitiesToDto(query, Collections.singletonList(entity)).get(0);
   }
 
   /**

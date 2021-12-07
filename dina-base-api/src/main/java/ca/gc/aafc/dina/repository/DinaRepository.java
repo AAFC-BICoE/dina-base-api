@@ -120,16 +120,12 @@ public class DinaRepository<D, E extends DinaEntity>
   @SneakyThrows
   @Override
   public D findOne(Serializable id, QuerySpec querySpec) {
-    // Setup the filters, in this case the limit should be set.
-    QuerySpec spec = resolveFilterAdapters(querySpec);
-    spec.setLimit(1L);
-
     // Find the Dto entity 
-    D dtoEntity = retrieveEntitiesByIDs(Collections.singletonList(id), spec, true).get(0);
+    List<D> dtoEntities = fetchEntities(Collections.singletonList(id), querySpec, true);
 
-    if (dtoEntity == null) {
+    if (dtoEntities.size() == 0) {
       auditService.ifPresent(service -> { // Past Deleted records with audit logs throw Gone.
-        final String resourceType = spec.getResourceType();
+        final String resourceType = querySpec.getResourceType();
         final AuditService.AuditInstance auditInstance = AuditService.AuditInstance.builder()
           .id(id.toString()).type(resourceType).build();
         if (service.hasTerminalSnapshot(auditInstance)) {
@@ -143,7 +139,7 @@ public class DinaRepository<D, E extends DinaEntity>
         resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    return dtoEntity;
+    return dtoEntities.get(0);
   }
 
   /**
@@ -172,35 +168,51 @@ public class DinaRepository<D, E extends DinaEntity>
   @Transactional(readOnly = true)
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
-    // Setup the filters, in this case the limit should be set.
-    final QuerySpec spec = resolveFilterAdapters(querySpec);
-
     // Retrieve all of the dto entities, authentication turned off.
-    List<D> dtoEntities = retrieveEntitiesByIDs(ids, spec, false);
+    List<D> dtoEntities = fetchEntities(ids, querySpec, false);
 
     // Generate meta information
     Long resourceCount = dinaService.getResourceCount( entityClass,
-      (criteriaBuilder, root, em) -> filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idFieldName, em));
+      (criteriaBuilder, root, em) -> filterResolver.buildPredicates(querySpec, criteriaBuilder, root, ids, idFieldName, em));
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
 
     return new DefaultResourceList<>(dtoEntities, metaInformation, NO_LINK_INFORMATION);
   }
 
-  private List<D> retrieveEntitiesByIDs(Collection<Serializable> ids, @NonNull QuerySpec querySpec, boolean authentication) {
+  /**
+   * Helper method to retrieve a list of entities based on ids provided or QuerySpec. This method is
+   * used for the findOne and findAll methods.
+   * 
+   * A limit will automatically be set based on if ids are provided to search for.
+   * 
+   * @param ids Entity ids to search the database for.
+   * @param querySpec Query specifications to apply to the request.
+   * @param authentication If read authorization should be performed on each of entities found.
+   * @return List of DTO Entities
+   */
+  private List<D> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, boolean authentication) {
+    // Setup filters for entity searching.
+    final QuerySpec spec = resolveFilterAdapters(querySpec);
+    if (spec.getLimit() == null) {
+      spec.setLimit(ids == null ? DEFAULT_LIMIT : ids.size());
+    }
+
+    // Retrieve the entities using the dina service.
     List<E> entities = dinaService.findAll(
       entityClass,
       (criteriaBuilder, root, em) -> {
-        DinaFilterResolver.leftJoinRelations(root, querySpec, registry);
-        return filterResolver.buildPredicates(querySpec, criteriaBuilder, root, ids, idFieldName, em);
+        DinaFilterResolver.leftJoinRelations(root, spec, registry);
+        return filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idFieldName, em);
       },
-      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root, caseSensitiveOrderBy),
-      Math.toIntExact(querySpec.getOffset()),
-      Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue()
+      (cb, root) -> DinaFilterResolver.getOrders(spec, cb, root, caseSensitiveOrderBy),
+      Math.toIntExact(spec.getOffset()),
+      spec.getLimit().intValue()
     );
-
     List<D> dtoEntities = new ArrayList<D>();
 
+    // Go through each of the entities found to perform authentication, 
+    // setting permissions and converting to Dto entities.
     entities.forEach(entity -> {
       // If authentication is enabled, check each record for read access.
       if (authentication) {
@@ -208,7 +220,7 @@ public class DinaRepository<D, E extends DinaEntity>
       }
 
       // Convert entity to DTO.
-      D dtoEntity = mappingLayer.mapToDto(querySpec, entity);
+      D dtoEntity = mappingLayer.mapToDto(spec, entity);
 
       // Set permissions to the DTO if needed.
       if (permissionsRequested()) {
@@ -224,7 +236,7 @@ public class DinaRepository<D, E extends DinaEntity>
         }
       }
 
-      // Add dto to list.
+      // Add dto to dto entity list to return back.
       dtoEntities.add(dtoEntity);
     });
 
