@@ -117,7 +117,6 @@ public class DinaRepository<D, E extends DinaEntity>
    * @return - list of resources
    */
   @Transactional(readOnly = true)
-  @SneakyThrows
   @Override
   public D findOne(Serializable id, QuerySpec querySpec) {
     // Find the Dto entity 
