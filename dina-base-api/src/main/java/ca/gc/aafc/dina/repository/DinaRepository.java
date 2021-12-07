@@ -32,6 +32,7 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -119,12 +120,16 @@ public class DinaRepository<D, E extends DinaEntity>
   @SneakyThrows
   @Override
   public D findOne(Serializable id, QuerySpec querySpec) {
-    querySpec.setLimit(1L);
-    ResourceList<D> resourceList = findAll(Collections.singletonList(id), querySpec);
+    // Setup the filters, in this case the limit should be set.
+    QuerySpec spec = resolveFilterAdapters(querySpec);
+    spec.setLimit(1L);
 
-    if (resourceList.size() == 0) {
+    // Find the Dto entity 
+    D dtoEntity = retrieveEntitiesByIDs(Collections.singletonList(id), spec, true).get(0);
+
+    if (dtoEntity == null) {
       auditService.ifPresent(service -> { // Past Deleted records with audit logs throw Gone.
-        final String resourceType = querySpec.getResourceType();
+        final String resourceType = spec.getResourceType();
         final AuditService.AuditInstance auditInstance = AuditService.AuditInstance.builder()
           .id(id.toString()).type(resourceType).build();
         if (service.hasTerminalSnapshot(auditInstance)) {
@@ -138,12 +143,7 @@ public class DinaRepository<D, E extends DinaEntity>
         resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    // Ensure user has read access to view this record. It can't be the DTO for group authorization.
-    E entity = entityClass.getConstructor().newInstance();
-    mappingLayer.mapToEntity(resourceList.get(0), entity);
-    authorizationService.authorizeRead(entity);
-
-    return resourceList.get(0);
+    return dtoEntity;
   }
 
   /**
@@ -172,49 +172,72 @@ public class DinaRepository<D, E extends DinaEntity>
   @Transactional(readOnly = true)
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
+    // Setup the filters, in this case the limit should be set.
     final QuerySpec spec = resolveFilterAdapters(querySpec);
 
-    List<E> entities = fetchEntities(ids, spec, idFieldName);
-    List<D> dList = mappingLayer.mapEntitiesToDto(spec, entities);
+    // Retrieve all of the dto entities, authentication turned off.
+    List<D> dtoEntities = retrieveEntitiesByIDs(ids, spec, false);
 
-    handleMetaPermissionsResponse(entities, dList);
-
+    // Generate meta information
     Long resourceCount = dinaService.getResourceCount( entityClass,
       (criteriaBuilder, root, em) -> filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idFieldName, em));
-
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
-    return new DefaultResourceList<>(dList, metaInformation, NO_LINK_INFORMATION);
+
+    return new DefaultResourceList<>(dtoEntities, metaInformation, NO_LINK_INFORMATION);
   }
 
-  private void handleMetaPermissionsResponse(List<E> entities, List<D> dList) {
-    if (permissionsNotRequested()) {
-      return;
-    }
+  private List<D> retrieveEntitiesByIDs(Collection<Serializable> ids, @NonNull QuerySpec querySpec, boolean authentication) {
+    List<E> entities = dinaService.findAll(
+      entityClass,
+      (criteriaBuilder, root, em) -> {
+        DinaFilterResolver.leftJoinRelations(root, querySpec, registry);
+        return filterResolver.buildPredicates(querySpec, criteriaBuilder, root, ids, idFieldName, em);
+      },
+      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root, caseSensitiveOrderBy),
+      Math.toIntExact(querySpec.getOffset()),
+      Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue()
+    );
 
-    @SuppressWarnings("unchecked") // we checked
-    final List<AttributeMetaInfoProvider> providers = (List<AttributeMetaInfoProvider>) dList;
-    entities.forEach(e -> {
-      // Return permissions for the entity
-      Set<String> permissions = authorizationService.getPermissionsForObject(e);
-      // but apply response to the DTO.
-      providers.stream().filter(d -> d.getUuid().equals(e.getUuid())).findFirst()
-        .ifPresent(provider -> provider.setMeta(
-          AttributeMetaInfoProvider.DinaJsonMetaInfo.builder()
+    List<D> dtoEntities = new ArrayList<D>();
+
+    entities.forEach(entity -> {
+      // If authentication is enabled, check each record for read access.
+      if (authentication) {
+        authorizationService.authorizeRead(entity);
+      }
+
+      // Convert entity to DTO.
+      D dtoEntity = mappingLayer.mapToDto(querySpec, entity);
+
+      // Set permissions to the DTO if needed.
+      if (permissionsRequested()) {
+        if (dtoEntity instanceof AttributeMetaInfoProvider) {
+          Set<String> permissions = authorizationService.getPermissionsForObject(entity);
+
+          AttributeMetaInfoProvider dtoEntityMeta = (AttributeMetaInfoProvider) dtoEntity;
+          dtoEntityMeta.setMeta(AttributeMetaInfoProvider.DinaJsonMetaInfo.builder()
             .permissionsProvider(authorizationService.getName())
             .permissions(permissions)
-            .build())
-      );
+            .build()
+          );
+        }
+      }
+
+      // Add dto to list.
+      dtoEntities.add(dtoEntity);
     });
+
+    return dtoEntities;
   }
 
-  private boolean permissionsNotRequested() {
+  private boolean permissionsRequested() {
     if (!AttributeMetaInfoProvider.class.isAssignableFrom(resourceClass)
       || !httpRequestContextProvider.hasThreadRequestContext()) {
-      return true;
+      return false;
     }
 
-    return httpRequestContextProvider.getRequestContext().getRequestHeader(PERMISSION_META_HEADER_KEY) == null;
+    return httpRequestContextProvider.getRequestContext().getRequestHeader(PERMISSION_META_HEADER_KEY) != null;
   }
 
   /**
@@ -226,25 +249,15 @@ public class DinaRepository<D, E extends DinaEntity>
    * @return A new QuerySpec with the resolved filters, or the original query spec.
    */
   private QuerySpec resolveFilterAdapters(QuerySpec querySpec) {
-    if (hasFieldAdapters) {
-      QuerySpec spec = querySpec.clone();
-      spec.setFilters(
-        DinaFilterResolver.resolveFilterAdapters(resourceClass, querySpec.getFilters(), registry));
-      return spec;
-    }
-    return querySpec;
-  }
+    QuerySpec spec = querySpec != null ? querySpec : new QuerySpec(resourceClass);
 
-  private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName) {
-    return dinaService.findAll(
-      entityClass,
-      (criteriaBuilder, root, em) -> {
-        DinaFilterResolver.leftJoinRelations(root, querySpec, registry);
-        return filterResolver.buildPredicates(querySpec, criteriaBuilder, root, ids, idName, em);
-      },
-      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root, caseSensitiveOrderBy),
-      Math.toIntExact(querySpec.getOffset()),
-      Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
+    if (hasFieldAdapters) {
+      QuerySpec fieldAdapterSpec = spec.clone();
+      fieldAdapterSpec.setFilters(
+        DinaFilterResolver.resolveFilterAdapters(resourceClass, querySpec.getFilters(), registry));
+      return fieldAdapterSpec;
+    }
+    return spec;
   }
 
   /**

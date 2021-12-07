@@ -82,6 +82,28 @@ public class DinaMappingLayer<D, E> {
       .collect(Collectors.toList());
   }
 
+  public D mapToDto(@NonNull QuerySpec query, @NonNull E entity) {
+    Set<String> includedRelations = query.getIncludedRelations().stream()
+      .map(ir -> ir.getAttributePath().get(0))
+      .filter(Predicate.not(s -> registry.isRelationExternal(resourceClass, s))).collect(Collectors.toSet());
+
+    Set<DinaMappingRegistry.InternalRelation> shallowRelationsToMap = registry
+      .findMappableRelationsForClass(resourceClass)
+      .stream()
+      .filter(rel -> includedRelations.stream().noneMatch(rel.getName()::equalsIgnoreCase))
+      .collect(Collectors.toSet());
+
+    D dto = dinaMapper.toDto(entity, registry.getAttributesPerClass(), includedRelations);
+
+    // Map shallow ids fo un-included relations
+    mapShallowRelations(entity, dto, shallowRelationsToMap);
+
+    // Map External Relations
+    mapExternalRelationsToDto(entity, dto);
+
+    return dto;
+  }
+
   /**
    * Maps a given dto to a given entity. All external/internal relations are mapped, relations are
    * linked to their database backed resource if they are not external.
