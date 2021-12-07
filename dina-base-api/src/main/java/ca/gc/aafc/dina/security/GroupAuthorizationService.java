@@ -41,7 +41,6 @@ public class GroupAuthorizationService extends PermissionAuthorizationService {
   @Override
   @PreAuthorize("hasGroupPermission(@currentUser, #entity)")
   public void authorizeRead(Object entity) {
-
   }
 
   /**

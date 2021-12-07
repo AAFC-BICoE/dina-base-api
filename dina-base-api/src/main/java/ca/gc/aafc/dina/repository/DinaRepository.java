@@ -116,6 +116,7 @@ public class DinaRepository<D, E extends DinaEntity>
    * @return - list of resources
    */
   @Transactional(readOnly = true)
+  @SneakyThrows
   @Override
   public D findOne(Serializable id, QuerySpec querySpec) {
     querySpec.setLimit(1L);
@@ -137,8 +138,10 @@ public class DinaRepository<D, E extends DinaEntity>
         resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    // Ensure user has read access to view this record.
-    authorizationService.authorizeRead(resourceList.get(0));
+    // Ensure user has read access to view this record. It can't be the DTO for group authorization.
+    E entity = entityClass.getConstructor().newInstance();
+    mappingLayer.mapToEntity(resourceList.get(0), entity);
+    authorizationService.authorizeRead(entity);
 
     return resourceList.get(0);
   }
@@ -290,8 +293,6 @@ public class DinaRepository<D, E extends DinaEntity>
 
     mappingLayer.mapToEntity(resource, entity);
 
-    // In order to create, you must have read and create access.
-    authorizationService.authorizeRead(entity);
     authorizationService.authorizeCreate(entity);
     dinaService.create(entity);
 
