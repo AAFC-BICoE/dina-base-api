@@ -3,8 +3,11 @@ package ca.gc.aafc.dina.validation;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
+import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
 import ca.gc.aafc.dina.service.ManagedAttributeServiceIT;
+import ca.gc.aafc.dina.service.ManagedAttributeServiceIT.TestManagedAttribute;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -16,6 +19,9 @@ import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.validation.ValidationException;
+
+import com.google.common.collect.ImmutableList;
+
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
@@ -39,10 +45,7 @@ public class ManagedAttributeValueValidatorTest {
 
   @Test
   void validate_WhenValidDateType_NoExceptionThrown() {
-    testManagedAttribute = testManagedAttributeService.create(ManagedAttributeServiceIT.TestManagedAttribute.builder().
-      name(RandomStringUtils.randomAlphabetic(6))
-      .managedAttributeType(ManagedAttribute.ManagedAttributeType.DATE)
-      .build());
+    testManagedAttribute = testManagedAttributeService.create(newTestManagedAttribute());
 
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), LocalDate.now().toString());
     validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X);
@@ -180,5 +183,20 @@ public class ManagedAttributeValueValidatorTest {
     assertThrows(
       IllegalArgumentException.class,
       () -> validatorUnderTest.validate(wrongKeyType, new BeanPropertyBindingResult(wrongKeyType, "mav")));
+  }
+
+  private TestManagedAttribute newTestManagedAttribute() {
+    return ManagedAttributeServiceIT.TestManagedAttribute.builder().
+      name(RandomStringUtils.randomAlphabetic(6))
+      .managedAttributeType(ManagedAttribute.ManagedAttributeType.DATE)
+      .multilingualDescription(MultilingualDescription.builder()
+          .descriptions(ImmutableList.of(
+            MultilingualDescription.MultilingualPair.builder()
+              .desc("test")
+              .lang("en")
+              .build())
+            )
+          .build())
+      .build();
   }
 }
