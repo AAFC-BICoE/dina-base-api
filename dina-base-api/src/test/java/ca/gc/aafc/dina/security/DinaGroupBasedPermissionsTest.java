@@ -6,6 +6,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -22,11 +23,6 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.DinaRepository;
 
 import io.crnk.core.queryspec.QuerySpec;
-
-import static org.junit.Assert.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class, properties = "keycloak.enabled: true")
@@ -55,8 +51,10 @@ public class DinaGroupBasedPermissionsTest {
     Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
     baseDAO.create(persisted);
 
-    PersonDTO findPerson = dinaRepository.findOne(persisted.getUuid(), new QuerySpec(PersonDTO.class));
-    assertNotNull(findPerson);
+    PersonDTO findPerson = Assertions.assertDoesNotThrow(() -> {
+      return dinaRepository.findOne(persisted.getUuid(), new QuerySpec(PersonDTO.class));
+    });
+    Assertions.assertNotNull(findPerson);
   }
 
   @Test
@@ -64,14 +62,14 @@ public class DinaGroupBasedPermissionsTest {
     Person persisted = Person.builder().uuid(UUID.randomUUID()).group("Invalid_Group").name("name").build();
     baseDAO.create(persisted);
 
-    assertThrows(AccessDeniedException.class, () -> dinaRepository.findOne(persisted.getUuid(), new QuerySpec(PersonDTO.class)));
+    Assertions.assertThrows(AccessDeniedException.class, () -> dinaRepository.findOne(persisted.getUuid(), new QuerySpec(PersonDTO.class)));
   }
 
   @Test
   public void create_AuthorizedGroup_CreatesObject() {
     PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
     PersonDTO result = dinaRepository.create(dto);
-    assertNotNull(result.getUuid());
+    Assertions.assertNotNull(result.getUuid());
   }
 
   @Test
@@ -80,7 +78,7 @@ public class DinaGroupBasedPermissionsTest {
       .uuid(UUID.randomUUID())
       .group("Invalid_Group")
       .name("name").build();
-    assertThrows(AccessDeniedException.class, () -> dinaRepository.create(dto));
+    Assertions.assertThrows(AccessDeniedException.class, () -> dinaRepository.create(dto));
   }
 
   @Test
@@ -93,7 +91,7 @@ public class DinaGroupBasedPermissionsTest {
     dinaRepository.save(updateDto);
 
     String resultName = baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class).getName();
-    assertEquals(expectedName, resultName);
+    Assertions.assertEquals(expectedName, resultName);
   }
 
   @Test
@@ -109,7 +107,7 @@ public class DinaGroupBasedPermissionsTest {
       .uuid(persisted.getUuid())
       .group(GROUP_1)
       .name(expectedName).build();
-    assertThrows(AccessDeniedException.class, () -> dinaRepository.save(updateDto));
+    Assertions.assertThrows(AccessDeniedException.class, () -> dinaRepository.save(updateDto));
   }
 
   @Test
@@ -117,9 +115,9 @@ public class DinaGroupBasedPermissionsTest {
     Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
     baseDAO.create(persisted);
 
-    assertNotNull(baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class));
+    Assertions.assertNotNull(baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class));
     dinaRepository.delete(persisted.getUuid());
-    assertNull(baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class));
+    Assertions.assertNull(baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class));
   }
 
   @Test
@@ -130,8 +128,8 @@ public class DinaGroupBasedPermissionsTest {
       .name("name").build();
     baseDAO.create(persisted);
 
-    assertNotNull(baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class));
-    assertThrows(AccessDeniedException.class, () -> dinaRepository.delete(persisted.getUuid()));
+    Assertions.assertNotNull(baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class));
+    Assertions.assertThrows(AccessDeniedException.class, () -> dinaRepository.delete(persisted.getUuid()));
   }
 
 }

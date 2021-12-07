@@ -188,7 +188,7 @@ public class DinaRepoPermissionMetaTest {
     @RelatedEntity(Item.class)
     @TypeName(ItemDto.TYPE_NAME)
     public static class ItemDto extends AttributeMetaInfoProvider {
-      protected static final String TYPE_NAME = "item";
+      public static final String TYPE_NAME = "item";
       @JsonApiId
       @org.javers.core.metamodel.annotation.Id
       @PropertyName("id")
@@ -215,7 +215,7 @@ public class DinaRepoPermissionMetaTest {
       }
 
       @Override
-      @PreAuthorize("hasDinaRole(@currentUser, 'STUDENT')")
+      @PreAuthorize("hasMinimumDinaRole(@currentUser, 'STUDENT')")
       public void authorizeRead(Object entity) {
 
       }

@@ -57,7 +57,7 @@ public class DinaAdminCUDAuthTest {
   @Inject
   private DinaAdminCUDAuthorizationService authorizationService;
 
-  public Item persisted;
+  private Item persisted;
 
   @Inject
   private DinaRepository<ItemDto, Item> testRepo;
@@ -71,7 +71,9 @@ public class DinaAdminCUDAuthTest {
   @Test
   @WithMockKeycloakUser(groupRole = "CNC:STUDENT")
   public void read_whenStudent_readObject() {
-    ItemDto findItem = testRepo.findOne(persisted.getUuid(), new QuerySpec(ItemDto.class));
+    ItemDto findItem = Assertions.assertDoesNotThrow(() -> {
+      return testRepo.findOne(persisted.getUuid(), new QuerySpec(ItemDto.class));
+    });
     Assertions.assertNotNull(findItem);
   }
 
@@ -181,7 +183,7 @@ public class DinaAdminCUDAuthTest {
   @RelatedEntity(Item.class)
   @TypeName(ItemDto.TYPE_NAME)
   public static class ItemDto {
-    protected static final String TYPE_NAME = "item";
+    public static final String TYPE_NAME = "item";
     @JsonApiId
     @org.javers.core.metamodel.annotation.Id
     @PropertyName("id")

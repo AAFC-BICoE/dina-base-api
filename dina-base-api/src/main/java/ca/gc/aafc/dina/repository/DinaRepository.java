@@ -172,7 +172,6 @@ public class DinaRepository<D, E extends DinaEntity>
     final QuerySpec spec = resolveFilterAdapters(querySpec);
 
     List<E> entities = fetchEntities(ids, spec, idFieldName);
-
     List<D> dList = mappingLayer.mapEntitiesToDto(spec, entities);
 
     handleMetaPermissionsResponse(entities, dList);
