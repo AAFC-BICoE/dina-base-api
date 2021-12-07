@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
+import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.validation.ManagedAttributeValueValidator;
 import ca.gc.aafc.dina.validation.ValidationContext;
@@ -91,6 +92,7 @@ public class ManagedAttributeServiceIT {
     private OffsetDateTime createdOn;
     //for testing purpose
     private boolean failValidateValue;
+    private MultilingualDescription multilingualDescription;
   }
 
   @Data
