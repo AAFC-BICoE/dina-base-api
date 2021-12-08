@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.security;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import ca.gc.aafc.dina.security.spring.SecurityChecker.Operations;
