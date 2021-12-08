@@ -11,7 +11,7 @@ import ca.gc.aafc.dina.security.spring.SecurityChecker.Operations;
  */
 public class ReadOnlyAuthorizationService implements DinaAuthorizationService {
 
-  public static final Set<String> NO_PERMISSIONS = Set.of();
+  public static final Set<String> READ_ONLY_PERMISSION = Set.of(Operations.READ.getValue());
 
   @Override
   public void authorizeCreate(Object entity) {
@@ -31,10 +31,7 @@ public class ReadOnlyAuthorizationService implements DinaAuthorizationService {
 
   @Override
   public Set<String> getPermissionsForObject(Object target) {
-    Set<String> permissions = new HashSet<>();
-    permissions.add(Operations.READ.getValue());
-
-    return permissions;
+    return READ_ONLY_PERMISSION;
   }
 
   @Override

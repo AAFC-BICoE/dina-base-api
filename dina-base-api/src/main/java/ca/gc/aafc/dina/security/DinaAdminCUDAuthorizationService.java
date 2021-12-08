@@ -12,9 +12,8 @@ public class DinaAdminCUDAuthorizationService extends PermissionAuthorizationSer
 
   }
 
-  // Should be changed to READ_ONLY once that role is created. Student is currently the lowest role.
   @Override
-  @PreAuthorize("hasMinimumDinaRole(@currentUser, 'STUDENT')")
+  @PreAuthorize("hasMinimumDinaRole(@currentUser, 'READ_ONLY')")
   public void authorizeRead(Object entity) {
 
   }
