@@ -11,7 +11,10 @@ import org.openapi4j.schema.validator.ValidationContext;
 import org.openapi4j.schema.validator.ValidationData;
 import org.openapi4j.schema.validator.v3.SchemaValidator;
 
+import lombok.extern.log4j.Log4j2;
+
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import static org.openapi4j.core.model.v3.OAI3SchemaKeywords.ADDITIONALPROPERTIES;
@@ -23,6 +26,7 @@ import static org.openapi4j.core.validation.ValidationSeverity.ERROR;
  * fields are allowed and to specify which fields may remain missing. Default validation Ensures all
  * attributes and relations are present in the response and does not allow additional fields.
  */
+@Log4j2
 class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
 
   private static final ValidationResult MISSING_FIELD_ERROR =
@@ -95,9 +99,39 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
     String blockName
   ) {
     for (String fieldName : requiredFieldNames) {
-      if (valueNode.at("/" + blockName + "/" + fieldName).isMissingNode()
-        && setDoesNotContainIgnoreCase(options.getAllowableMissingFields(), fieldName)) {
+      String blockNameWithFieldName = blockName + "/" + fieldName;
+      if (valueNode.at("/" + blockNameWithFieldName).isMissingNode()
+      && setDoesNotContainIgnoreCase(options.getAllowableMissingFields(), fieldName)) {
         validation.add(CRUMB_MISSING_FIELD, MISSING_FIELD_ERROR, fieldName);
+      }
+      if (setDoesNotContainIgnoreCase(options.getAllowableMissingFields(), fieldName)) {
+        checkMissingNestedFields(valueNode, validation, requiredFieldNames, blockNameWithFieldName);
+      }
+    }
+  }
+
+  private void checkMissingNestedFields(
+    JsonNode valueNode,
+    ValidationData<?> validation,
+    Set<String> requiredFieldNames,
+    String blockName
+  ) {
+    if (blockName.contains(RELATIONSHIPS_BLOCK_NAME)) {
+      return;
+    }
+    if (blockName.contains(ATTRIBUTES_BLOCK_NAME)) {
+      JsonPointer fieldPointer =
+            JsonPointer.compile("/" + blockName.replaceFirst("/", "/" + OAI3SchemaKeywords.PROPERTIES + "/"));
+      if (this.getSchemaNode().at(fieldPointer).has(OAI3SchemaKeywords.PROPERTIES)) {
+        fieldPointer = 
+          JsonPointer.compile("/" + blockName.replaceFirst("/", "/" + OAI3SchemaKeywords.PROPERTIES + "/") + "/" + OAI3SchemaKeywords.PROPERTIES);
+
+        Set<String> requiredFields = new HashSet<>();
+        
+        JsonNode attributesNode = this.getSchemaNode().at(fieldPointer);
+        attributesNode.fieldNames().forEachRemaining(requiredFields::add);
+
+        checkMissingFields(valueNode, validation, requiredFields, blockName);
       }
     }
   }
