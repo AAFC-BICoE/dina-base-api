@@ -33,6 +33,8 @@ public class WithMockKeycloakUserIT {
     PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
     PersonDTO result = dinaRepository.create(dto);
     assertNotNull(result.getUuid());
+
+    dinaRepository.delete(result.getUuid());
   }
 
   @WithMockKeycloakUser(
