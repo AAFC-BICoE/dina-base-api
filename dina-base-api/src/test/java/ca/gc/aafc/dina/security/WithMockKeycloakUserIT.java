@@ -10,10 +10,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
+
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@Transactional
 @SpringBootTest(
   classes = TestDinaBaseApp.class,
   properties = "keycloak.enabled: true"
@@ -33,8 +36,6 @@ public class WithMockKeycloakUserIT {
     PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
     PersonDTO result = dinaRepository.create(dto);
     assertNotNull(result.getUuid());
-
-    dinaRepository.delete(result.getUuid());
   }
 
   @WithMockKeycloakUser(
