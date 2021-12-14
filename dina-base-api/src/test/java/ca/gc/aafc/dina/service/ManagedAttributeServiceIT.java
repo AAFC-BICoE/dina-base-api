@@ -3,12 +3,16 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
+import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.validation.ManagedAttributeValueValidator;
 import ca.gc.aafc.dina.validation.ValidationContext;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,10 +24,14 @@ import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.transaction.Transactional;
+
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -78,6 +86,7 @@ public class ManagedAttributeServiceIT {
   @Data
   @Builder
   @Entity
+  @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
   public static class TestManagedAttribute implements ManagedAttribute {
     @Id
     @GeneratedValue
@@ -91,6 +100,9 @@ public class ManagedAttributeServiceIT {
     private OffsetDateTime createdOn;
     //for testing purpose
     private boolean failValidateValue;
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb")
+    private MultilingualDescription multilingualDescription;
   }
 
   @Data
