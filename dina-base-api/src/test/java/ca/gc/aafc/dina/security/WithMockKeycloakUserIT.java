@@ -10,10 +10,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
+
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@Transactional
 @SpringBootTest(
   classes = TestDinaBaseApp.class,
   properties = "keycloak.enabled: true"
