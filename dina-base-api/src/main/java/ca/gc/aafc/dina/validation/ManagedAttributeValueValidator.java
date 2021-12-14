@@ -18,6 +18,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
@@ -47,6 +48,14 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   public void validate(@NonNull Object target, @NonNull Errors errors) {
     checkIncomingParameter(target);
     validateElements((Map<String, String>) target, errors, null);
+  }
+  
+  public void validate(String objIdentifier, Object target, Map<String, String> managedAttributes, ValidationContext validationContext) {
+    Objects.requireNonNull(target);
+    Errors errors = ValidationErrorsHelper.newErrorsObject(objIdentifier, target);
+
+    validateElements(managedAttributes, errors, validationContext);
+    ValidationErrorsHelper.errorsToValidationException(errors);
   }
 
   /**
