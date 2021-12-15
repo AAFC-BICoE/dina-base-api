@@ -16,7 +16,6 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@Transactional
 @SpringBootTest(
   classes = TestDinaBaseApp.class,
   properties = "keycloak.enabled: true"
