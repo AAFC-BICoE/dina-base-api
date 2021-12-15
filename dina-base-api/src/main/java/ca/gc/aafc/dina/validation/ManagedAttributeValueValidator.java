@@ -18,6 +18,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
@@ -50,7 +51,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   }
 
   /**
-   * See {@link #validate(DinaEntity, Map, ValidationContext)}
+   * Same as {@link #validate(DinaEntity, Map, ValidationContext)} but without a {@link ValidationContext}.
    * @param entity
    * @param managedAttributes
    * @param <D>
@@ -60,17 +61,42 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   }
   
   /**
-   * Validates the managedAttributes attached to the provided entity.
+   * Validates the managedAttributes attached to the provided entity using a {@link ValidationContext}.
    * @param entity
    * @param managedAttributes
+   * @param validationContext will be used to call preValidateValue
    * @param <D>
    * @throws javax.validation.ValidationException
    */
   public <D extends DinaEntity> void validate(D entity, Map<String, String> managedAttributes, ValidationContext validationContext) {
-    Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
+    validate(managedAttributes, ValidationErrorsHelper.newErrorsObject(entity), validationContext);
+  }
+
+  /**
+   * Validates the managedAttributes attached to the provided object using a {@link ValidationContext}.
+   * @param objIdentifier an identifier used in the error message to identify the target
+   * @param target
+   * @param managedAttributes
+   * @param validationContext will be used to call preValidateValue
+   * @throws javax.validation.ValidationException
+   */
+  public void validate(String objIdentifier, Object target, Map<String, String> managedAttributes, ValidationContext validationContext) {
+    Objects.requireNonNull(target);
+    Errors errors = ValidationErrorsHelper.newErrorsObject(objIdentifier, target);
+    validate(managedAttributes, errors, validationContext);
+  }
+
+  /**
+   * Internal validate method that is using {@link ValidationContext}
+   * @param managedAttributes
+   * @param errors
+   * @param validationContext
+   */
+  private void validate(Map<String, String> managedAttributes, Errors errors, ValidationContext validationContext) {
     validateElements(managedAttributes, errors, validationContext);
     ValidationErrorsHelper.errorsToValidationException(errors);
   }
+
 
   private void validateElements(Map<String, String> attributesAndValues, Errors errors, ValidationContext validationContext) {
     Map<String, E> attributesPerKey = dinaService.findAttributesForKeys(attributesAndValues.keySet());

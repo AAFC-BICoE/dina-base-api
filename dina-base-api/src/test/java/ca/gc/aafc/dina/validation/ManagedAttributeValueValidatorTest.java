@@ -33,7 +33,9 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ManagedAttributeValueValidatorTest {
 
   private static final ManagedAttributeServiceIT.TestManagedAttributeUsage ENTITY_PLACEHOLDER = ManagedAttributeServiceIT.TestManagedAttributeUsage
-      .builder().build();
+      .builder()
+      .uuid(UUID.randomUUID())
+      .build();
 
   @Inject
   private ManagedAttributeService<ManagedAttributeServiceIT.TestManagedAttribute> testManagedAttributeService;
@@ -183,6 +185,30 @@ public class ManagedAttributeValueValidatorTest {
     assertThrows(
       IllegalArgumentException.class,
       () -> validatorUnderTest.validate(wrongKeyType, new BeanPropertyBindingResult(wrongKeyType, "mav")));
+  }
+
+  @Test
+  void validate_NonDinaEntity_NoErrors() {
+    testManagedAttribute = testManagedAttributeService.create(ManagedAttributeServiceIT.TestManagedAttribute.builder()
+    .name(RandomStringUtils.randomAlphabetic(6))
+    .managedAttributeType(ManagedAttribute.ManagedAttributeType.DATE)
+    .build());
+
+  Map<String, String> mav = Map.of(testManagedAttribute.getKey(), LocalDate.now().toString());
+  
+  validatorUnderTest.validate(ENTITY_PLACEHOLDER.getUuid().toString(), ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X);
+  }
+
+  @Test
+  void validate_NonDinaEntity_WhenInvalidIntegerTypeExceptionThrown() {
+    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder()
+        .name(RandomStringUtils.randomAlphabetic(6))
+        .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
+        .build();
+    testManagedAttributeService.create(testManagedAttribute);
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), "1.2");
+    assertThrows(ValidationException.class,
+        () ->  validatorUnderTest.validate(ENTITY_PLACEHOLDER.getUuid().toString(), ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X));
   }
 
   private TestManagedAttribute newTestManagedAttribute() {
