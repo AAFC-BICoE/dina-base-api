@@ -24,7 +24,7 @@ public enum DinaRole {
    * Read carefully since sorting is done based on priority:
    * compare(x,y) Returns -1 if x higher in priority than y, 0 if they are equal, and 1 if x is less in priority.
    */
-  public static Comparator<DinaRole> COMPARATOR = Comparator.comparingInt(DinaRole::getPriority);
+  public static final Comparator<DinaRole> COMPARATOR = Comparator.comparingInt(DinaRole::getPriority);
 
   private static final Pattern NON_ALPHA = Pattern.compile("[^A-Za-z]");
 
@@ -58,7 +58,7 @@ public enum DinaRole {
    * Private function. Use {@link #COMPARATOR} or specific methods.
    * @return
    */
-  private int getPriority(){
+  private int getPriority() {
     return priority;
   }
 
