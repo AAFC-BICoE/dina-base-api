@@ -15,8 +15,11 @@ import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.mockito.Answers;
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -197,6 +200,13 @@ class DinaPermissionEvaluatorTest {
 
     assertFalse(DinaRole.COLLECTION_MANAGER.isHigherOrEqualThan(DinaRole.DINA_ADMIN));
     assertFalse(DinaRole.STUDENT.isHigherOrEqualThan(DinaRole.DINA_ADMIN));
+
+    assertEquals(-1, DinaRole.COMPARATOR.compare(DinaRole.COLLECTION_MANAGER, DinaRole.STUDENT));
+
+    // test sorting by priority
+    List<DinaRole> dinaRoleList = new ArrayList<>(List.of(DinaRole.STUDENT, DinaRole.COLLECTION_MANAGER, DinaRole.READ_ONLY, DinaRole.DINA_ADMIN));
+    dinaRoleList.sort(DinaRole.COMPARATOR);
+    assertEquals(List.of(DinaRole.DINA_ADMIN, DinaRole.COLLECTION_MANAGER, DinaRole.STUDENT, DinaRole.READ_ONLY), dinaRoleList);
   }
 
   private static DinaAuthenticatedUser getDinaAuthenticatedUser(DinaRole dinaRole) {
