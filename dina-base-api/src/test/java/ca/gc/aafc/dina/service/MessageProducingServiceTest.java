@@ -3,9 +3,9 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.search.messaging.producer.MessageProducer;
 import ca.gc.aafc.dina.search.messaging.types.DocumentOperationNotification;
 import ca.gc.aafc.dina.search.messaging.types.DocumentOperationType;
+import ca.gc.aafc.dina.testsupport.TransactionTestingHelper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,6 +31,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -43,14 +44,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
-@Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, MessageProducingServiceTest.TestConfig.class},
   properties = {
     "messaging.isProducer=true",
@@ -75,6 +74,9 @@ class MessageProducingServiceTest {
 
   @Inject
   private TestConfig.Listener listener;
+
+  @Inject
+  private TransactionTestingHelper transactionTestingHelper;
 
   public static final RabbitMQContainer CONTAINER = new RabbitMQContainer("rabbitmq:3-management-alpine");
 
@@ -101,10 +103,10 @@ class MessageProducingServiceTest {
   @Test
   void create() {
     TestConfig.Item item = TestConfig.Item.builder()
-      .uuid(UUID.randomUUID())
-      .group("CNC")
-      .build();
-    itemService.create(item);
+        .uuid(UUID.randomUUID())
+        .group("CNC")
+        .build();
+    transactionTestingHelper.doInTransaction( ()-> itemService.create(item));
     listener.getLatch().await();
 
     assertResult(DocumentOperationType.ADD, item.getUuid().toString());
@@ -117,11 +119,11 @@ class MessageProducingServiceTest {
       .uuid(UUID.randomUUID())
       .group("CNC")
       .build();
-    itemService.create(item);
+    transactionTestingHelper.doInTransaction( ()-> itemService.create(item));
     listener.getLatch().await();
     listener.setLatch(new CountDownLatch(1));
 
-    itemService.update(item);
+    transactionTestingHelper.doInTransaction( ()-> itemService.update(item));
     listener.getLatch().await();
 
     assertResult(DocumentOperationType.UPDATE, item.getUuid().toString());
@@ -134,11 +136,13 @@ class MessageProducingServiceTest {
       .uuid(UUID.randomUUID())
       .group("CNC")
       .build();
-    itemService.create(item);
+    transactionTestingHelper.doInTransaction( ()-> itemService.create(item));
     listener.getLatch().await();
     listener.setLatch(new CountDownLatch(1));
 
-    itemService.delete(item);
+    // we need to load the entity before deleting it
+    transactionTestingHelper.doInTransactionWithoutResult( (t) -> itemService.delete(itemService.findOne(item.uuid,
+        TestConfig.Item.class)));
     listener.getLatch().await();
 
     assertResult(DocumentOperationType.DELETE, item.getUuid().toString());
@@ -184,9 +188,9 @@ class MessageProducingServiceTest {
       public ItemService(
         @NonNull BaseDAO baseDAO,
         @NonNull SmartValidator sv,
-        MessageProducer producer
+          ApplicationEventPublisher applicationEventPublisher
       ) {
-        super(baseDAO, sv, "item", producer);
+        super(baseDAO, sv, "item", applicationEventPublisher);
       }
 
       @Override
