@@ -1,5 +1,20 @@
 package ca.gc.aafc.dina;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import javax.inject.Inject;
+
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
+import org.mockito.Mockito;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.info.BuildProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.validation.SmartValidator;
+
 import ca.gc.aafc.dina.DinaUserConfig.DepartmentDinaService;
 import ca.gc.aafc.dina.DinaUserConfig.EmployeeDinaService;
 import ca.gc.aafc.dina.DinaUserConfig.VocabularyDinaService;
@@ -17,25 +32,13 @@ import ca.gc.aafc.dina.jsonapi.DinaRepoEagerLoadingIT;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
+import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
+import ca.gc.aafc.dina.search.messaging.producer.LogBasedMessageProducer;
+import ca.gc.aafc.dina.search.messaging.producer.MessageProducer;
 import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.security.GroupAuthorizationService;
-import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaServiceTest.DinaServiceTestImplementation;
-
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
-import org.mockito.Mockito;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.info.BuildProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.validation.SmartValidator;
-
-import javax.inject.Inject;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
 
 /**
  * Small test application running on dina-base-api
@@ -114,6 +117,12 @@ public class TestDinaBaseApp {
       Vocabulary.class,
       null,
       buildProperties());
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(MessageProducer.class)
+  public LogBasedMessageProducer messageProducer(){
+      return new LogBasedMessageProducer();
   }
 
   @Bean

@@ -1,12 +1,14 @@
 package ca.gc.aafc.dina.messaging;
 
-import ca.gc.aafc.dina.search.messaging.producer.MessageProducer;
-import ca.gc.aafc.dina.search.messaging.types.DocumentOperationNotification;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+
+import ca.gc.aafc.dina.search.messaging.producer.MessageProducer;
+import ca.gc.aafc.dina.search.messaging.types.DocumentOperationNotification;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * This class will listen for {@link EntityChanged} event. The event will be processed AFTER
