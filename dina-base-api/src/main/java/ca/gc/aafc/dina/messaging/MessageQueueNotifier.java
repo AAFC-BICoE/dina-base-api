@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.messaging;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -15,6 +16,7 @@ import lombok.extern.log4j.Log4j2;
  * the commit of the transaction.
  * Then, it will emit a message using the provided {@link MessageProducer}.
  */
+@ConditionalOnBean(MessageProducer.class)
 @Component
 @Log4j2
 public class MessageQueueNotifier {
