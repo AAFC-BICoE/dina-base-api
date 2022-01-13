@@ -15,6 +15,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -66,6 +67,10 @@ public class Department implements DinaEntity {
   @Transient
   private DepartmentDetails departmentDetails;
 
+  @Valid
+  @Transient
+  private List<DepartmentAlias> aliases;
+
   public String toString() {
     return super.toString();
   }
@@ -75,6 +80,14 @@ public class Department implements DinaEntity {
   public static class DepartmentDetails {
     @Max(10)
     private String note;
+  }
+
+  @Data
+  @AllArgsConstructor
+  public static class DepartmentAlias {
+    @Size(max = 100)
+    @NotBlank
+    private String name;
   }
 
 }

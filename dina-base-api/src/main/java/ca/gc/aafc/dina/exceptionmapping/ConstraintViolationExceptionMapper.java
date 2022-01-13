@@ -54,9 +54,7 @@ public class ConstraintViolationExceptionMapper
   }
 
   private String generateSourcePointer(ConstraintViolation<?> cv) {
-    return StreamSupport.stream(cv.getPropertyPath().spliterator(), false)
-        .map(Path.Node::getName)
-        .collect(Collectors.joining("/"));
+    return cv.getPropertyPath().toString();
   }
   
 }

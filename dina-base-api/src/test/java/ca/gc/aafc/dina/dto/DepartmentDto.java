@@ -57,6 +57,8 @@ public class DepartmentDto {
 
   private Department.DepartmentDetails departmentDetails;
 
+  private List<Department.DepartmentAlias> aliases;
+
   public static class DerivedAdapter implements DinaFieldAdapter<DepartmentDto, Department, String, String> {
 
     @Override

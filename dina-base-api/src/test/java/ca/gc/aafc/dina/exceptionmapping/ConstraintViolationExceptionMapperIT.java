@@ -83,7 +83,7 @@ public class ConstraintViolationExceptionMapperIT {
   }
 
   @Test
-  public void persistDepartment_whenNestedStructure_errorDataIsAccurate() {
+  public void persistDepartment_whenNestedObject_errorDataIsAccurate() {
     // Create the department
     DepartmentDto testDepartment = new DepartmentDto();
     testDepartment.setName("Dep1");
@@ -112,7 +112,45 @@ public class ConstraintViolationExceptionMapperIT {
 
       assertEquals("422", errors.get(0).getStatus());
       assertEquals("departmentDetails.note must be less than or equal to 10", errors.get(0).getDetail());
-      assertEquals("departmentDetails/note", errors.get(0).getSourcePointer());
+      assertEquals("departmentDetails.note", errors.get(0).getSourcePointer());
+
+      return;
+    }
+
+    // This test method should end at the "return" in the catch block.
+    fail("ConstraintViolationException not thrown");
+  }
+
+  @Test
+  public void persistDepartment_whenNestedObjectArray_errorDataIsAccurate() {
+    // Create the department
+    DepartmentDto testDepartment = new DepartmentDto();
+    testDepartment.setName("Dep1");
+    testDepartment.setLocation("Loc1");
+    testDepartment.setUuid(UUID.randomUUID());
+    testDepartment.setAliases(
+      // Try to set a blank alias, which is not allowed:
+      List.of(new Department.DepartmentAlias(""))
+    );
+
+    try {
+      // Attempt the create.
+      this.departmentRepository.create(testDepartment);
+    } catch (ConstraintViolationException exception) {
+      // This test expects the ConstraintViolationException to be thrown, it will fail otherwise.
+      // Generate the error response here:
+      ErrorResponse errorResponse = constraintViolationExceptionMapper.toErrorResponse(exception);
+
+      // Assert correct http status.
+      assertEquals(422, errorResponse.getHttpStatus());
+
+      // Get the errors sorted by detail. The default error order is not consistent.
+      ErrorData[] errors = errorResponse.getErrors().toArray(ErrorData[]::new);
+      assertEquals(1, errors.length);
+
+      assertEquals("422", errors[0].getStatus());
+      assertEquals("aliases[0].name must not be blank", errors[0].getDetail());
+      assertEquals("aliases[0].name", errors[0].getSourcePointer());
 
       return;
     }
