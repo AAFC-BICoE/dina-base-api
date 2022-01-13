@@ -4,6 +4,7 @@ spring:
     # Use the default username and password for the embedded postgres container:
     username: sa
     password: sa
+    url: jdbc:h2:mem:testdb;INIT=create domain if not exists jsonb as text
 keycloak.enabled: false
 embedded.postgresql:
   enabled: true

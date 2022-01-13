@@ -68,12 +68,44 @@ public final class JsonAPITestHelper {
   }
 
   /**
+   * Creates a JSON:API Map from the provided type name, attributes.
+   *
+   * @param typeName
+   *          "type" in JSON API
+   * @param attributeMap
+   *          key/value representing the "attributes" in JSON API
+   * @return
+   */
+  public static Map<String, Object> toJsonAPIMap(String typeName,
+      Map<String, Object> attributeMap) {
+    return toJsonAPIMap(typeName, attributeMap, null, null);
+  }
+
+  /**
    * Creates a JSON API Map from the provided type name, attributes and id.
    *
    * @param typeName
    *          "type" in JSON API
    * @param attributeMap
    *          key/value representing the "attributes" in JSON API
+   * @param id
+   *          id of the resource or null if there is none
+   * @return
+   */
+  public static Map<String, Object> toJsonAPIMap(String typeName,
+      Map<String, Object> attributeMap, String id) {
+    return toJsonAPIMap(typeName, attributeMap, null, id);
+  }
+
+  /**
+   * Creates a JSON API Map from the provided type name, attributes and id.
+   *
+   * @param typeName
+   *          "type" in JSON API
+   * @param attributeMap
+   *          key/value representing the "attributes" in JSON:API
+   * @param relationshipMap
+   *          key/value representing the "relationships" in JSON:API
    * @param id
    *          id of the resource or null if there is none
    * @return

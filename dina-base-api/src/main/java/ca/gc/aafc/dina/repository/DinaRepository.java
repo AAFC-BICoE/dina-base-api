@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.repository;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.exception.UnknownAttributeException;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
@@ -26,6 +27,7 @@ import io.crnk.core.resource.meta.MetaInformation;
 import io.crnk.core.resource.meta.PagedMetaInformation;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,6 +59,7 @@ public class DinaRepository<D, E extends DinaEntity>
   @Getter
   private final Class<D> resourceClass;
   private final Class<E> entityClass;
+  private final String idFieldName;
 
   private final DinaService<E> dinaService;
   private final DinaAuthorizationService authorizationService;
@@ -71,6 +74,9 @@ public class DinaRepository<D, E extends DinaEntity>
   private final DinaMappingRegistry registry;
   private final boolean hasFieldAdapters;
   private HttpRequestContextProvider httpRequestContextProvider;
+
+  @Setter
+  private boolean caseSensitiveOrderBy = false;
 
   public DinaRepository(
     @NonNull DinaService<E> dinaService,
@@ -100,6 +106,7 @@ public class DinaRepository<D, E extends DinaEntity>
     this.registry = new DinaMappingRegistry(resourceClass);
     this.mappingLayer = new DinaMappingLayer<>(resourceClass, dinaMapper, dinaService, this.registry);
     this.hasFieldAdapters = this.registry.hasFieldAdapters();
+    this.idFieldName = this.registry.findJsonIdFieldName(resourceClass);
   }
 
   /**
@@ -161,15 +168,14 @@ public class DinaRepository<D, E extends DinaEntity>
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     final QuerySpec spec = resolveFilterAdapters(querySpec);
-    String idName = findIdFieldName(resourceClass);
 
-    List<E> entities = fetchEntities(ids, spec, idName);
+    List<E> entities = fetchEntities(ids, spec, idFieldName);
     List<D> dList = mappingLayer.mapEntitiesToDto(spec, entities);
 
     handleMetaPermissionsResponse(entities, dList);
 
     Long resourceCount = dinaService.getResourceCount( entityClass,
-      (criteriaBuilder, root, em) -> filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idName, em));
+      (criteriaBuilder, root, em) -> filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idFieldName, em));
 
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
@@ -224,22 +230,39 @@ public class DinaRepository<D, E extends DinaEntity>
     return querySpec;
   }
 
-  private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName) {
+  /**
+   * 
+   * @param ids
+   * @param querySpec
+   * @param idName
+   * @return List of fetched entities
+   * @throws UnknownAttributeException - if an attribute used in the {@link QuerySpec} is unknown
+   */
+  private List<E> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, String idName)
+      throws UnknownAttributeException {
     return dinaService.findAll(
       entityClass,
       (criteriaBuilder, root, em) -> {
         DinaFilterResolver.leftJoinRelations(root, querySpec, registry);
         return filterResolver.buildPredicates(querySpec, criteriaBuilder, root, ids, idName, em);
       },
-      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root),
+      (cb, root) -> DinaFilterResolver.getOrders(querySpec, cb, root, caseSensitiveOrderBy),
       Math.toIntExact(querySpec.getOffset()),
       Optional.ofNullable(querySpec.getLimit()).orElse(DEFAULT_LIMIT).intValue());
   }
 
+  /**
+   * Save an existing resource.
+   * @param resource resource to update. If the resource to update was received in a PATCH
+   *                 Crnk will give the current DTO (from findOne) with the fields received
+   *                 in the PATCH changed.
+   * @param <S>
+   * @return
+   */
   @Transactional
   @Override
   public <S extends D> S save(S resource) {
-    Object id = PropertyUtils.getProperty(resource, findIdFieldName(resourceClass));
+    Object id = PropertyUtils.getProperty(resource, idFieldName);
 
     E entity = dinaService.findOne(id, entityClass);
 
@@ -256,6 +279,15 @@ public class DinaRepository<D, E extends DinaEntity>
     return resource;
   }
 
+  /**
+   * create an existing resource.
+   *
+   * @param resource resource to create. If the resource to create was received in a POST Crnk will give the
+   *                 current DTO with the fields received in the POST. Fields missing from the request body
+   *                 will default to the values set by the java class.
+   * @param <S>
+   * @return
+   */
   @Transactional
   @Override
   @SneakyThrows
@@ -269,7 +301,7 @@ public class DinaRepository<D, E extends DinaEntity>
     dinaService.create(entity);
 
     D dto = findOne(
-      (Serializable) PropertyUtils.getProperty(entity, findIdFieldName(resourceClass)),
+      (Serializable) PropertyUtils.getProperty(entity, idFieldName),
       new QuerySpec(resourceClass));
     auditService.ifPresent(service -> service.audit(dto));
     return (S) dto;
@@ -318,16 +350,6 @@ public class DinaRepository<D, E extends DinaEntity>
     // validation group should probably be set here
     dinaService.validateConstraints(entity, null);
     dinaService.validateBusinessRules(entity);
-  }
-
-  /**
-   * Returns the id field name for a given class.
-   *
-   * @param clazz - class to find the id field name for
-   * @return - id field name for a given class.
-   */
-  private String findIdFieldName(Class<?> clazz) {
-    return this.registry.findJsonIdFieldName(clazz);
   }
 
   @Override

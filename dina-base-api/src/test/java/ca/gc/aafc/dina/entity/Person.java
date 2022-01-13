@@ -31,6 +31,8 @@ public class Person implements DinaEntity {
   @NaturalId
   private UUID uuid;
 
+  private Integer room;
+
   private String name;
 
   @Column(name = "group_name")

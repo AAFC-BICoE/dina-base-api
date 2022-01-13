@@ -78,6 +78,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     validateConstraints(entity, OnCreate.class);
     validateBusinessRules(entity);
     baseDAO.create(entity, flush);
+    postCreate(entity);
     return entity;
   }
 
@@ -253,6 +254,15 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    * @param entity entity being created by {@link DefaultDinaService#create(DinaEntity)}
    */
   protected void preCreate(E entity) {
+    // Defaults to do nothing
+  }
+
+  /**
+   * Run after the {@link DefaultDinaService#create(DinaEntity)} method.
+   *
+   * @param entity entity created by {@link DefaultDinaService#create(DinaEntity)}
+   */
+  protected void postCreate(E entity) {
     // Defaults to do nothing
   }
 

@@ -41,7 +41,7 @@ public class EmployeeDto {
 
   @IgnoreDinaMapping()
   private String customField;
-
+  
   @JsonApiRelation
   @DiffIgnore
   private DepartmentDto department;

@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.69</version>
+  <version>0.80-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.5.5</version>
+    <version>2.5.8</version>
   </parent>
 
   <modules>
@@ -36,20 +36,21 @@
     <!-- Build plugin properties -->
     <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
     <checkstyle.version>8.44</checkstyle.version>
-    <spotbugs.version>4.4.1</spotbugs.version>
-    <maven-spotbugs.version>4.2.0</maven-spotbugs.version>
+    <spotbugs.version>4.5.2</spotbugs.version>
+    <maven-spotbugs.version>4.5.0.0</maven-spotbugs.version>
     <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.1.0</asciidoctorj.diagram.version>
-    <dependency.check.version>6.2.2</dependency.check.version>
-    <lombok-maven-plugin.version>1.18.16.0</lombok-maven-plugin.version>
+    <dependency.check.version>6.5.2</dependency.check.version>
+    <lombok-maven-plugin.version>1.18.20.0</lombok-maven-plugin.version>
     <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
-    <keycloak-starter.version>12.0.4</keycloak-starter.version>
+    <keycloak-starter.version>15.1.0</keycloak-starter.version>
     <bcprov-jdk15on.version>1.68</bcprov-jdk15on.version>
     <guava.version>30.0-jre</guava.version>
+    <log4j2.version>2.17.1</log4j2.version>
 
-    <testcontainers.version>1.16.0</testcontainers.version>
+    <testcontainers.version>1.16.2</testcontainers.version>
   </properties>
   
   <repositories>
@@ -69,7 +70,17 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
+ 		<exclusions>
+	        <exclusion>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-starter-logging</artifactId>
+	        </exclusion>
+    	</exclusions>
     </dependency>
+	<dependency>
+	    <groupId>org.springframework.boot</groupId>
+	    <artifactId>spring-boot-starter-log4j2</artifactId>
+	</dependency>    
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -128,6 +139,7 @@
       <version>${spotbugs.version}</version>
       <scope>provided</scope>
     </dependency>
+    
     <!-- TEST Scope -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
