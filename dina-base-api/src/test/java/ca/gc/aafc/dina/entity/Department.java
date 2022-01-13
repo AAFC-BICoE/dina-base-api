@@ -72,10 +72,10 @@ public class Department implements DinaEntity {
   @Transient
   private DepartmentDetails departmentDetails;
 
+  // Simulates a possible jsonb field
   @Valid
   @Transient
-  @Builder.Default
-  private List<DepartmentAlias> aliases = new ArrayList<>();
+  private List<DepartmentAlias> aliases;
 
   public String toString() {
     return super.toString();
