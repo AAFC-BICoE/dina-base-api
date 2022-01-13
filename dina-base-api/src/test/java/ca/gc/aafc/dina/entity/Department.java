@@ -74,7 +74,8 @@ public class Department implements DinaEntity {
 
   @Valid
   @Transient
-  private List<DepartmentAlias> aliases;
+  @Builder.Default
+  private List<DepartmentAlias> aliases = new ArrayList<>();
 
   public String toString() {
     return super.toString();

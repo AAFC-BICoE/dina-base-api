@@ -17,6 +17,7 @@ import org.javers.core.metamodel.annotation.Id;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -57,7 +58,8 @@ public class DepartmentDto {
 
   private Department.DepartmentDetails departmentDetails;
 
-  private List<Department.DepartmentAlias> aliases;
+  @Builder.Default
+  private List<Department.DepartmentAlias> aliases = new ArrayList<>();
 
   private String establishedOn;
 
