@@ -51,7 +51,7 @@ public class DinaGroupBasedPermissionsTest {
 
   @Test
   public void create_AuthorizedGroup_CreatesObject() {
-    PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
+    PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("test").build();
     PersonDTO result = dinaRepository.create(dto);
     assertNotNull(result.getUuid());
   }
@@ -68,7 +68,7 @@ public class DinaGroupBasedPermissionsTest {
   @Test
   public void save_AuthorizedGroup_UpdatesObject() {
     String expectedName = RandomStringUtils.random(6);
-    Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
+    Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("test2").build();
     baseDAO.create(persisted);
 
     PersonDTO updateDto = PersonDTO.builder().uuid(persisted.getUuid()).name(expectedName).build();
