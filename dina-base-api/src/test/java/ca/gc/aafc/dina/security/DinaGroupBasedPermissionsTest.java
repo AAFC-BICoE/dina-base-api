@@ -84,7 +84,7 @@ public class DinaGroupBasedPermissionsTest {
     Person persisted = Person.builder()
       .uuid(UUID.randomUUID())
       .group("Invalid_Group")
-      .name("name").build();
+      .name("test3").build();
     baseDAO.create(persisted);
 
     PersonDTO updateDto = PersonDTO.builder()
@@ -96,7 +96,7 @@ public class DinaGroupBasedPermissionsTest {
 
   @Test
   public void delete_AuthorizedGroup_UpdatesObject() {
-    Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
+    Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("test4").build();
     baseDAO.create(persisted);
 
     assertNotNull(baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class));
@@ -109,7 +109,7 @@ public class DinaGroupBasedPermissionsTest {
     Person persisted = Person.builder()
       .uuid(UUID.randomUUID())
       .group("Invalid_Group")
-      .name("name").build();
+      .name("test5").build();
     baseDAO.create(persisted);
 
     assertNotNull(baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class));
