@@ -51,7 +51,7 @@ public class DinaGroupBasedPermissionsTest {
 
   @Test
   public void create_AuthorizedGroup_CreatesObject() {
-    PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("test").build();
+    PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
     PersonDTO result = dinaRepository.create(dto);
     assertNotNull(result.getUuid());
   }
@@ -68,7 +68,7 @@ public class DinaGroupBasedPermissionsTest {
   @Test
   public void save_AuthorizedGroup_UpdatesObject() {
     String expectedName = RandomStringUtils.random(6);
-    Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("test2").build();
+    Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
     baseDAO.create(persisted);
 
     PersonDTO updateDto = PersonDTO.builder().uuid(persisted.getUuid()).name(expectedName).build();
@@ -84,7 +84,7 @@ public class DinaGroupBasedPermissionsTest {
     Person persisted = Person.builder()
       .uuid(UUID.randomUUID())
       .group("Invalid_Group")
-      .name("test3").build();
+      .name("name").build();
     baseDAO.create(persisted);
 
     PersonDTO updateDto = PersonDTO.builder()
@@ -96,7 +96,7 @@ public class DinaGroupBasedPermissionsTest {
 
   @Test
   public void delete_AuthorizedGroup_UpdatesObject() {
-    Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("test4").build();
+    Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
     baseDAO.create(persisted);
 
     assertNotNull(baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class));
@@ -109,7 +109,7 @@ public class DinaGroupBasedPermissionsTest {
     Person persisted = Person.builder()
       .uuid(UUID.randomUUID())
       .group("Invalid_Group")
-      .name("test5").build();
+      .name("name").build();
     baseDAO.create(persisted);
 
     assertNotNull(baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class));
