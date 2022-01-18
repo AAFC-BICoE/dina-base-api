@@ -31,7 +31,7 @@ public class WithMockKeycloakUserIT {
   @WithMockKeycloakUser(groupRole = {"group 1:staff", "group 3:staff"})
   @Test
   public void create_AuthorizedGroup_CreatesObject() {
-    PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
+    PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("WithMockKeycloakUserITName").build();
     PersonDTO result = dinaRepository.create(dto);
     assertNotNull(result.getUuid());
   }
