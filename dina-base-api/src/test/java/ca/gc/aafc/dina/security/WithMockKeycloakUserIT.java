@@ -4,7 +4,6 @@ import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.repository.DinaRepository;
-import ca.gc.aafc.dina.testsupport.DatabaseSupportService;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -29,13 +28,10 @@ public class WithMockKeycloakUserIT {
   @Inject
   private DinaAuthenticatedUser currentUser;
 
-  @Inject
-  protected DatabaseSupportService service;
-
   @WithMockKeycloakUser(groupRole = {"group 1:staff", "group 3:staff"})
   @Test
   public void create_AuthorizedGroup_CreatesObject() {
-    PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("WithMockKeycloakUserITName").build();
+    PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
     PersonDTO result = dinaRepository.create(dto);
     assertNotNull(result.getUuid());
 
@@ -52,4 +48,5 @@ public class WithMockKeycloakUserIT {
     Assertions.assertEquals("internal", currentUser.getInternalIdentifier());
     Assertions.assertEquals("agent one", currentUser.getAgentIdentifier());
   }
+
 }
