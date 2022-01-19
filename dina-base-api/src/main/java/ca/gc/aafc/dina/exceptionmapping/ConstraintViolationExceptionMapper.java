@@ -1,12 +1,10 @@
 package ca.gc.aafc.dina.exceptionmapping;
 
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import javax.inject.Named;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import javax.validation.Path;
 
 import io.crnk.core.engine.document.ErrorData;
 import io.crnk.core.engine.error.ErrorResponse;
@@ -54,9 +52,7 @@ public class ConstraintViolationExceptionMapper
   }
 
   private String generateSourcePointer(ConstraintViolation<?> cv) {
-    return StreamSupport.stream(cv.getPropertyPath().spliterator(), false)
-        .map(Path.Node::getName)
-        .collect(Collectors.joining("/"));
+    return cv.getPropertyPath().toString();
   }
   
 }
