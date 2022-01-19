@@ -8,6 +8,7 @@ import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -44,11 +45,11 @@ public class Person implements DinaEntity {
 
   private OffsetDateTime createdOn;
 
-  @OneToOne()
+  @OneToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "department_id")
   private Department department;
 
-  @OneToMany
+  @OneToMany(fetch = FetchType.EAGER)
   @JoinColumn(name = "department_list_fk")
   private List<Department> departments;
 }

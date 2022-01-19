@@ -1,5 +1,24 @@
 package ca.gc.aafc.dina.repository;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.validation.SmartValidator;
+
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
@@ -8,6 +27,7 @@ import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.service.DefaultDinaService;
+import ca.gc.aafc.dina.testsupport.DatabaseSupportService;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.FilterOperator;
@@ -18,57 +38,99 @@ import io.crnk.core.queryspec.SortSpec;
 import io.crnk.core.resource.list.ResourceList;
 import io.crnk.core.resource.meta.PagedMetaInformation;
 import lombok.NonNull;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.hamcrest.core.Is;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.validation.SmartValidator;
 
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static org.junit.Assert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-
-@Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class)
 public class DinaRepositoryIT {
 
   @Inject
-  private DinaRepository<PersonDTO, Person> dinaRepository;
+  private DinaRepository<PersonDTO, Person> personRepository;
+
+  @Inject
+  private DinaRepository<DepartmentDto, Department> departmentRepository;
 
   @Inject
   private BaseDAO baseDAO;
 
+  @Inject
+  private DatabaseSupportService databaseSupportService;
+
   private Department singleRelationUnderTest;
   private List<Department> collectionRelationUnderTest;
 
-  @BeforeEach
-  public void setup() {
-    singleRelationUnderTest = persistDepartment();
-    collectionRelationUnderTest = persistDepartments();
+  private PersonDTO createTestData(boolean includeDepartmentData) {
+    PersonDTO person = PersonDTO.builder()
+        .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
+        .name(RandomStringUtils.randomAlphabetic(4))
+        .group(RandomStringUtils.randomAlphabetic(4))
+        .build();
+
+    // Generate department data with person if requested.
+    if (includeDepartmentData) {
+      List<DepartmentDto> departments = new ArrayList<DepartmentDto>();
+      for (int i = 0; i < 10; i++) {
+        departments.add(departmentRepository.create(DepartmentDto.builder()
+            .name(RandomStringUtils.randomAlphabetic(4))
+            .location(RandomStringUtils.randomAlphabetic(4))
+            .build()
+        ));
+      }
+      
+      // For the single department, just use the first department created from the list.
+      person.setDepartment(departments.get(0));
+      person.setDepartments(departments);
+    }
+
+    return personRepository.create(person);
+  }
+
+  private void cleanUpTestData(PersonDTO personToRemove) {
+    // Check if person has department data to remove.
+    if (personToRemove.getDepartment() != null) {
+      List<DepartmentDto> departmentsToRemove = personToRemove.getDepartments();
+
+      // Unlink from the person.
+      personToRemove.setDepartment(null);
+      personToRemove.setDepartments(null);
+      personRepository.save(personToRemove);
+
+      // Delete the multiple departments list. The first one is also shared with the
+      // .getDepartment() so it will automatically be removed when going though the
+      // list.
+      departmentsToRemove.forEach(department -> {
+        departmentRepository.delete(department.getUuid());
+      });
+    }
+
+    // Now remove the person since all department data has been removed.
+    personRepository.delete(personToRemove.getUuid());
   }
 
   @Test
   public void create_ValidResource_ResourceCreated() {
-    PersonDTO dto = persistPerson();
+    // Create person record with department data.
+    PersonDTO persistedRecord = createTestData(true);
 
-    Person result = baseDAO.findOneByNaturalId(dto.getUuid(), Person.class);
+    // Ensure record was properly created and mapped over.
+    Person result = databaseSupportService.findUnique(Person.class, "uuid", persistedRecord.getUuid());
     assertNotNull(result);
-    assertEqualsPersonDtoAndEntity(dto, result, singleRelationUnderTest, collectionRelationUnderTest);
+    assertEquals(result.getUuid(), persistedRecord.getUuid());
+    assertEquals(result.getName(), persistedRecord.getName());
+
+    // Check if associations exist with the correct UUID.
+    assertNotNull(result.getDepartment());
+    assertNotNull(result.getDepartments());
+    assertEquals(result.getDepartment().getUuid(), persistedRecord.getDepartment().getUuid());
+    assertEquals(result.getDepartments().get(1).getUuid(), persistedRecord.getDepartments().get(1).getUuid());
+
+    // Clean up person record and all department data.
+    cleanUpTestData(persistedRecord);
   }
 
   @Test
@@ -78,7 +140,7 @@ public class DinaRepositoryIT {
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setIncludedRelations(createIncludeRelationSpecs("department", "departments"));
 
-    PersonDTO result = dinaRepository.findOne(dto.getUuid(), querySpec);
+    PersonDTO result = personRepository.findOne(dto.getUuid(), querySpec);
     assertEqualsPersonDtos(dto, result, true);
   }
 
@@ -86,7 +148,7 @@ public class DinaRepositoryIT {
   public void findOne_NoResourceFound_ThrowsResourceNotFoundException() {
     assertThrows(
       ResourceNotFoundException.class,
-      () -> dinaRepository.findOne(UUID.randomUUID(), new QuerySpec(PersonDTO.class))
+      () -> personRepository.findOne(UUID.randomUUID(), new QuerySpec(PersonDTO.class))
     );
   }
 
@@ -102,7 +164,7 @@ public class DinaRepositoryIT {
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setIncludedRelations(createIncludeRelationSpecs("department", "departments"));
 
-    List<PersonDTO> result = dinaRepository.findAll(null, querySpec);
+    List<PersonDTO> result = personRepository.findAll(null, querySpec);
 
     assertEquals(expectedPersons.size(), result.size());
     for (PersonDTO resultElement : result) {
@@ -122,7 +184,7 @@ public class DinaRepositoryIT {
       persistPerson();
     }
 
-    List<PersonDTO> resultList = dinaRepository.findAll(idList, new QuerySpec(PersonDTO.class));
+    List<PersonDTO> resultList = personRepository.findAll(idList, new QuerySpec(PersonDTO.class));
 
     assertEquals(idList.size(), resultList.size());
     resultList.forEach(result -> assertTrue(idList.contains(result.getUuid())));
@@ -136,7 +198,7 @@ public class DinaRepositoryIT {
     for (int i = 0; i < expectedNumberOfResults; i++) {
       PersonDTO dto = createPersonDto();
       dto.setName(expectedName);
-      dinaRepository.create(dto);
+      personRepository.create(dto);
       // Persist extra person with different name
       persistPerson();
     }
@@ -144,7 +206,7 @@ public class DinaRepositoryIT {
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.addFilter(PathSpec.of("rsql").filter(FilterOperator.EQ, "name==" + expectedName));
 
-    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    List<PersonDTO> resultList = personRepository.findAll(null, querySpec);
     assertEquals(expectedNumberOfResults, resultList.size());
     resultList.forEach(result -> assertEquals(expectedName, result.getName()));
   }
@@ -157,7 +219,7 @@ public class DinaRepositoryIT {
     for (int i = 0; i < expectedNumberOfResults; i++) {
       PersonDTO dto = createPersonDto();
       dto.setName(expectedName);
-      dinaRepository.create(dto);
+      personRepository.create(dto);
       // Persist extra person with different name
       persistPerson();
     }
@@ -165,7 +227,7 @@ public class DinaRepositoryIT {
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.addFilter(PathSpec.of("name").filter(FilterOperator.EQ, expectedName));
 
-    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    List<PersonDTO> resultList = personRepository.findAll(null, querySpec);
     assertEquals(expectedNumberOfResults, resultList.size());
     resultList.forEach(result -> assertEquals(expectedName, result.getName()));
   }
@@ -178,7 +240,7 @@ public class DinaRepositoryIT {
     for (int i = 0; i < 10; i++) {
       PersonDTO toPersist = createPersonDto();
       toPersist.setDepartment(null);
-      dinaRepository.create(toPersist);
+      personRepository.create(toPersist);
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
@@ -187,7 +249,7 @@ public class DinaRepositoryIT {
         FilterOperator.EQ,
         singleRelationUnderTest.getUuid()));
 
-    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    List<PersonDTO> resultList = personRepository.findAll(null, querySpec);
     assertEquals(1, resultList.size());
     assertEqualsPersonDtos(expected, resultList.get(0), false);
   }
@@ -204,7 +266,7 @@ public class DinaRepositoryIT {
     querySpec.addFilter(
       PathSpec.of("customField").filter(FilterOperator.EQ, expected.getCustomField()));
 
-    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    List<PersonDTO> resultList = personRepository.findAll(null, querySpec);
     assertEquals(1, resultList.size());
     assertEquals(expected.getUuid(), resultList.get(0).getUuid());
   }
@@ -214,13 +276,13 @@ public class DinaRepositoryIT {
     Department depart = persistDepartment();
     PersonDTO expected = createPersonDto();
     expected.setDepartment(DepartmentDto.builder().uuid(depart.getUuid()).build());
-    expected = dinaRepository.create(expected);
+    expected = personRepository.create(expected);
 
     // Persist extra people with no department
     for (int i = 0; i < 10; i++) {
       PersonDTO toPersist = createPersonDto();
       toPersist.setDepartment(null);
-      dinaRepository.create(toPersist);
+      personRepository.create(toPersist);
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
@@ -228,7 +290,7 @@ public class DinaRepositoryIT {
     querySpec.addFilter(PathSpec.of("department", "derivedFromLocation")
       .filter(FilterOperator.EQ, depart.getLocation()));
 
-    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    List<PersonDTO> resultList = personRepository.findAll(null, querySpec);
     assertEquals(1, resultList.size());
     assertEquals(expected.getUuid(), resultList.get(0).getUuid());
   }
@@ -241,14 +303,14 @@ public class DinaRepositoryIT {
     for (String name : shuffledNames) {
       PersonDTO toPersist = createPersonDto();
       toPersist.setName(name);
-      dinaRepository.create(toPersist);
+      personRepository.create(toPersist);
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setSort(Collections.singletonList(
         new SortSpec(Collections.singletonList("name"), Direction.ASC)));
 
-    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    List<PersonDTO> resultList = personRepository.findAll(null, querySpec);
     for (int i = 0; i < names.size(); i++) {
       assertEquals(names.get(i), resultList.get(i).getName());
     }
@@ -268,7 +330,7 @@ public class DinaRepositoryIT {
       PersonDTO toPersist = createPersonDto();
       toPersist.setName(shuffledNames.get(i));
       toPersist.setRoom(matchingRooms.get(i));
-      dinaRepository.create(toPersist);
+      personRepository.create(toPersist);
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
@@ -276,25 +338,25 @@ public class DinaRepositoryIT {
         new SortSpec(Collections.singletonList("name"), Direction.ASC)));
 
     //case insensitive by default
-    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    List<PersonDTO> resultList = personRepository.findAll(null, querySpec);
     for (int i = 0; i < namesCaseInsensitive.size(); i++) {
       assertEquals(namesCaseInsensitive.get(i), resultList.get(i).getName());
     }
 
     //test case sensitive
-    dinaRepository.setCaseSensitiveOrderBy(true);
-    resultList = dinaRepository.findAll(null, querySpec);
+    personRepository.setCaseSensitiveOrderBy(true);
+    resultList = personRepository.findAll(null, querySpec);
     for (int i = 0; i < namesCaseSensitive.size(); i++) {
       assertEquals(namesCaseSensitive.get(i), resultList.get(i).getName());
     }
 
     // revert to default
-    dinaRepository.setCaseSensitiveOrderBy(false);
+    personRepository.setCaseSensitiveOrderBy(false);
 
     // sorting on non text field should have no effect
     querySpec.setSort(Collections.singletonList(
         new SortSpec(Collections.singletonList("room"), Direction.ASC)));
-    resultList = dinaRepository.findAll(null, querySpec);
+    resultList = personRepository.findAll(null, querySpec);
     for (int i = 0; i < namesCaseSensitive.size(); i++) {
       assertEquals(byRoom.get(i), resultList.get(i).getName());
     }
@@ -310,7 +372,7 @@ public class DinaRepositoryIT {
       baseDAO.create(depart);
       PersonDTO toPersist = createPersonDto();
       toPersist.setDepartment(DepartmentDto.builder().uuid(depart.getUuid()).build());
-      dinaRepository.create(toPersist);
+      personRepository.create(toPersist);
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
@@ -318,7 +380,7 @@ public class DinaRepositoryIT {
     querySpec.setSort(
         Collections.singletonList(new SortSpec(Arrays.asList("department", "name"), Direction.ASC)));
 
-    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    List<PersonDTO> resultList = personRepository.findAll(null, querySpec);
     for (int i = 0; i < names.size(); i++) {
       assertEquals(names.get(i), resultList.get(i).getDepartment().getName());
     }
@@ -330,14 +392,14 @@ public class DinaRepositoryIT {
       PersonDTO noRelation = createPersonDto();
       noRelation.setDepartment(null);
       noRelation.setDepartments(null);
-      dinaRepository.create(noRelation);
+      personRepository.create(noRelation);
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setSort(Collections.singletonList(
       new SortSpec(Arrays.asList("department", "name"), Direction.ASC)));
 
-    List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
+    List<PersonDTO> resultList = personRepository.findAll(null, querySpec);
     Assertions.assertTrue(CollectionUtils.isNotEmpty(resultList), "no results were returned");
     resultList.forEach(result -> Assertions.assertNull(result.getDepartment()));
   }
@@ -353,7 +415,7 @@ public class DinaRepositoryIT {
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setLimit(pageLimit);
 
-    List<PersonDTO> result = dinaRepository.findAll(null, querySpec);
+    List<PersonDTO> result = personRepository.findAll(null, querySpec);
     assertEquals(pageLimit, result.size());
   }
 
@@ -369,7 +431,7 @@ public class DinaRepositoryIT {
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setOffset(offset);
-    List<PersonDTO> result = dinaRepository.findAll(null, querySpec);
+    List<PersonDTO> result = personRepository.findAll(null, querySpec);
 
     List<PersonDTO> expectedDtos = dtos.subList((int) offset, dtos.size());
     for (int i = 0; i < expectedDtos.size(); i++) {
@@ -388,7 +450,7 @@ public class DinaRepositoryIT {
       persistPerson();
     }
 
-    ResourceList<PersonDTO> resultList = dinaRepository.findAll(idList, new QuerySpec(PersonDTO.class));
+    ResourceList<PersonDTO> resultList = personRepository.findAll(idList, new QuerySpec(PersonDTO.class));
     PagedMetaInformation metadata = (PagedMetaInformation) resultList.getMeta();
 
     assertEquals(idList.size(), metadata.getTotalResourceCount());
@@ -406,14 +468,14 @@ public class DinaRepositoryIT {
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setLimit(pageLimit);
 
-    ResourceList<PersonDTO> result = dinaRepository.findAll(null, querySpec);
+    ResourceList<PersonDTO> result = personRepository.findAll(null, querySpec);
     PagedMetaInformation metadata = (PagedMetaInformation) result.getMeta();
     assertEquals(totalResouceCount, metadata.getTotalResourceCount());
   }
 
   @Test
   public void findAll_NothingPersisted_ReturnsEmpty() {
-    List<PersonDTO> result = dinaRepository.findAll(null, new QuerySpec(PersonDTO.class));
+    List<PersonDTO> result = personRepository.findAll(null, new QuerySpec(PersonDTO.class));
     assertEquals(0, result.size());
   }
 
@@ -428,7 +490,7 @@ public class DinaRepositoryIT {
         new IncludeRelationSpec(List.of("department", "departmentHead", "department"))
       ));
 
-    dinaRepository.findAll(querySpec);
+    personRepository.findAll(querySpec);
   }
 
   @Test
@@ -451,7 +513,7 @@ public class DinaRepositoryIT {
     dto.setDepartments(newDepartments);
     dto.setDepartment(newDepart);
 
-    dinaRepository.save(dto);
+    personRepository.save(dto);
 
     Person result = baseDAO.findOneByNaturalId(dto.getUuid(), Person.class);
     assertEqualsPersonDtoAndEntity(dto, result, expectedDept, expectedDepts);
@@ -466,7 +528,7 @@ public class DinaRepositoryIT {
     dto.setDepartments(null);
     dto.setDepartment(null);
 
-    dinaRepository.save(dto);
+    personRepository.save(dto);
 
     Person result = baseDAO.findOneByNaturalId(dto.getUuid(), Person.class);
     assertNull(result.getName());
@@ -477,7 +539,7 @@ public class DinaRepositoryIT {
 
   @Test
   public void save_NoResourceFound_ThrowsResourceNotFoundException() {
-    assertThrows(ResourceNotFoundException.class, () -> dinaRepository.save(createPersonDto()));
+    assertThrows(ResourceNotFoundException.class, () -> personRepository.save(createPersonDto()));
   }
 
   @Test
@@ -486,18 +548,18 @@ public class DinaRepositoryIT {
 
     assertNotNull(baseDAO.findOneByNaturalId(dto.getUuid(), Person.class));
 
-    dinaRepository.delete(dto.getUuid());
+    personRepository.delete(dto.getUuid());
     assertNull(baseDAO.findOneByNaturalId(dto.getUuid(), Person.class));
   }
 
   @Test
   public void delete_NoResourceFound_ThrowsResourceNotFoundException() {
-    assertThrows(ResourceNotFoundException.class, () -> dinaRepository.delete(UUID.randomUUID()));
+    assertThrows(ResourceNotFoundException.class, () -> personRepository.delete(UUID.randomUUID()));
   }
 
   @Test
   public void getMetaInformation_whenBuildVersionIsSet_buildVersionIncludedInMeta() {
-    DinaMetaInfo meta = dinaRepository.getMetaInformation(
+    DinaMetaInfo meta = personRepository.getMetaInformation(
       List.of(),
       new QuerySpec(PersonDTO.class),
       new DinaMetaInfo()
@@ -531,12 +593,17 @@ public class DinaRepositoryIT {
     assertEquals(dto.getName(), entity.getName());
     assertArrayEquals(dto.getNickNames(), entity.getNickNames());
     assertTrue(EqualsBuilder.reflectionEquals(expectedDepartment, entity.getDepartment()));
-    assertThat(expectedDepartments, Is.is(entity.getDepartments()));
+    assertEquals(expectedDepartments, entity.getDepartments());
+    //assertThat(expectedDepartments, Is.is(entity.getDepartments()));
   }
 
   private PersonDTO persistPerson() {
+    // Persist data for departments, which will be used by the person.
+    singleRelationUnderTest = persistDepartment();
+    collectionRelationUnderTest = persistDepartments();
+
     PersonDTO dto = createPersonDto();
-    return dinaRepository.create(dto);
+    return personRepository.create(dto);
   }
 
   private PersonDTO createPersonDto() {
