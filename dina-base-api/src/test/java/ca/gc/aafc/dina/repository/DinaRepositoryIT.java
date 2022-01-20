@@ -112,6 +112,23 @@ public class DinaRepositoryIT {
     personRepository.delete(personToRemove.getUuid());
   }
 
+  private void assertEqualsPersonDtos(PersonDTO dto, PersonDTO result, boolean testRelations) {
+    assertEquals(dto.getUuid(), result.getUuid());
+    assertEquals(dto.getName(), result.getName());
+    assertArrayEquals(dto.getNickNames(), result.getNickNames());
+    if (testRelations) {
+      assertEquals(dto.getDepartment().getUuid(), result.getDepartment().getUuid());
+
+      // Go through each of the departments.
+      for (int i = 0; i < dto.getDepartments().size(); i++) {
+        assertEquals(
+          dto.getDepartments().get(i).getUuid(),
+          result.getDepartments().get(i).getUuid()
+        );
+      }
+    }
+  }
+
   @Test
   public void create_ValidResource_ResourceCreated() {
     // Create person record with department data.
@@ -135,13 +152,17 @@ public class DinaRepositoryIT {
 
   @Test
   public void findOne_ResourceAndRelations_FindsResourceAndRelations() {
-    PersonDTO dto = persistPerson();
+    // Create person record with department data.
+    PersonDTO persistedRecord = createTestData(true);
 
+    // Create a query to find the persisted record. Including department data.
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setIncludedRelations(createIncludeRelationSpecs("department", "departments"));
+    PersonDTO result = personRepository.findOne(persistedRecord.getUuid(), querySpec);
+    assertEqualsPersonDtos(persistedRecord, result, true);
 
-    PersonDTO result = personRepository.findOne(dto.getUuid(), querySpec);
-    assertEqualsPersonDtos(dto, result, true);
+    // Clean up person record and all department data.
+    cleanUpTestData(persistedRecord);
   }
 
   @Test
@@ -157,50 +178,70 @@ public class DinaRepositoryIT {
     Map<UUID, PersonDTO> expectedPersons = new HashMap<>();
 
     for (int i = 0; i < 10; i++) {
-      PersonDTO dto = persistPerson();
-      expectedPersons.put(dto.getUuid(), dto);
+      // Create person record with department data.
+      PersonDTO persistedRecord = createTestData(true);
+      expectedPersons.put(persistedRecord.getUuid(), persistedRecord);
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setIncludedRelations(createIncludeRelationSpecs("department", "departments"));
+    List<PersonDTO> resultList = personRepository.findAll(null, querySpec);
 
-    List<PersonDTO> result = personRepository.findAll(null, querySpec);
+    assertEquals(expectedPersons.size(), resultList.size());
 
-    assertEquals(expectedPersons.size(), result.size());
-    for (PersonDTO resultElement : result) {
+    resultList.forEach(resultElement -> {
       PersonDTO expectedDto = expectedPersons.get(resultElement.getUuid());
       assertEqualsPersonDtos(expectedDto, resultElement, true);
-    }
+
+      // Clean up person record.
+      cleanUpTestData(resultElement);
+    });
   }
 
   @Test
   public void findAll_FilterByIds_FindsById() {
+    List<PersonDTO> notIncludedRecords = new ArrayList<>();
     List<Serializable> idList = new ArrayList<>();
 
     for (int i = 0; i < 10; i++) {
-      PersonDTO dto = persistPerson();
+      PersonDTO dto = createTestData(false);
       idList.add(dto.getUuid());
-      // Persist extra person not in list
-      persistPerson();
+
+      // Persist a record not to be included in the findAll query.
+      notIncludedRecords.add(createTestData(false));
     }
 
     List<PersonDTO> resultList = personRepository.findAll(idList, new QuerySpec(PersonDTO.class));
 
     assertEquals(idList.size(), resultList.size());
-    resultList.forEach(result -> assertTrue(idList.contains(result.getUuid())));
+    resultList.forEach(resultElement -> {
+      assertTrue(idList.contains(resultElement.getUuid()));
+
+      // Clean up person record.
+      cleanUpTestData(resultElement);
+    });
+
+    // Clean up the not included records
+    notIncludedRecords.forEach(person -> {
+      cleanUpTestData(person);
+    });
   }
 
   @Test
   public void findAll_FilterWithRSQL_FiltersOnRSQL() {
-    String expectedName = RandomStringUtils.random(4);
+    List<PersonDTO> notIncludedRecords = new ArrayList<>();
+    List<PersonDTO> includedRecords = new ArrayList<>();
+
+    String expectedName = RandomStringUtils.random(10);
     int expectedNumberOfResults = 10;
 
     for (int i = 0; i < expectedNumberOfResults; i++) {
-      PersonDTO dto = createPersonDto();
-      dto.setName(expectedName);
-      personRepository.create(dto);
-      // Persist extra person with different name
-      persistPerson();
+      // Persist a specific name.
+      PersonDTO dto = PersonDTO.builder().name(expectedName).group(RandomStringUtils.randomAlphabetic(4)).build();
+      includedRecords.add(personRepository.create(dto));
+
+      // Persist a record not to be included in the findAll query.
+      notIncludedRecords.add(createTestData(false));
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
@@ -209,19 +250,33 @@ public class DinaRepositoryIT {
     List<PersonDTO> resultList = personRepository.findAll(null, querySpec);
     assertEquals(expectedNumberOfResults, resultList.size());
     resultList.forEach(result -> assertEquals(expectedName, result.getName()));
+
+    // Clean up included search results.
+    includedRecords.forEach(person -> {
+      cleanUpTestData(person);
+    });
+
+    // Clean up the not included records
+    notIncludedRecords.forEach(person -> {
+      cleanUpTestData(person);
+    });
   }
 
   @Test
   public void findAll_FilterOnFieldEquals_FiltersOnField() {
-    String expectedName = RandomStringUtils.random(4);
+    List<PersonDTO> notIncludedRecords = new ArrayList<>();
+    List<PersonDTO> includedRecords = new ArrayList<>();
+
+    String expectedName = RandomStringUtils.random(10);
     int expectedNumberOfResults = 10;
 
     for (int i = 0; i < expectedNumberOfResults; i++) {
-      PersonDTO dto = createPersonDto();
-      dto.setName(expectedName);
-      personRepository.create(dto);
-      // Persist extra person with different name
-      persistPerson();
+      // Persist a specific name.
+      PersonDTO dto = PersonDTO.builder().name(expectedName).group(RandomStringUtils.randomAlphabetic(4)).build();
+      includedRecords.add(personRepository.create(dto));
+
+      // Persist a record not to be included in the findAll query.
+      notIncludedRecords.add(createTestData(false));
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
@@ -230,28 +285,46 @@ public class DinaRepositoryIT {
     List<PersonDTO> resultList = personRepository.findAll(null, querySpec);
     assertEquals(expectedNumberOfResults, resultList.size());
     resultList.forEach(result -> assertEquals(expectedName, result.getName()));
+
+    // Clean up included search results.
+    includedRecords.forEach(person -> {
+      cleanUpTestData(person);
+    });
+
+    // Clean up the not included records
+    notIncludedRecords.forEach(person -> {
+      cleanUpTestData(person);
+    });
   }
 
   @Test
   public void findAll_FilterOnNestedFieldEquals_FiltersOnNestedField() {
-    PersonDTO expected = persistPerson();
+    PersonDTO expected = createTestData(true);
+    List<PersonDTO> notIncludedRecords = new ArrayList<>();
 
     // Persist extra people with no department
     for (int i = 0; i < 10; i++) {
-      PersonDTO toPersist = createPersonDto();
-      toPersist.setDepartment(null);
-      personRepository.create(toPersist);
+      // Persist a record not to be included in the findAll query.
+      notIncludedRecords.add(createTestData(false));
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.addFilter(
-      PathSpec.of("department", "uuid").filter(
-        FilterOperator.EQ,
-        singleRelationUnderTest.getUuid()));
+        PathSpec.of("department", "uuid").filter(
+            FilterOperator.EQ,
+            expected.getDepartment().getUuid()));
 
     List<PersonDTO> resultList = personRepository.findAll(null, querySpec);
     assertEquals(1, resultList.size());
     assertEqualsPersonDtos(expected, resultList.get(0), false);
+
+    // Clean up expected record.
+    cleanUpTestData(expected);
+
+    // Clean up the not included records.
+    notIncludedRecords.forEach(person -> {
+      cleanUpTestData(person);
+    });
   }
 
   @Test
@@ -566,21 +639,6 @@ public class DinaRepositoryIT {
     );
 
     assertEquals("test-api-version", meta.getModuleVersion());
-  }
-
-  private void assertEqualsPersonDtos(PersonDTO dto, PersonDTO result, boolean testRelations) {
-    assertEquals(dto.getUuid(), result.getUuid());
-    assertEquals(dto.getName(), result.getName());
-    assertArrayEquals(dto.getNickNames(), result.getNickNames());
-    if (testRelations) {
-      assertEquals(singleRelationUnderTest.getUuid(), result.getDepartment().getUuid());
-      for (int i = 0; i < collectionRelationUnderTest.size(); i++) {
-        assertEquals(
-          collectionRelationUnderTest.get(i).getUuid(),
-          result.getDepartments().get(i).getUuid()
-        );
-      }
-    }
   }
 
   private static void assertEqualsPersonDtoAndEntity(
