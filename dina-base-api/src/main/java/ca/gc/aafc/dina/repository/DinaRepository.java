@@ -215,11 +215,6 @@ public class DinaRepository<D, E extends DinaEntity>
     // Go through each of the entities found to perform authentication, 
     // setting permissions and converting to Dto entities.
     entities.forEach(entity -> {
-      // If authentication is enabled, check each record for read access.
-      if (authentication) {
-        authorizationService.authorizeRead(entity);
-      }
-
       // Convert entity to DTO.
       D dtoEntity = mappingLayer.mapToDto(spec, entity);
 

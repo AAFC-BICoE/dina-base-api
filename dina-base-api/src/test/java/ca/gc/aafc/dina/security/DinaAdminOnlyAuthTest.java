@@ -1,15 +1,22 @@
 package ca.gc.aafc.dina.security;
 
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import java.util.UUID;
-import javax.inject.Inject;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.transaction.Transactional;
-
+import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.dto.RelatedEntity;
+import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.repository.DinaRepositoryIT;
+import ca.gc.aafc.dina.service.AuditService;
+import ca.gc.aafc.dina.service.DefaultDinaService;
+import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
+import io.crnk.core.resource.annotations.JsonApiId;
+import io.crnk.core.resource.annotations.JsonApiResource;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
@@ -26,30 +33,22 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.SmartValidator;
 
-import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.dto.RelatedEntity;
-import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.mapper.DinaMapper;
-import ca.gc.aafc.dina.repository.DinaRepository;
-import ca.gc.aafc.dina.repository.DinaRepositoryIT;
-import ca.gc.aafc.dina.service.AuditService;
-import ca.gc.aafc.dina.service.DefaultDinaService;
-import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
+import javax.inject.Inject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.transaction.Transactional;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
-import io.crnk.core.queryspec.QuerySpec;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiResource;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Transactional
-@SpringBootTest(classes = {TestDinaBaseApp.class, DinaAdminCUDAuthTest.DinaAdminCUDTestConfig.class},
+@SpringBootTest(classes = {TestDinaBaseApp.class, DinaAdminOnlyAuthTest.DinaAdminOnlyTestConfig.class},
   properties = "keycloak.enabled: true")
-public class DinaAdminCUDAuthTest {
+public class DinaAdminOnlyAuthTest {
 
   @Inject
   private DefaultDinaService<Item> defaultService;
@@ -57,7 +56,7 @@ public class DinaAdminCUDAuthTest {
   @Inject
   private DinaAdminCUDAuthorizationService authorizationService;
 
-  private Item persisted;
+  public Item persisted;
 
   @Inject
   private DinaRepository<ItemDto, Item> testRepo;
@@ -69,59 +68,43 @@ public class DinaAdminCUDAuthTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "CNC:STUDENT")
-  public void read_whenStudent_readObject() {
-    ItemDto findItem = Assertions.assertDoesNotThrow(() -> {
-      return testRepo.findOne(persisted.getUuid(), new QuerySpec(ItemDto.class));
-    });
-    Assertions.assertNotNull(findItem);
-  }
-
-  @Test
-  @WithMockKeycloakUser(groupRole = "CNC:INVALID_ROLE")
-  public void read_invalidRole_accessDenied() {
-    Assertions.assertThrows(AccessDeniedException.class, () -> 
-        testRepo.findOne(persisted.getUuid(), new QuerySpec(ItemDto.class)));
-  }
-
-  @Test
-  @WithMockKeycloakUser(groupRole = "CNC:DINA_ADMIN")
+  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
   public void create_WhenAdmin_CreatesObject() {
     ItemDto dto = ItemDto.builder().uuid(UUID.randomUUID()).group("g").build();
     ItemDto result = testRepo.create(dto);
-    Assertions.assertNotNull(result.getUuid());
+    assertNotNull(result.getUuid());
   }
 
   @Test
   @WithMockKeycloakUser(groupRole = {"CNC:CNC:COLLECTION_MANAGER", "GNG:CNC:STAFF", "BNB:CNC:STUDENT"})
   public void create_WhenNotAdmin_AccessDenied() {
     ItemDto dto = ItemDto.builder().uuid(UUID.randomUUID()).group("g").build();
-    Assertions.assertThrows(AccessDeniedException.class, () -> testRepo.create(dto));
+    assertThrows(AccessDeniedException.class, () -> testRepo.create(dto));
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "CNC:DINA_ADMIN")
+  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
   void update_WhenAdmin_AccessAccepted() {
-    Assertions.assertDoesNotThrow(() -> testRepo.save(ItemDto.builder().uuid(persisted.uuid).build()));
+    assertDoesNotThrow(() -> testRepo.save(ItemDto.builder().uuid(persisted.uuid).build()));
   }
 
   @Test
   @WithMockKeycloakUser(groupRole = {"CNC:CNC:COLLECTION_MANAGER", "GNG:CNC:STAFF", "BNB:CNC:STUDENT"})
   public void update_WhenNotAdmin_AccessDenied() {
     ItemDto dto = ItemDto.builder().uuid(UUID.randomUUID()).group("g").build();
-    Assertions.assertThrows(AccessDeniedException.class, () -> testRepo.save(dto));
+    assertThrows(AccessDeniedException.class, () -> testRepo.save(dto));
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "CNC:DINA_ADMIN")
+  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
   public void delete_WhenAdmin_AccessAccepted() {
-    Assertions.assertDoesNotThrow(() -> testRepo.delete(persisted.getUuid()));
+    assertDoesNotThrow(() -> testRepo.delete(persisted.getUuid()));
   }
 
   @Test
   @WithMockKeycloakUser(groupRole = {"CNC:CNC:COLLECTION_MANAGER", "GNG:CNC:STAFF", "BNB:CNC:STUDENT"})
   public void delete_WhenNotAdmin_AccessDenied() {
-    Assertions.assertThrows(AccessDeniedException.class, () -> testRepo.delete(persisted.getUuid()));
+    assertThrows(AccessDeniedException.class, () -> testRepo.delete(persisted.getUuid()));
   }
 
   @Test
@@ -130,8 +113,8 @@ public class DinaAdminCUDAuthTest {
   }
 
   @TestConfiguration
-  @EntityScan(basePackageClasses = DinaAdminCUDAuthTest.class)
-  static class DinaAdminCUDTestConfig {
+  @EntityScan(basePackageClasses = DinaAdminOnlyAuthTest.class)
+  static class DinaAdminOnlyTestConfig {
 
     @Bean
     @Primary
@@ -183,7 +166,7 @@ public class DinaAdminCUDAuthTest {
   @RelatedEntity(Item.class)
   @TypeName(ItemDto.TYPE_NAME)
   public static class ItemDto {
-    public static final String TYPE_NAME = "item";
+    private static final String TYPE_NAME = "item";
     @JsonApiId
     @org.javers.core.metamodel.annotation.Id
     @PropertyName("id")

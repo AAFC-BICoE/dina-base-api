@@ -63,9 +63,6 @@ public final class SecurityChecker {
     if (this.checkObjectPreAuthorized(as, target, "authorizeCreate")) {
       permissions.add(Operations.CREATE.getValue());
     }
-    if (this.checkObjectPreAuthorized(as, target, "authorizeRead")) {
-      permissions.add(Operations.READ.getValue());
-    }
     if (this.checkObjectPreAuthorized(as, target, "authorizeDelete")) {
       permissions.add(Operations.DELETE.getValue());
     }

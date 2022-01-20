@@ -1,15 +1,30 @@
 package ca.gc.aafc.dina.security;
 
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import java.util.UUID;
-import javax.inject.Inject;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.transaction.Transactional;
-
+import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.dto.RelatedEntity;
+import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
+import ca.gc.aafc.dina.service.DefaultDinaService;
+import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
+import io.crnk.core.engine.http.HttpRequestContext;
+import io.crnk.core.engine.http.HttpRequestContextProvider;
+import io.crnk.core.engine.query.QueryContext;
+import io.crnk.core.engine.registry.ResourceRegistry;
+import io.crnk.core.engine.result.ImmediateResultFactory;
+import io.crnk.core.module.ModuleRegistry;
+import io.crnk.core.queryspec.QuerySpec;
+import io.crnk.core.resource.annotations.JsonApiId;
+import io.crnk.core.resource.annotations.JsonApiResource;
+import io.crnk.core.resource.list.ResourceList;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hibernate.annotations.NaturalId;
@@ -29,32 +44,15 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.SmartValidator;
 
-import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.dto.RelatedEntity;
-import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.mapper.DinaMapper;
-import ca.gc.aafc.dina.repository.DinaRepository;
-import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
-import ca.gc.aafc.dina.service.DefaultDinaService;
-import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
-
-import io.crnk.core.engine.http.HttpRequestContext;
-import io.crnk.core.engine.http.HttpRequestContextProvider;
-import io.crnk.core.engine.query.QueryContext;
-import io.crnk.core.engine.registry.ResourceRegistry;
-import io.crnk.core.engine.result.ImmediateResultFactory;
-import io.crnk.core.module.ModuleRegistry;
-import io.crnk.core.queryspec.QuerySpec;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiResource;
-import io.crnk.core.resource.list.ResourceList;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import javax.inject.Inject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.transaction.Transactional;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, DinaRepoPermissionMetaTest.TestConfig.class},
@@ -77,18 +75,18 @@ public class DinaRepoPermissionMetaTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "CNC:DINA_ADMIN")
+  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
   void permissionsTest_WhenHasPermissions_PermissionsReturned() {
     mockHttpHeader(DinaRepository.PERMISSION_META_HEADER_KEY, "true");
     ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
     all.forEach(result -> {
-      MatcherAssert.assertThat(result.getMeta().getPermissions(), Matchers.hasItems("create", "update", "read"));
+      MatcherAssert.assertThat(result.getMeta().getPermissions(), Matchers.hasItems("create", "update"));
       MatcherAssert.assertThat(result.getMeta().getPermissionsProvider(), Matchers.is("SpecialAuthServiceUnderTest"));
     });
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "CNC:DINA_ADMIN")
+  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
   void permissionsTest_WhenNoContext_PermissionsNotReturned() {
     ModuleRegistry moduleRegistry = Mockito.mock(ModuleRegistry.class);
     ResourceRegistry resourceRegistry = Mockito.mock(ResourceRegistry.class);
@@ -102,7 +100,7 @@ public class DinaRepoPermissionMetaTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "CNC:DINA_ADMIN")
+  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
   void permissionsTest_WhenNoHeader_PermissionsNotReturned() {
     mockHttpHeader("wrong header", "true");
     ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
@@ -110,7 +108,7 @@ public class DinaRepoPermissionMetaTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "InvalidGroup:STUDENT")
+  @WithMockKeycloakUser(groupRole = {"InvalidGroup:STAFF"})
   void permissionsTest_WhenNoPermissions_PermissionsNotReturned() {
     mockHttpHeader(DinaRepository.PERMISSION_META_HEADER_KEY, "true");
     ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
@@ -188,7 +186,7 @@ public class DinaRepoPermissionMetaTest {
     @RelatedEntity(Item.class)
     @TypeName(ItemDto.TYPE_NAME)
     public static class ItemDto extends AttributeMetaInfoProvider {
-      public static final String TYPE_NAME = "item";
+      private static final String TYPE_NAME = "item";
       @JsonApiId
       @org.javers.core.metamodel.annotation.Id
       @PropertyName("id")
@@ -200,7 +198,7 @@ public class DinaRepoPermissionMetaTest {
 
     @Service
     public static class ItemService extends DefaultDinaService<Item> {
-      ItemService(@NonNull BaseDAO baseDAO, @NonNull SmartValidator sv) {
+      public ItemService(@NonNull BaseDAO baseDAO, @NonNull SmartValidator sv) {
         super(baseDAO, sv);
       }
     }
@@ -215,7 +213,6 @@ public class DinaRepoPermissionMetaTest {
       }
 
       @Override
-      @PreAuthorize("hasMinimumDinaRole(@currentUser, 'STAFF')")
       public void authorizeRead(Object entity) {
 
       }
@@ -227,7 +224,7 @@ public class DinaRepoPermissionMetaTest {
       }
 
       @Override
-      @PreAuthorize("hasDinaRole(@currentUser, 'COLLECTION_MANAGER')")
+      @PreAuthorize("hasDinaRole(@currentUser, 'STUDENT')")
       public void authorizeDelete(Object entity) {
 
       }

@@ -13,7 +13,6 @@ public class DinaAdminCUDAuthorizationService extends PermissionAuthorizationSer
   }
 
   @Override
-  @PreAuthorize("hasMinimumDinaRole(@currentUser, 'READ_ONLY')")
   public void authorizeRead(Object entity) {
 
   }
