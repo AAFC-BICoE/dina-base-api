@@ -168,7 +168,7 @@ public class DinaRepository<D, E extends DinaEntity>
   @Transactional(readOnly = true)
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
-    // Retrieve all of the dto entities, authentication turned off.
+    // Retrieve all of the dto entities, readAuthorization turned off.
     List<D> dtoList = fetchEntities(ids, querySpec, false);
 
     // Generate meta information
