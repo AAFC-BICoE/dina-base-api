@@ -10,10 +10,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
+import javax.persistence.NoResultException;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,7 +23,6 @@ import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
-import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.testsupport.DatabaseSupportService;
 
@@ -54,13 +53,7 @@ public class DinaRepositoryIT {
   private DinaRepository<DepartmentDto, Department> departmentRepository;
 
   @Inject
-  private BaseDAO baseDAO;
-
-  @Inject
   private DatabaseSupportService databaseSupportService;
-
-  private Department singleRelationUnderTest;
-  private List<Department> collectionRelationUnderTest;
 
   private PersonDTO createTestData(boolean includeDepartmentData) {
     PersonDTO person = PersonDTO.builder()
@@ -484,15 +477,18 @@ public class DinaRepositoryIT {
     long pageLimit = 10;
 
     for (int i = 0; i < pageLimit * 2; i++) {
-      persistPerson();
+      createTestData(false);
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setLimit(pageLimit);
 
-    List<PersonDTO> result = personRepository.findAll(null, querySpec);
-    assertEquals(pageLimit, result.size());
-  }
+    List<PersonDTO> resultList = personRepository.findAll(null, querySpec);
+    assertEquals(pageLimit, resultList.size());
+
+    // Clean up the persisted records.
+    cleanUpPersonList(resultList);
+}
 
   @Test
   public void findAll_whenPageOffsetIsSet_pageStartsAfterOffset() {
@@ -500,7 +496,7 @@ public class DinaRepositoryIT {
     List<PersonDTO> dtos = new ArrayList<>();
 
     for (int i = 0; i < 10; i++) {
-      PersonDTO dto = persistPerson();
+      PersonDTO dto = createTestData(false);
       dtos.add(dto);
     }
 
@@ -512,23 +508,32 @@ public class DinaRepositoryIT {
     for (int i = 0; i < expectedDtos.size(); i++) {
       assertEqualsPersonDtos(expectedDtos.get(i), result.get(i), false);
     }
+
+    // Clean up persisted records.
+    cleanUpPersonList(expectedDtos);
   }
 
   @Test
   public void findAll_FilterByIds_ReturnsTotalCount() {
+    List<PersonDTO> notIncludedRecords = new ArrayList<>();
     List<Serializable> idList = new ArrayList<>();
 
     for (int i = 0; i < 10; i++) {
-      PersonDTO dto = persistPerson();
+      PersonDTO dto = createTestData(false);
       idList.add(dto.getUuid());
+      
       // Persist extra person not in list
-      persistPerson();
+      notIncludedRecords.add(createTestData(false));
     }
 
     ResourceList<PersonDTO> resultList = personRepository.findAll(idList, new QuerySpec(PersonDTO.class));
     PagedMetaInformation metadata = (PagedMetaInformation) resultList.getMeta();
 
     assertEquals(idList.size(), metadata.getTotalResourceCount());
+
+    // Clean up persisted records.
+    cleanUpPersonList(resultList);
+    cleanUpPersonList(notIncludedRecords);
   }
 
   @Test
@@ -537,7 +542,7 @@ public class DinaRepositoryIT {
     long totalResouceCount = pageLimit * 2;
 
     for (int i = 0; i < totalResouceCount; i++) {
-      persistPerson();
+      createTestData(false);
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
@@ -546,6 +551,9 @@ public class DinaRepositoryIT {
     ResourceList<PersonDTO> result = personRepository.findAll(null, querySpec);
     PagedMetaInformation metadata = (PagedMetaInformation) result.getMeta();
     assertEquals(totalResouceCount, metadata.getTotalResourceCount());
+
+    // Clean up the persisted records.
+    cleanUpPersonList(result);
   }
 
   @Test
@@ -570,45 +578,51 @@ public class DinaRepositoryIT {
 
   @Test
   public void save_UpdateAllFields_AllFieldsUpdated() {
-    Department expectedDept = persistDepartment();
-    DepartmentDto newDepart = DepartmentDto.builder().uuid(expectedDept.getUuid()).build();
+    // Persist person record with department data.
+    PersonDTO persistedRecord = PersonDTO.builder()
+        .name("old name")
+        .nickNames(new String[]{"oldNickName1", "oldNickName2", "oldNickName3"})
+        .build();
+    UUID persistedRecordUUID = personRepository.create(persistedRecord).getUuid();
 
-    List<Department> expectedDepts = persistDepartments();
-    List<DepartmentDto> newDepartments = expectedDepts.stream()
-      .map(d -> DepartmentDto.builder().uuid(d.getUuid()).build())
-      .collect(Collectors.toList());
+    // Update the record using the UUID.
+    PersonDTO updateRecord = PersonDTO.builder()
+        .uuid(persistedRecordUUID)
+        .name("updated name")
+        .nickNames(new String[]{"newNickName1", "newNickName2", "newNickName3"})
+        .build();
+    personRepository.save(updateRecord);
 
-    String expectedName = "new name";
-    String[] expectedNickNames = Arrays.asList("new", "nick", "names").toArray(new String[0]);
+    // Ensure the values are updated.
+    Person databaseRecord = databaseSupportService.findUnique(Person.class, "uuid", persistedRecordUUID);
+    assertEquals(updateRecord.getName(), databaseRecord.getName());
+    assertArrayEquals(updateRecord.getNickNames(), databaseRecord.getNickNames());
 
-    PersonDTO dto = persistPerson();
-
-    dto.setName(expectedName);
-    dto.setNickNames(expectedNickNames);
-    dto.setDepartments(newDepartments);
-    dto.setDepartment(newDepart);
-
-    personRepository.save(dto);
-
-    Person result = baseDAO.findOneByNaturalId(dto.getUuid(), Person.class);
-    assertEqualsPersonDtoAndEntity(dto, result, expectedDept, expectedDepts);
+    // Clean up the persisted record.
+    cleanUpTestData(updateRecord);
   }
 
   @Test
   public void save_NullAllFields_AllFieldsNulled() {
-    PersonDTO dto = createTestData(false);
-    dto.setName(null);
-    dto.setNickNames(null);
-    dto.setDepartment(null);
-    dto.setDepartments(null);
+    UUID persistedUUID = createTestData(false).getUuid();
 
-    personRepository.save(dto);
+    PersonDTO updateDto = PersonDTO.builder()
+        .uuid(persistedUUID)
+        .name(null)
+        .nickNames(null)
+        .department(null)
+        .departments(null)
+        .build();
+    personRepository.save(updateDto);
 
-    Person result = databaseSupportService.findUnique(Person.class, "uuid", dto.getUuid());
+    Person result = databaseSupportService.findUnique(Person.class, "uuid", persistedUUID);
     assertNull(result.getName());
     assertNull(result.getNickNames());
     assertNull(result.getDepartment());
     assertNull(result.getDepartments());
+
+    // Clean up the persisted record.
+    cleanUpTestData(updateDto);
   }
 
   @Test
@@ -625,12 +639,11 @@ public class DinaRepositoryIT {
 
   @Test
   public void delete_ValidResource_ResourceRemoved() {
-    PersonDTO dto = persistPerson();
-
-    assertNotNull(baseDAO.findOneByNaturalId(dto.getUuid(), Person.class));
+    PersonDTO dto = createTestData(false);
+    assertNotNull(databaseSupportService.findUnique(Person.class, "uuid", dto.getUuid()));
 
     personRepository.delete(dto.getUuid());
-    assertNull(baseDAO.findOneByNaturalId(dto.getUuid(), Person.class));
+    assertThrows(NoResultException.class, () -> databaseSupportService.findUnique(Person.class, "uuid", dto.getUuid()));
   }
 
   @Test
@@ -647,68 +660,6 @@ public class DinaRepositoryIT {
     );
 
     assertEquals("test-api-version", meta.getModuleVersion());
-  }
-
-  private static void assertEqualsPersonDtoAndEntity(
-    PersonDTO dto,
-    Person entity,
-    Department expectedDepartment,
-    List<Department> expectedDepartments
-  ) {
-    assertEquals(dto.getUuid(), entity.getUuid());
-    assertEquals(dto.getName(), entity.getName());
-    assertArrayEquals(dto.getNickNames(), entity.getNickNames());
-    assertTrue(EqualsBuilder.reflectionEquals(expectedDepartment, entity.getDepartment()));
-    assertEquals(expectedDepartments, entity.getDepartments());
-    //assertThat(expectedDepartments, Is.is(entity.getDepartments()));
-  }
-
-  private PersonDTO persistPerson() {
-    // Persist data for departments, which will be used by the person.
-    singleRelationUnderTest = persistDepartment();
-    collectionRelationUnderTest = persistDepartments();
-
-    PersonDTO dto = createPersonDto();
-    return personRepository.create(dto);
-  }
-
-  private PersonDTO createPersonDto() {
-    DepartmentDto singleRelationDto = DepartmentDto.builder()
-      .uuid(singleRelationUnderTest.getUuid())
-      .build();
-    List<DepartmentDto> collectionRelationDtos = collectionRelationUnderTest.stream()
-      .map(c -> DepartmentDto.builder().uuid(c.getUuid()).build())
-      .collect(Collectors.toList());
-    return PersonDTO.builder()
-      .department(singleRelationDto)
-      .departments(collectionRelationDtos)
-      .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
-      .name(RandomStringUtils.randomAlphabetic(4))
-      .group(RandomStringUtils.randomAlphabetic(4))
-      .build();
-  }
-
-  private static Department createDepartment(String name, String Location) {
-    Department depart = Department.builder()
-      .uuid(UUID.randomUUID())
-      .name(name)
-      .location(Location)
-      .build();
-    return depart;
-  }
-
-  private Department persistDepartment() {
-    Department depart = createDepartment(RandomStringUtils.random(4), RandomStringUtils.random(4));
-    baseDAO.create(depart);
-    return depart;
-  }
-
-  private List<Department> persistDepartments() {
-    List<Department> departments = new ArrayList<>();
-    for (int i = 0; i < 10; i++) {
-      departments.add(persistDepartment());
-    }
-    return departments;
   }
 
   private static List<IncludeRelationSpec> createIncludeRelationSpecs(String... args) {
