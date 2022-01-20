@@ -2,11 +2,13 @@
 
 == Overview
 
-A dina repository can optionally take a DinaAuthorizationService implementation, which if present will be used to call a set of specific methods for CREATE/UPDATE/DELETE operations.
+A dina repository can optionally take a DinaAuthorizationService implementation, which if present will be used to call a set of specific methods for CREATE/READ/UPDATE/DELETE operations.
 
-The DinaAuthorizationService is an interface defining the following methods: _authorizeCreate, authorizeUpdate, authorizeDelete_.
+The DinaAuthorizationService is an interface defining the following methods: _authorizeCreate, authorizeRead, authorizeUpdate, authorizeDelete_.
 
 Where each method is called by the dina repo for the appropriate operation on a given entity for that repo's domain.
+
+Please note that create, update and delete require read access to perform those actions. Read access should be the same or lower than the other operations.
 
 == Step by Step: Using a custom Dina Authorization Service
 
@@ -76,6 +78,7 @@ You can have permissions for three types of operations as evaluated by the dina 
 
 .Permissions
 * create
+* read
 * update
 * delete
 

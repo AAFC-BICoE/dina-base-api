@@ -17,7 +17,7 @@ public class GroupAuthorizationService extends PermissionAuthorizationService {
    * Proxy Method to invoke security authorization, Delegates to
    * {@link DinaPermissionEvaluator#hasGroupPermission(DinaAuthenticatedUser, Object)}.
    * This method itself does nothing, spring proxies must be called from a
-   * seperate bean. @PreAuthorize is only enabled with keycloak, see
+   * separate bean. @PreAuthorize is only enabled with keycloak, see
    * {@link MethodSecurityConfig}. This method will not validate if keycloak is
    * disabled.
    *
@@ -32,7 +32,21 @@ public class GroupAuthorizationService extends PermissionAuthorizationService {
    * Proxy Method to invoke security authorization, Delegates to
    * {@link DinaPermissionEvaluator#hasGroupPermission(DinaAuthenticatedUser, Object)}.
    * This method itself does nothing, spring proxies must be called from a
-   * seperate bean. @PreAuthorize is only enabled with keycloak, see
+   * separate bean. @PreAuthorize is only enabled with keycloak, see
+   * {@link MethodSecurityConfig}. This method will not validate if keycloak is
+   * disabled.
+   *
+   * @param entity
+   */
+  @Override
+  public void authorizeRead(Object entity) {
+  }
+
+  /**
+   * Proxy Method to invoke security authorization, Delegates to
+   * {@link DinaPermissionEvaluator#hasGroupPermission(DinaAuthenticatedUser, Object)}.
+   * This method itself does nothing, spring proxies must be called from a
+   * separate bean. @PreAuthorize is only enabled with keycloak, see
    * {@link MethodSecurityConfig}. This method will not validate if keycloak is
    * disabled.
    *
@@ -47,7 +61,7 @@ public class GroupAuthorizationService extends PermissionAuthorizationService {
    * Proxy Method to invoke security authorization, Delegates to
    * {@link DinaPermissionEvaluator#hasGroupPermission(DinaAuthenticatedUser, Object)}.
    * This method itself does nothing, spring proxies must be called from a
-   * seperate bean. @PreAuthorize is only enabled with keycloak, see
+   * separate bean. @PreAuthorize is only enabled with keycloak, see
    * {@link MethodSecurityConfig}. This method will not validate if keycloak is
    * disabled.
    *
