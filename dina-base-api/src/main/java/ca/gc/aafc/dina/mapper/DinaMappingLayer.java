@@ -83,6 +83,19 @@ public class DinaMappingLayer<D, E> {
   }
 
   /**
+   * Converts a resource entity into a DTO entity. Relations included in the query
+   * spec are fully mapped. External relations are always mapped. Relations not included in the
+   * query spec are shallow mapped (natural id only).
+   * 
+   * @param query
+   * @param entity
+   * @return DTO entity
+   */
+  public D mapToDto(@NonNull QuerySpec query, @NonNull E entity) {
+    return mapEntitiesToDto(query, Collections.singletonList(entity)).get(0);
+  }
+
+  /**
    * Maps a given dto to a given entity. All external/internal relations are mapped, relations are
    * linked to their database backed resource if they are not external.
    *

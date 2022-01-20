@@ -213,6 +213,11 @@ public class DinaRepoPermissionMetaTest {
       }
 
       @Override
+      public void authorizeRead(Object entity) {
+
+      }
+
+      @Override
       @PreAuthorize("hasDinaRole(@currentUser, 'DINA_ADMIN')")
       public void authorizeUpdate(Object entity) {
 
