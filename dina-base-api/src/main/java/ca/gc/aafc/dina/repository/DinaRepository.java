@@ -121,9 +121,9 @@ public class DinaRepository<D, E extends DinaEntity>
   @Override
   public D findOne(Serializable id, QuerySpec querySpec) {
     // Find the Dto entity 
-    List<D> dtoEntities = fetchEntities(Collections.singletonList(id), querySpec, true);
+    List<D> dtoList = fetchEntities(Collections.singletonList(id), querySpec, true);
 
-    if (dtoEntities.size() == 0) {
+    if (dtoList.size() == 0) {
       auditService.ifPresent(service -> { // Past Deleted records with audit logs throw Gone.
         final String resourceType = querySpec.getResourceType();
         final AuditService.AuditInstance auditInstance = AuditService.AuditInstance.builder()
@@ -139,7 +139,7 @@ public class DinaRepository<D, E extends DinaEntity>
         resourceClass.getSimpleName() + " with ID " + id + " Not Found.");
     }
 
-    return dtoEntities.get(0);
+    return dtoList.get(0);
   }
 
   /**
@@ -169,7 +169,7 @@ public class DinaRepository<D, E extends DinaEntity>
   @Override
   public ResourceList<D> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     // Retrieve all of the dto entities, authentication turned off.
-    List<D> dtoEntities = fetchEntities(ids, querySpec, false);
+    List<D> dtoList = fetchEntities(ids, querySpec, false);
 
     // Generate meta information
     Long resourceCount = dinaService.getResourceCount( entityClass,
@@ -177,7 +177,7 @@ public class DinaRepository<D, E extends DinaEntity>
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
 
-    return new DefaultResourceList<>(dtoEntities, metaInformation, NO_LINK_INFORMATION);
+    return new DefaultResourceList<>(dtoList, metaInformation, NO_LINK_INFORMATION);
   }
 
   /**
@@ -188,11 +188,11 @@ public class DinaRepository<D, E extends DinaEntity>
    * 
    * @param ids Entity ids to search the database for.
    * @param querySpec Query specifications to apply to the request.
-   * @param authentication If read authorization should be performed on each of entities found.
-   * @return List of DTO Entities
+   * @param readAuthorization If read authorization should be performed on each of entities found.
+   * @return List of DTOs
    * @throws UnknownAttributeException If an attribute used in the {@link QuerySpec} is unknown
    */
-  private List<D> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, boolean authentication) throws UnknownAttributeException {
+  private List<D> fetchEntities(Collection<Serializable> ids, QuerySpec querySpec, boolean readAuthorization) throws UnknownAttributeException {
     // Setup filters for entity searching.
     final QuerySpec spec = resolveFilterAdapters(querySpec);
     if (spec.getLimit() == null) {
@@ -210,21 +210,21 @@ public class DinaRepository<D, E extends DinaEntity>
       Math.toIntExact(spec.getOffset()),
       spec.getLimit().intValue()
     );
-    List<D> dtoEntities = new ArrayList<D>();
+    List<D> dtoList = new ArrayList<D>();
 
     // Go through each of the entities found to perform authentication, 
     // setting permissions and converting to Dto entities.
     entities.forEach(entity -> {
       // Convert entity to DTO.
-      D dtoEntity = mappingLayer.mapToDto(spec, entity);
+      D dto = mappingLayer.mapToDto(spec, entity);
 
       // Set permissions to the DTO if needed.
       if (permissionsRequested()) {
-        if (dtoEntity instanceof AttributeMetaInfoProvider) {
+        if (dto instanceof AttributeMetaInfoProvider) {
           Set<String> permissions = authorizationService.getPermissionsForObject(entity);
 
-          AttributeMetaInfoProvider dtoEntityMeta = (AttributeMetaInfoProvider) dtoEntity;
-          dtoEntityMeta.setMeta(AttributeMetaInfoProvider.DinaJsonMetaInfo.builder()
+          AttributeMetaInfoProvider dtoMeta = (AttributeMetaInfoProvider) dto;
+          dtoMeta.setMeta(AttributeMetaInfoProvider.DinaJsonMetaInfo.builder()
             .permissionsProvider(authorizationService.getName())
             .permissions(permissions)
             .build()
@@ -233,10 +233,10 @@ public class DinaRepository<D, E extends DinaEntity>
       }
 
       // Add dto to dto entity list to return back.
-      dtoEntities.add(dtoEntity);
+      dtoList.add(dto);
     });
 
-    return dtoEntities;
+    return dtoList;
   }
 
   private boolean permissionsRequested() {
