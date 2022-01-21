@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.security;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.TestDinaBaseApp.DinaPersonService;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
@@ -119,7 +120,7 @@ public class DinaAdminOnlyAuthTest {
     @Bean
     @Primary
     public DinaRepository<ItemDto, Item> testRepo(
-      DinaRepositoryIT.DinaPersonService service,
+      DinaPersonService service,
       Optional<AuditService> auditService,
       DinaAdminOnlyAuthorizationService authorizationService,
       BuildProperties buildProperties,
