@@ -54,7 +54,7 @@ public class DinaAdminOnlyAuthTest {
   private DefaultDinaService<Item> defaultService;
 
   @Inject
-  private DinaAdminOnlyAuthorizationService authorizationService;
+  private DinaAdminCUDAuthorizationService authorizationService;
 
   public Item persisted;
 
@@ -109,7 +109,7 @@ public class DinaAdminOnlyAuthTest {
 
   @Test
   void getName() {
-    Assertions.assertEquals("DinaAdminOnlyAuthorizationService", authorizationService.getName());
+    Assertions.assertEquals("DinaAdminCUDAuthorizationService", authorizationService.getName());
   }
 
   @TestConfiguration
@@ -121,7 +121,7 @@ public class DinaAdminOnlyAuthTest {
     public DinaRepository<ItemDto, Item> testRepo(
       DinaRepositoryIT.DinaPersonService service,
       Optional<AuditService> auditService,
-      DinaAdminOnlyAuthorizationService authorizationService,
+      DinaAdminCUDAuthorizationService authorizationService,
       BuildProperties buildProperties,
       BaseDAO baseDao,
       DefaultDinaService<Item> defaultService

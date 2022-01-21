@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 
 import java.util.UUID;
 
@@ -35,6 +34,9 @@ public class WithMockKeycloakUserIT {
     PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
     PersonDTO result = dinaRepository.create(dto);
     assertNotNull(result.getUuid());
+
+    // Clean up the person created for this test.
+    dinaRepository.delete(result.getUuid());
   }
 
   @WithMockKeycloakUser(
