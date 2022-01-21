@@ -2,6 +2,8 @@ package ca.gc.aafc.dina.i18n;
 
 import java.util.List;
 
+import org.javers.core.metamodel.annotation.Value;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +17,7 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @RequiredArgsConstructor
+@Value
 public class MultilingualDescription {
 
   private List<MultilingualPair> descriptions;
@@ -23,6 +26,7 @@ public class MultilingualDescription {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
+  @Value
   public static class MultilingualPair {
     private String lang;
 
