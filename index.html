@@ -1061,13 +1061,16 @@ manual method, add these properties to your launch config:</p>
 <div class="sect2">
 <h3 id="_overview">6.1. Overview</h3>
 <div class="paragraph">
-<p>A dina repository can optionally take a DinaAuthorizationService implementation, which if present will be used to call a set of specific methods for CREATE/UPDATE/DELETE operations.</p>
+<p>A dina repository can optionally take a DinaAuthorizationService implementation, which if present will be used to call a set of specific methods for CREATE/READ/UPDATE/DELETE operations.</p>
 </div>
 <div class="paragraph">
-<p>The DinaAuthorizationService is an interface defining the following methods: <em>authorizeCreate, authorizeUpdate, authorizeDelete</em>.</p>
+<p>The DinaAuthorizationService is an interface defining the following methods: <em>authorizeCreate, authorizeRead, authorizeUpdate, authorizeDelete</em>.</p>
 </div>
 <div class="paragraph">
 <p>Where each method is called by the dina repo for the appropriate operation on a given entity for that repo&#8217;s domain.</p>
+</div>
+<div class="paragraph">
+<p>Please note that create, update and delete require read access to perform those actions. Read access should be the same or lower than the other operations.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1168,6 +1171,9 @@ public class CustomAuthorizationService implements DinaAuthorizationService {
 <ul>
 <li>
 <p>create</p>
+</li>
+<li>
+<p>read</p>
 </li>
 <li>
 <p>update</p>
@@ -1827,7 +1833,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-01-12 14:58:58 UTC
+Last updated 2022-01-21 18:58:36 UTC
 </div>
 </div>
 </body>
