@@ -82,13 +82,12 @@ public class DinaRepositoryIT {
   }
 
   private void cleanUpTestData(PersonDTO personToRemove) {
-    // Check if person has department data to remove.
-    if (personToRemove.getDepartment() != null) {
+    // Check if person has departments data to remove.
+    if (personToRemove.getDepartments() != null && personToRemove.getDepartments().size() != 0) {
       List<DepartmentDto> departmentsToRemove = personToRemove.getDepartments();
 
-      // Unlink from the person.
-      personToRemove.setDepartment(null);
       personToRemove.setDepartments(null);
+      personToRemove.setDepartment(null);
       personRepository.save(personToRemove);
 
       // Delete the multiple departments list. The first one is also shared with the
@@ -96,7 +95,19 @@ public class DinaRepositoryIT {
       // list.
       departmentsToRemove.forEach(department -> {
         departmentRepository.delete(department.getUuid());
-      });
+      });      
+    }
+
+    // Some tests only set the department and not departments, make sure these are cleaned up as well.
+    if (personToRemove.getDepartment() != null) {
+      DepartmentDto departmentToRemove = personToRemove.getDepartment();
+      
+      // Unlink from the person.
+      personToRemove.setDepartment(null);
+      personRepository.save(personToRemove);
+
+      // Delete the department.
+      departmentRepository.delete(departmentToRemove.getUuid());
     }
 
     // Now remove the person since all department data has been removed.
@@ -124,6 +135,15 @@ public class DinaRepositoryIT {
     }
   }
 
+  /**
+   * Used to ensure all persisted Person and Department entities have been properly
+   * cleaned up.
+   */
+  private void assertCleanUp() {
+    assertEquals(0, personRepository.findAll(new QuerySpec(PersonDTO.class)).size());
+    assertEquals(0, departmentRepository.findAll(new QuerySpec(DepartmentDto.class)).size());
+  }
+
   @Test
   public void create_ValidResource_ResourceCreated() {
     // Create person record with department data.
@@ -143,6 +163,7 @@ public class DinaRepositoryIT {
 
     // Clean up person record and all department data.
     cleanUpTestData(persistedRecord);
+    assertCleanUp();
   }
 
   @Test
@@ -158,6 +179,7 @@ public class DinaRepositoryIT {
 
     // Clean up person record and all department data.
     cleanUpTestData(persistedRecord);
+    assertCleanUp();
   }
 
   @Test
@@ -191,6 +213,7 @@ public class DinaRepositoryIT {
       // Clean up person record.
       cleanUpTestData(resultElement);
     });
+    assertCleanUp();
   }
 
   @Test
@@ -218,6 +241,7 @@ public class DinaRepositoryIT {
 
     // Clean up the not included records
     cleanUpPersonList(notIncludedRecords);
+    assertCleanUp();
   }
 
   @Test
@@ -247,6 +271,7 @@ public class DinaRepositoryIT {
     // Clean up persisted records.
     cleanUpPersonList(includedRecords);
     cleanUpPersonList(notIncludedRecords);
+    assertCleanUp();
   }
 
   @Test
@@ -276,6 +301,7 @@ public class DinaRepositoryIT {
     // Clean up persisted records.
     cleanUpPersonList(includedRecords);
     cleanUpPersonList(notIncludedRecords);
+    assertCleanUp();
   }
 
   @Test
@@ -302,6 +328,7 @@ public class DinaRepositoryIT {
     // Clean up persisted records.
     cleanUpTestData(expected);
     cleanUpPersonList(notIncludedRecords);
+    assertCleanUp();
   }
 
   @Test
@@ -322,6 +349,7 @@ public class DinaRepositoryIT {
 
     // Clean up the persisted records.
     cleanUpPersonList(persisted);
+    assertCleanUp();
   }
 
   @Test
@@ -346,6 +374,7 @@ public class DinaRepositoryIT {
     // Clean up the persisted records.
     cleanUpTestData(expected);
     cleanUpPersonList(notIncludedRecords);
+    assertCleanUp();
   }
 
   @Test
@@ -370,6 +399,7 @@ public class DinaRepositoryIT {
 
     // Clean up the persisted records.
     cleanUpPersonList(resultList);
+    assertCleanUp();
   }
 
   @Test
@@ -420,10 +450,12 @@ public class DinaRepositoryIT {
 
     // Clean up the persisted records.
     cleanUpPersonList(resultList);
+    assertCleanUp();
   }
 
   @Test
   public void findAll_SortingByNestedProperty_ReturnsSorted() {
+    List<PersonDTO> includedRecords = new ArrayList<PersonDTO>();
     List<String> names = Arrays.asList("a", "b", "c", "d");
     List<String> shuffledNames = Arrays.asList("b", "a", "d", "c");
 
@@ -437,7 +469,7 @@ public class DinaRepositoryIT {
           .name(RandomStringUtils.randomAlphabetic(5))
           .department(departmentRepository.create(departmentDto))
           .build();
-      personRepository.create(personDTO);
+      includedRecords.add(personRepository.create(personDTO));
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
@@ -451,7 +483,8 @@ public class DinaRepositoryIT {
     }
 
     // Clean up the persisted records.
-    cleanUpPersonList(resultList);
+    cleanUpPersonList(includedRecords);
+    assertCleanUp();
   }
 
   @Test
@@ -470,14 +503,16 @@ public class DinaRepositoryIT {
 
     // Clean up the persisted records.
     cleanUpPersonList(resultList);
+    assertCleanUp();
   }
 
   @Test
   public void findAll_whenPageLimitIsSet_pageSizeIsLimited() {
+    List<PersonDTO> includedRecords = new ArrayList<PersonDTO>();
     long pageLimit = 10;
 
     for (int i = 0; i < pageLimit * 2; i++) {
-      createTestData(false);
+      includedRecords.add(createTestData(false));
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
@@ -487,7 +522,8 @@ public class DinaRepositoryIT {
     assertEquals(pageLimit, resultList.size());
 
     // Clean up the persisted records.
-    cleanUpPersonList(resultList);
+    cleanUpPersonList(includedRecords);
+    assertCleanUp();
 }
 
   @Test
@@ -510,7 +546,8 @@ public class DinaRepositoryIT {
     }
 
     // Clean up persisted records.
-    cleanUpPersonList(expectedDtos);
+    cleanUpPersonList(dtos);
+    assertCleanUp();
   }
 
   @Test
@@ -534,15 +571,18 @@ public class DinaRepositoryIT {
     // Clean up persisted records.
     cleanUpPersonList(resultList);
     cleanUpPersonList(notIncludedRecords);
+    assertCleanUp();
   }
 
   @Test
   public void findAll_whenPageLimitIsSet_ReturnsTotalCount() {
+    List<PersonDTO> includedRecords = new ArrayList<>();
+
     long pageLimit = 10;
     long totalResouceCount = pageLimit * 2;
 
     for (int i = 0; i < totalResouceCount; i++) {
-      createTestData(false);
+      includedRecords.add(createTestData(false));
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
@@ -553,7 +593,8 @@ public class DinaRepositoryIT {
     assertEquals(totalResouceCount, metadata.getTotalResourceCount());
 
     // Clean up the persisted records.
-    cleanUpPersonList(result);
+    cleanUpPersonList(includedRecords);
+    assertCleanUp();
   }
 
   @Test
@@ -600,6 +641,7 @@ public class DinaRepositoryIT {
 
     // Clean up the persisted record.
     cleanUpTestData(updateRecord);
+    assertCleanUp();
   }
 
   @Test
@@ -619,10 +661,11 @@ public class DinaRepositoryIT {
     assertNull(result.getName());
     assertNull(result.getNickNames());
     assertNull(result.getDepartment());
-    assertNull(result.getDepartments());
+    assertEquals(0, result.getDepartments().size());
 
     // Clean up the persisted record.
     cleanUpTestData(updateDto);
+    assertCleanUp();
   }
 
   @Test
@@ -644,6 +687,7 @@ public class DinaRepositoryIT {
 
     personRepository.delete(dto.getUuid());
     assertThrows(NoResultException.class, () -> databaseSupportService.findUnique(Person.class, "uuid", dto.getUuid()));
+    assertCleanUp();
   }
 
   @Test
