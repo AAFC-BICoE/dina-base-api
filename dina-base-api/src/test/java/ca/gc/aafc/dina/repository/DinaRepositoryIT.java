@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
@@ -43,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest(classes = TestDinaBaseApp.class)
+@SpringBootTest
 public class DinaRepositoryIT {
 
   @Inject
@@ -55,6 +54,13 @@ public class DinaRepositoryIT {
   @Inject
   private DatabaseSupportService databaseSupportService;
 
+  /**
+   * Will persist a Person into the database. Some fields will be randomly
+   * generated.
+   * 
+   * @param includeDepartmentData if true, department and departments data will be
+   *                              persisted and attached to the person.
+   */
   private PersonDTO createTestData(boolean includeDepartmentData) {
     PersonDTO person = PersonDTO.builder()
         .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
@@ -81,6 +87,11 @@ public class DinaRepositoryIT {
     return personRepository.create(person);
   }
 
+  /**
+   * This method will take a PersonDTO and remove it from the database.
+   * 
+   * If the person also has any departments attached, it will be removed as well.
+   */
   private void cleanUpTestData(PersonDTO personToRemove) {
     // Check if person has departments data to remove.
     if (personToRemove.getDepartments() != null && personToRemove.getDepartments().size() != 0) {
@@ -114,6 +125,11 @@ public class DinaRepositoryIT {
     personRepository.delete(personToRemove.getUuid());
   }
 
+  /**
+   * Clean up a list of persons from the database.
+   * 
+   * @see DinaRepositoryIT.cleanUpTestData
+   */
   private void cleanUpPersonList(List<PersonDTO> personListToRemove) {
     personListToRemove.forEach(person -> cleanUpTestData(person));
   }
