@@ -42,7 +42,7 @@ import lombok.NonNull;
  * Small test application running on dina-base-api
  */
 @SpringBootApplication
-@EntityScan(basePackageClasses = Department.class)
+@EntityScan(basePackageClasses = {Department.class, Person.class})
 @Import(DinaRepoEagerLoadingIT.TestConfig.class)
 public class TestDinaBaseApp {
 
