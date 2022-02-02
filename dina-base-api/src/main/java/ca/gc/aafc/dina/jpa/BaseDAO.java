@@ -292,6 +292,15 @@ public class BaseDAO {
   }
 
   /**
+   * Force a flush to the database.
+   * This is usually not necessary unless it is important to flush changes in the current transaction
+   * at a very specific moment. Otherwise, the transaction will automatically flush at the end.
+   */
+  public void flush() {
+    entityManager.flush();
+  }
+
+  /**
    * Remove the given entity from the persistence context, causing a managed entity to become detached.
    * This will revert any non-flushed changes made in the current transaction to the entity.
    *
