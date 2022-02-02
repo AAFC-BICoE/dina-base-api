@@ -46,12 +46,6 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
   }
 
   @Bean
-  public KeycloakConfigResolver keycloakConfigResolver() {
-    log.debug("Creating KeycloakSpringBootConfigResolver bean");
-    return new KeycloakSpringBootConfigResolver();
-  }
-
-  @Bean
   @Override
   protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
     log.debug("Creating RegisterSessionAuthenticationStrategy bean");
