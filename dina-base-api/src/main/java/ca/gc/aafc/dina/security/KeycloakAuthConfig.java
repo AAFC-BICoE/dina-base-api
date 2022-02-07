@@ -1,8 +1,6 @@
 package ca.gc.aafc.dina.security;
 
 import lombok.extern.log4j.Log4j2;
-import org.keycloak.adapters.KeycloakConfigResolver;
-import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -43,12 +41,6 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
     KeycloakAuthenticationProvider keycloakAuthProvider = keycloakAuthenticationProvider();
     keycloakAuthProvider.setGrantedAuthoritiesMapper(new SimpleAuthorityMapper());
     auth.authenticationProvider(keycloakAuthProvider);
-  }
-
-  @Bean
-  public KeycloakConfigResolver keycloakConfigResolver() {
-    log.debug("Creating KeycloakSpringBootConfigResolver bean");
-    return new KeycloakSpringBootConfigResolver();
   }
 
   @Bean
