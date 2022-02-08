@@ -144,6 +144,13 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
+   * See {@link BaseDAO#flush()}
+   */
+  public void flush() {
+    baseDAO.flush();
+  }
+
+  /**
    * Returns a list of Entities of a given class restricted by the predicates returned by a given function.
    *
    * @param entityClass - entity class to query cannot be null
