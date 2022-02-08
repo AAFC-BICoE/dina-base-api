@@ -34,13 +34,13 @@
     <crnk.version>3.2.20200419165537</crnk.version>
 
     <!-- Build plugin properties -->
-    <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
-    <checkstyle.version>8.44</checkstyle.version>
-    <spotbugs.version>4.5.2</spotbugs.version>
-    <maven-spotbugs.version>4.5.0.0</maven-spotbugs.version>
+    <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
+    <checkstyle.version>8.45.1</checkstyle.version>
+    <spotbugs.version>4.5.3</spotbugs.version>
+    <maven-spotbugs.version>4.5.3.0</maven-spotbugs.version>
     <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.1.0</asciidoctorj.diagram.version>
-    <dependency.check.version>6.5.2</dependency.check.version>
+    <dependency.check.version>6.5.3</dependency.check.version>
     <lombok-maven-plugin.version>1.18.20.0</lombok-maven-plugin.version>
     <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
     <!-- Common sub-module dependency properties -->
