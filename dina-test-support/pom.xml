@@ -26,6 +26,12 @@
 
   <dependencies>
     <dependency>
+      <groupId>io.github.aafc-bicoe</groupId>
+      <artifactId>dina-base-api</artifactId>
+      <version>0.81</version>
+    </dependency>
+
+    <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
       <version>${jackson-datatype-jsr310.version}</version>
