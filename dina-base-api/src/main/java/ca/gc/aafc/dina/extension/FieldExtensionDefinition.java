@@ -25,7 +25,7 @@ public class FieldExtensionDefinition {
   @AllArgsConstructor
   @NoArgsConstructor
   public static class Extension {
-  
+
     private String name;
     private String key;
     private String version;
@@ -43,6 +43,7 @@ public class FieldExtensionDefinition {
       }
       return false;
     }
+  }
   
   @Builder
   @Getter
@@ -60,8 +61,5 @@ public class FieldExtensionDefinition {
       return StringUtils.equals(this.term, term);
     }
   }
-
-  }
-
   
 }
