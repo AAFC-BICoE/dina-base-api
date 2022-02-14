@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, ManagedAttributeServiceIT.ManagedAttributeConfig.class})
@@ -52,6 +53,21 @@ public class ManagedAttributeServiceIT {
             .name("dina attribute #12").build());
 
     assertEquals("dina_attribute_12", managedAttribute.getKey());
+  }
+
+  @Test
+  public void managedAttributeService_OnFindOne_OneReturned() {
+    TestManagedAttribute managedAttribute1 = testManagedAttributeService
+        .createAndFlush(TestManagedAttribute.builder()
+            .name("dina attribute 1").build());
+    TestManagedAttribute managedAttribute2 = testManagedAttributeService
+        .createAndFlush(TestManagedAttribute.builder()
+            .name("dina attribute 2").build());
+
+    TestManagedAttribute managedAttribute = testManagedAttributeService.findOneByKey(managedAttribute1.getKey());
+
+    assertNotNull(managedAttribute1.getId());
+    assertEquals(managedAttribute1.getId(), managedAttribute.getId());
   }
 
   @TestConfiguration
