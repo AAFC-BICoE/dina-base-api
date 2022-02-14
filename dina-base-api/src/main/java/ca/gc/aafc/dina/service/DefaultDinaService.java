@@ -235,13 +235,25 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
-   * Returns a reference to an entity that should exist without actually loading it. Useful to set
-   * relationships without loading the entity instead of findOne.
+   * Find an entity by a specific property.
    *
-   * @param naturalId   - natural id of entity
-   * @param entityClass - class of entity
-   * @return the matched reference
+   * @param clazz
+   * @param property
+   * @param value
+   * @return the entity or null if not found
    */
+  public E findOneByProperty(Class<E> clazz, String property, Object value) {
+    return baseDAO.findOneByProperty(clazz, property, value);
+  }
+
+    /**
+     * Returns a reference to an entity that should exist without actually loading it. Useful to set
+     * relationships without loading the entity instead of findOne.
+     *
+     * @param naturalId   - natural id of entity
+     * @param entityClass - class of entity
+     * @return the matched reference
+     */
   @Override
   public <T> T getReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
     return baseDAO.getReferenceByNaturalId(entityClass, naturalId);
@@ -304,7 +316,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
-   * Find an entity by a specific property. 
+   * Find a list of entities by a specific property.
    * 
    * @param clazz
    * @param property

@@ -60,6 +60,10 @@ public abstract class ManagedAttributeService<T extends ManagedAttribute>
     ).stream().collect(Collectors.toMap(ManagedAttribute::getKey, Function.identity()));
   }
 
+  public T findOneByKey(String key) {
+    return findOneByProperty(maClass, KEY, key);
+  }
+
   /**
    * Transforms a name into a key. camelCase is supported.
    * "Aa bb !! mySuperAttribute # 11" will become aa_bb_my_super_attribute_11
