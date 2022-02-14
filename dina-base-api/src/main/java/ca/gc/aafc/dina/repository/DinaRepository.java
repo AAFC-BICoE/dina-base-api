@@ -373,4 +373,13 @@ public class DinaRepository<D, E extends DinaEntity>
   public void setHttpRequestContextProvider(HttpRequestContextProvider httpRequestContextProvider) {
     this.httpRequestContextProvider = httpRequestContextProvider;
   }
+
+  /**
+   * Returns a direct access to the instance of {@link DinaMappingLayer}.
+   * The main usage is to use {@link DinaMappingLayer#toDtoSimpleMapping(Object)}.
+   * @return {@link DinaMappingLayer} instance
+   */
+  protected DinaMappingLayer<D, E> getMappingLayer() {
+    return mappingLayer;
+  }
 }
