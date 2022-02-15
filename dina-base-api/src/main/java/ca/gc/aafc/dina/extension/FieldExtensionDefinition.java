@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.extension;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -8,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @Builder
 @Getter
@@ -24,11 +25,24 @@ public class FieldExtensionDefinition {
   @AllArgsConstructor
   @NoArgsConstructor
   public static class Extension {
-  
+
     private String name;
     private String key;
     private String version;
-    private List<Field> fields = new ArrayList<>();
+    private List<Field> fields;
+
+    public boolean containsTerm(String term) {
+      if (CollectionUtils.isEmpty(fields)) {
+        return false;
+      }
+
+      for (Field field : fields) {
+        if (field.termEquals(term)) {
+          return true;
+        }
+      }
+      return false;
+    }
   }
   
   @Builder
@@ -42,7 +56,10 @@ public class FieldExtensionDefinition {
     private String name;
     private String definition;
     private String dinaComponent;
-  }
 
+    public boolean termEquals(String term) {
+      return StringUtils.equals(this.term, term);
+    }
+  }
   
 }
