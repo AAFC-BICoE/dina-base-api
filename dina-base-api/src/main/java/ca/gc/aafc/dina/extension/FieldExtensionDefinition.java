@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.extension;
 
 import java.util.List;
+import java.util.Objects;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,17 +32,25 @@ public class FieldExtensionDefinition {
     private String version;
     private List<Field> fields;
 
+    public boolean matchesKeyVersion(String key, String version) {
+      return Objects.equals(this.key, key) && Objects.equals(this.version, version);
+    }
+
     public boolean containsTerm(String term) {
+      return getFieldByTerm(term) != null;
+    }
+
+    public Field getFieldByTerm(String term) {
       if (CollectionUtils.isEmpty(fields)) {
-        return false;
+        return null;
       }
 
       for (Field field : fields) {
         if (field.termEquals(term)) {
-          return true;
+          return field;
         }
       }
-      return false;
+      return null;
     }
   }
   
@@ -55,7 +64,25 @@ public class FieldExtensionDefinition {
     private String term;
     private String name;
     private String definition;
+    private String[] acceptedValues;
     private String dinaComponent;
+
+    /**
+     * Checks if the provided value is in the acceptedValues
+     * If acceptedValues or value is null this method will return false;
+     */
+    public boolean isAcceptedValues(String value) {
+      if (acceptedValues == null || StringUtils.isBlank(value)) {
+        return false;
+      }
+
+      for (String currVal : acceptedValues ) {
+        if (currVal.equals(value)) {
+          return true;
+        }
+      }
+      return false;
+    }
 
     public boolean termEquals(String term) {
       return StringUtils.equals(this.term, term);
