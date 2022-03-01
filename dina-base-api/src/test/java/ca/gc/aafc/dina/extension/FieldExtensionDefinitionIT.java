@@ -23,7 +23,11 @@ public class FieldExtensionDefinitionIT {
   @Test
   public void testFieldExtensionLoading() {
     assertEquals(1, config.getExtension().size());
-    assertTrue(config.getExtension().get("cfia_ppc").containsTerm("ppc-1"));
+
+    FieldExtensionDefinition.Extension cfiaPPC = config.getExtension().get("cfia_ppc");
+    assertTrue(cfiaPPC.matchesKeyVersion("cfia_ppc", "2022-02"));
+    assertTrue(cfiaPPC.containsTerm("level"));
+    assertTrue(cfiaPPC.getFieldByTerm("level").isAcceptedValues("Level 2 (PPC-2)"));
   }
 
   @Configuration
