@@ -9,7 +9,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.83-SNAPSHOT</version>
+    <version>0.84-SNAPSHOT</version>
   </parent>
 
   <artifactId>dina-test-support</artifactId>
@@ -20,8 +20,8 @@
   <properties>
     <openapi4j.version>1.0.4</openapi4j.version>
     <jackson-datatype-jsr310.version>2.11.0</jackson-datatype-jsr310.version>
-    <groovy.version>3.0.6</groovy.version> <!-- Required by rest-assured 4.3 -->
-    <rest-assured.version>4.3.2</rest-assured.version>
+    <groovy.version>3.0.7</groovy.version> <!-- Required by rest-assured 4.3 -->
+    <rest-assured.version>4.3.3</rest-assured.version>
   </properties>
 
   <dependencies>
