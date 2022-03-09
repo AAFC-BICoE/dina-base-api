@@ -47,7 +47,8 @@ public class ManagedAttributeValueValidatorTest {
 
   @Test
   void validate_WhenValidDateType_NoExceptionThrown() {
-    testManagedAttribute = testManagedAttributeService.create(newTestManagedAttribute());
+    testManagedAttribute = testManagedAttributeService.create(
+        newTestManagedAttribute(ManagedAttribute.ManagedAttributeType.DATE));
 
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), LocalDate.now().toString());
     validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X);
@@ -56,10 +57,8 @@ public class ManagedAttributeValueValidatorTest {
   @ParameterizedTest
   @ValueSource(strings = {"1.2", "", "  ", "\t", "\n", "a", "99-02-01", "11-23-2020", "11-1999-01", "01-01-01"})
   void validate_WhenInvalidDateType_ExceptionThrown(String value) {
-    testManagedAttribute = testManagedAttributeService.create(ManagedAttributeServiceIT.TestManagedAttribute.builder().
-      name(RandomStringUtils.randomAlphabetic(6))
-      .managedAttributeType(ManagedAttribute.ManagedAttributeType.DATE)
-      .build());
+    testManagedAttribute = testManagedAttributeService.create(
+        newTestManagedAttribute(ManagedAttribute.ManagedAttributeType.DATE));
 
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), value);
     assertThrows(ValidationException.class, () -> validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav));
@@ -129,8 +128,10 @@ public class ManagedAttributeValueValidatorTest {
 
   @Test
   public void assignedValueContainedInAcceptedValues_validationPasses() {
-    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
-      name("My special Attribute").acceptedValues(new String[]{"val1", "val2"}).build();
+    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder()
+        .name("My special Attribute")
+        .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
+        .acceptedValues(new String[]{"val1", "val2"}).build();
     testManagedAttributeService.create(testManagedAttribute);
 
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), "val1");
@@ -143,7 +144,8 @@ public class ManagedAttributeValueValidatorTest {
   @Test
   public void assignedValueNotContainedInAcceptedValues_validationFails() {
     testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
-      name("key2").acceptedValues(new String[]{"val1", "val2"}).build();
+      name("key2").managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
+        .acceptedValues(new String[]{"val1", "val2"}).build();
     testManagedAttributeService.create(testManagedAttribute);
 
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), "val3");
@@ -211,18 +213,40 @@ public class ManagedAttributeValueValidatorTest {
         () ->  validatorUnderTest.validate(ENTITY_PLACEHOLDER.getUuid().toString(), ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X));
   }
 
-  private TestManagedAttribute newTestManagedAttribute() {
-    return ManagedAttributeServiceIT.TestManagedAttribute.builder().
-      name(RandomStringUtils.randomAlphabetic(6))
-      .managedAttributeType(ManagedAttribute.ManagedAttributeType.DATE)
-      .multilingualDescription(MultilingualDescription.builder()
-          .descriptions(ImmutableList.of(
-            MultilingualDescription.MultilingualPair.builder()
-              .desc("test")
-              .lang("en")
-              .build())
-            )
-          .build())
-      .build();
+  @ParameterizedTest
+  @ValueSource(strings = {"", "off", "TRUE"})
+  void validate_WhenInvalidBoolType_ExceptionThrown(String value) {
+    testManagedAttribute = testManagedAttributeService.create(ManagedAttributeServiceIT.TestManagedAttribute.builder().
+        name(RandomStringUtils.randomAlphabetic(6))
+        .managedAttributeType(ManagedAttribute.ManagedAttributeType.BOOL)
+        .build());
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), value);
+    assertThrows(ValidationException.class, () -> validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav));
   }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"true", "false"})
+  void validate_ValidBoolType_NoExceptionThrown(String value) {
+    testManagedAttribute = testManagedAttributeService.create(newTestManagedAttribute(
+        ManagedAttribute.ManagedAttributeType.BOOL));
+
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), value);
+    validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X);
+  }
+
+  private TestManagedAttribute newTestManagedAttribute(ManagedAttribute.ManagedAttributeType type) {
+    return ManagedAttributeServiceIT.TestManagedAttribute.builder().
+        name(RandomStringUtils.randomAlphabetic(6))
+        .managedAttributeType(type)
+        .multilingualDescription(MultilingualDescription.builder()
+            .descriptions(ImmutableList.of(
+                MultilingualDescription.MultilingualPair.builder()
+                    .desc("test")
+                    .lang("en")
+                    .build())
+            )
+            .build())
+        .build();
+  }
+
 }
