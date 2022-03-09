@@ -51,6 +51,7 @@ public class ManagedAttributeServiceIT {
   public void managedAttributeService_OnCreate_KeyCorrectlyGenerated() {
     TestManagedAttribute managedAttribute = testManagedAttributeService
         .create(TestManagedAttribute.builder()
+            .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
             .name("dina attribute #12").build());
 
     assertEquals("dina_attribute_12", managedAttribute.getKey());
@@ -60,9 +61,11 @@ public class ManagedAttributeServiceIT {
   public void managedAttributeService_OnFindOne_OneReturned() {
     TestManagedAttribute managedAttribute1 = testManagedAttributeService
         .createAndFlush(TestManagedAttribute.builder()
+            .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
             .name("dina attribute 1").build());
     TestManagedAttribute managedAttribute2 = testManagedAttributeService
         .createAndFlush(TestManagedAttribute.builder()
+            .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
             .name("dina attribute 2").build());
 
     TestManagedAttribute managedAttribute = testManagedAttributeService.findOneByKey(managedAttribute1.getKey());
