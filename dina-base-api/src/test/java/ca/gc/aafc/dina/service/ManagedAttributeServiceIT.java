@@ -29,6 +29,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
 
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
@@ -110,6 +111,7 @@ public class ManagedAttributeServiceIT {
     private UUID uuid;
     private String name;
     private String key;
+    @NotNull
     private ManagedAttributeType managedAttributeType;
     private String[] acceptedValues;
     private String createdBy;

@@ -9,7 +9,7 @@ import ca.gc.aafc.dina.i18n.MultilingualDescription;
 public interface ManagedAttribute extends DinaEntity {
 
   enum ManagedAttributeType {
-    INTEGER, STRING, DATE
+    INTEGER, STRING, DATE, BOOL
   }
 
   String getName();
