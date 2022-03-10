@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.junit.jupiter.api.Test;
@@ -63,12 +64,34 @@ public class ManagedAttributeServiceIT {
         .createAndFlush(TestManagedAttribute.builder()
             .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
             .name("dina attribute 1").build());
-    TestManagedAttribute managedAttribute2 = testManagedAttributeService
+    testManagedAttributeService
         .createAndFlush(TestManagedAttribute.builder()
             .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
             .name("dina attribute 2").build());
 
     TestManagedAttribute managedAttribute = testManagedAttributeService.findOneByKey(managedAttribute1.getKey());
+
+    assertNotNull(managedAttribute1.getId());
+    assertEquals(managedAttribute1.getId(), managedAttribute.getId());
+  }
+
+  @Test
+  public void managedAttributeService_OnFindOneAnd_OneReturned() {
+    // test setup allows duplicated name/key
+    // we create a duplicate and use the createdBy to distinct them
+    TestManagedAttribute managedAttribute1 = testManagedAttributeService
+        .createAndFlush(TestManagedAttribute.builder()
+            .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
+            .name("dina attribute")
+            .createdBy("abc").build());
+    testManagedAttributeService
+        .createAndFlush(TestManagedAttribute.builder()
+            .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
+            .name("dina attribute")
+            .createdBy("bcd").build());
+
+    TestManagedAttribute managedAttribute = testManagedAttributeService
+        .findOneByKeyAnd(managedAttribute1.getKey(), Pair.of("createdBy", "abc"));
 
     assertNotNull(managedAttribute1.getId());
     assertEquals(managedAttribute1.getId(), managedAttribute.getId());

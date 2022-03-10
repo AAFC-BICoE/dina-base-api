@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -18,6 +19,7 @@ import javax.transaction.Transactional;
 import ca.gc.aafc.dina.testsupport.DatabaseSupportService;
 import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -68,6 +70,21 @@ public class BaseDAOIT {
     
     assertEquals(generatedId, baseDAO.findOneByProperty(Department.class, "name", "dep2").getId());
     assertNotEquals(generatedId, baseDAO.findOneByProperty(Department.class, "name", "dep1").getId());
+  }
+
+  @Test
+  public void findOneByProperties_onValidProperties_returnsEntity() {
+
+    Department dep = Department.builder().name("Dep_Prop").location("Dep_Location").build();
+    baseDAO.create(dep);
+
+    Department dep2 = Department.builder().name("Dep_Prop").location("Dep_Location2").build();
+    baseDAO.create(dep2);
+
+    Integer generatedId = dep.getId();
+
+    assertEquals(generatedId, baseDAO.findOneByProperties(Department.class,
+        List.of(Pair.of("name", "Dep_Prop"), Pair.of("location", "Dep_Location"))).getId());
   }
 
   @Test
