@@ -7,6 +7,7 @@ import ca.gc.aafc.dina.validation.ValidationErrorsHelper;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ObjectError;
@@ -246,14 +247,28 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     return baseDAO.findOneByProperty(clazz, property, value);
   }
 
-    /**
-     * Returns a reference to an entity that should exist without actually loading it. Useful to set
-     * relationships without loading the entity instead of findOne.
-     *
-     * @param naturalId   - natural id of entity
-     * @param entityClass - class of entity
-     * @return the matched reference
-     */
+  /**
+   * Find an entity by a specific properties.
+   * The combination of the properties are assumed to be unique and returned only 1 entity.
+   *
+   * @param clazz
+   * @param propertiesAndValue
+   * @return the entity or null if not found
+   */
+  public E findOneByProperties(Class<E> clazz,List<Pair<String, Object>> propertiesAndValue) {
+    return baseDAO.findOneByProperties(clazz, propertiesAndValue);
+  }
+
+
+
+  /**
+   * Returns a reference to an entity that should exist without actually loading it. Useful to set
+   * relationships without loading the entity instead of findOne.
+   *
+   * @param naturalId   - natural id of entity
+   * @param entityClass - class of entity
+   * @return the matched reference
+   */
   @Override
   public <T> T getReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
     return baseDAO.getReferenceByNaturalId(entityClass, naturalId);
@@ -325,7 +340,6 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    */
   public List<E> findByProperty(Class<E> clazz, String property, Object value) {
     return baseDAO.findByProperty(clazz, property, value);
-  
   }
 
   /**
