@@ -26,13 +26,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class DinaPermissionEvaluatorTest {
 
   public static final String GROUP_1 = "group1";
+  public static final String USERNAME= "name";
+
   private DinaPermissionEvaluator evaluator;
 
   @BeforeEach
   void setUp() {
     KeycloakAuthenticationToken mockToken = Mockito.mock(
-      KeycloakAuthenticationToken.class,
-      Answers.RETURNS_DEEP_STUBS);
+      KeycloakAuthenticationToken.class, Answers.RETURNS_DEEP_STUBS);
     evaluator = new DinaPermissionEvaluator(mockToken);
   }
 
@@ -193,8 +194,28 @@ class DinaPermissionEvaluatorTest {
   }
 
   @Test
-  void dinaRolePriorityComparison() {
+  void hasObjectOwnership_whenObjectNotOwned_returnsFalse() {
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STAFF);
 
+    Person p = Person.builder().build();
+    assertFalse(evaluator.hasObjectOwnership(user, p));
+
+    p = Person.builder().group(GROUP_1).createdBy("xyz").build();
+    assertFalse(evaluator.hasObjectOwnership(user, p));
+
+    assertFalse(evaluator.hasObjectOwnership(user, null));
+
+  }
+
+  @Test
+  void hasObjectOwnership_whenObjectOwned_returnsTrue() {
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STAFF);
+    Person p =  Person.builder().group(GROUP_1).createdBy(USERNAME).build();
+    assertTrue(evaluator.hasObjectOwnership(user, p));
+  }
+
+  @Test
+  void dinaRolePriorityComparison() {
     assertTrue(DinaRole.COLLECTION_MANAGER.isHigherThan(DinaRole.STUDENT));
     assertTrue(DinaRole.COLLECTION_MANAGER.isHigherOrEqualThan(DinaRole.COLLECTION_MANAGER));
 
@@ -211,7 +232,7 @@ class DinaPermissionEvaluatorTest {
 
   private static DinaAuthenticatedUser getDinaAuthenticatedUser(DinaRole dinaRole) {
     return DinaAuthenticatedUser.builder()
-      .username("name")
+      .username(USERNAME)
       .rolesPerGroup(ImmutableMap.of(GROUP_1, ImmutableSet.of(dinaRole)))
       .build();
   }

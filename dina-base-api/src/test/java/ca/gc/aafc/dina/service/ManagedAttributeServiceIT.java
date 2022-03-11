@@ -29,6 +29,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
 
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
@@ -50,6 +51,7 @@ public class ManagedAttributeServiceIT {
   public void managedAttributeService_OnCreate_KeyCorrectlyGenerated() {
     TestManagedAttribute managedAttribute = testManagedAttributeService
         .create(TestManagedAttribute.builder()
+            .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
             .name("dina attribute #12").build());
 
     assertEquals("dina_attribute_12", managedAttribute.getKey());
@@ -59,9 +61,11 @@ public class ManagedAttributeServiceIT {
   public void managedAttributeService_OnFindOne_OneReturned() {
     TestManagedAttribute managedAttribute1 = testManagedAttributeService
         .createAndFlush(TestManagedAttribute.builder()
+            .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
             .name("dina attribute 1").build());
     TestManagedAttribute managedAttribute2 = testManagedAttributeService
         .createAndFlush(TestManagedAttribute.builder()
+            .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
             .name("dina attribute 2").build());
 
     TestManagedAttribute managedAttribute = testManagedAttributeService.findOneByKey(managedAttribute1.getKey());
@@ -110,6 +114,7 @@ public class ManagedAttributeServiceIT {
     private UUID uuid;
     private String name;
     private String key;
+    @NotNull
     private ManagedAttributeType managedAttributeType;
     private String[] acceptedValues;
     private String createdBy;
