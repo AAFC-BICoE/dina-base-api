@@ -7,6 +7,7 @@ import ca.gc.aafc.dina.service.ManagedAttributeService;
 import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.Errors;
@@ -18,6 +19,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
@@ -50,7 +52,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   }
 
   /**
-   * See {@link #validate(DinaEntity, Map, ValidationContext)}
+   * Same as {@link #validate(DinaEntity, Map, ValidationContext)} but without a {@link ValidationContext}.
    * @param entity
    * @param managedAttributes
    * @param <D>
@@ -60,17 +62,42 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   }
   
   /**
-   * Validates the managedAttributes attached to the provided entity.
+   * Validates the managedAttributes attached to the provided entity using a {@link ValidationContext}.
    * @param entity
    * @param managedAttributes
+   * @param validationContext will be used to call preValidateValue
    * @param <D>
    * @throws javax.validation.ValidationException
    */
   public <D extends DinaEntity> void validate(D entity, Map<String, String> managedAttributes, ValidationContext validationContext) {
-    Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
+    validate(managedAttributes, ValidationErrorsHelper.newErrorsObject(entity), validationContext);
+  }
+
+  /**
+   * Validates the managedAttributes attached to the provided object using a {@link ValidationContext}.
+   * @param objIdentifier an identifier used in the error message to identify the target
+   * @param target
+   * @param managedAttributes
+   * @param validationContext will be used to call preValidateValue
+   * @throws javax.validation.ValidationException
+   */
+  public void validate(String objIdentifier, Object target, Map<String, String> managedAttributes, ValidationContext validationContext) {
+    Objects.requireNonNull(target);
+    Errors errors = ValidationErrorsHelper.newErrorsObject(objIdentifier, target);
+    validate(managedAttributes, errors, validationContext);
+  }
+
+  /**
+   * Internal validate method that is using {@link ValidationContext}
+   * @param managedAttributes
+   * @param errors
+   * @param validationContext
+   */
+  private void validate(Map<String, String> managedAttributes, Errors errors, ValidationContext validationContext) {
     validateElements(managedAttributes, errors, validationContext);
     ValidationErrorsHelper.errorsToValidationException(errors);
   }
+
 
   private void validateElements(Map<String, String> attributesAndValues, Errors errors, ValidationContext validationContext) {
     Map<String, E> attributesPerKey = dinaService.findAttributesForKeys(attributesAndValues.keySet());
@@ -85,14 +112,24 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
       String assignedValue = attributesAndValues.get(key);
 
       if(preValidateValue(ma, assignedValue, errors, validationContext)) {
-        if (maType == ManagedAttributeType.DATE && isNotValidDate(assignedValue)) {
-          errors.reject(MANAGED_ATTRIBUTE_INVALID_VALUE,
-            getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
-        }
 
-        if (maType == ManagedAttributeType.INTEGER && !INTEGER_PATTERN.matcher(assignedValue).matches()) {
-          errors.reject(MANAGED_ATTRIBUTE_INVALID_VALUE,
-              getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
+        switch(maType) {
+          case DATE :
+            if (!isValidLocalDate(assignedValue)) {
+              rejectInvalidValue(errors, key, assignedValue);
+            }
+            break;
+          case INTEGER:
+            if (!INTEGER_PATTERN.matcher(assignedValue).matches()) {
+              rejectInvalidValue(errors, key, assignedValue);
+            }
+            break;
+          case BOOL:
+            if (!isValidBool(assignedValue)) {
+              rejectInvalidValue(errors, key, assignedValue);
+            }
+            break;
+          default: //noop
         }
 
         String[] acceptedValues = ma.getAcceptedValues();
@@ -132,17 +169,26 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
       .noneMatch(assignedValue::equalsIgnoreCase);
   }
 
+  private void rejectInvalidValue(Errors errors, String key, String assignedValue) {
+    errors.reject(MANAGED_ATTRIBUTE_INVALID_VALUE,
+        getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
+  }
+
   private String getMessageForKey(String key, Object... objects) {
     return messageSource.getMessage(key, objects, LocaleContextHolder.getLocale());
   }
 
-  private static boolean isNotValidDate(String assignedValue) {
+  private static boolean isValidLocalDate(String assignedValue) {
     try {
       LocalDate.parse(assignedValue);
     } catch (DateTimeParseException e) {
-      return true;
+      return false;
     }
-    return false;
+    return true;
+  }
+
+  private static boolean isValidBool(String assignedValue) {
+    return BooleanUtils.TRUE.equals(assignedValue) || BooleanUtils.FALSE.equals(assignedValue);
   }
 
 }

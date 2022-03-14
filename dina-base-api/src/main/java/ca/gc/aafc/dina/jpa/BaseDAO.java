@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.jpa;
 import io.crnk.core.engine.information.bean.BeanInformation;
 import lombok.NonNull;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.Session;
 import org.hibernate.SimpleNaturalIdLoadAccess;
 import org.hibernate.annotations.NaturalId;
@@ -125,6 +126,38 @@ public class BaseDAO {
     } catch (NoResultException nrEx) {
       return null;
     }
+  }
+
+  /**
+   * Find an entity by specific properties. The method assumes that the properties
+   * are part of a unique constraint (that the query will return nothing or 1 result but never more).
+   * @param clazz
+   * @param propertiesAndValue
+   * @param <T>
+   * @return
+   */
+  public <T> T findOneByProperties(Class<T> clazz, List<Pair<String, Object>> propertiesAndValue) {
+    // Create a criteria to retrieve the specific property.
+    CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<T> criteria = criteriaBuilder.createQuery(clazz);
+    Root<T> root = criteria.from(clazz);
+
+    Predicate whereClause = null;
+    for(Pair<String, Object> propVal : propertiesAndValue) {
+      Predicate clause = criteriaBuilder.equal(root.get(propVal.getKey()), propVal.getValue());
+      whereClause = whereClause == null ? clause : criteriaBuilder.and(whereClause, clause);
+    }
+
+    criteria.where(whereClause);
+    criteria.select(root);
+
+    TypedQuery<T> query = entityManager.createQuery(criteria);
+    try {
+      return query.getSingleResult();
+    } catch (NoResultException nrEx) {
+      return null;
+    }
+
   }
 
   /**
@@ -289,6 +322,15 @@ public class BaseDAO {
    */
   public void refresh(Object entity) {
     entityManager.refresh(entity);
+  }
+
+  /**
+   * Force a flush to the database.
+   * This is usually not necessary unless it is important to flush changes in the current transaction
+   * at a very specific moment. Otherwise, the transaction will automatically flush at the end.
+   */
+  public void flush() {
+    entityManager.flush();
   }
 
   /**

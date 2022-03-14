@@ -181,6 +181,20 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
       .anyMatch(dinaRole -> dinaRole.isHigherOrEqualThan(minimumDinaRole.get()));
   }
 
+  /**
+   * Returns true if the given authenticated user is interpreted as the owner of an object.
+   * owner is defined by the value of createdBy in {@link DinaEntity}.
+   * @param user authenticated user
+   * @param targetDomainObject object to check ownership
+   * @return true if the targetDomainObject createdBy equals the authenticated username.
+   */
+  public boolean hasObjectOwnership(DinaAuthenticatedUser user, Object targetDomainObject) {
+    if (user == null || !(targetDomainObject instanceof DinaEntity)) {
+      return false;
+    }
+    return StringUtils.equals(user.getUsername(), ((DinaEntity) targetDomainObject).getCreatedBy());
+  }
+
   @Override
   public Object getThis() {
     return this;

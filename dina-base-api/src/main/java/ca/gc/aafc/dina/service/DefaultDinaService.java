@@ -7,6 +7,7 @@ import ca.gc.aafc.dina.validation.ValidationErrorsHelper;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ObjectError;
@@ -144,6 +145,13 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
+   * See {@link BaseDAO#flush()}
+   */
+  public void flush() {
+    baseDAO.flush();
+  }
+
+  /**
    * Returns a list of Entities of a given class restricted by the predicates returned by a given function.
    *
    * @param entityClass - entity class to query cannot be null
@@ -228,6 +236,32 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
+   * Find an entity by a specific property.
+   *
+   * @param clazz
+   * @param property
+   * @param value
+   * @return the entity or null if not found
+   */
+  public E findOneByProperty(Class<E> clazz, String property, Object value) {
+    return baseDAO.findOneByProperty(clazz, property, value);
+  }
+
+  /**
+   * Find an entity by a specific properties.
+   * The combination of the properties are assumed to be unique and returned only 1 entity.
+   *
+   * @param clazz
+   * @param propertiesAndValue
+   * @return the entity or null if not found
+   */
+  public E findOneByProperties(Class<E> clazz,List<Pair<String, Object>> propertiesAndValue) {
+    return baseDAO.findOneByProperties(clazz, propertiesAndValue);
+  }
+
+
+
+  /**
    * Returns a reference to an entity that should exist without actually loading it. Useful to set
    * relationships without loading the entity instead of findOne.
    *
@@ -297,7 +331,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
-   * Find an entity by a specific property. 
+   * Find a list of entities by a specific property.
    * 
    * @param clazz
    * @param property
@@ -306,7 +340,6 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    */
   public List<E> findByProperty(Class<E> clazz, String property, Object value) {
     return baseDAO.findByProperty(clazz, property, value);
-  
   }
 
   /**

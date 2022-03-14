@@ -4,7 +4,7 @@
         <cpe>cpe:/a:pivotal_software:spring_security:5.4.5</cpe>
     </suppress>
     <suppress>
-        <notes>Keycloak 12</notes>
-        <cve>CVE-2021-20195</cve>
+        <notes>CVE about Keycloak Server</notes>
+        <cve>CVE-2021-4133</cve>
     </suppress>
 </suppressions>

@@ -6,11 +6,13 @@ import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.validation.SmartValidator;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -58,6 +60,21 @@ public abstract class ManagedAttributeService<T extends ManagedAttribute>
       },
       null, 0, Integer.MAX_VALUE
     ).stream().collect(Collectors.toMap(ManagedAttribute::getKey, Function.identity()));
+  }
+
+  public T findOneByKey(String key) {
+    return findOneByProperty(maClass, KEY, key);
+  }
+
+  /**
+   * Find a managed attribute by key and another property that is part of the unique constraint.
+   * @param key
+   * @param andClause clause that should be added to
+   * @return
+   */
+  public T findOneByKeyAnd(String key, Pair<String, Object> andClause) {
+    return findOneByProperties(maClass,
+        List.of(Pair.of(KEY, key), andClause));
   }
 
   /**

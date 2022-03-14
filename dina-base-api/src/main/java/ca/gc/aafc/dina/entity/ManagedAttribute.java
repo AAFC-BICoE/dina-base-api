@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.entity;
 
+import ca.gc.aafc.dina.i18n.MultilingualDescription;
+
 /**
  * Main interface that represents a managed attribute in Dina.
  *
@@ -7,7 +9,7 @@ package ca.gc.aafc.dina.entity;
 public interface ManagedAttribute extends DinaEntity {
 
   enum ManagedAttributeType {
-    INTEGER, STRING, DATE
+    INTEGER, STRING, DATE, BOOL
   }
 
   String getName();
@@ -22,5 +24,7 @@ public interface ManagedAttribute extends DinaEntity {
 
   ManagedAttributeType getManagedAttributeType();
   String[] getAcceptedValues();
+
+  MultilingualDescription getMultilingualDescription();
 
 }
