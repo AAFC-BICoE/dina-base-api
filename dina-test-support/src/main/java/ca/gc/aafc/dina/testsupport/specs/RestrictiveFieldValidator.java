@@ -14,7 +14,6 @@ import org.openapi4j.schema.validator.v3.SchemaValidator;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import static org.openapi4j.core.model.v3.OAI3SchemaKeywords.ADDITIONALPROPERTIES;
@@ -38,16 +37,12 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
   private static final ValidationResults.CrumbInfo ADDITIONAL_FIELD_CRUMB =
     new ValidationResults.CrumbInfo(ADDITIONALPROPERTIES, true);
 
-  public static final String ATTRIBUTES_BLOCK_NAME = "attributes";
-  public static final String RELATIONSHIPS_BLOCK_NAME = "relationships";
+  public static final String ATTRIBUTES_SCHEMA_PATH = "/data/properties/attributes";
+  public static final String ATTRIBUTES_VALUE_PATH = "/data/attributes";
 
-  public static final JsonPointer ATTRIB_POINTER =
-    JsonPointer.compile("/" + ATTRIBUTES_BLOCK_NAME + "/" + OAI3SchemaKeywords.PROPERTIES);
-  public static final JsonPointer RELATION_POINTER =
-    JsonPointer.compile("/" + RELATIONSHIPS_BLOCK_NAME + "/" + OAI3SchemaKeywords.PROPERTIES);
+  public static final String RELATIONSHIPS_SCHEMA_PATH = "/data/properties/relationships";
+  public static final String RELATIONSHIPS_VALUE_PATH = "/data/relationships";
 
-  private final Set<String> requiredAttributes = new HashSet<>();
-  private final Set<String> requiredRelations = new HashSet<>();
   private final ValidationRestrictionOptions options;
 
   protected RestrictiveFieldValidator(
@@ -59,94 +54,59 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
   ) {
     super(context, schemaNode, schemaParentNode, parentSchema);
     this.options = options == null ? ValidationRestrictionOptions.FULL_RESTRICTIONS : options;
-    schemaNode.fieldNames().forEachRemaining(node -> {
-      if (node.equalsIgnoreCase(ATTRIBUTES_BLOCK_NAME)) {
-        JsonNode attributesNode = schemaNode.at(ATTRIB_POINTER);
-        attributesNode.fieldNames().forEachRemaining(requiredAttributes::add);
-      }
-      if (node.equalsIgnoreCase(RELATIONSHIPS_BLOCK_NAME)) {
-        JsonNode attributesNode = schemaNode.at(RELATION_POINTER);
-        attributesNode.fieldNames().forEachRemaining(requiredRelations::add);
-      }
-    });
   }
 
   @Override
   public boolean validate(JsonNode valueNode, ValidationData<?> validation) {
-    validateRequiredFields(valueNode, validation, requiredAttributes, ATTRIBUTES_BLOCK_NAME);
-    validateRequiredFields(valueNode, validation, requiredRelations, RELATIONSHIPS_BLOCK_NAME);
+    validateFields(valueNode, validation, ATTRIBUTES_SCHEMA_PATH, ATTRIBUTES_VALUE_PATH);
+    validateFields(valueNode, validation, RELATIONSHIPS_SCHEMA_PATH, RELATIONSHIPS_VALUE_PATH);
     return true;
   }
 
-  private void validateRequiredFields(
+  private void validateFields(
     JsonNode valueNode,
-    ValidationData<?> validation,
-    Set<String> requiredFieldNames,
-    String blockName
+    ValidationData<?> validationMessages,
+    String schemaPath,
+    String valuePath
   ) {
-    if (!requiredFieldNames.isEmpty()) {
-      if (!options.isAllowAdditionalFields()) {
-        checkAdditionalFields(valueNode, validation, requiredFieldNames, blockName);
-      }
-      checkMissingFields(valueNode, validation, requiredFieldNames, blockName);
+
+    // Retrieve all possible schema fields at this path.
+    Set<String> possibleFields = new HashSet<>();
+    this.getSchemaNode().at(schemaPath + "/properties").fieldNames().forEachRemaining(possibleFields::add);
+
+    // Retrieve all required schema fields at this path.
+    Set<String> requiredFields = new HashSet<>();
+    JsonNode required = this.getSchemaNode().at(schemaPath + "/required");
+    if (required.isArray()) {
+      required.fieldNames().forEachRemaining(requiredFields::add);
     }
-  }
 
-  private void checkMissingFields(
-    JsonNode valueNode,
-    ValidationData<?> validation,
-    Set<String> requiredFieldNames,
-    String blockName
-  ) {
-    for (String fieldName : requiredFieldNames) {
-      String blockNameWithFieldName = blockName + "/" + fieldName;
-      if (valueNode.at("/" + blockNameWithFieldName).isMissingNode()
-      && setDoesNotContainIgnoreCase(options.getAllowableMissingFields(), fieldName)) {
-        validation.add(CRUMB_MISSING_FIELD, MISSING_FIELD_ERROR, fieldName);
-      }
-      if (setDoesNotContainIgnoreCase(options.getAllowableMissingFields(), fieldName)) {
-        checkMissingNestedFields(valueNode, validation, requiredFieldNames, blockNameWithFieldName);
-      }
+    // If allow additional fields is true, then we can ignore the required and additional field checks.
+    if (!options.isAllowAdditionalFields()) {
+      // Go through all of the required fields and ensure they are set.
+      requiredFields.forEach(requiredFieldName -> {
+        if (valueNode.at(valuePath).isMissingNode() && setDoesNotContainIgnoreCase(options.getAllowableMissingFields(), requiredFieldName)) {
+          validationMessages.add(CRUMB_MISSING_FIELD, MISSING_FIELD_ERROR, requiredFieldName);
+        }
+      });
+
+      // Go through each of the fields provided, and compare it against the schema.
+      valueNode.at(valuePath).fieldNames().forEachRemaining(fieldName -> {
+        if (setDoesNotContainIgnoreCase(possibleFields, fieldName) && setDoesNotContainIgnoreCase(options.getAllowableMissingFields(), fieldName)) {
+          validationMessages.add(ADDITIONAL_FIELD_CRUMB, ADDITIONAL_FIELD_ERROR, fieldName);
+        }
+      });
     }
-  }
 
-  private void checkMissingNestedFields(
-    JsonNode valueNode,
-    ValidationData<?> validation,
-    Set<String> requiredFieldNames,
-    String blockName
-  ) {
-    if (blockName.contains(RELATIONSHIPS_BLOCK_NAME)) {
-      return;
+    // Check for any nested objects at this schema level.
+    if (valuePath.contains("attributes")) {
+      this.getSchemaNode().at(schemaPath + "/properties").fieldNames().forEachRemaining(fieldName -> {
+        if (this.getSchemaNode().at(schemaPath + "/properties/" + fieldName).has("properties")) {
+          // If found, we can now validate this nested object for required and additional fields.
+          validateFields(valueNode, validationMessages, schemaPath + "/properties/" + fieldName, valuePath + "/" + fieldName);
+        }
+      });      
     }
-    if (blockName.contains(ATTRIBUTES_BLOCK_NAME)) {
-      JsonPointer fieldPointer =
-            JsonPointer.compile("/" + blockName.replaceFirst("/", "/" + OAI3SchemaKeywords.PROPERTIES + "/"));
-      if (this.getSchemaNode().at(fieldPointer).has(OAI3SchemaKeywords.PROPERTIES)) {
-        fieldPointer = 
-          JsonPointer.compile("/" + blockName.replaceFirst("/", "/" + OAI3SchemaKeywords.PROPERTIES + "/") + "/" + OAI3SchemaKeywords.PROPERTIES);
-
-        Set<String> requiredFields = new HashSet<>();
-        
-        JsonNode attributesNode = this.getSchemaNode().at(fieldPointer);
-        attributesNode.fieldNames().forEachRemaining(requiredFields::add);
-
-        checkMissingFields(valueNode, validation, requiredFields, blockName);
-      }
-    }
-  }
-
-  private static void checkAdditionalFields(
-    JsonNode valueNode,
-    ValidationData<?> validation,
-    Set<String> requiredFieldNames,
-    String blockName
-  ) {
-    valueNode.at("/" + blockName).fieldNames().forEachRemaining(field -> {
-      if (setDoesNotContainIgnoreCase(requiredFieldNames, field)) {
-        validation.add(ADDITIONAL_FIELD_CRUMB, ADDITIONAL_FIELD_ERROR, field);
-      }
-    });
   }
 
   private static boolean setDoesNotContainIgnoreCase(Set<String> requiredFieldNames, String field) {

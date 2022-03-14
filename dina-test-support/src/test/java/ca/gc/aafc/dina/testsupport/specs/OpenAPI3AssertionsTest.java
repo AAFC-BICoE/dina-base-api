@@ -15,7 +15,8 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Test making sure we can parse, validate and assert a know OpenAPI 3 specification with a
+ * Test making sure we can parse, validate and assert a know OpenAPI 3
+ * specification with a
  * predefined API response.
  *
  */
@@ -30,7 +31,7 @@ public class OpenAPI3AssertionsTest {
 
     URL specsUrl = new URL("http://abcd.abc");
     assertThrows(UnknownHostException.class, () -> {
-      ((HttpURLConnection)specsUrl.openConnection()).getResponseCode();
+      ((HttpURLConnection) specsUrl.openConnection()).getResponseCode();
     }, "Make sure specsUrl doesn't exist and is not reachable.");
 
     System.setProperty(OpenAPI3Assertions.SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY, "true");
@@ -51,8 +52,8 @@ public class OpenAPI3AssertionsTest {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     String responseJson = TestResourceHelper.readContentAsString("missingAttribute.json");
     Assertions.assertThrows(
-      AssertionFailedError.class,
-      () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson));
+        AssertionFailedError.class,
+        () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson));
   }
 
   @Test
@@ -60,8 +61,8 @@ public class OpenAPI3AssertionsTest {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     String responseJson = TestResourceHelper.readContentAsString("missingRelation.json");
     Assertions.assertThrows(
-      AssertionFailedError.class,
-      () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson));
+        AssertionFailedError.class,
+        () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson));
   }
 
   @Test
@@ -69,8 +70,8 @@ public class OpenAPI3AssertionsTest {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     String responseJson = TestResourceHelper.readContentAsString("fieldThatShouldNotExist.json");
     Assertions.assertThrows(
-      AssertionFailedError.class,
-      () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson));
+        AssertionFailedError.class,
+        () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson));
   }
 
   @Test
@@ -78,7 +79,7 @@ public class OpenAPI3AssertionsTest {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     String responseJson = TestResourceHelper.readContentAsString("fieldThatShouldNotExist.json");
     OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson,
-      ValidationRestrictionOptions.builder().allowAdditionalFields(true).build());
+        ValidationRestrictionOptions.builder().allowAdditionalFields(true).build());
   }
 
   @Test
@@ -86,17 +87,17 @@ public class OpenAPI3AssertionsTest {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     String responseJson = TestResourceHelper.readContentAsString("missingAttribute.json");
     OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson,
-      ValidationRestrictionOptions.builder()
-        .allowAdditionalFields(false)
-        .allowableMissingFields(Set.of("createdDate", "description", "acceptedValues", "customObject"))
-        .build());
+        ValidationRestrictionOptions.builder()
+            .allowAdditionalFields(false)
+            .allowableMissingFields(Set.of("createdDate", "description", "acceptedValues", "customObject", "name"))
+            .build());
 
     responseJson = TestResourceHelper.readContentAsString("missingRelation.json");
     OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson,
-      ValidationRestrictionOptions.builder()
-        .allowAdditionalFields(true)
-        .allowableMissingFields(Set.of("collectingEvent"))
-        .build());
+        ValidationRestrictionOptions.builder()
+            .allowAdditionalFields(true)
+            .allowableMissingFields(Set.of("collectingEvent"))
+            .build());
   }
 
   @Test
@@ -104,8 +105,8 @@ public class OpenAPI3AssertionsTest {
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
     String responseJson = TestResourceHelper.readContentAsString("relationShouldNotExist.json");
     Assertions.assertThrows(
-      AssertionFailedError.class,
-      () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson));
+        AssertionFailedError.class,
+        () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson));
   }
 
   @Test
@@ -113,22 +114,22 @@ public class OpenAPI3AssertionsTest {
     String responseJson = TestResourceHelper.readContentAsString("objectStoreManagedAttributeAPIResponse.json");
     OpenAPI3Assertions.assertRemoteSchema(
         new URL("https://raw.githubusercontent.com/DINA-Web/object-store-specs/master/schema/object-store-api.yml"),
-         "ManagedAttribute", responseJson);
+        "ManagedAttribute", responseJson);
   }
 
   @Test
   public void assertSchema_WhenReferencedByPath_ValidationEnabled() throws IOException {
     URL specsUrl = this.getClass().getResource("/customPath.yaml");
     Assertions.assertThrows(
-      AssertionFailedError.class,
-      () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute",
-        TestResourceHelper.readContentAsString("missingAttribute.json")));
+        AssertionFailedError.class,
+        () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute",
+            TestResourceHelper.readContentAsString("missingAttribute.json")));
     Assertions.assertThrows(
-      AssertionFailedError.class,
-      () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute",
-        TestResourceHelper.readContentAsString("missingRelation.json")));
+        AssertionFailedError.class,
+        () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute",
+            TestResourceHelper.readContentAsString("missingRelation.json")));
     OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute",
-      TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json"));
+        TestResourceHelper.readContentAsString("managedAttributeAPIResponse.json"));
   }
 
   @Test
@@ -138,15 +139,24 @@ public class OpenAPI3AssertionsTest {
   }
 
   @Test
-  public void assertSchema_WhenAdditionalFieldInNestedObject() throws IOException {
+  public void assertSchema_WhenAdditionalFieldInNestedObjectValid_successful() throws IOException {
+    // Load in a testing spec.
     URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
-    String responseJson = TestResourceHelper.readContentAsString("additionalFieldInCustomObject.json");
-    OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute",
-        responseJson);
-    // Assertions.assertThrows(
-    //   AssertionFailedError.class,
-    //   () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute",
-    //     responseJson));
+
+    // Test a valid response.
+    String validResponseJson = TestResourceHelper.readContentAsString("additionalFieldInCustomObjectValid.json");
+    Assertions.assertDoesNotThrow(
+        () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", validResponseJson));
   }
 
+  @Test
+  public void assertSchema_WhenAdditionalFieldInNestedObjectValid_validationException() throws IOException {
+    // Load in a testing spec.
+    URL specsUrl = this.getClass().getResource("/managedAttribute.yaml");
+
+    // Test an invalid response with contains an additional field in a nest object.
+    String invalidResponseJson = TestResourceHelper.readContentAsString("additionalFieldInCustomObjectInvalid.json");
+    Assertions.assertThrows(AssertionFailedError.class,
+        () -> OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", invalidResponseJson));
+  }
 }

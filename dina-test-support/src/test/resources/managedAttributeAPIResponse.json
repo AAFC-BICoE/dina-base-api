@@ -19,7 +19,9 @@
         "fr":"obj-fr"
       },
       "customObject": {
-        "name": "string",
+        "name": {
+          "firstName": "firstName"
+        },
         "id": 0
       }
     },

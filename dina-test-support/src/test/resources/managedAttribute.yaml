@@ -10,7 +10,7 @@ info:
     email: you@your-company.com
   license:
     name: Apache 2.0
-    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
 paths:
   /v1/managed-attribute:
     get:
@@ -43,35 +43,35 @@ paths:
             minimum: 0
             maximum: 50
       responses:
-        '200':
+        "200":
           description: managed attributes satifying the query restrictions
           content:
             application/json:
-            # SYED responses would be array of data items, not just data object 
+              # SYED responses would be array of data items, not just data object
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ManagedAttribute'
-        '400':
+                  $ref: "#/components/schemas/ManagedAttribute"
+        "400":
           description: bad input parameter
-        '404':
+        "404":
           description: managed attribute not found
     post:
       summary: adds a managed attribute
       operationId: addManagedAttribute
       description: Adds a managed attribute
       responses:
-        '201':
+        "201":
           description: managed attribute created
-        '400':
-          description: 'invalid input, object invalid'
-        '409':
+        "400":
+          description: "invalid input, object invalid"
+        "409":
           description: A managed attribute already exists
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ManagedAttribute'
+              $ref: "#/components/schemas/ManagedAttribute"
         description: Managed attribute to add
   /v1/managed-attribute/{Id}:
     get:
@@ -85,14 +85,14 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid            
+            format: uuid
       responses:
         "200":
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ManagedAttribute'
+                $ref: "#/components/schemas/ManagedAttribute"
         "400":
           description: Invalid ID supplied
         "404":
@@ -110,15 +110,15 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: managed attribute updated
-        '400':
-          description: 'invalid input, object invalid'
+        "400":
+          description: "invalid input, object invalid"
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ManagedAttribute'
+              $ref: "#/components/schemas/ManagedAttribute"
         description: managed attribute to add
     delete:
       summary: delete a managed attribute
@@ -131,13 +131,13 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid            
+            format: uuid
       responses:
-        '200':
+        "200":
           description: managed attribute marked as deleted
-        '400':
+        "400":
           description: invalid ID supplied
-        '404':
+        "404":
           description: managed attribute not found
 
 components:
@@ -169,40 +169,41 @@ components:
                 name:
                   type: string
                   description: name of the managed attribute
-                  example: 
-                    specimen_view
+                  example: specimen_view
                 managedAttributeType:
                   description: type of the managed attribute
-                  enum: [
-                     STRING,
-                     INTEGER]
+                  enum: [STRING, INTEGER]
                 # acceptedValues would be array of string or integer items.
                 acceptedValues:
                   type: array
-                  description: accepted values of the named attribute (if any)      
+                  description: accepted values of the named attribute (if any)
                   items:
                     oneOf:
                       # this should use value directly but we re using it from testing validation
                       # when using $ref to another schema
-                      - $ref: '#/components/schemas/AcceptedValuesStr'
-                      - $ref: '#/components/schemas/AcceptedValuesInt'
-                  example: 
+                      - $ref: "#/components/schemas/AcceptedValuesStr"
+                      - $ref: "#/components/schemas/AcceptedValuesInt"
+                  example:
                     - dorsal
-                    - 1 
+                    - 1
                 createdDate:
                   type: string
-                  description: initial date this managed attribute was created if any      
+                  description: initial date this managed attribute was created if any
                 description:
                   type: object
-                  description: A map where the language is the key and the value is the description of this managed attribute in that language                      
-                  example: {
-                     "fr":  Description en Français,
-                     "en":  English description}
+                  description: A map where the language is the key and the value is the description of this managed attribute in that language
+                  example:
+                    { "fr": Description en Français, "en": English description }
                 customObject:
                   type: object
                   properties:
                     name:
-                      type: string
+                      type: object
+                      properties:
+                        firstName:
+                          type: string
+                        lastName:
+                          type: string
                     id:
                       type: integer
             relationships:
@@ -220,7 +221,7 @@ components:
                         - id
                       properties:
                         type:
-                          enum: [ collecting-event ]
+                          enum: [collecting-event]
                         id:
                           type: string
                           format: uuid
