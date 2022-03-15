@@ -24,14 +24,6 @@
           }
         ]
       }
-    },
-    "relationships": {
-      "collectingEvent": {
-        "data": {
-          "type": "collecting-event",
-          "id": "f164098c-6c4b-44f6-8112-111a9a309aae"
-        }
-      }
     }
   },
   "meta": {

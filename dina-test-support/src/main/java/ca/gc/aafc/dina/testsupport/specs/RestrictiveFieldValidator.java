@@ -37,10 +37,10 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
   private static final ValidationResults.CrumbInfo ADDITIONAL_FIELD_CRUMB =
     new ValidationResults.CrumbInfo(ADDITIONALPROPERTIES, true);
 
-  public static final String ATTRIBUTES_SCHEMA_PATH = "/data/properties/attributes";
+  public static final String ATTRIBUTES_SCHEMA_PATH = "/data/properties/attributes/properties";
   public static final String ATTRIBUTES_VALUE_PATH = "/data/attributes";
 
-  public static final String RELATIONSHIPS_SCHEMA_PATH = "/data/properties/relationships";
+  public static final String RELATIONSHIPS_SCHEMA_PATH = "/data/properties/relationships/properties";
   public static final String RELATIONSHIPS_VALUE_PATH = "/data/relationships";
 
   private final ValidationRestrictionOptions options;
@@ -63,6 +63,33 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
     return true;
   }
 
+  /**
+   * Compares provided API response/request against schema specifications.
+   * 
+   * This method will scan one level at a time. If a nested object is found, it will run this method
+   * again with a new schemaPath and valuePath based on the new level. Any fields in the
+   * allowableMissingFields with nested objects will not be scanned any further.
+   * 
+   * This validator will consider all fields provided in the schema as "required". Even though it is
+   * possible for some of these fields to not be provided. This is by design to ensure that new
+   * fields are validated against the schema as they are added.
+   * 
+   * Couple of options can be provided to this validator (from the constructor):
+   *    setAllowableMissingFields:
+   *        List of string path names of the fields you would like to ignore from the required
+   *        field check. The path starts from the top level (/data/attributes) so for example:
+   *        "name", "id", "customObject/name/firstName".
+   *    allowAdditionalFields:
+   *        Default is false. When true, fields that are not on the schema will not cause a 
+   *        validation error.
+   * 
+   * The schemaPath will contain /properties in its path while the valuePath will not.
+   * 
+   * @param valueNode Provided JsonNode to validate against the schema.
+   * @param validationMessages Validation messages to populate if any issues occur.
+   * @param schemaPath Path used to scan the schema.
+   * @param valuePath Path used to scan the valueNode.
+   */
   private void validateFields(
     JsonNode valueNode,
     ValidationData<?> validationMessages,
@@ -70,40 +97,38 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
     String valuePath
   ) {
 
+    // The simple path just removes the /data/attributes, this will be used to display the path for
+    // allowable missing fields.
+    String simpleValuePath = valuePath.replace("/data/attributes", "").replaceAll("^/+", "");
+
     // Retrieve all possible schema fields at this path.
     Set<String> possibleFields = new HashSet<>();
-    this.getSchemaNode().at(schemaPath + "/properties").fieldNames().forEachRemaining(possibleFields::add);
+    this.getSchemaNode().at(schemaPath).fieldNames().forEachRemaining(possibleFields::add);
 
-    // Retrieve all required schema fields at this path.
-    Set<String> requiredFields = new HashSet<>();
-    JsonNode required = this.getSchemaNode().at(schemaPath + "/required");
-    if (required.isArray()) {
-      required.fieldNames().forEachRemaining(requiredFields::add);
-    }
+    // Go through all of the possible fields and ensure they are set.
+    possibleFields.forEach(schemeaFieldName -> {
+      if (valueNode.at(valuePath).isMissingNode() && setDoesNotContainIgnoreCase(options.getAllowableMissingFields(), simpleValuePath + "/" + schemeaFieldName)) {
+        validationMessages.add(CRUMB_MISSING_FIELD, MISSING_FIELD_ERROR, valuePath + "/" + schemeaFieldName);
+      }
+    });
 
     // If allow additional fields is true, then we can ignore the required and additional field checks.
     if (!options.isAllowAdditionalFields()) {
-      // Go through all of the required fields and ensure they are set.
-      requiredFields.forEach(requiredFieldName -> {
-        if (valueNode.at(valuePath).isMissingNode() && setDoesNotContainIgnoreCase(options.getAllowableMissingFields(), requiredFieldName)) {
-          validationMessages.add(CRUMB_MISSING_FIELD, MISSING_FIELD_ERROR, requiredFieldName);
-        }
-      });
-
       // Go through each of the fields provided, and compare it against the schema.
-      valueNode.at(valuePath).fieldNames().forEachRemaining(fieldName -> {
-        if (setDoesNotContainIgnoreCase(possibleFields, fieldName) && setDoesNotContainIgnoreCase(options.getAllowableMissingFields(), fieldName)) {
-          validationMessages.add(ADDITIONAL_FIELD_CRUMB, ADDITIONAL_FIELD_ERROR, fieldName);
+      valueNode.at(valuePath).fieldNames().forEachRemaining(providedFieldName -> {
+        if (setDoesNotContainIgnoreCase(possibleFields, providedFieldName)) {
+          validationMessages.add(ADDITIONAL_FIELD_CRUMB, ADDITIONAL_FIELD_ERROR, valuePath + "/" + providedFieldName);
         }
       });
     }
 
     // Check for any nested objects at this schema level.
     if (valuePath.contains("attributes")) {
-      this.getSchemaNode().at(schemaPath + "/properties").fieldNames().forEachRemaining(fieldName -> {
-        if (this.getSchemaNode().at(schemaPath + "/properties/" + fieldName).has("properties")) {
+      this.getSchemaNode().at(schemaPath).fieldNames().forEachRemaining(fieldName -> {
+        if (this.getSchemaNode().at(schemaPath + "/" + fieldName).has("properties") 
+            && setDoesNotContainIgnoreCase(options.getAllowableMissingFields(), simpleValuePath + "/" + fieldName)) {
           // If found, we can now validate this nested object for required and additional fields.
-          validateFields(valueNode, validationMessages, schemaPath + "/properties/" + fieldName, valuePath + "/" + fieldName);
+          validateFields(valueNode, validationMessages, schemaPath + "/" + fieldName + "/properties", valuePath + "/" + fieldName);
         }
       });      
     }

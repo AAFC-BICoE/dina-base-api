@@ -6,7 +6,11 @@
       "self": "/api/v1/managed-attribute/0bc8be29-172c-4813-83e7-a54ab074687a"
     },
     "attributes": {
-      "managedAttributeType": "STRING"
+      "managedAttributeType": "STRING",
+      "name": "STRING",
+      "customObject": {
+        "id": 1
+      }
     },
     "relationships": {
       "collectingEvent": {
