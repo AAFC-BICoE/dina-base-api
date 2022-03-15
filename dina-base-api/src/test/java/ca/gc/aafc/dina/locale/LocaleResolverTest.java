@@ -2,7 +2,7 @@ package ca.gc.aafc.dina.locale;
 
 import ca.gc.aafc.dina.DinaBaseApiAutoConfiguration;
 import org.junit.Before;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

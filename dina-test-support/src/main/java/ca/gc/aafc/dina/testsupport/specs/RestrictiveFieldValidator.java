@@ -1,17 +1,13 @@
 package ca.gc.aafc.dina.testsupport.specs;
 
-import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.openapi4j.core.model.v3.OAI3;
-import org.openapi4j.core.model.v3.OAI3SchemaKeywords;
 import org.openapi4j.core.validation.ValidationResult;
 import org.openapi4j.core.validation.ValidationResults;
 import org.openapi4j.schema.validator.BaseJsonValidator;
 import org.openapi4j.schema.validator.ValidationContext;
 import org.openapi4j.schema.validator.ValidationData;
 import org.openapi4j.schema.validator.v3.SchemaValidator;
-
-import lombok.extern.log4j.Log4j2;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -25,7 +21,6 @@ import static org.openapi4j.core.validation.ValidationSeverity.ERROR;
  * fields are allowed and to specify which fields may remain missing. Default validation Ensures all
  * attributes and relations are present in the response and does not allow additional fields.
  */
-@Log4j2
 class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
 
   private static final ValidationResult MISSING_FIELD_ERROR =
