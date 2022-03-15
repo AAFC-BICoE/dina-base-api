@@ -1,0 +1,24 @@
+openapi: 3.0.0
+servers:
+  - description: DINA - AAFC
+    url: https://virtserver.dina-aafc.com/AAFC/1.0.0
+info:
+  description: Object Store API Schema
+  version: "0.1.0"
+  title: Object Store API Schema - DRAFT
+  contact:
+    email: dina-aafc@canada.ca
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+   
+paths:
+  /v1/metadata:
+    $ref: 'metadata.yml#/paths/~1v1~1metadata'
+  /v1/metadata/{Id}:
+    $ref: 'metadata.yml#/paths/~1v1~1metadata~1{Id}'  
+  /v1/managed-attribute:
+    $ref: 'managed-attribute.yml#/paths/~1v1~1managed-attribute'    
+  /v1/managed-attribute/{Id}:
+    $ref: 'managed-attribute.yml#/paths/~1v1~1managed-attribute~1{Id}'
+

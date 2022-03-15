@@ -1,0 +1,396 @@
+paths:
+  /v1/metadata:
+    get:
+      tags:
+        - Metadata
+      summary: List metadatas
+      operationId: getMetadatas
+      description: By passing in query string, user can get available metadatas authorised
+      parameters:
+        - in: query
+          name: filter[rsql]
+          description: pass an optional search string for looking up the metadatas
+          schema:
+            type: string
+        - in: query
+          name: sort
+          description: optional sort string, can have sort order such as descending denoted by "-"
+          schema:
+            type: string
+        - in: query
+          name: page[offset]
+          description: number of records to skip when paging
+          schema:
+            type: integer
+            format: int32
+        - in: query
+          name: page[limit]
+          description: maximum number of records to return when paging
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 50
+        - in: query
+          name: fields
+          description: names of sparse fields that should be in query results
+          schema:
+            type: string
+        - in: query
+          name: include
+          description: names of related entities that should be in query results
+          schema:
+            type: string
+      responses:
+        "200":
+          description: metadatas satifying the query restrictions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Metadata"
+        "400":
+          description: bad input parameter
+        "404":
+          description: metadata not found
+    post:
+      tags:
+        - Metadata
+      summary: Add a metadata
+      operationId: addMetadata
+      description: Add a metadata
+      responses:
+        "201":
+          description: metadata created
+        "400":
+          description: invalid input, object invalid
+        "409":
+          description: A metadata already exists
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewMetadata"
+        description: Metadata to add
+  /v1/metadata/{Id}:
+    get:
+      tags:
+        - Metadata
+      summary: Get a metadata
+      description: Return a single metadata
+      operationId: getMetadataById
+      parameters:
+        - name: Id
+          in: path
+          description: ID of metadata to return
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Metadata"
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Metadata not found
+    patch:
+      tags:
+        - Metadata
+      summary: Update a metadata
+      operationId: updateMetadata
+      description: Update a metadata
+      parameters:
+        - name: Id
+          in: path
+          description: metadata id to patch
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: metadata updated
+        "400":
+          description: invalid input, object invalid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Metadata"
+        description: metadata to add
+    delete:
+      tags:
+        - Metadata
+      summary: Delete a metadata
+      operationId: deleteMetadata
+      description: Delete a metadata
+      parameters:
+        - name: Id
+          in: path
+          description: metadata id to delete
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: metadata marked as deleted
+        "400":
+          description: invalid ID supplied
+        "404":
+          description: metadata not found
+
+components:
+  schemas:
+    Metadata:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Identifier of the object as UUID
+          allOf:
+            - $ref: "#/components/schemas/CommonMetadata"
+        meta:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/CommonMeta"
+
+    NewMetadata:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/CommonMetadata"
+        meta:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/CommonMeta"
+
+    CommonMeta:
+      type: object
+      required:
+        - external
+      properties:
+        external:
+          type: array
+          items:
+            type: object
+            required:
+              - href
+              - type
+            properties:
+              type:
+                type: string
+                example: person
+              href:
+                type: string
+                example: dinaapi.org/agent/person
+
+    CommonMetadata:
+      type: object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          enum: [metadata]      
+          description: The type of the object of the data being returned.
+        attributes:
+          description: Schema representing the metadata associated with objects
+          type: object
+          required:
+            - bucket
+            - dcFormat
+            - dcType
+            - acDigitizationDate
+            - xmpRightsUsageTerms
+            - xmpRightsWebStatement
+            - dcRights
+          properties:
+            createdBy:
+              type: string      
+              readOnly: true
+              description: authenticated user who create the metadata
+            createdOn:              
+              type: string
+              format: date-time                            
+              readOnly: true
+              description: date and time when the metadata was created in ISO format
+              example: 1985-04-12T23:20:50.52Z
+            group:
+              type: string
+              description: The group in which the metadata belongs to
+            dcFormat:
+              type: string
+              description:
+                A string describing the technical format of the resource.
+                IANA media type. https://tdwg.github.io/ac/termlist/#dc_format
+            dcType:
+              enum:
+                - IMAGE
+                - MOVING_IMAGE
+                - SOUND
+                - TEXT
+                - DATASET
+                - UNDETERMINED
+              description: Type of object stored. Higher level than mediaType. https://tdwg.github.io/ac/termlist/#dc_type
+            acSubtype:
+              type: string
+              description: Subtype of object stored. Specialization of dcType. https://terms.tdwg.org/wiki/Audubon_Core_Term_List#ac:subtype
+            fileIdentifier:
+              type: string
+              description: Internal identifier (as UUID) of the file described by the metadata. If a file identifier is provided, a resourceExternalURL cannot be set.
+            bucket:
+              type: string
+              description: Namespace of the file described by the metadata
+            acCaption:
+              type: string
+              description:
+                Text to be displayed together with (rather than instead of)
+                a resource that is suitable for captions. https://terms.tdwg.org/wiki/Audubon_Core_Term_List#ac:caption
+            acDigitizationDate:
+              type: string
+              description:
+                Date (ISO 8601 Date/Time) the first digital version was created.
+                https://tdwg.github.io/ac/termlist/#ac_digitizationDate
+            xmpMetadataDate:
+              type: string
+              description:
+                Point in time (ISO 8601 Date/Time) recording when the last
+                modification to metadata (not necessarily the media object itself) occurred.
+                Automatically set. https://tdwg.github.io/ac/termlist/#xmp_MetadataDate
+            originalFilename:
+              type: string
+              description: Name of the file at the source without the folder structure
+            fileExtension:
+              type: string
+              description: Extension of the file including the dot (e.g. '.png')
+            acHashFunction:
+              type: string
+              description:
+                The cryptographic hash function used to compute the value
+                given in acHashValue. https://tdwg.github.io/ac/termlist/#ac_hashFunction
+            acHashValue:
+              type: string
+              description:
+                Hash of the uploaded object. Automaticaly generated on successful
+                file upload. https://tdwg.github.io/ac/termlist/#ac_hashValue
+            xmpRightsUsageTerms:
+              type: string
+              description:
+                Text instructions on how a resource can be legally used.
+                https://tdwg.github.io/ac/termlist/#xmpRights_UsageTerms
+            xmpRightsWebStatement:
+              type: string
+              description:
+                A URL defining or further elaborating on the license statement.
+                https://tdwg.github.io/ac/termlist/#xmpRights_WebStatement
+            dcRights:
+              type: string
+              description: Information about rights held in and over the resource. https://tdwg.github.io/ac/termlist/#dc_rights
+            xmpRightsOwner:
+              type: string
+              description: Owner(s) of the copyright. https://terms.tdwg.org/wiki/Audubon_Core_Term_List#xmpRights:Owner
+            publiclyReleasable:
+              type: boolean
+              description:
+                Can the object representented by the metadata be released
+                publicly? An object that is released publicly retains its license and
+                copyright
+            notPubliclyReleasableReason:
+              type: string
+              description: Text explaining why an object cannot be released publicly
+            managedAttributeValues:
+              type: object
+              description: The manage attribute, with key and value pair. A managedAttributeValues' entry key is expected to be set as a managed attribute's key.
+              additionalProperties:
+                type: string
+            acTags:
+              type: array
+              nullable: true
+              items:
+                type: string
+                description: List of key(tag). Similar to https://tdwg.github.io/ac/termlist/#ac_tag
+            orientation:
+              type: integer
+              nullable: true
+              description: EXIF Orientation value https://www.impulseadventure.com/photo/exif-orientation.html
+            resourceExternalURL:
+              type: string
+              description: Metadata can also reference a external resource instead of a internal file identifier. If this is provided, a file identifier cannot be set.
+              format: uri
+              nullable: true
+        relationships:
+          nullable: true
+          properties:
+            derivatives:
+              type: object
+              nullable: true
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        required:
+                          - type
+                          - id
+                        properties:
+                          type: 
+                            enum: [derivative]
+                          id:
+                            type: string
+                            format: uuid
+                            description: metadata's derivatives id
+                            example: 1096500a-25dc-4a63-ba14-ea6ee5057fb3
+            dcCreator:
+              type: object
+              properties:
+                data:
+                  required:
+                    - type
+                    - id
+                  properties:
+                    type: 
+                      enum: [person]
+                    id:
+                      type: string
+                      format: uuid
+                      description: dcCreator's id
+                      example: 8f68a05f-937d-4d40-88b4-ed92720d9c3f
+            acMetadataCreator:
+              type: object
+              properties:
+                data:
+                  type: object
+                  required:
+                    - type
+                    - id
+                  properties:
+                    type: 
+                      enum: [person]
+                    id:
+                      type: string
+                      format: uuid
+                      description: acMetadataCreator's id
+                      example: 1096500a-25dc-4a63-ba14-ea6ee5057fb3
+
