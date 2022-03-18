@@ -26,15 +26,11 @@ public class MultilingualDescriptionValidatorTest {
 
   @Test
   void  validate_WhenValidMultilingualDescription_NoExceptionThrown() {
-    MultilingualPair multilingualPair_fr = MultilingualPair.builder()
-      .desc("description en français")
-      .lang("fr")
-      .build();
+    MultilingualPair multilingualPair_fr =
+        MultilingualPair.of("fr", "description en français");
 
-    MultilingualPair multilingualPair_en = MultilingualPair.builder()
-      .desc("description in English")
-      .lang("en")
-      .build();;
+    MultilingualPair multilingualPair_en =
+        MultilingualPair.of("en", "description in English");
 
     MultilingualDescription multilingualDescription = MultilingualDescription.builder()
       .descriptions(List.of(multilingualPair_fr, multilingualPair_en))
@@ -50,10 +46,8 @@ public class MultilingualDescriptionValidatorTest {
 
   @Test
   void  validate_WhenInvalidValidMultilingualDescription_ExceptionThrown() {
-    MultilingualPair multilingualPair_es = MultilingualPair.builder()
-      .desc("description en español")
-      .lang("es")
-      .build();
+    MultilingualPair multilingualPair_es =
+        MultilingualPair.of("es", "escription en español");
 
     MultilingualDescription multilingualDescription = MultilingualDescription.builder()
       .descriptions(List.of(multilingualPair_es))
@@ -64,6 +58,5 @@ public class MultilingualDescriptionValidatorTest {
     assertThrows(ValidationException.class, () ->
       ValidationErrorsHelper.errorsToValidationException(errors));
   }
-  
   
 }

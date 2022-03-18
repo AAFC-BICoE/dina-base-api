@@ -240,10 +240,7 @@ public class ManagedAttributeValueValidatorTest {
         .managedAttributeType(type)
         .multilingualDescription(MultilingualDescription.builder()
             .descriptions(ImmutableList.of(
-                MultilingualDescription.MultilingualPair.builder()
-                    .desc("test")
-                    .lang("en")
-                    .build())
+                MultilingualDescription.MultilingualPair.of("en", "test"))
             )
             .build())
         .build();
