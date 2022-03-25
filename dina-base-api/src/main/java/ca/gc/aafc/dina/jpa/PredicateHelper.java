@@ -12,7 +12,8 @@ import java.util.List;
  */
 public final class PredicateHelper {
 
-  private PredicateHelper(){}
+  private PredicateHelper() {
+  }
 
   /**
    * Add to the provided Predicate (if provided otherwise a new one will be created) clauses for each pair provided (AND separated).
