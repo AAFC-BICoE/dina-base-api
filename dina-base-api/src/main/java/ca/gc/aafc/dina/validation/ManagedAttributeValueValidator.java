@@ -124,13 +124,13 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
     Collection<?> difference = CollectionUtils.disjunction(attributesAndValues.keySet(), attributesPerKey.keySet());
     if (!difference.isEmpty()) {
-      if( validationContext == null) {
+      if (validationContext == null) {
         errors.reject(MANAGED_ATTRIBUTE_INVALID_KEY,
             getMessageForKey(MANAGED_ATTRIBUTE_INVALID_KEY, difference.stream().findFirst().get()));
-      }
-      else {
+      } else {
         errors.reject(MANAGED_ATTRIBUTE_INVALID_KEY_CONTEXT,
-            getMessageForKey(MANAGED_ATTRIBUTE_INVALID_KEY_CONTEXT, difference.stream().findFirst().get(), validationContext.toString()));
+            getMessageForKey(MANAGED_ATTRIBUTE_INVALID_KEY_CONTEXT,
+                difference.stream().findFirst().get(), validationContext.toString()));
       }
     }
 
