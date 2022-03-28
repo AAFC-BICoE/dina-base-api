@@ -53,6 +53,12 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     validateElements((Map<String, String>) target, errors, null);
   }
 
+  @SuppressWarnings("unchecked") // We check with checkIncomingParameter()
+  public void validate(@NonNull Object target, @NonNull Errors errors, ValidationContext context) {
+    checkIncomingParameter(target);
+    validateElements((Map<String, String>) target, errors, context);
+  }
+
   /**
    * Same as {@link #validate(DinaEntity, Map, ValidationContext)} but without a {@link ValidationContext}.
    * @param entity
