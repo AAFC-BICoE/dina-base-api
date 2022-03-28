@@ -1,10 +1,13 @@
 package ca.gc.aafc.dina.security;
 
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.keycloak.representations.AccessToken;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +34,9 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
   private static final String AGENT_IDENTIFIER_CLAIM_KEY = "agent-identifier";
   private static final String GROUPS_CLAIM_KEY = "groups";
 
+  @Value("${actuator.allowedIp:}")
+  private String actuatorAllowedIp;
+
   public KeycloakAuthConfig() {
     super();
     log.info("KeycloakAuthConfig created");
@@ -56,6 +62,13 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
 
     // Need to disable CSRF for Postman and testing
     http.csrf().disable();
+
+    // For actuator endpoints
+    if(StringUtils.isNotBlank(actuatorAllowedIp)) {
+      http.requestMatcher(EndpointRequest.toAnyEndpoint())
+          .authorizeRequests((requests) -> requests.anyRequest().hasIpAddress(actuatorAllowedIp));
+      log.debug("Actuator endpoints available for {}", actuatorAllowedIp);
+    }
 
     http.authorizeRequests().anyRequest().authenticated();
     log.debug("Configured HttpSecurity");
