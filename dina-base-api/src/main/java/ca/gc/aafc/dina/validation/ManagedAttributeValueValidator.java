@@ -27,6 +27,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
   private static final String MANAGED_ATTRIBUTE_INVALID_VALUE = "managedAttribute.value.invalid";
   private static final String MANAGED_ATTRIBUTE_INVALID_KEY = "managedAttribute.key.invalid";
+  private static final String MANAGED_ATTRIBUTE_INVALID_KEY_CONTEXT = "managedAttribute.keyContext.invalid";
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
   private final ManagedAttributeService<E> dinaService;
@@ -117,7 +118,14 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
     Collection<?> difference = CollectionUtils.disjunction(attributesAndValues.keySet(), attributesPerKey.keySet());
     if (!difference.isEmpty()) {
-      errors.reject(MANAGED_ATTRIBUTE_INVALID_KEY, getMessageForKey(MANAGED_ATTRIBUTE_INVALID_KEY, difference.stream().findFirst().get()));
+      if( validationContext == null) {
+        errors.reject(MANAGED_ATTRIBUTE_INVALID_KEY,
+            getMessageForKey(MANAGED_ATTRIBUTE_INVALID_KEY, difference.stream().findFirst().get()));
+      }
+      else {
+        errors.reject(MANAGED_ATTRIBUTE_INVALID_KEY_CONTEXT,
+            getMessageForKey(MANAGED_ATTRIBUTE_INVALID_KEY_CONTEXT, difference.stream().findFirst().get(), validationContext.toString()));
+      }
     }
 
     attributesPerKey.forEach((key, ma) -> {

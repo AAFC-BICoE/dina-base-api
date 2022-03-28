@@ -234,6 +234,23 @@ public class ManagedAttributeValueValidatorTest {
     validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X);
   }
 
+  @Test
+  void validate_duplicatedKeysDifferentContext_ValidationWorks() {
+    TestManagedAttribute testManagedAttribute1 = newTestManagedAttribute(ManagedAttribute.ManagedAttributeType.BOOL);
+    testManagedAttribute1.setName("name1");
+    testManagedAttribute1.setComponent(ManagedAttributeServiceIT.XYZValidationContext.X.toString());
+    testManagedAttribute1 = testManagedAttributeService.createAndFlush(testManagedAttribute1);
+
+    // same name but on a different component
+    TestManagedAttribute testManagedAttribute2 = newTestManagedAttribute(ManagedAttribute.ManagedAttributeType.BOOL);
+    testManagedAttribute2.setName("name1");
+    testManagedAttribute2.setComponent(ManagedAttributeServiceIT.XYZValidationContext.Y.toString());
+    testManagedAttributeService.createAndFlush(testManagedAttribute2);
+
+    Map<String, String> mav = Map.of(testManagedAttribute1.getKey(), "true");
+    validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X);
+  }
+
   private TestManagedAttribute newTestManagedAttribute(ManagedAttribute.ManagedAttributeType type) {
     return ManagedAttributeServiceIT.TestManagedAttribute.builder().
         name(RandomStringUtils.randomAlphabetic(6))
