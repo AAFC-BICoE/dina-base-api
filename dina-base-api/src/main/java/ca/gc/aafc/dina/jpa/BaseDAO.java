@@ -142,15 +142,11 @@ public class BaseDAO {
     CriteriaQuery<T> criteria = criteriaBuilder.createQuery(clazz);
     Root<T> root = criteria.from(clazz);
 
-    Predicate whereClause = null;
-    for(Pair<String, Object> propVal : propertiesAndValue) {
-      Predicate clause = criteriaBuilder.equal(root.get(propVal.getKey()), propVal.getValue());
-      whereClause = whereClause == null ? clause : criteriaBuilder.and(whereClause, clause);
-    }
+    Predicate whereClause =
+        PredicateHelper.appendPropertiesEqual(null, criteriaBuilder, root, propertiesAndValue);
 
     criteria.where(whereClause);
     criteria.select(root);
-
     TypedQuery<T> query = entityManager.createQuery(criteria);
     try {
       return query.getSingleResult();
