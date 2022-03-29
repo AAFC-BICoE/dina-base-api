@@ -2,6 +2,8 @@ package ca.gc.aafc.dina.i18n;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.javers.core.metamodel.annotation.Value;
 
 import lombok.AllArgsConstructor;
@@ -23,15 +25,29 @@ public class MultilingualDescription {
   private List<MultilingualPair> descriptions;
 
   @Data
-  @Builder
   @NoArgsConstructor
   @AllArgsConstructor
   @Value
   public static class MultilingualPair {
     private String lang;
-
     private String desc;
+
+    public static MultilingualPair of(String lang, String desc) {
+      return new MultilingualPair(lang, desc);
+    }
   }
 
-  
+  /**
+   * Checks if descriptions contains any entry with a blank description.
+   * @return true if at least 1 element contains a blank description. false otherwise or if
+   * descriptions is empty.
+   */
+  public boolean hasBlankDescription() {
+    if (CollectionUtils.isNotEmpty(descriptions)) {
+      return descriptions.stream().map(MultilingualPair::getDesc).anyMatch(StringUtils::isBlank);
+    }
+    return false;
+  }
+
+
 }
