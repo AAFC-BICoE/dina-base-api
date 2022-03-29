@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistryImpl;
@@ -60,24 +61,24 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     super.configure(http);
 
-    // Need to disable CSRF for Postman and testing
-    http.csrf().disable();
+    log.info("Configuring HttpSecurity");
 
-    // For actuator endpoints
+    // Need to disable CSRF for Postman and testing
+    ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry configurer =
+        http.csrf().disable().authorizeRequests();
+
+    // For Actuators endpoints
     if(StringUtils.isNotBlank(actuatorAllowedIp)) {
-      http.requestMatcher(EndpointRequest.toAnyEndpoint())
-          .authorizeRequests((requests) -> requests.anyRequest().hasIpAddress(actuatorAllowedIp));
-      log.debug("Actuator endpoints available for {}", actuatorAllowedIp);
+      configurer = configurer.requestMatchers(EndpointRequest.toAnyEndpoint()).hasIpAddress(actuatorAllowedIp);
+      log.info("Actuator endpoints available for {}", actuatorAllowedIp);
     }
 
-    http.authorizeRequests().anyRequest().authenticated();
-    log.debug("Configured HttpSecurity");
+    configurer.anyRequest().authenticated();
   }
 
   @Override
   public void configure(WebSecurity web) throws Exception {
     // should be configurable
-    // web.ignoring().antMatchers("/json-schema/**");
     log.debug("Configured WebSecurity");
   }
 
