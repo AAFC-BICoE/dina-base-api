@@ -20,9 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 public class OpenAPI3AssertionsTest {
 
+  private static final String REMOTE_SPECS = "https://raw.githubusercontent.com/DINA-Web/object-store-specs/master/schema/object-store-api.yml";
+
   /**
    * Test making sure we can skip a schema validation by a system property.
-   * To simulate an ureachable URL we are simply using a non-existing url.
+   * To simulate an unreachable URL we are simply using a non-existing url.
    */
   @Test
   public void assertRemoteSchema_InvalidURLWithSkipRemoteValidation_NoValidationIssues() throws IOException {
@@ -46,7 +48,7 @@ public class OpenAPI3AssertionsTest {
   public void assertRemoteSchema_ValidURLProvided_NoValidationIssues() throws IOException {
     String responseJson = TestResourceHelper.readContentAsString("objectStoreManagedAttributeAPIResponse.json");
     OpenAPI3Assertions.assertRemoteSchema(
-        new URL("https://raw.githubusercontent.com/DINA-Web/object-store-specs/master/schema/object-store-api.yml"),
+        new URL(REMOTE_SPECS),
         "ManagedAttribute", responseJson);
   }
 
