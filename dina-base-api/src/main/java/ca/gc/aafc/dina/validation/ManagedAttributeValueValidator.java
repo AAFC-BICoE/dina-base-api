@@ -20,12 +20,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
 
   private static final String MANAGED_ATTRIBUTE_INVALID_VALUE = "managedAttribute.value.invalid";
   private static final String MANAGED_ATTRIBUTE_INVALID_KEY = "managedAttribute.key.invalid";
+  private static final String MANAGED_ATTRIBUTE_INVALID_KEY_CONTEXT = "managedAttribute.keyContext.invalid";
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
   private final ManagedAttributeService<E> dinaService;
@@ -49,6 +51,12 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   public void validate(@NonNull Object target, @NonNull Errors errors) {
     checkIncomingParameter(target);
     validateElements((Map<String, String>) target, errors, null);
+  }
+
+  @SuppressWarnings("unchecked") // We check with checkIncomingParameter()
+  public void validate(@NonNull Object target, @NonNull Errors errors, ValidationContext context) {
+    checkIncomingParameter(target);
+    validateElements((Map<String, String>) target, errors, context);
   }
 
   /**
@@ -98,13 +106,32 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     ValidationErrorsHelper.errorsToValidationException(errors);
   }
 
+  /**
+   * Find the concrete {@link ManagedAttribute} mapping based on a set of keys.
+   * By default {@link ValidationContext} is ignored but a subclass can override this function
+   * to make use of it if the uniqueness of the managed attribute uses more columns than the key.
+   *
+   * @param keys
+   * @param validationContext
+   * @return
+   */
+  protected Map<String, E> findAttributesForValidation(Set<String> keys, ValidationContext validationContext) {
+    return dinaService.findAttributesForKeys(keys);
+  }
 
   private void validateElements(Map<String, String> attributesAndValues, Errors errors, ValidationContext validationContext) {
-    Map<String, E> attributesPerKey = dinaService.findAttributesForKeys(attributesAndValues.keySet());
+    Map<String, E> attributesPerKey = findAttributesForValidation(attributesAndValues.keySet(), validationContext);
 
     Collection<?> difference = CollectionUtils.disjunction(attributesAndValues.keySet(), attributesPerKey.keySet());
     if (!difference.isEmpty()) {
-      errors.reject(MANAGED_ATTRIBUTE_INVALID_KEY, getMessageForKey(MANAGED_ATTRIBUTE_INVALID_KEY, difference.stream().findFirst().get()));
+      if (validationContext == null) {
+        errors.reject(MANAGED_ATTRIBUTE_INVALID_KEY,
+            getMessageForKey(MANAGED_ATTRIBUTE_INVALID_KEY, difference.stream().findFirst().get()));
+      } else {
+        errors.reject(MANAGED_ATTRIBUTE_INVALID_KEY_CONTEXT,
+            getMessageForKey(MANAGED_ATTRIBUTE_INVALID_KEY_CONTEXT,
+                difference.stream().findFirst().get(), validationContext.toString()));
+      }
     }
 
     attributesPerKey.forEach((key, ma) -> {

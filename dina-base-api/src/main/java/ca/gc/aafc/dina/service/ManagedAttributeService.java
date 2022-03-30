@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.jpa.PredicateHelper;
 import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RegExUtils;
@@ -49,16 +50,25 @@ public abstract class ManagedAttributeService<T extends ManagedAttribute>
   }
 
   public Map<String, T> findAttributesForKeys(Set<String> keySet) {
+    return findAttributesForKeys(keySet, null);
+  }
+
+  public Map<String, T> findAttributesForKeys(Set<String> keySet, Pair<String, Object> andClause) {
     if (CollectionUtils.isEmpty(keySet)) {
       return Map.of();
     }
     return this.findAll(
-      maClass, (criteriaBuilder, eRoot) -> {
-        CriteriaBuilder.In<String> in = criteriaBuilder.in(eRoot.get(KEY));
-        keySet.forEach(in::value);
-        return new Predicate[]{in};
-      },
-      null, 0, Integer.MAX_VALUE
+        maClass, (criteriaBuilder, eRoot) -> {
+          CriteriaBuilder.In<String> in = criteriaBuilder.in(eRoot.get(KEY));
+          keySet.forEach(in::value);
+
+          if(andClause == null) {
+            return new Predicate[]{in};
+          }
+
+          return new Predicate[]{PredicateHelper.appendPropertiesEqual(in, criteriaBuilder, eRoot, List.of(andClause))};
+        },
+        null, 0, Integer.MAX_VALUE
     ).stream().collect(Collectors.toMap(ManagedAttribute::getKey, Function.identity()));
   }
 
