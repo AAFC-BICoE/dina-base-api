@@ -65,13 +65,22 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
    *    allowAdditionalFields:
    *        Default is false. When true, fields that are not on the schema will not cause a 
    *        validation error.
-   * 
-   * The schemaPath will contain /properties in its path while the valuePath will not.
    */
   @Override
   public boolean validate(JsonNode valueNode, ValidationData<?> validation) {
     // If we are at a level that contains attributes or data nodes then we can skip it.
     if (valueNode.has("attributes") || valueNode.has("data")) {
+      return true;
+    }
+
+    // If the result crumbs contains a allowable missing field, then skip checking anything.
+    boolean pathContainsAllowableMissingField = validation
+      .results()
+      .crumbs()
+      .stream()
+      .map(crumb -> crumb.crumb())
+      .anyMatch(crumbName -> options.getAllowableMissingFields().contains(crumbName));
+    if (pathContainsAllowableMissingField) {
       return true;
     }
 
