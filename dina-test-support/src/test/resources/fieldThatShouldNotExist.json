@@ -18,6 +18,13 @@
       "description":{
         "en":"obj",
         "fr":"obj-fr"
+      }, 
+      "customObject": {
+        "name": {
+          "firstName": "firstName",
+          "lastName": "lastName"
+        },
+        "id": 0
       }
     },
     "relationships": {

@@ -1,20 +1,9 @@
-openapi: 3.0.0
-servers:
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/AAFC/test/1.0.0
-info:
-  description: Managed attributes schema
-  version: "1.0.0"
-  title: Managed attributes schema
-  contact:
-    email: you@your-company.com
-  license:
-    name: Apache 2.0
-    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
 paths:
   /v1/managed-attribute:
     get:
-      summary: get managed attributes
+      tags:
+        - Managed Attribute
+      summary: List managed attributes
       operationId: getManagedAttributes
       description: By passing in query string, user can get available managed attributes authorised
       parameters:
@@ -43,40 +32,43 @@ paths:
             minimum: 0
             maximum: 50
       responses:
-        "200":
+        '200':
           description: managed attributes satifying the query restrictions
           content:
             application/json:
-              # SYED responses would be array of data items, not just data object
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/ManagedAttribute"
-        "400":
+                  $ref: '#/components/schemas/ManagedAttribute'
+        '400':
           description: bad input parameter
-        "404":
+        '404':
           description: managed attribute not found
     post:
-      summary: adds a managed attribute
+      tags:
+        - Managed Attribute
+      summary: Add a managed attribute
       operationId: addManagedAttribute
-      description: Adds a managed attribute
+      description: Add a managed attribute
       responses:
-        "201":
+        '201':
           description: managed attribute created
-        "400":
-          description: "invalid input, object invalid"
-        "409":
+        '400':
+          description: 'invalid input, object invalid'
+        '409':
           description: A managed attribute already exists
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ManagedAttribute"
+              $ref: '#/components/schemas/ManagedAttribute'
         description: Managed attribute to add
   /v1/managed-attribute/{Id}:
     get:
-      summary: Find managed attribute by ID
-      description: Returns a single managed attribute
+      tags:
+        - Managed Attribute
+      summary: Get a managed attribute 
+      description: Return a single managed attribute
       operationId: getManagedAttributeById
       parameters:
         - name: Id
@@ -85,22 +77,24 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
+            format: uuid            
       responses:
         "200":
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ManagedAttribute"
+                $ref: '#/components/schemas/ManagedAttribute'
         "400":
           description: Invalid ID supplied
         "404":
           description: Managed attribute not found
     patch:
-      summary: update a managed attribute
+      tags:
+        - Managed Attribute
+      summary: Update a managed attribute
       operationId: updateManagedAttribute
-      description: update a managed attribute
+      description: Update a managed attribute
       parameters:
         - name: Id
           in: path
@@ -110,20 +104,22 @@ paths:
             type: string
             format: uuid
       responses:
-        "200":
+        '200':
           description: managed attribute updated
-        "400":
-          description: "invalid input, object invalid"
+        '400':
+          description: 'invalid input, object invalid'
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ManagedAttribute"
+              $ref: '#/components/schemas/ManagedAttribute'
         description: managed attribute to add
     delete:
-      summary: delete a managed attribute
+      tags:
+        - Managed Attribute
+      summary: Delete a managed attribute
       operationId: deleteManagedAttribute
-      description: delete a managed attribute
+      description: Delete a managed attribute
       parameters:
         - name: Id
           in: path
@@ -131,13 +127,13 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
+            format: uuid            
       responses:
-        "200":
+        '200':
           description: managed attribute marked as deleted
-        "400":
+        '400':
           description: invalid ID supplied
-        "404":
+        '404':
           description: managed attribute not found
 
 components:
@@ -159,75 +155,62 @@ components:
               format: uuid
               example: d290f1ee-6c54-4b01-90e6-d701748f0851
             type:
-              type: string
+              enum: [managed-attribute]      
             attributes:
               type: object
               required:
                 - name
                 - managedAttributeType
               properties:
+                createdBy:
+                  type: string      
+                  readOnly: true
+                  description: authenticated user who create the metadata
+                createdOn:              
+                  type: string
+                  format: date-time                            
+                  readOnly: true
+                  description: date and time when the metadata was created in ISO format
+                  example: 1985-04-12T23:20:50.52Z
                 name:
                   type: string
                   description: name of the managed attribute
-                  example: specimen_view
+                  example: 
+                    specimenView
+                key:
+                  type: string
+                  description: key of the managed attribute
+                  example: 
+                    specimen_view
                 managedAttributeType:
-                  description: type of the managed attribute
-                  enum: [STRING, INTEGER]
-                # acceptedValues would be array of string or integer items.
+                  description: type of the managed attribute          
+                  enum: [
+                     STRING,
+                     INTEGER]
                 acceptedValues:
                   type: array
-                  description: accepted values of the named attribute (if any)
-                  items:
+                  description: accepted values of the named attribute (if any)      
+                  items: 
                     oneOf:
-                      # this should use value directly but we re using it from testing validation
-                      # when using $ref to another schema
-                      - $ref: "#/components/schemas/AcceptedValuesStr"
-                      - $ref: "#/components/schemas/AcceptedValuesInt"
-                  example:
+                      - type: string
+                      - type: integer
+                  example: 
                     - dorsal
-                    - 1
-                createdDate:
-                  type: string
-                  description: initial date this managed attribute was created if any
-                description:
+                    - 1   
+                multilingualDescription:
                   type: object
-                  description: A map where the language is the key and the value is the description of this managed attribute in that language
-                  example:
-                    { "fr": Description en Français, "en": English description }
-                customObject:
-                  type: object
+                  nullable: true
                   properties:
-                    name:
-                      type: object
-                      properties:
-                        firstName:
-                          type: string
-                        lastName:
-                          type: string
-                    id:
-                      type: integer
-            relationships:
-              type: object
-              properties:
-                collectingEvent:
-                  type: object
-                  required:
-                    - data
-                  properties:
-                    data:
-                      type: object
-                      required:
-                        - type
-                        - id
-                      properties:
-                        type:
-                          enum: [collecting-event]
-                        id:
-                          type: string
-                          format: uuid
-                          description: materialSample's collectingEvent id
-                          example: a600f9da-fcbe-4fef-9ae3-0f131ca05e0c
-    AcceptedValuesStr:
-      type: string
-    AcceptedValuesInt:
-      type: integer
+                    descriptions:
+                      type: array
+                      nullable: true
+                      items:
+                        type: object
+                        properties:
+                          lang:
+                            type: string
+                            description: language of the description
+                          desc:
+                            type: string
+                            description: the description
+
