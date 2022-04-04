@@ -74,13 +74,11 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
     }
 
     // If the result crumbs contains a allowable missing field, then skip checking anything.
-    if (options != null && options.getAllowableMissingFields() != null) {
-      boolean pathContainsAllowableMissingField = validation.results().crumbs().stream()
-        .map(crumb -> crumb.crumb())
-        .anyMatch(this::containsAllowableMissingField);
-      if (pathContainsAllowableMissingField) {
-        return true;
-      }
+    boolean pathContainsAllowableMissingField = validation.results().crumbs().stream()
+      .map(crumb -> crumb.crumb())
+      .anyMatch(this::containsAllowableMissingField);
+    if (pathContainsAllowableMissingField) {
+      return true;
     }
 
     // Retrieved all fields at this level in the valueNode.
