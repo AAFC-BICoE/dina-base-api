@@ -21,7 +21,8 @@
       }, 
       "customObject": {
         "name": {
-          "firstName": "firstName"
+          "firstName": "firstName",
+          "lastName": "lastName"
         },
         "id": 0
       }

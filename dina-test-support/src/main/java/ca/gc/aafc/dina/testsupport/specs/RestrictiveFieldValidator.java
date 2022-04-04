@@ -74,20 +74,19 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
     }
 
     // If the result crumbs contains a allowable missing field, then skip checking anything.
-    boolean pathContainsAllowableMissingField = validation
-      .results()
-      .crumbs()
-      .stream()
-      .map(crumb -> crumb.crumb())
-      .anyMatch(crumbName -> options.getAllowableMissingFields().contains(crumbName));
-    if (pathContainsAllowableMissingField) {
-      return true;
+    if (options != null && options.getAllowableMissingFields() != null) {
+      boolean pathContainsAllowableMissingField = validation.results().crumbs().stream()
+        .map(crumb -> crumb.crumb())
+        .anyMatch(this::containsAllowableMissingField);
+      if (pathContainsAllowableMissingField) {
+        return true;
+      }
     }
 
     // Retrieved all fields at this level in the valueNode.
     getSchemaNode().fieldNames().forEachRemaining(fieldName -> {
       // Does the value node provided contain this field name?
-      if (!valueNode.has(fieldName) && !options.getAllowableMissingFields().contains(fieldName)) {
+      if (!valueNode.has(fieldName) && !containsAllowableMissingField(fieldName)) {
         // Report a missing schema value.
         validation.add(CRUMB_MISSING_FIELD, MISSING_FIELD_ERROR, fieldName);
       }
@@ -97,7 +96,7 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
     if (!options.isAllowAdditionalFields()) {
       valueNode.fieldNames().forEachRemaining(fieldName -> {
         // Does the schema contain this field, or is it an additional field.
-        if (!getSchemaNode().has(fieldName) && !options.getAllowableMissingFields().contains(fieldName)) {
+        if (!getSchemaNode().has(fieldName) && !containsAllowableMissingField(fieldName)) {
           // Report an additional schema value.
           validation.add(ADDITIONAL_FIELD_CRUMB, ADDITIONAL_FIELD_ERROR, fieldName);
         }
@@ -105,5 +104,13 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
     }
 
     return true;
+  }
+
+  private boolean containsAllowableMissingField(String fieldName) {
+    if (fieldName == null || options == null || options.getAllowableMissingFields() == null) {
+      return false;
+    }
+
+    return options.getAllowableMissingFields().contains(fieldName);
   }
 }

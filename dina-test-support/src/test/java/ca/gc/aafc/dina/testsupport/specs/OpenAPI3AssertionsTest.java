@@ -125,8 +125,6 @@ public class OpenAPI3AssertionsTest {
   /**
    * All fields in a schema are expected in the response by design. However, using the
    * allowableMissingFields you can specify a path to a field that can be missing.
-   * 
-   * This also works for nested objects if you provide the path.
    */
   @Test
   public void assertSchema_AllowMissingFields_NoValidationIssues() throws IOException {
@@ -135,7 +133,7 @@ public class OpenAPI3AssertionsTest {
     OpenAPI3Assertions.assertSchema(specsUrl, "ManagedAttribute", responseJson,
         ValidationRestrictionOptions.builder()
             .allowAdditionalFields(false)
-            .allowableMissingFields(Set.of("createdDate", "description", "acceptedValues", "customObject/name"))
+            .allowableMissingFields(Set.of("createdDate", "description", "acceptedValues", "customObject"))
             .build());
 
     responseJson = TestResourceHelper.readContentAsString("missingRelation.json");
