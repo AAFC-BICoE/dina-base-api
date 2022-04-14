@@ -3,6 +3,8 @@ package ca.gc.aafc.dina;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.UUID;
+
 import javax.inject.Inject;
 
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -12,11 +14,9 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.stereotype.Service;
 import org.springframework.validation.SmartValidator;
 
-import ca.gc.aafc.dina.DinaUserConfig.DepartmentDinaService;
-import ca.gc.aafc.dina.DinaUserConfig.EmployeeDinaService;
-import ca.gc.aafc.dina.DinaUserConfig.VocabularyDinaService;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
@@ -30,18 +30,19 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jsonapi.DinaRepoEagerLoadingIT;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
-import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
 import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
 import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.security.GroupAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
+import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.service.DefaultDinaServiceTest.DinaServiceTestImplementation;
+import lombok.NonNull;
 
 /**
  * Small test application running on dina-base-api
  */
 @SpringBootApplication
-@EntityScan(basePackageClasses = Department.class)
+@EntityScan(basePackageClasses = {Department.class, Person.class})
 @Import(DinaRepoEagerLoadingIT.TestConfig.class)
 public class TestDinaBaseApp {
 
@@ -82,11 +83,6 @@ public class TestDinaBaseApp {
   }
 
   @Bean
-  public DinaPersonService personService(BaseDAO baseDAO, SmartValidator sv) {
-    return new DinaPersonService(baseDAO, sv);
-  }
-
-  @Bean
   public DinaRepository<PersonDTO, Person> dinaRepository(
     DinaPersonService service,
     Optional<AuditService> auditService
@@ -121,6 +117,58 @@ public class TestDinaBaseApp {
     Properties props = new Properties();
     props.setProperty("version", "test-api-version");
     return new BuildProperties(props);
+  }
+
+  @Service
+  public static class DinaPersonService extends DefaultDinaService<Person> {
+
+    public DinaPersonService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+      super(baseDAO, sv);
+    }
+
+    @Override
+    protected void preCreate(Person entity) {
+      entity.setUuid(UUID.randomUUID());
+    }
+  }
+
+  @Service
+  public class DepartmentDinaService extends DefaultDinaService<Department> {
+
+    public DepartmentDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+      super(baseDAO, sv);
+    }
+
+    @Override
+    protected void preCreate(Department entity) {
+      entity.setUuid(UUID.randomUUID());
+    }
+
+    @Override
+    public void validateBusinessRules(Department entity) {
+      validateConstraints(entity,null);
+    }
+  }
+
+  @Service
+  public class EmployeeDinaService extends DefaultDinaService<Employee> {
+    public EmployeeDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+      super(baseDAO, sv);
+    }
+
+    @Override
+    public void validateBusinessRules(Employee entity) {
+      validateConstraints(entity,null);
+    }
+  }
+
+  @Service
+  public class VocabularyDinaService extends DefaultDinaService<Vocabulary> {
+
+    public VocabularyDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+      super(baseDAO, sv);
+    }
+
   }
 
   /**
