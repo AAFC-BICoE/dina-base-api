@@ -66,7 +66,6 @@ public final class NumberLetterTranslator {
    */
   public static Integer toNumber(String givenLetter) {
 
-
     // If nothing is given, nothing is given back.
     if (givenLetter == null) {
       return null;
@@ -78,17 +77,14 @@ public final class NumberLetterTranslator {
       throw new IllegalArgumentException("Alphabetical[A-Z] Inputs only. Your input : " + letter);
     }
 
-    int length = letter.length();
-
-    // Same math a getRowLetter but in reverse to get the number.
-    if (length == 1) {
-      return (int) letter.charAt(0) - 64; // charAt returns the ASCII number and the alphabets start
-      // at 65
-    } else if (length == 2) {
-      return (int) (letter.charAt(0) - 64) * 26 + (letter.charAt(1) - 64);
-    } else {
-      throw new IllegalArgumentException(
-          "Could not resolve the String to a number. Your input : " + letter);
+    int currIntValue = (int) letter.charAt(0) - 64;  // charAt returns the ASCII number and the alphabets start
+    int currLetterIdx = 1;
+    while(currLetterIdx < letter.length()) {
+      currIntValue *= 26; //each iteration is a full alphabet round
+      currIntValue += letter.charAt(currLetterIdx) - 64;
+      currLetterIdx++;
     }
+
+    return currIntValue;
   }
 }

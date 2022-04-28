@@ -54,9 +54,9 @@ public class NumberLetterTranslatorTest {
   }
 
   @Test
-  public void getNumber_OnInvalidLetter_ThrowException() {
-    assertThrows(IllegalArgumentException.class,
-        () -> NumberLetterTranslator.toNumber("AAAAA")); // invalid since only up to 2 letters can be processed
+  public void toNumber_toLetterRoundtrip_Equals() {
+    int number = NumberLetterTranslator.toNumber("AAAAA");
+    assertEquals("AAAAA", NumberLetterTranslator.toLetter(number));
   }
 
   @Test
