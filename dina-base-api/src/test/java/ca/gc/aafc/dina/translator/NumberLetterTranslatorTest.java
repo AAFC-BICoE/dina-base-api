@@ -59,6 +59,12 @@ public class NumberLetterTranslatorTest {
     assertEquals("AAAAA", NumberLetterTranslator.toLetter(number));
   }
 
+@Test
+  public void toNumber_tooManyLetters_ThrowException() {
+    assertThrows(IllegalArgumentException.class,
+        () -> NumberLetterTranslator.toNumber("AAAAAAA"));
+  }
+
   @Test
   public void getNumber_OnInvalidLetter2_ThrowException() {
     assertThrows(IllegalArgumentException.class,

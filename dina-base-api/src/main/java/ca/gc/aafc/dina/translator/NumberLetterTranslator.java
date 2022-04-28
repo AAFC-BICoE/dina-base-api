@@ -13,6 +13,11 @@ public final class NumberLetterTranslator {
    */
   private static final Pattern NON_ALPHABET_PATTERN = Pattern.compile("[^A-Z]");
 
+  /**
+   * Protect against a potential int overflow
+   */
+  private static final int MAX_SUPPORTED_LETTERS = 6;
+
   /** Utility class This class should not be constructed. */
   private NumberLetterTranslator() { }
 
@@ -75,6 +80,12 @@ public final class NumberLetterTranslator {
 
     if (NON_ALPHABET_PATTERN.matcher(letter).find()) {
       throw new IllegalArgumentException("Alphabetical[A-Z] Inputs only. Your input : " + letter);
+    }
+
+    if (letter.length() > MAX_SUPPORTED_LETTERS) {
+      throw new IllegalArgumentException(
+          "Input should have less than " + MAX_SUPPORTED_LETTERS + " letters. Your input : "
+              + letter.length() + " letters");
     }
 
     int currIntValue = (int) letter.charAt(0) - 64;  // charAt returns the ASCII number and the alphabets start
