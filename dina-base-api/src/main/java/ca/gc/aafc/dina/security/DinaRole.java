@@ -51,7 +51,7 @@ public enum DinaRole {
       return Optional.empty();
     }
 
-    String standardizedRoleName = NON_ALPHA.matcher(str.strip()).replaceAll("_");
+    String standardizedRoleName = NON_ALPHA.matcher(str).replaceAll("_");
     for (DinaRole currRole : values()) {
       if (currRole.name().equalsIgnoreCase(standardizedRoleName)) {
         return Optional.of(currRole);

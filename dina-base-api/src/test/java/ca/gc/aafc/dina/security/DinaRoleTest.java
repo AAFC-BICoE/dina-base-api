@@ -14,7 +14,7 @@ public class DinaRoleTest {
     assertEquals(DinaRole.COLLECTION_MANAGER, DinaRole.fromString("collection-manager").orElse(null));
 
     // test with a space
-    assertEquals(DinaRole.DINA_ADMIN, DinaRole.fromString(" dina-admin").orElse(null));
+    assertEquals(Optional.empty(), DinaRole.fromString(" dina-admin"));
 
     assertEquals(Optional.empty(), DinaRole.fromString(null));
   }
