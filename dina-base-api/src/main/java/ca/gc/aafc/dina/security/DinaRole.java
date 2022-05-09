@@ -47,7 +47,7 @@ public enum DinaRole {
    * @return {@link DinaRole} as {@link Optional} or {@link Optional#empty()} if not found.
    */
   public static Optional<DinaRole> fromString(String str) {
-    if(StringUtils.isBlank(str)){
+    if (StringUtils.isBlank(str)) {
       return Optional.empty();
     }
 

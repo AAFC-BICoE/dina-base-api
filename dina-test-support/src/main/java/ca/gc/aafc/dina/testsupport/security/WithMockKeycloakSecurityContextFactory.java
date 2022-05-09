@@ -35,7 +35,7 @@ public class WithMockKeycloakSecurityContextFactory
     AccessToken accessToken = new AccessToken();
 
     List<String> groupRoles = Arrays.stream(mockKeycloakUser.groupRole())
-        .map(WithMockKeycloakSecurityContextFactory::mapToKeycloakNotation)
+        .map(WithMockKeycloakSecurityContextFactory::convertToKeycloakNotation)
         .collect(Collectors.toList());
     accessToken.setOtherClaims(GROUPS_CLAIM_KEY, groupRoles);
 
@@ -60,11 +60,12 @@ public class WithMockKeycloakSecurityContextFactory
   }
 
   /**
-   * group 2:dina-admin -> /group 2/dina-admin
+   * Utility method to convert dina testing notation (group:role) to Keycloak notation (/group/role)
+   * Ex: group 2:dina-admin -> /group 2/dina-admin
    * @param groupRole
    * @return
    */
-  private static String mapToKeycloakNotation(String groupRole) {
+  private static String convertToKeycloakNotation(String groupRole) {
     String[] groupRoleParts = StringUtils.split(groupRole, ":");
     if(groupRoleParts.length != 2) {
       return "";
