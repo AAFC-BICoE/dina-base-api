@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.security;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -42,12 +43,17 @@ public enum DinaRole {
   /**
    * Similar but more lenient than {@link #valueOf(String)}.
    * String like "collection-manager" will match COLLECTION_MANAGER.
-   * @param str
-   * @return
+   * @param str string representing the role.
+   * @return {@link DinaRole} as {@link Optional} or {@link Optional#empty()} if not found.
    */
   public static Optional<DinaRole> fromString(String str) {
+    if(StringUtils.isBlank(str)){
+      return Optional.empty();
+    }
+
+    String standardizedRoleName = NON_ALPHA.matcher(str.strip()).replaceAll("_");
     for (DinaRole currRole : values()) {
-      if (currRole.name().equalsIgnoreCase(NON_ALPHA.matcher(str).replaceAll("_"))) {
+      if (currRole.name().equalsIgnoreCase(standardizedRoleName)) {
         return Optional.of(currRole);
       }
     }
