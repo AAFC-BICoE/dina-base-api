@@ -13,6 +13,7 @@ import javax.inject.Inject;
 
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(
@@ -45,8 +46,14 @@ public class WithMockKeycloakUserIT {
     groupRole = {"group 1:staff", "group 3:staff"})
   @Test
   public void withMockedUser_UserMocked() {
-    Assertions.assertEquals("internal", currentUser.getInternalIdentifier());
-    Assertions.assertEquals("agent one", currentUser.getAgentIdentifier());
+    assertEquals("internal", currentUser.getInternalIdentifier());
+    assertEquals("agent one", currentUser.getAgentIdentifier());
+  }
+
+  @WithMockKeycloakUser(groupRole = {GROUP_1 + ": staff"})
+  @Test
+  public void withMockKeycloakUser_onSpaceBeforeRole_RoleExtracted() {
+    assertEquals(DinaRole.STAFF, currentUser.getRolesPerGroup().get(GROUP_1).iterator().next());
   }
 
 }

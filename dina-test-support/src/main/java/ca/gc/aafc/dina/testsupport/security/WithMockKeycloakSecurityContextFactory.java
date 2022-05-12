@@ -35,7 +35,7 @@ public class WithMockKeycloakSecurityContextFactory
     AccessToken accessToken = new AccessToken();
 
     List<String> groupRoles = Arrays.stream(mockKeycloakUser.groupRole())
-        .map(s -> StringUtils.prependIfMissing(StringUtils.replace(s, ":", "/"), "/"))
+        .map(WithMockKeycloakSecurityContextFactory::convertToKeycloakNotation)
         .collect(Collectors.toList());
     accessToken.setOtherClaims(GROUPS_CLAIM_KEY, groupRoles);
 
@@ -57,5 +57,19 @@ public class WithMockKeycloakSecurityContextFactory
     Authentication auth = new KeycloakAuthenticationToken(account, false);
     context.setAuthentication(auth);
     return context;
+  }
+
+  /**
+   * Utility method to convert dina testing notation (group:role) to Keycloak notation (/group/role)
+   * Ex: group 2:dina-admin -> /group 2/dina-admin
+   * @param groupRole
+   * @return
+   */
+  private static String convertToKeycloakNotation(String groupRole) {
+    String[] groupRoleParts = StringUtils.split(groupRole, ":");
+    if(groupRoleParts.length != 2) {
+      return "";
+    }
+    return StringUtils.prependIfMissing(groupRoleParts[0].strip(), "/") + "/" + groupRoleParts[1].strip();
   }
 }
