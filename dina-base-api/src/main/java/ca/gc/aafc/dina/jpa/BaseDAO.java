@@ -84,7 +84,6 @@ public class BaseDAO {
    * Creates an entityGraph for the provided attribute nodes.
    * @param entityClass
    * @return
-   * @param <T>
    */
   public <T> EntityGraph<T> createEntityGraph(Class<T> entityClass, String... attributeNodes) {
     EntityGraph<T> graph = entityManager.createEntityGraph(entityClass);
@@ -411,11 +410,9 @@ public class BaseDAO {
    */
   public <E> List<E> resultListFromCriteria(CriteriaQuery<E> criteria, int start, int maxResult, Pair<String, Object> hint) {
     TypedQuery<E> query = entityManager.createQuery(criteria);
-
-    if(hint != null){
+    if (hint != null) {
       query.setHint(hint.getKey(), hint.getValue());
     }
-
     return query
             .setFirstResult(start)
             .setMaxResults(maxResult)
