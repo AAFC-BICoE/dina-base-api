@@ -1,6 +1,6 @@
 package ca.gc.aafc.dina.jpa;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -14,8 +14,13 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 
+import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.testsupport.DatabaseSupportService;
 import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -240,6 +245,46 @@ public class BaseDAOIT {
     // then find will reload it from the database
     departmentUnderTest = baseDAO.findOneByDatabaseId(depId, Department.class);
     assertEquals("depChanged", departmentUnderTest.getName());
+  }
+
+  @Test
+  public void resultListFromCriteria_withQueryHint_lazyRelEagerlyLoaded() {
+    Employee emp = Employee.builder().name("abc").build();
+    baseDAO.create(emp, true);
+    //employees
+    Department dep = Department.builder()
+            .name("dep1")
+            .uuid(UUID.randomUUID())
+            .location("dep location")
+            .employees(List.of(emp))
+            .build();
+    baseDAO.create(dep, true);
+
+    //detach the entity to force reload
+    baseDAO.detach(dep);
+
+    // Build a criteria to load the Department by UUID
+    CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
+    CriteriaQuery<Department> criteria = criteriaBuilder.createQuery(Department.class);
+    Root<Department> root = criteria.from(Department.class);
+    Predicate clause = criteriaBuilder.equal(root.get("uuid"), dep.getUuid());
+    criteria.where(clause).select(root);
+
+    // Load the department without hints
+    List<Department> depList = baseDAO.resultListFromCriteria(criteria,0,10);
+    assertFalse(depList.isEmpty());
+    // Test that the relationship is not loaded. It means Hibernate would need to make a new call to the db to load it
+    assertFalse(baseDAO.isLoaded(depList.get(0), "employees"));
+
+    //detach the entity to force reload
+    baseDAO.detach(dep);
+
+    // Load the department with loadgraph hint
+    depList = baseDAO.resultListFromCriteria(criteria,0,10, Pair.of(BaseDAO.LOAD_GRAPH_HINT_KEY,
+            baseDAO.createEntityGraph(Department.class,"employees")));
+    // make sure the relationship is loaded
+    assertTrue(baseDAO.isLoaded(depList.get(0), "employees"));
+
   }
 
 }
