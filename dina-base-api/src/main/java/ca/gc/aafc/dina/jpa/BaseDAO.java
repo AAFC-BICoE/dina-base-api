@@ -9,6 +9,7 @@ import org.hibernate.SimpleNaturalIdLoadAccess;
 import org.hibernate.annotations.NaturalId;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.NoResultException;
@@ -33,6 +34,8 @@ import java.util.function.Function;
  */
 @Component
 public class BaseDAO {
+
+  public static final String LOAD_GRAPH_HINT_KEY = "javax.persistence.loadgraph";
 
   public static final int DEFAULT_LIMIT = 100;
 
@@ -61,7 +64,6 @@ public class BaseDAO {
     return where.supply(criteriaBuilder, root, entityManager);
   }
 
-
   /**
    * Utility function that can check if a lazy loaded attribute is actually
    * loaded.
@@ -76,6 +78,17 @@ public class BaseDAO {
 
     PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
     return unitUtil.isLoaded(entity, fieldName);
+  }
+
+  /**
+   * Creates an entityGraph for the provided attribute nodes.
+   * @param entityClass
+   * @return
+   */
+  public <T> EntityGraph<T> createEntityGraph(Class<T> entityClass, String... attributeNodes) {
+    EntityGraph<T> graph = entityManager.createEntityGraph(entityClass);
+    graph.addAttributeNodes(attributeNodes);
+    return graph;
   }
 
   /**
@@ -373,14 +386,37 @@ public class BaseDAO {
    * @param start
    *                    - position of first result to retrieve
    * @param maxResult
-   *                    - maximun number of results to return
+   *                    - maximum number of results to return
    * @return List of entities
    */
   public <E> List<E> resultListFromCriteria(CriteriaQuery<E> criteria, int start, int maxResult) {
-    return entityManager.createQuery(criteria)
-      .setFirstResult(start)
-      .setMaxResults(maxResult)
-      .getResultList();
+    return resultListFromCriteria(criteria, start, maxResult, null);
+  }
+
+  /**
+   * Returns a List of entities based off a given criteria and a Hibernate hint.
+   *
+   * @param <E>
+   *                    - Type of result list
+   * @param criteria
+   *                    - criteria to generate the typed query
+   * @param start
+   *                    - position of first result to retrieve
+   * @param maxResult
+   *                    - maximum number of results to return
+   * @param hint
+   *                    - Hibernate hint to set on the query
+   * @return List of entities
+   */
+  public <E> List<E> resultListFromCriteria(CriteriaQuery<E> criteria, int start, int maxResult, Pair<String, Object> hint) {
+    TypedQuery<E> query = entityManager.createQuery(criteria);
+    if (hint != null) {
+      query.setHint(hint.getKey(), hint.getValue());
+    }
+    return query
+            .setFirstResult(start)
+            .setMaxResults(maxResult)
+            .getResultList();
   }
 
   /**
