@@ -18,11 +18,12 @@ import java.sql.SQLException;
 /**
  * MyBatis TypeHandler that supports Jackson's JsonNode for Postgres jsonb fields.
  */
-@MappedTypes({JsonNode.class})
+@MappedTypes(JsonNode.class)
 public class JsonNodeTypeHandler extends BaseTypeHandler<JsonNode> {
 
   private static final ObjectMapper OM = new ObjectMapper();
   private static final ObjectReader JSON_NODE_READER;
+
   static {
     JSON_NODE_READER = OM.readerFor(JsonNode.class);
   }
@@ -33,10 +34,9 @@ public class JsonNodeTypeHandler extends BaseTypeHandler<JsonNode> {
     PGobject jsonbObject = new PGobject();
     if (ps != null) {
       jsonbObject.setType("jsonb");
-      if( parameter == null ){
+      if (parameter == null) {
         jsonbObject.setValue(null);
-      }
-      else {
+      } else {
         try {
           jsonbObject.setValue(OM.writeValueAsString(parameter));
         } catch (JsonProcessingException e) {
