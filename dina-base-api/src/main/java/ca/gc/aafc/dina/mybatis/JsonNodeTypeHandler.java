@@ -31,17 +31,13 @@ public class JsonNodeTypeHandler extends BaseTypeHandler<JsonNode> {
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, JsonNode parameter, JdbcType jdbcType)
           throws SQLException {
-    PGobject jsonbObject = new PGobject();
     if (ps != null) {
+      PGobject jsonbObject = new PGobject();
       jsonbObject.setType("jsonb");
-      if (parameter == null) {
-        jsonbObject.setValue(null);
-      } else {
-        try {
-          jsonbObject.setValue(OM.writeValueAsString(parameter));
-        } catch (JsonProcessingException e) {
-          throw new RuntimeException(e);
-        }
+      try {
+        jsonbObject.setValue(OM.writeValueAsString(parameter));
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException(e);
       }
       ps.setObject(i, jsonbObject);
     }
