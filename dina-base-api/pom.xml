@@ -127,11 +127,9 @@
       <artifactId>mybatis-spring-boot-starter</artifactId>
       <version>${mybatis.version}</version>
     </dependency>
-    <!-- postgresql for testing in the postgresql docker container -->
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
