@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.85-SNAPSHOT</version>
+    <version>0.89-SNAPSHOT</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -23,10 +23,10 @@
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
-    <javers.version>6.6.2</javers.version>
+    <javers.version>6.6.5</javers.version>
     <mybatis.version>2.2.2</mybatis.version>
     <aafc.search.messaging.version>0.8</aafc.search.messaging.version>
-    <hibernate-types-52.version>2.14.0</hibernate-types-52.version>
+    <hibernate-types-52.version>2.16.2</hibernate-types-52.version>
   </properties>
 
   <dependencies>
@@ -40,6 +40,15 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-aop</artifactId>
+    </dependency>
+
     <!-- Used by Spotbug annotation -->
     <dependency>
       <groupId>net.jcip</groupId>
@@ -109,7 +118,7 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.85-SNAPSHOT</version>
+      <version>0.89-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <!-- Spring mybatis -->

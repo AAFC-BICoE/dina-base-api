@@ -1,16 +1,20 @@
 package ca.gc.aafc.dina.security;
 
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.keycloak.representations.AccessToken;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistryImpl;
@@ -30,6 +34,9 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
 
   private static final String AGENT_IDENTIFIER_CLAIM_KEY = "agent-identifier";
   private static final String GROUPS_CLAIM_KEY = "groups";
+
+  @Value("${actuator.allowedIp:}")
+  private String actuatorAllowedIp;
 
   public KeycloakAuthConfig() {
     super();
@@ -54,17 +61,24 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     super.configure(http);
 
-    // Need to disable CSRF for Postman and testing
-    http.csrf().disable();
+    log.info("Configuring HttpSecurity");
 
-    http.authorizeRequests().anyRequest().authenticated();
-    log.debug("Configured HttpSecurity");
+    // Need to disable CSRF for Postman and testing
+    ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry configurer =
+        http.csrf().disable().authorizeRequests();
+
+    // For Actuators endpoints
+    if(StringUtils.isNotBlank(actuatorAllowedIp)) {
+      configurer = configurer.requestMatchers(EndpointRequest.toAnyEndpoint()).hasIpAddress(actuatorAllowedIp);
+      log.info("Actuator endpoints available for {}", actuatorAllowedIp);
+    }
+
+    configurer.anyRequest().authenticated();
   }
 
   @Override
   public void configure(WebSecurity web) throws Exception {
     // should be configurable
-    // web.ignoring().antMatchers("/json-schema/**");
     log.debug("Configured WebSecurity");
   }
 

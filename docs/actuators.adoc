@@ -1,0 +1,13 @@
+= Actuators
+
+DINA modules can be configured to expose https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html[Spring Actuators].
+
+In the module `application.yml` or using environment variables:
+
+. Change `security-collections.patterns` to `/api/*` to tell Keycloak adapter to only filter on `/api` and leave other requests to the other filters in the chain.
+. Add `actuator.allowedIp` to define the IPs that are allowed to access the actuators. Network mask should limit to internal IPs but cautions should be taken when an external request is routed by a Gateway/Reverse-Proxy.
+ Depending on the settings, the module could see the request as coming from the internal network. In Docker-Compose, the name of the container can be used to restrict the IP to the Prometheus container for example.
+. Add `management.endpoints.web.exposure.include: "health,prometheus"`
+
+Then, a Prometheus container can be configured to connect to the `/actuator/prometheus` endpoint of a module.
+

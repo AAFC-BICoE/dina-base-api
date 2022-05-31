@@ -1,0 +1,32 @@
+{
+  "data": {
+    "id": "0bc8be29-172c-4813-83e7-a54ab074687a",
+    "type": "managed-attribute",
+    "links": {
+      "self": "/api/v1/managed-attribute/0bc8be29-172c-4813-83e7-a54ab074687a"
+    },
+    "attributes": {
+      "createdBy": "STRING",
+      "createdOn": "2020-02-14T09:39:11.375928-05:00",
+      "key": "OBJECT_attr",
+      "managedAttributeType": "STRING",
+      "name": "OBJECT attr",
+      "acceptedValues": ["a", 1, 2],
+      "multilingualDescription": {
+        "descriptions": [
+          {
+            "desc": "obj",
+            "lang": "en"
+          },
+          {
+            "desc": "obj-fr",
+            "lang": "fr"
+          }
+        ]
+      }
+    }
+  },
+  "meta": {
+    "totalResourceCount": 1
+  }
+}

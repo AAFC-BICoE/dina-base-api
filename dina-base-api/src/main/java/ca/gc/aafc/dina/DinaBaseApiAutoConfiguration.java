@@ -6,6 +6,8 @@ import io.crnk.operations.server.OperationsModule;
 import io.crnk.operations.server.TransactionOperationFilter;
 import io.crnk.spring.jpa.SpringTransactionRunner;
 
+import io.micrometer.core.aop.TimedAspect;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,6 +48,11 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
     module.addFilter(new TransactionOperationFilter());
     module.setIncludeChangedRelationships(false);
     module.setResumeOnError(true);
+  }
+
+  @Bean
+  public TimedAspect timedAspect(MeterRegistry registry) {
+    return new TimedAspect(registry);
   }
 
   /**

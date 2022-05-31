@@ -1,18 +1,13 @@
 package ca.gc.aafc.dina.testsupport.specs;
 
-import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.openapi4j.core.model.v3.OAI3;
-import org.openapi4j.core.model.v3.OAI3SchemaKeywords;
 import org.openapi4j.core.validation.ValidationResult;
 import org.openapi4j.core.validation.ValidationResults;
 import org.openapi4j.schema.validator.BaseJsonValidator;
 import org.openapi4j.schema.validator.ValidationContext;
 import org.openapi4j.schema.validator.ValidationData;
 import org.openapi4j.schema.validator.v3.SchemaValidator;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import static org.openapi4j.core.model.v3.OAI3SchemaKeywords.ADDITIONALPROPERTIES;
 import static org.openapi4j.core.model.v3.OAI3SchemaKeywords.REQUIRED;
@@ -29,21 +24,12 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
     new ValidationResult(ERROR, 1026, "Field '%s' is required.");
   private static final ValidationResults.CrumbInfo CRUMB_MISSING_FIELD =
     new ValidationResults.CrumbInfo(REQUIRED, true);
+
   private static final ValidationResult ADDITIONAL_FIELD_ERROR =
     new ValidationResult(ERROR, 1000, "Additional property '%s' is not allowed.");
   private static final ValidationResults.CrumbInfo ADDITIONAL_FIELD_CRUMB =
     new ValidationResults.CrumbInfo(ADDITIONALPROPERTIES, true);
 
-  public static final String ATTRIBUTES_BLOCK_NAME = "attributes";
-  public static final String RELATIONSHIPS_BLOCK_NAME = "relationships";
-
-  public static final JsonPointer ATTRIB_POINTER =
-    JsonPointer.compile("/" + ATTRIBUTES_BLOCK_NAME + "/" + OAI3SchemaKeywords.PROPERTIES);
-  public static final JsonPointer RELATION_POINTER =
-    JsonPointer.compile("/" + RELATIONSHIPS_BLOCK_NAME + "/" + OAI3SchemaKeywords.PROPERTIES);
-
-  private final Set<String> requiredAttributes = new HashSet<>();
-  private final Set<String> requiredRelations = new HashSet<>();
   private final ValidationRestrictionOptions options;
 
   protected RestrictiveFieldValidator(
@@ -55,70 +41,74 @@ class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
   ) {
     super(context, schemaNode, schemaParentNode, parentSchema);
     this.options = options == null ? ValidationRestrictionOptions.FULL_RESTRICTIONS : options;
-    schemaNode.fieldNames().forEachRemaining(node -> {
-      if (node.equalsIgnoreCase(ATTRIBUTES_BLOCK_NAME)) {
-        JsonNode attributesNode = schemaNode.at(ATTRIB_POINTER);
-        attributesNode.fieldNames().forEachRemaining(requiredAttributes::add);
-      }
-      if (node.equalsIgnoreCase(RELATIONSHIPS_BLOCK_NAME)) {
-        JsonNode attributesNode = schemaNode.at(RELATION_POINTER);
-        attributesNode.fieldNames().forEachRemaining(requiredRelations::add);
-      }
-    });
   }
 
+  /**
+   * Compares provided API response/request against schema specifications.
+   * 
+   * OpenAPI4j will validate each level independently. We need to perform the check on each level.
+   * 
+   * The schemaNode will also automatically update to the level we are currently at.
+   * 
+   * This method will scan one level at a time. If a nested object is found, it will run this method
+   * again with a new schemaPath and valuePath based on the new level. Any fields in the
+   * allowableMissingFields with nested objects will not be scanned any further.
+   * 
+   * This validator will consider all fields provided in the schema as "required". Even though it is
+   * possible for some of these fields to not be provided. This is by design to ensure that new
+   * fields are validated against the schema as they are added.
+   * 
+   * Couple of options can be provided to this validator (from the constructor):
+   *    setAllowableMissingFields:
+   *        List of string names of the fields you would like to ignore from the required
+   *        field check. This also works for relationships.
+   *    allowAdditionalFields:
+   *        Default is false. When true, fields that are not on the schema will not cause a 
+   *        validation error.
+   */
   @Override
   public boolean validate(JsonNode valueNode, ValidationData<?> validation) {
-    validateRequiredFields(valueNode, validation, requiredAttributes, ATTRIBUTES_BLOCK_NAME);
-    validateRequiredFields(valueNode, validation, requiredRelations, RELATIONSHIPS_BLOCK_NAME);
+    // If we are at a level that contains attributes or data nodes then we can skip it.
+    if (valueNode.has("attributes") || valueNode.has("data")) {
+      return true;
+    }
+
+    // If the result crumbs contains a allowable missing field, then skip checking anything.
+    boolean pathContainsAllowableMissingField = validation.results().crumbs().stream()
+      .map(crumb -> crumb.crumb())
+      .anyMatch(this::containsAllowableMissingField);
+    if (pathContainsAllowableMissingField) {
+      return true;
+    }
+
+    // Retrieved all fields at this level in the valueNode.
+    getSchemaNode().fieldNames().forEachRemaining(fieldName -> {
+      // Does the value node provided contain this field name?
+      if (!valueNode.has(fieldName) && !containsAllowableMissingField(fieldName)) {
+        // Report a missing schema value.
+        validation.add(CRUMB_MISSING_FIELD, MISSING_FIELD_ERROR, fieldName);
+      }
+    });
+
+    // If allow additional fields is true, then we can ignore the required and additional field checks.
+    if (!options.isAllowAdditionalFields()) {
+      valueNode.fieldNames().forEachRemaining(fieldName -> {
+        // Does the schema contain this field, or is it an additional field.
+        if (!getSchemaNode().has(fieldName) && !containsAllowableMissingField(fieldName)) {
+          // Report an additional schema value.
+          validation.add(ADDITIONAL_FIELD_CRUMB, ADDITIONAL_FIELD_ERROR, fieldName);
+        }
+      });
+    }
+
     return true;
   }
 
-  private void validateRequiredFields(
-    JsonNode valueNode,
-    ValidationData<?> validation,
-    Set<String> requiredFieldNames,
-    String blockName
-  ) {
-    if (!requiredFieldNames.isEmpty()) {
-      if (!options.isAllowAdditionalFields()) {
-        checkAdditionalFields(valueNode, validation, requiredFieldNames, blockName);
-      }
-      checkMissingFields(valueNode, validation, requiredFieldNames, blockName);
+  private boolean containsAllowableMissingField(String fieldName) {
+    if (fieldName == null || options == null || options.getAllowableMissingFields() == null) {
+      return false;
     }
-  }
 
-  private void checkMissingFields(
-    JsonNode valueNode,
-    ValidationData<?> validation,
-    Set<String> requiredFieldNames,
-    String blockName
-  ) {
-    for (String fieldName : requiredFieldNames) {
-      if (valueNode.at("/" + blockName + "/" + fieldName).isMissingNode()
-        && setDoesNotContainIgnoreCase(options.getAllowableMissingFields(), fieldName)) {
-        validation.add(CRUMB_MISSING_FIELD, MISSING_FIELD_ERROR, fieldName);
-      }
-    }
-  }
-
-  private static void checkAdditionalFields(
-    JsonNode valueNode,
-    ValidationData<?> validation,
-    Set<String> requiredFieldNames,
-    String blockName
-  ) {
-    valueNode.at("/" + blockName).fieldNames().forEachRemaining(field -> {
-      if (setDoesNotContainIgnoreCase(requiredFieldNames, field)) {
-        validation.add(ADDITIONAL_FIELD_CRUMB, ADDITIONAL_FIELD_ERROR, field);
-      }
-    });
-  }
-
-  private static boolean setDoesNotContainIgnoreCase(Set<String> requiredFieldNames, String field) {
-    if (requiredFieldNames == null || requiredFieldNames.isEmpty() || field == null || field.isBlank()) {
-      return true;
-    }
-    return requiredFieldNames.stream().noneMatch(attrib -> attrib.equalsIgnoreCase(field));
+    return options.getAllowableMissingFields().contains(fieldName);
   }
 }

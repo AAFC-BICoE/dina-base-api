@@ -7,9 +7,19 @@
     },
     "attributes": {
       "managedAttributeType": "STRING",
-      "name": "STRING",
+      "createdDate": "2020-02-14T09:39:11.375928-05:00",
+      "name": "OBJECT attr",
+      "acceptedValues": ["a", 1, 2],
+      "description": {
+        "en": "obj",
+        "fr": "obj-fr"
+      },
       "customObject": {
-        "id": 1
+        "name": {
+          "firstName": "firstName",
+          "invalidAdditionalField": "this can't be here!"
+        },
+        "id": 0
       }
     },
     "relationships": {

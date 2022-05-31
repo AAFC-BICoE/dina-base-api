@@ -36,6 +36,7 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -122,10 +123,28 @@ public class ManagedAttributeServiceIT {
           }
           return true;
         }
+
+        /**
+         * Override this method to allow uniqueness by key/component (instead of only key).
+         * @param keys
+         * @param validationContext
+         * @return
+         */
+        @Override
+        protected Map<String, TestManagedAttribute> findAttributesForValidation(
+            Set<String> keys, ValidationContext validationContext) {
+          return dinaService.findAttributesForKeys(keys, Pair.of("component",
+               validationContext.getValue()));
+        }
       };
     }
   }
 
+  /**
+   * Test implementation of a {@link ManagedAttribute}.
+   * Since it's running on H2 the uniqueness if not really define so the test will assume
+   * it is by key or key/component depending on the purpose of the test.
+   */
   @Data
   @Builder
   @Entity
@@ -147,6 +166,9 @@ public class ManagedAttributeServiceIT {
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     private MultilingualDescription multilingualDescription;
+
+    // matches XYZValidationContext toString
+    private String component;
   }
 
   @Data
@@ -164,7 +186,12 @@ public class ManagedAttributeServiceIT {
   }
 
   public enum XYZValidationContext implements ValidationContext {
-    X, Y, Z
+    X, Y, Z;
+
+    @Override
+    public Object getValue() {
+      return toString();
+    }
   }
 
 }
