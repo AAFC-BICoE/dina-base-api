@@ -127,48 +127,84 @@ public class DinaFilterResolver {
    * @param querySpec query spec to parse
    * @param registry  registry to use to determine relations
    */
-  public static <E extends DinaEntity> void leftJoinRelations(
-    Root<E> root,
-    @NonNull QuerySpec querySpec,
-    @NonNull DinaMappingRegistry registry
-  ) {
-    if (root == null) {
+  public static <E extends DinaEntity> void leftJoinSortRelations(Root<E> root, @NonNull QuerySpec querySpec,
+    @NonNull DinaMappingRegistry registry) {
+
+    if (root == null || querySpec.getSort().isEmpty()) {
       return;
     }
 
-    Set<PathSpec> relationsToJoin = new HashSet<>();
-    querySpec.getIncludedRelations().forEach(ir ->
-      parseMappablePaths(registry, querySpec.getResourceClass(), relationsToJoin, ir.getAttributePath()));
+    List<Set<String>> relationsToJoin = new ArrayList<>();
     querySpec.getSort().forEach(sort ->
-      parseMappablePaths(registry, querySpec.getResourceClass(), relationsToJoin, sort.getAttributePath()));
+            relationsToJoin.add(parseMappablePaths(registry, querySpec.getResourceClass(), sort.getAttributePath())));
 
     relationsToJoin.forEach(relation -> {
-      if (CollectionUtils.isNotEmpty(relation.getElements())) {
-        joinAttributePath(root, relation.getElements());
-      }
+        joinAttributePath(root, relation);
     });
   }
 
-  private static void parseMappablePaths(
-    @NonNull DinaMappingRegistry registry,
-    @NonNull Class<?> resourceClass,
-    @NonNull Set<PathSpec> mappablePaths,
-    @NonNull List<String> attributePath
-  ) {
-    List<String> relationPath = new ArrayList<>();
+  /**
+   * Extracts relationships from the query specs and make sure they are valid.
+   * @param querySpec
+   * @param registry
+   * @return Set with all the relationships or an empty set. Never null;
+   */
+  public static Set<String> extractRelationships(@NonNull QuerySpec querySpec, @NonNull DinaMappingRegistry registry) {
+    // getIncludedRelations never returns null
+    if( querySpec.getIncludedRelations().isEmpty() ) {
+      return Set.of();
+    }
+
+    Set<String> relationsToJoin = new HashSet<>();
+    querySpec.getIncludedRelations().forEach(ir ->
+            relationsToJoin.addAll(parseMappablePaths(registry, querySpec.getResourceClass(), ir.getAttributePath())));
+    return relationsToJoin;
+  }
+
+  /**
+   *
+   * @param registry
+   * @param resourceClass
+   * @param attributePath
+   * @return never null
+   */
+  private static Set<String> parseMappablePaths(
+          @NonNull DinaMappingRegistry registry,
+          @NonNull Class<?> resourceClass,
+          @NonNull List<String> attributePath) {
+    Set<String> relationPaths = new HashSet<>();
     Class<?> dtoClass = resourceClass;
     for (String attr : attributePath) {
       if (hasMappableRelation(registry, dtoClass, attr)) {
-        relationPath.add(attr);
+        relationPaths.add(attr);
         dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
       } else {
         break;
       }
     }
-    if (CollectionUtils.isNotEmpty(relationPath)) {
-      mappablePaths.add(PathSpec.of(relationPath));
-    }
+    return relationPaths;
   }
+
+//  private static void parseMappablePaths(
+//    @NonNull DinaMappingRegistry registry,
+//    @NonNull Class<?> resourceClass,
+//    @NonNull Set<PathSpec> mappablePaths,
+//    @NonNull List<String> attributePath
+//  ) {
+//    List<String> relationPath = new ArrayList<>();
+//    Class<?> dtoClass = resourceClass;
+//    for (String attr : attributePath) {
+//      if (hasMappableRelation(registry, dtoClass, attr)) {
+//        relationPath.add(attr);
+//        dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
+//      } else {
+//        break;
+//      }
+//    }
+//    if (CollectionUtils.isNotEmpty(relationPath)) {
+//      mappablePaths.add(PathSpec.of(relationPath));
+//    }
+//  }
 
   /**
    * Returns true if a given class has a given relation.
@@ -269,7 +305,7 @@ public class DinaFilterResolver {
     }).collect(Collectors.toList());
   }
 
-  private static void joinAttributePath(Root<?> root, List<String> attributePath) {
+  private static void joinAttributePath(Root<?> root, Set<String> attributePath) {
     if (root == null || CollectionUtils.isEmpty(attributePath)) {
       return;
     }

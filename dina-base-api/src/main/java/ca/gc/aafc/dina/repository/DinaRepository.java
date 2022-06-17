@@ -199,18 +199,23 @@ public class DinaRepository<D, E extends DinaEntity>
       spec.setLimit(ids == null ? DEFAULT_LIMIT : ids.size());
     }
 
-    // Retrieve the entities using the dina service.
+    // Retrieve the entities using the dina service
+
+    // Prepare hints to tell the service what relationships we will need.
+    Set<String> relationshipsPath = DinaFilterResolver.extractRelationships(spec, registry);
+    Map<String, Object> hints = relationshipsPath.isEmpty() ? null : dinaService.relationshipPathToLoadHints(entityClass, relationshipsPath);
+
     List<E> entities = dinaService.findAll(
       entityClass,
       (criteriaBuilder, root, em) -> {
-        DinaFilterResolver.leftJoinRelations(root, spec, registry);
+        DinaFilterResolver.leftJoinSortRelations(root, spec, registry);
         return filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idFieldName, em);
       },
       (cb, root) -> DinaFilterResolver.getOrders(spec, cb, root, caseSensitiveOrderBy),
       Math.toIntExact(spec.getOffset()),
-      spec.getLimit().intValue()
-    );
-    List<D> dtoList = new ArrayList<D>();
+      spec.getLimit().intValue(), hints);
+
+    List<D> dtoList = new ArrayList<>(entities.size());
 
     // Go through each of the entities found to perform authentication, 
     // setting permissions and converting to Dto entities.

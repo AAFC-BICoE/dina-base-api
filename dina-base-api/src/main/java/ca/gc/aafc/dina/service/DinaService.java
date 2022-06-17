@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import lombok.NonNull;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Order;
@@ -10,6 +11,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.validation.groups.Default;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
@@ -69,7 +72,7 @@ public interface DinaService<E extends DinaEntity> {
    * @param where       - function to return the predicates cannot be null
    * @param orderBy     - function to return the sorting criteria can be null
    * @param startIndex  - position of first result to retrieve
-   * @param maxResult   - maximun number of results to return
+   * @param maxResult   - maximum number of results to return
    * @return list of entities
    */
   <T> List<T> findAll(
@@ -87,7 +90,8 @@ public interface DinaService<E extends DinaEntity> {
    * @param where       - function to return the predicates cannot be null
    * @param orderBy     - function to return the sorting criteria can be null
    * @param startIndex  - position of first result to retrieve
-   * @param maxResult   - maximun number of results to return
+   * @param maxResult   - maximum number of results to return
+   * @param hints       - optional hints to use on the Query
    * @return list of entities
    */
   <T> List<T> findAll(
@@ -95,7 +99,8 @@ public interface DinaService<E extends DinaEntity> {
     @NonNull PredicateSupplier<T> where,
     BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
     int startIndex,
-    int maxResult
+    int maxResult,
+    Map<String, Object> hints
   );
 
   /**
@@ -135,5 +140,7 @@ public interface DinaService<E extends DinaEntity> {
    * @param entity
    */
   void validateBusinessRules(E entity);
+
+  Map<String, Object> relationshipPathToLoadHints(Class<E> clazz, Set<String> rel);
 
 }

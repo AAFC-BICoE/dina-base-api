@@ -15,6 +15,7 @@ import org.springframework.validation.SmartValidator;
 import org.springframework.validation.Validator;
 
 import javax.inject.Inject;
+import javax.persistence.EntityGraph;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Order;
@@ -27,6 +28,7 @@ import javax.validation.groups.Default;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -127,7 +129,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     int maxResult
   ) {
     return findAll(entityClass, (criteriaBuilder, root, em) -> where.apply(criteriaBuilder, root),
-      orderBy, startIndex, maxResult);
+      orderBy, startIndex, maxResult, null);
   }
 
   /**
@@ -167,7 +169,8 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     @NonNull PredicateSupplier<T> where,
     BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
     int startIndex,
-    int maxResult
+    int maxResult,
+    Map<String, Object> hints
   ) {
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
     CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
@@ -177,7 +180,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     if (orderBy != null) {
       criteria.orderBy(orderBy.apply(criteriaBuilder, root));
     }
-    return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult);
+    return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult, hints);
   }
 
   /**
@@ -375,6 +378,14 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
 
   @Override
   public void validateBusinessRules(E entity) {
+  }
+
+  @Override
+  public Map<String, Object> relationshipPathToLoadHints(Class<E> clazz, Set<String> rel) {
+    if( rel.isEmpty() ) {
+      return Map.of();
+    }
+    return Map.of(BaseDAO.LOAD_GRAPH_HINT_KEY, baseDAO.createEntityGraph(clazz, rel.toArray(new String[0])));
   }
 
   @SuppressWarnings("unchecked")
