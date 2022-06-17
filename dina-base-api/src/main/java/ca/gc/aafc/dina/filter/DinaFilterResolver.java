@@ -138,9 +138,7 @@ public class DinaFilterResolver {
     querySpec.getSort().forEach(sort ->
             relationsToJoin.add(parseMappablePaths(registry, querySpec.getResourceClass(), sort.getAttributePath())));
 
-    relationsToJoin.forEach(relation -> {
-        joinAttributePath(root, relation);
-    });
+    relationsToJoin.forEach(relation -> joinAttributePath(root, relation));
   }
 
   /**
@@ -184,27 +182,6 @@ public class DinaFilterResolver {
     }
     return relationPaths;
   }
-
-//  private static void parseMappablePaths(
-//    @NonNull DinaMappingRegistry registry,
-//    @NonNull Class<?> resourceClass,
-//    @NonNull Set<PathSpec> mappablePaths,
-//    @NonNull List<String> attributePath
-//  ) {
-//    List<String> relationPath = new ArrayList<>();
-//    Class<?> dtoClass = resourceClass;
-//    for (String attr : attributePath) {
-//      if (hasMappableRelation(registry, dtoClass, attr)) {
-//        relationPath.add(attr);
-//        dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
-//      } else {
-//        break;
-//      }
-//    }
-//    if (CollectionUtils.isNotEmpty(relationPath)) {
-//      mappablePaths.add(PathSpec.of(relationPath));
-//    }
-//  }
 
   /**
    * Returns true if a given class has a given relation.

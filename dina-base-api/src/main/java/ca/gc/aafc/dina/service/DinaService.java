@@ -3,7 +3,6 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import lombok.NonNull;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Order;

@@ -15,7 +15,6 @@ import org.springframework.validation.SmartValidator;
 import org.springframework.validation.Validator;
 
 import javax.inject.Inject;
-import javax.persistence.EntityGraph;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Order;
