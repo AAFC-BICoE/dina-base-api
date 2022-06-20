@@ -128,7 +128,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     int maxResult
   ) {
     return findAll(entityClass, (criteriaBuilder, root, em) -> where.apply(criteriaBuilder, root),
-      orderBy, startIndex, maxResult, null);
+      orderBy, startIndex, maxResult, Set.of());
   }
 
   /**
@@ -169,7 +169,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
     int startIndex,
     int maxResult,
-    Map<String, Object> hints
+    @NonNull Set<String> relationships
   ) {
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
     CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
@@ -179,6 +179,8 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     if (orderBy != null) {
       criteria.orderBy(orderBy.apply(criteriaBuilder, root));
     }
+
+    Map<String, Object> hints = relationships.isEmpty() ? null : relationshipPathToLoadHints(entityClass, relationships);
     return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult, hints);
   }
 
@@ -379,8 +381,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   public void validateBusinessRules(E entity) {
   }
 
-  @Override
-  public Map<String, Object> relationshipPathToLoadHints(Class<E> clazz, Set<String> rel) {
+  private <T> Map<String, Object> relationshipPathToLoadHints(Class<T> clazz, Set<String> rel) {
     if( rel.isEmpty() ) {
       return Map.of();
     }

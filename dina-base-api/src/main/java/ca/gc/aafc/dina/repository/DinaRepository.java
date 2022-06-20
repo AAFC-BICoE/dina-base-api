@@ -203,8 +203,6 @@ public class DinaRepository<D, E extends DinaEntity>
 
     // Prepare hints to tell the service what relationships we will need.
     Set<String> relationshipsPath = DinaFilterResolver.extractRelationships(spec, registry);
-    Map<String, Object> hints = relationshipsPath.isEmpty() ? null : dinaService.relationshipPathToLoadHints(entityClass, relationshipsPath);
-
     List<E> entities = dinaService.findAll(
       entityClass,
       (criteriaBuilder, root, em) -> {
@@ -213,7 +211,7 @@ public class DinaRepository<D, E extends DinaEntity>
       },
       (cb, root) -> DinaFilterResolver.getOrders(spec, cb, root, caseSensitiveOrderBy),
       Math.toIntExact(spec.getOffset()),
-      spec.getLimit().intValue(), hints);
+      spec.getLimit().intValue(), relationshipsPath);
 
     List<D> dtoList = new ArrayList<>(entities.size());
 
