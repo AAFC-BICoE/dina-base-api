@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -280,7 +281,7 @@ public class BaseDAOIT {
     baseDAO.detach(dep);
 
     // Load the department with loadgraph hint
-    depList = baseDAO.resultListFromCriteria(criteria,0,10, Pair.of(BaseDAO.LOAD_GRAPH_HINT_KEY,
+    depList = baseDAO.resultListFromCriteria(criteria,0,10, Map.of(BaseDAO.LOAD_GRAPH_HINT_KEY,
             baseDAO.createEntityGraph(Department.class,"employees")));
     // make sure the relationship is loaded
     assertTrue(baseDAO.isLoaded(depList.get(0), "employees"));

@@ -23,6 +23,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -404,14 +405,14 @@ public class BaseDAO {
    *                    - position of first result to retrieve
    * @param maxResult
    *                    - maximum number of results to return
-   * @param hint
+   * @param hints
    *                    - Hibernate hint to set on the query
    * @return List of entities
    */
-  public <E> List<E> resultListFromCriteria(CriteriaQuery<E> criteria, int start, int maxResult, Pair<String, Object> hint) {
+  public <E> List<E> resultListFromCriteria(CriteriaQuery<E> criteria, int start, int maxResult, Map<String, Object> hints) {
     TypedQuery<E> query = entityManager.createQuery(criteria);
-    if (hint != null) {
-      query.setHint(hint.getKey(), hint.getValue());
+    if (hints != null) {
+      hints.forEach(query::setHint);
     }
     return query
             .setFirstResult(start)

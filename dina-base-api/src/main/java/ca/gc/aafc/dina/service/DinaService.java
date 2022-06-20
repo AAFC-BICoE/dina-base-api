@@ -10,6 +10,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.validation.groups.Default;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
@@ -69,7 +70,7 @@ public interface DinaService<E extends DinaEntity> {
    * @param where       - function to return the predicates cannot be null
    * @param orderBy     - function to return the sorting criteria can be null
    * @param startIndex  - position of first result to retrieve
-   * @param maxResult   - maximun number of results to return
+   * @param maxResult   - maximum number of results to return
    * @return list of entities
    */
   <T> List<T> findAll(
@@ -87,7 +88,8 @@ public interface DinaService<E extends DinaEntity> {
    * @param where       - function to return the predicates cannot be null
    * @param orderBy     - function to return the sorting criteria can be null
    * @param startIndex  - position of first result to retrieve
-   * @param maxResult   - maximun number of results to return
+   * @param maxResult   - maximum number of results to return
+   * @param relationships - relationships to load or an empty set, not null.
    * @return list of entities
    */
   <T> List<T> findAll(
@@ -95,7 +97,8 @@ public interface DinaService<E extends DinaEntity> {
     @NonNull PredicateSupplier<T> where,
     BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
     int startIndex,
-    int maxResult
+    int maxResult,
+    @NonNull Set<String> relationships
   );
 
   /**
