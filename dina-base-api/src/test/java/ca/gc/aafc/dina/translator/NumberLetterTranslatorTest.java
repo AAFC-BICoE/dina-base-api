@@ -21,9 +21,10 @@ public class NumberLetterTranslatorTest {
 
     // Test boundary
     assertEquals("ZZZZZA", NumberLetterTranslator.toLetter(321272381));
+    assertEquals("ZZZZZZ", NumberLetterTranslator.toLetter(NumberLetterTranslator.MAX_SUPPORTED_NUMBER));
 
     // method should not break even when provided a large number
-    assertNotNull(NumberLetterTranslator.toLetter(123456969));
+    assertThrows(IllegalArgumentException.class, ()->NumberLetterTranslator.toLetter(NumberLetterTranslator.MAX_SUPPORTED_NUMBER + 1));
   }
 
   @Test

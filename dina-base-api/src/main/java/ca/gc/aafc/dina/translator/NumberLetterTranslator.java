@@ -16,7 +16,8 @@ public final class NumberLetterTranslator {
   /**
    * Protect against a potential int overflow
    */
-  private static final int MAX_SUPPORTED_LETTERS = 6;
+  public static final int MAX_SUPPORTED_LETTERS = 6;
+  public static final int MAX_SUPPORTED_NUMBER = 321272406; // == "ZZZZZZ"
 
   /** Utility class This class should not be constructed. */
   private NumberLetterTranslator() { }
@@ -39,7 +40,11 @@ public final class NumberLetterTranslator {
 
     if (givenNumber <= 0) {
       throw new IllegalArgumentException(
-          "Does not accept Integers less than zero. Your input : " + givenNumber.toString());
+          "Does not accept Integers less than zero. Your input : " + givenNumber);
+    }
+    if (givenNumber > MAX_SUPPORTED_NUMBER) {
+      throw new IllegalArgumentException(
+              "Input should be less than " + MAX_SUPPORTED_NUMBER + ". Your input : " + givenNumber);
     }
 
     int number = givenNumber;
