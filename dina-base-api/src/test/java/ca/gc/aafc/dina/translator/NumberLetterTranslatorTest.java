@@ -19,6 +19,9 @@ public class NumberLetterTranslatorTest {
     assertEquals("AB", NumberLetterTranslator.toLetter(28), "The sequential pattern should be the same after adding a digit");
     assertEquals("AAA", NumberLetterTranslator.toLetter(703), "Beginning of triple digits at Int 703");
 
+    // Test boundary
+    assertEquals("ZZZZZA", NumberLetterTranslator.toLetter(321272381));
+
     // method should not break even when provided a large number
     assertNotNull(NumberLetterTranslator.toLetter(123456969));
   }

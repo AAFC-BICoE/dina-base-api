@@ -50,7 +50,7 @@ public final class NumberLetterTranslator {
     // character adds
     // is exponential. I.e Integer Range 1-26 returns buf[1], Range 27-702 returns
     // buf[2] and so on.
-    char[] buf = new char[(int) Math.floor(Math.log(25 * (number + 1)) / Math.log(26))];
+    char[] buf = new char[(int) Math.floor(Math.log(25L * (number + 1)) / Math.log(26))];
 
     // for each element in buf, populate it with the correct character
     for (int i = buf.length - 1; i >= 0; i--) {
