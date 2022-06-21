@@ -89,6 +89,7 @@ public interface DinaService<E extends DinaEntity> {
    * @param orderBy     - function to return the sorting criteria can be null
    * @param startIndex  - position of first result to retrieve
    * @param maxResult   - maximum number of results to return
+   * @param includes - list of includes including but not limited to relationships or an empty set, not null.
    * @param relationships - relationships to load or an empty set, not null.
    * @return list of entities
    */
@@ -98,6 +99,7 @@ public interface DinaService<E extends DinaEntity> {
     BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
     int startIndex,
     int maxResult,
+    @NonNull Set<String> includes,
     @NonNull Set<String> relationships
   );
 

@@ -142,10 +142,27 @@ public class DinaFilterResolver {
   }
 
   /**
+   * Return the include section of the JSON:API call.
+   * @param querySpec
+   * @return Set with all the includes or an empty set. Never null.
+   */
+  public static Set<String> extractIncludesSet(@NonNull QuerySpec querySpec) {
+    // getIncludedRelations never returns null
+    if( querySpec.getIncludedRelations().isEmpty() ) {
+      return Set.of();
+    }
+
+    Set<String> includes = new HashSet<>();
+    querySpec.getIncludedRelations().forEach(ir ->
+            includes.addAll(ir.getAttributePath()));
+    return includes;
+  }
+
+  /**
    * Extracts relationships from the query specs and make sure they are valid.
    * @param querySpec
    * @param registry
-   * @return Set with all the relationships or an empty set. Never null;
+   * @return Set with all the relationships or an empty set. Never null.
    */
   public static Set<String> extractRelationships(@NonNull QuerySpec querySpec, @NonNull DinaMappingRegistry registry) {
     // getIncludedRelations never returns null

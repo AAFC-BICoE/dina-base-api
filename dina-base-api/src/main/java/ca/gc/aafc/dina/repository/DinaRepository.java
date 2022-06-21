@@ -201,7 +201,8 @@ public class DinaRepository<D, E extends DinaEntity>
 
     // Retrieve the entities using the dina service
 
-    // Prepare hints to tell the service what relationships we will need.
+    // Prepare includes and relationships sets
+    Set<String> includesSet = DinaFilterResolver.extractIncludesSet(spec);
     Set<String> relationshipsPath = DinaFilterResolver.extractRelationships(spec, registry);
     List<E> entities = dinaService.findAll(
       entityClass,
@@ -211,7 +212,7 @@ public class DinaRepository<D, E extends DinaEntity>
       },
       (cb, root) -> DinaFilterResolver.getOrders(spec, cb, root, caseSensitiveOrderBy),
       Math.toIntExact(spec.getOffset()),
-      spec.getLimit().intValue(), relationshipsPath);
+      spec.getLimit().intValue(), includesSet, relationshipsPath);
 
     List<D> dtoList = new ArrayList<>(entities.size());
 
