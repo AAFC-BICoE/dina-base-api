@@ -1,19 +1,17 @@
 package ca.gc.aafc.dina.testsupport.jsonapi;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ca.gc.aafc.dina.testsupport.entity.ComplexObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.Data;
 import org.junit.jupiter.api.Test;
 
-import ca.gc.aafc.dina.testsupport.entity.ComplexObject;
-import lombok.Data;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JsonAPITestHelperTest {
   
@@ -121,6 +119,19 @@ public class JsonAPITestHelperTest {
     Map<String, Object> attributesMap = (Map<String, Object>)dataMap.get("attributes");
 
     assertTrue(attributesMap.containsKey("email"));
+  }
+
+  @Test
+  public void testToRelationshipByName() throws JsonProcessingException {
+    List<JsonAPIRelationship> rels = List.of(
+            JsonAPIRelationship.of("organisms", "organism",
+            "947f77ee-d144-45b5-b559-e239db0caa18"),
+            JsonAPIRelationship.of("organisms", "organism",
+                    "947f77ee-d144-45b5-b559-e239db0caa18"));
+
+    Map<String, ?> result = JsonAPITestHelper.toRelationshipMapByName(rels);
+    assertEquals("{\"organisms\":{\"data\":[{\"type\":\"organism\",\"id\":\"947f77ee-d144-45b5-b559-e239db0caa18\"},{\"type\":\"organism\",\"id\":\"947f77ee-d144-45b5-b559-e239db0caa18\"}]}}",
+            JsonAPITestHelper.toString(result));
   }
 
 }
