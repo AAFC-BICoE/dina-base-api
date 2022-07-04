@@ -139,7 +139,7 @@ public final class JsonAPITestHelper {
   }
 
   /**
-   *  sed to update multiple To-One relationships.
+   * Used to update multiple To-One relationships.
    * @param relationship
    * @return
    */
