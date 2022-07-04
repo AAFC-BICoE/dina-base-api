@@ -128,7 +128,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     int maxResult
   ) {
     return findAll(entityClass, (criteriaBuilder, root, em) -> where.apply(criteriaBuilder, root),
-      orderBy, startIndex, maxResult, Set.of());
+      orderBy, startIndex, maxResult, Set.of(), Set.of());
   }
 
   /**
@@ -152,16 +152,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     baseDAO.flush();
   }
 
-  /**
-   * Returns a list of Entities of a given class restricted by the predicates returned by a given function.
-   *
-   * @param entityClass - entity class to query cannot be null
-   * @param where       - function to return the predicates cannot be null
-   * @param orderBy     - function to return the sorting criteria can be null
-   * @param startIndex  - position of first result to retrieve
-   * @param maxResult   - maximum number of results to return
-   * @return list of entities
-   */
+
   @Override
   public <T> List<T> findAll(
     @NonNull Class<T> entityClass,
@@ -169,6 +160,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
     int startIndex,
     int maxResult,
+    @NonNull Set<String> includes,
     @NonNull Set<String> relationships
   ) {
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
