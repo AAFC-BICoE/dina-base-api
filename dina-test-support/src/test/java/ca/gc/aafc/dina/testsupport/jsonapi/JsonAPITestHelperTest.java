@@ -8,6 +8,7 @@ import java.util.Map;
 
 import ca.gc.aafc.dina.testsupport.entity.ComplexObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.restassured.path.json.JsonPath;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
 
@@ -129,9 +130,10 @@ public class JsonAPITestHelperTest {
             JsonAPIRelationship.of("organisms", "organism",
                     "947f77ee-d144-45b5-b559-e239db0caa18"));
 
-    Map<String, ?> result = JsonAPITestHelper.toRelationshipMapByName(rels);
-    assertEquals("{\"organisms\":{\"data\":[{\"type\":\"organism\",\"id\":\"947f77ee-d144-45b5-b559-e239db0caa18\"},{\"type\":\"organism\",\"id\":\"947f77ee-d144-45b5-b559-e239db0caa18\"}]}}",
-            JsonAPITestHelper.toString(result));
+    JsonPath expected = new JsonPath("{\"organisms\":{\"data\":[{\"type\":\"organism\",\"id\":\"947f77ee-d144-45b5-b559-e239db0caa18\"},{\"type\":\"organism\",\"id\":\"947f77ee-d144-45b5-b559-e239db0caa18\"}]}}");
+    JsonPath result = new JsonPath(JsonAPITestHelper.toString(JsonAPITestHelper.toRelationshipMapByName(rels)));
+    // compare maps from the root
+    assertEquals(expected.getMap("."), result.getMap("."));
   }
 
 }
