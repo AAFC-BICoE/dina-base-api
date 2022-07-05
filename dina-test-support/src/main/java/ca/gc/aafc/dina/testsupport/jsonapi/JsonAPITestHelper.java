@@ -7,11 +7,13 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.restassured.response.ValidatableResponse;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * The class provides some helper methods to build JSON API compliant Map
@@ -31,6 +33,16 @@ public final class JsonAPITestHelper {
 
   private  JsonAPITestHelper() {
 
+  }
+
+  /**
+   * Package protected utility method to write the provided object as json string using the defined ObjectMapper.
+   *
+   * @param obj
+   * @return
+   */
+  static String toString(Object obj) throws JsonProcessingException {
+    return IT_OBJECT_MAPPER.writeValueAsString(obj);
   }
 
   /**
@@ -125,6 +137,11 @@ public final class JsonAPITestHelper {
     return Map.of("data", jsonApiMap);
   }
 
+  /**
+   * Used to update multiple To-One relationships.
+   * @param relationship
+   * @return
+   */
   public static Map<String, Object> toRelationshipMap(List<JsonAPIRelationship> relationship) {
     if (relationship == null) {
       return null;
@@ -137,6 +154,11 @@ public final class JsonAPITestHelper {
     return relationships;
   }
 
+  /**
+   * Used to update To-One relationships.
+   * @param relationship
+   * @return
+   */
   public static Map<String, Object> toRelationshipMap(JsonAPIRelationship relationship) {
     return Map.of(
       relationship.getName(),
@@ -147,6 +169,24 @@ public final class JsonAPITestHelper {
         )
       )
     );
+  }
+
+  /**
+   * Used to update To-Many relationships.
+   * Will produce one "data" block per relationship name.
+   * @param relationships
+   * @return
+   */
+  public static Map<String, ?> toRelationshipMapByName(List<JsonAPIRelationship> relationships) {
+    Map<String, Pair<String, List<Map<String, Object>>>> relationshipByName = new HashMap<>();
+    for(JsonAPIRelationship currRel : relationships) {
+      Pair<String, List<Map<String, Object>>> p = relationshipByName.computeIfAbsent(currRel.getName(), k -> Pair.of("data", new ArrayList<>()));
+      p.getRight().add(Map.of(
+              "type", currRel.getType(),
+              "id", currRel.getId()
+      ));
+    }
+    return relationshipByName;
   }
 
   /**
@@ -163,6 +203,7 @@ public final class JsonAPITestHelper {
 
   /**
    * Convenience method to generate a Map representation of a External Relation as a List.
+   * External relationships here means that the identifier (UUID) will be randomly generated.
    *
    * @param type         type of the external relation
    * @param elementCount number of relations to generate
@@ -178,6 +219,7 @@ public final class JsonAPITestHelper {
 
   /**
    * Convenience method to generate a Map representation of a single External Relation.
+   * External relationship here means that the identifier (UUID) will be randomly generated.
    *
    * @param type type of the external relation
    * @return a Map representation of a External Relation
