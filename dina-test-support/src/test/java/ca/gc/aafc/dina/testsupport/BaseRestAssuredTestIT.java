@@ -26,7 +26,8 @@ public class BaseRestAssuredTestIT extends BaseRestAssuredTest {
    */
   @Test
 	public void baseClass_OnCRUDOperations_ExpectedReturnCodesReturned() {
-    CrnkTestData testData = CrnkTestData.builder().note("note").build();
+    // test with UTF-8 character to make sure it's fine
+    CrnkTestData testData = CrnkTestData.builder().note("note en français").build();
 
     ValidatableResponse postResponse = sendPost(
       JsonAPITestHelper.toJsonAPIMap(RESOURCE_PATH, testData));

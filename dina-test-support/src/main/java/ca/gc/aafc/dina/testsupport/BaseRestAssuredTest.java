@@ -2,6 +2,8 @@ package ca.gc.aafc.dina.testsupport;
 
 import static io.restassured.RestAssured.given;
 
+import io.restassured.RestAssured;
+import io.restassured.config.EncoderConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,6 +64,10 @@ public class BaseRestAssuredTest {
   private RequestSpecification newRequest() {
     return given()
       .header(CRNK_HEADER)
+      .config(RestAssured.config()
+              .encoderConfig(EncoderConfig.encoderConfig()
+                      .defaultCharsetForContentType("UTF-8", JSON_API_CONTENT_TYPE)
+                      .defaultCharsetForContentType("UTF-8", JSON_PATCH_CONTENT_TYPE)))
       .port(testPort)
       .basePath(basePath);
   }
