@@ -40,7 +40,6 @@ public final class JsonAPITestHelper {
    *
    * @param obj
    * @return
-   * @throws JsonProcessingException
    */
   static String toString(Object obj) throws JsonProcessingException {
     return IT_OBJECT_MAPPER.writeValueAsString(obj);
