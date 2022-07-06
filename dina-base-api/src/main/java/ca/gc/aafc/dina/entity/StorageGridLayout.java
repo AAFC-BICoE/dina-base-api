@@ -9,6 +9,9 @@ import javax.validation.constraints.NotNull;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+/**
+ * Represents a very general storage grid layout with row (x-axis), column (y-axis) and FillDirection.
+ */
 @Data
 @Builder
 public class StorageGridLayout {
