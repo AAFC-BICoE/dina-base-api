@@ -6,6 +6,8 @@ import lombok.Data;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Data
 @Builder
@@ -27,6 +29,9 @@ public class StorageGridLayout {
   public enum FillDirection {
     BY_ROW("by row"), BY_COLUMN("by column");
 
+    private static final Pattern COLUMN_REGEX = Pattern.compile("(?:by[_ ])?col(?:umn)?");
+    private static final Pattern ROW_REGEX = Pattern.compile("(?:by[_ ])?row");
+
     private final String text;
 
     FillDirection(String text) {
@@ -35,6 +40,23 @@ public class StorageGridLayout {
 
     public String getText() {
       return this.text;
+    }
+
+    /**
+     * Null safe method that returns the FillDirection from a string input. Optional container forces
+     * caller to handle null values. Input string is not case-sensitive.
+     *
+     * @param text
+     *          input string, for example, "By row"
+     * @return Optional FillDirection object
+     */
+    public static Optional<FillDirection> fromString(String text) {
+      if(ROW_REGEX.matcher(text.toLowerCase()).matches()) {
+        return Optional.of(BY_ROW);
+      } else if (COLUMN_REGEX.matcher(text.toLowerCase()).matches()) {
+        return Optional.of(BY_COLUMN);
+      }
+      return Optional.empty();
     }
   }
 
