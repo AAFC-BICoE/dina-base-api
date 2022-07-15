@@ -1,14 +1,18 @@
 package ca.gc.aafc.dina.entity;
 
+import com.vladmihalcea.hibernate.type.array.StringArrayType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
@@ -22,10 +26,11 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@TypeDef(name = "string-array", typeClass = StringArrayType.class)
 public class Person implements DinaEntity {
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
   @NaturalId
@@ -38,6 +43,8 @@ public class Person implements DinaEntity {
   @Column(name = "group_name")
   private String group;
 
+  @Column(name = "nick_names")
+  @Type(type = "string-array")
   private String[] nickNames;
 
   private String createdBy;

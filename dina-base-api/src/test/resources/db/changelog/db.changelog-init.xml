@@ -1,0 +1,232 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://dbchangelog-4.4.xsd"
+	context="schema-change">
+
+	<changeSet context="schema-change" id="init_create_department_related_tables" author="cgendreau">
+		<createTable tableName="department_type">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_department_type_id" />
+			</column>
+			<column name="uuid" type="uuid">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="name" type="varchar(255)"/>
+		</createTable>
+
+		<createTable tableName="person">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_person_id" />
+			</column>
+			<column name="uuid" type="uuid">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="name" type="varchar(255)"/>
+			<column name="room" type="integer"/>
+			<column name="group_name" type="varchar(255)"/>
+			<column name="nick_names" type="text[]"/>
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+		</createTable>
+
+		<createTable tableName="department">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_department_id" />
+			</column>
+			<column name="uuid" type="uuid">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="name" type="varchar(255)"/>
+			<column name="location" type="varchar(255)"/>
+			<column name="established_on" type="varchar(255)"/>
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+
+			<column name="department_type_id" type="integer">
+				<constraints foreignKeyName="fk_department_department_type" references="department_type(id)"/>
+			</column>
+			<column name="department_head_id" type="integer">
+				<constraints foreignKeyName="fk_department_head_person" references="person(id)"/>
+			</column>
+		</createTable>
+
+		<addColumn tableName="person" >
+			<column name="department_id" type="integer">
+				<constraints foreignKeyName="fk_person_department" references="department(id)"/>
+			</column>
+		</addColumn>
+
+		<createTable tableName="complex_object">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_complex_object_id" />
+			</column>
+			<column name="uuid" type="uuid">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="name" type="varchar(255)"/>
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+		</createTable>
+
+		<createTable tableName="employee">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_employee_id" />
+			</column>
+			<column name="uuid" type="uuid">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="name" type="varchar(255)"/>
+			<column name="job" type="varchar(255)"/>
+			<column name="custom_field_id" type="integer">
+				<constraints foreignKeyName="fk_employee_complex_object" references="complex_object(id)"/>
+			</column>
+			<column name="department_id" type="integer">
+				<constraints foreignKeyName="fk_employee_department" references="department(id)"/>
+			</column>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="javers-1" author="cgendreau">
+		<createSequence sequenceName="jv_commit_pk_seq"/>
+	</changeSet>
+	<changeSet id="javers-2" author="cgendreau">
+		<createSequence sequenceName="jv_global_id_pk_seq"/>
+	</changeSet>
+	<changeSet id="javers-3" author="cgendreau">
+		<createSequence sequenceName="jv_snapshot_pk_seq"/>
+	</changeSet>
+
+	<changeSet id="javers-4" author="cgendreau">
+		<createTable tableName="jv_commit">
+			<column name="commit_pk" type="BIGINT">
+				<constraints primaryKey="true" primaryKeyName="jv_commit_pk"/>
+			</column>
+			<column name="author" type="VARCHAR(200)"/>
+			<column name="commit_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+			<column name="commit_date_instant" type="VARCHAR(30)"/>
+			<column name="commit_id" type="numeric(22, 2)"/>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="javers-5" author="cgendreau">
+		<createTable tableName="jv_commit_property">
+			<column name="property_name" type="VARCHAR(191)">
+				<constraints primaryKey="true" primaryKeyName="jv_commit_property_pk" />
+			</column>
+			<column name="property_value" type="VARCHAR(600)" />
+			<column name="commit_fk" type="BIGINT">
+				<constraints primaryKey="true" primaryKeyName="jv_commit_property_pk" />
+			</column>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="javers-6" author="cgendreau">
+		<createTable tableName="jv_global_id">
+			<column name="global_id_pk" type="BIGINT">
+				<constraints primaryKey="true" primaryKeyName="jv_global_id_pk" />
+			</column>
+			<column name="local_id" type="VARCHAR(191)" />
+			<column name="fragment" type="VARCHAR(200)" />
+			<column name="type_name" type="VARCHAR(200)" />
+			<column name="owner_id_fk" type="BIGINT" />
+		</createTable>
+	</changeSet>
+	<changeSet id="javers-7" author="cgendreau">
+		<createTable tableName="jv_snapshot">
+			<column name="snapshot_pk" type="BIGINT">
+				<constraints primaryKey="true" primaryKeyName="jv_snapshot_pk" />
+			</column>
+			<column name="type" type="VARCHAR(200)" />
+			<column name="version" type="BIGINT" />
+			<column name="state" type="TEXT" />
+			<column name="changed_properties" type="TEXT" />
+			<column name="managed_type" type="VARCHAR(200)" />
+			<column name="global_id_fk" type="BIGINT" />
+			<column name="commit_fk" type="BIGINT" />
+		</createTable>
+	</changeSet>
+	<changeSet id="javers-8" author="cgendreau">
+		<createIndex indexName="jv_commit_commit_id_idx" tableName="jv_commit">
+			<column name="commit_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet id="javers-9" author="cgendreau">
+		<createIndex indexName="jv_commit_property_commit_fk_idx" tableName="jv_commit_property">
+			<column name="commit_fk" />
+		</createIndex>
+	</changeSet>
+	<changeSet id="javers-10"  author="cgendreau">
+		<createIndex indexName="jv_commit_property_property_name_property_value_idx" tableName="jv_commit_property">
+			<column name="property_name" />
+			<column name="property_value" />
+		</createIndex>
+	</changeSet>
+	<changeSet id="javers-11" author="cgendreau">
+		<createIndex indexName="jv_global_id_local_id_idx" tableName="jv_global_id">
+			<column name="local_id" />
+		</createIndex>
+		<createIndex indexName="jv_global_id_owner_id_fk_idx" tableName="jv_global_id">
+			<column name="owner_id_fk" />
+		</createIndex>
+		<createIndex indexName="jv_snapshot_commit_fk_idx" tableName="jv_snapshot">
+			<column name="commit_fk" />
+		</createIndex>
+		<createIndex indexName="jv_snapshot_global_id_fk_idx" tableName="jv_snapshot">
+			<column name="global_id_fk" />
+		</createIndex>
+	</changeSet>
+	<changeSet id="javers-12" author="cgendreau">
+		<addForeignKeyConstraint
+				baseColumnNames="commit_fk"
+				baseTableName="jv_commit_property"
+				constraintName="jv_commit_property_commit_fk"
+				deferrable="false"
+				initiallyDeferred="false"
+				onDelete="NO ACTION"
+				onUpdate="NO ACTION"
+				referencedColumnNames="commit_pk"
+				referencedTableName="jv_commit"
+				validate="true" />
+	</changeSet>
+	<changeSet id="javers-13" author="cgendreau">
+		<addForeignKeyConstraint
+				baseColumnNames="owner_id_fk"
+				baseTableName="jv_global_id"
+				constraintName="jv_global_id_owner_id_fk"
+				deferrable="false"
+				initiallyDeferred="false"
+				onDelete="NO ACTION"
+				onUpdate="NO ACTION"
+				referencedColumnNames="global_id_pk"
+				referencedTableName="jv_global_id"
+				validate="true" />
+	</changeSet>
+	<changeSet id="javers-14" author="cgendreau">
+		<addForeignKeyConstraint
+				baseColumnNames="commit_fk"
+				baseTableName="jv_snapshot"
+				constraintName="jv_snapshot_commit_fk"
+				deferrable="false"
+				initiallyDeferred="false"
+				onDelete="NO ACTION"
+				onUpdate="NO ACTION"
+				referencedColumnNames="commit_pk"
+				referencedTableName="jv_commit"
+				validate="true" />
+	</changeSet>
+	<changeSet id="javers-15" author="cgendreau">
+		<addForeignKeyConstraint
+				baseColumnNames="global_id_fk"
+				baseTableName="jv_snapshot"
+				constraintName="jv_snapshot_global_id_fk"
+				deferrable="false"
+				initiallyDeferred="false"
+				onDelete="NO ACTION"
+				onUpdate="NO ACTION"
+				referencedColumnNames="global_id_pk"
+				referencedTableName="jv_global_id"
+				validate="true" />
+	</changeSet>
+</databaseChangeLog>
