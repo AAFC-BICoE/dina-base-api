@@ -7,7 +7,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MultilingualDescriptionTest {
+public class MultilingualTest {
 
   @Test
   public void multilingualDescription_onDescription_hasBlankDescriptionReturnsRightResult() {
@@ -20,6 +20,19 @@ public class MultilingualDescriptionTest {
 
     // if the list of description is empty it should return false since there is no description to validate
     assertFalse(MultilingualDescription.builder().build().hasBlankDescription());
+  }
+
+  @Test
+  public void multilingualTitle_onTitle_hasBlankDescriptionReturnsRightResult() {
+    MultilingualTitle multilingualTitle = MultilingualTitle.builder()
+            .titles(List.of(
+                    MultilingualTitle.MultilingualTitlePair.of("en", "en"),
+                    MultilingualTitle.MultilingualTitlePair.of("fr", "")))
+            .build();
+    assertTrue(multilingualTitle.hasBlankTitle());
+
+    // if the list of description is empty it should return false since there is no description to validate
+    assertFalse(MultilingualTitle.builder().build().hasBlankTitle());
   }
 
 }

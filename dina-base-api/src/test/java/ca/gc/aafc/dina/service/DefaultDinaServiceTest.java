@@ -219,7 +219,7 @@ public class DefaultDinaServiceTest {
     Department result = createDepartment();
     assertNull(result.getId());
     assertNull(result.getUuid());
-    serviceUnderTest.create(result);
+    serviceUnderTest.createAndFlush(result);
     return result;
   }
 
