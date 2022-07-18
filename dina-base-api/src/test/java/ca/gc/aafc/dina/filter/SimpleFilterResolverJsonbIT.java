@@ -50,8 +50,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @SpringBootTest(classes = {
-  TestDinaBaseApp.class, SimpleFilterResolverJsonbIT.DinaFilterResolverJsonbITConfig.class},
-  properties = "spring.jpa.hibernate.ddl-auto=create-drop")
+  TestDinaBaseApp.class, SimpleFilterResolverJsonbIT.DinaFilterResolverJsonbITConfig.class})
 @ContextConfiguration(initializers = {PostgresTestContainerInitializer.class})
 @ExtendWith(SpringExtension.class)
 @Transactional

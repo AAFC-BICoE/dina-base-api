@@ -5,6 +5,7 @@ import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import com.google.common.collect.Sets;
 import io.crnk.core.engine.information.resource.ResourceInformation;
 import io.crnk.core.engine.query.QueryContext;
@@ -19,6 +20,7 @@ import io.crnk.core.resource.list.ResourceList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -36,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class, properties = "crnk.allow-unknown-attributes=true")
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class RsqlFilterHandlerIT {
 
   @Inject
@@ -58,11 +61,11 @@ public class RsqlFilterHandlerIT {
   @BeforeEach
   public void initEmployees() {
     // Persist 5 test employees.
-    entityManager.persist(Employee.builder().name("employee1").build());
-    entityManager.persist(Employee.builder().name("employee2").build());
-    entityManager.persist(Employee.builder().name("employee3").build());
-    entityManager.persist(Employee.builder().name("employee4").build());
-    entityManager.persist(Employee.builder().name("employee5").build());
+    entityManager.persist(Employee.builder().uuid(UUID.randomUUID()).name("employee1").build());
+    entityManager.persist(Employee.builder().uuid(UUID.randomUUID()).name("employee2").build());
+    entityManager.persist(Employee.builder().uuid(UUID.randomUUID()).name("employee3").build());
+    entityManager.persist(Employee.builder().uuid(UUID.randomUUID()).name("employee4").build());
+    entityManager.persist(Employee.builder().uuid(UUID.randomUUID()).name("employee5").build());
     
     // Persist 5 test People:
     Person person1 = Person.builder().uuid(UUID.randomUUID()).name("person1").createdOn(creationDateTime).build();

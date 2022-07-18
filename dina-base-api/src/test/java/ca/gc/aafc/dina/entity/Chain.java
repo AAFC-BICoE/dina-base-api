@@ -1,8 +1,6 @@
 package ca.gc.aafc.dina.entity;
 
-import ca.gc.aafc.dina.service.OnCreate;
 import ca.gc.aafc.dina.service.OnUpdate;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +18,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
 import javax.validation.constraints.Size;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -37,7 +34,6 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @RequiredArgsConstructor
-@SuppressFBWarnings({ "EI_EXPOSE_REP", "EI_EXPOSE_REP2" })
 public class Chain implements DinaEntity {
 
   @Getter(onMethod = @__({

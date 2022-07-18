@@ -14,6 +14,7 @@ import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
@@ -28,6 +29,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
@@ -41,6 +43,7 @@ import java.util.UUID;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class)
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class DinaMappingLayerIT {
 
   @Inject

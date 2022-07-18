@@ -14,6 +14,7 @@ import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIOperationBuilder;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
@@ -36,6 +37,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
@@ -58,6 +60,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(DinaRepoRestIT.DinaRepoBulkOperationITConfig.class)
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class DinaRepoRestIT extends BaseRestAssuredTest {
 
   private static final Header CRNK_HEADER = new Header("crnk-compact", "true");
