@@ -2,12 +2,13 @@ package ca.gc.aafc.dina.security;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.RelatedEntity;
-import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.entity.Item;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
 import ca.gc.aafc.dina.service.DefaultDinaService;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import io.crnk.core.engine.http.HttpRequestContext;
 import io.crnk.core.engine.http.HttpRequestContextProvider;
@@ -27,7 +28,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.junit.jupiter.api.Assertions;
@@ -42,13 +42,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -57,17 +54,18 @@ import java.util.UUID;
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, DinaRepoPermissionMetaTest.TestConfig.class},
   properties = "keycloak.enabled: true")
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class DinaRepoPermissionMetaTest {
 
   @Inject
-  private DinaRepository<TestConfig.ItemDto, TestConfig.Item> testRepo;
+  private DinaRepository<TestConfig.ItemDto, Item> testRepo;
 
   @Inject
-  private DefaultDinaService<TestConfig.Item> itemService;
+  private DefaultDinaService<Item> itemService;
 
   @BeforeEach
   void setUp() {
-    TestConfig.Item persisted = TestConfig.Item.builder()
+    Item persisted = Item.builder()
       .uuid(UUID.randomUUID())
       .group("CNC")
       .build();
@@ -158,23 +156,6 @@ public class DinaRepoPermissionMetaTest {
         null,
         null,
         buildProperties);
-    }
-
-    @Data
-    @Entity
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Item implements DinaEntity {
-      private String createdBy;
-      private OffsetDateTime createdOn;
-      @Column(name = "group_name")
-      private String group;
-      @Id
-      @GeneratedValue
-      private Integer id;
-      @NaturalId
-      private UUID uuid;
     }
 
     @Data

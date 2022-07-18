@@ -1,7 +1,6 @@
 package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.service.PostgresJsonbService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
@@ -27,7 +26,7 @@ public class PostgresJsonbServiceIT {
       // attr_01 does exist in one record in jdata column
       Integer.valueOf(1),
       postgresJsonbService.countFirstLevelKeys(
-        "dina_test_table",
+        "dina_jsonb",
         "jdata",
         "attr_01"
       )
@@ -42,7 +41,7 @@ public class PostgresJsonbServiceIT {
       // attr_03 does not exist in any records in jdata column
       Integer.valueOf(0),
       postgresJsonbService.countFirstLevelKeys(
-        "dina_test_table",
+        "dina_jsonb",
         "jdata",
         "attr_03"
       )

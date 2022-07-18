@@ -4,5 +4,6 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://dbchangelog-4.4.xsd">
 
   <include file="db/changelog/db.changelog-init.xml"/>
-
+  <include file="db/changelog/initial-data/1-Add_hierarchy_test_data.xml"/>
+  <include file="db/changelog/initial-data/2-Add_dina_jsonb_test_data.xml"/>
 </databaseChangeLog>

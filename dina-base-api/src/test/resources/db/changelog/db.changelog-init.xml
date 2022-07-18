@@ -65,9 +65,7 @@
 			<column autoIncrement="true" name="id" type="SERIAL">
 				<constraints primaryKey="true" primaryKeyName="pk_complex_object_id" />
 			</column>
-			<column name="uuid" type="uuid">
-				<constraints nullable="false" unique="true" />
-			</column>
+			<column name="uuid" type="uuid"/>
 			<column name="name" type="varchar(255)"/>
 			<column name="created_by" type="varchar(255)"/>
 			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
@@ -89,6 +87,177 @@
 				<constraints foreignKeyName="fk_employee_department" references="department(id)"/>
 			</column>
 		</createTable>
+	</changeSet>
+
+	<changeSet context="schema-change" id="init_managed_attribute_tables" author="cgendreau">
+		<createTable tableName="test_managed_attribute">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_test_managed_attribute_id" />
+			</column>
+			<column name="uuid" type="uuid">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="name" type="varchar(255)"/>
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+			<column name="key" type="varchar(255)"/>
+			<column name="fail_validate_value" type="boolean">
+				<constraints nullable="false"/>
+			</column>
+			<column name="component" type="varchar(255)"/>
+			<column name="accepted_values" type="text[]"/>
+			<column name="managed_attribute_type" type="varchar(50)"/>
+			<column name="multilingual_description" type="jsonb"/>
+		</createTable>
+	</changeSet>
+
+
+	<changeSet context="schema-change" id="init_hierarchy_related_tables" author="cgendreau">
+		<createTable tableName="hierarchy_test_table">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_hierarchy_test_id" />
+			</column>
+			<column name="uuid" type="uuid">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="type_uuid" type="uuid"/>
+			<column name="name" type="text">
+				<constraints nullable="false" />
+			</column>
+			<column name="parent_identifier" type="integer">
+				<constraints foreignKeyName="fk_hierarchy_parent" references="hierarchy_test_table(id)"/>
+			</column>
+		</createTable>
+	</changeSet>
+
+	<changeSet context="schema-change" id="init_jsonb_related_tables" author="cgendreau">
+		<createTable tableName="dina_jsonb">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_dina_jsonb_id" />
+			</column>
+			<column name="name" type="text">
+				<constraints nullable="false" />
+			</column>
+			<column name="value" type="integer">
+				<constraints nullable="false" />
+			</column>
+			<column name="jdata" type="jsonb">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+	</changeSet>
+
+	<changeSet context="schema-change" id="init_item_related_tables" author="cgendreau">
+		<createTable tableName="item">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_item_id" />
+			</column>
+			<column name="uuid" type="uuid">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="group_name" type="varchar(255)"/>
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+		</createTable>
+	</changeSet>
+
+	<changeSet context="schema-change" id="init_parent_children_tables" author="cgendreau">
+		<createTable tableName="parent">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_parent_id" />
+			</column>
+			<column name="uuid" type="uuid">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="group_name" type="varchar(255)"/>
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+		</createTable>
+		<createTable tableName="child">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_child_id" />
+			</column>
+			<column name="uuid" type="uuid">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="group_name" type="varchar(255)"/>
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+			<column name="parent_id" type="integer">
+				<constraints foreignKeyName="fk_child_parent_id" references="parent(id)"/>
+			</column>
+		</createTable>
+	</changeSet>
+
+	<changeSet context="schema-change" id="init_jsonb_car_related_tables" author="cgendreau">
+		<createTable tableName="jsonb_car">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_jsonb_car_id" />
+			</column>
+			<column name="uuid" type="uuid">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="json_data" type="jsonb"/>
+			<column name="json_list_data" type="jsonb"/>
+
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+		</createTable>
+	</changeSet>
+
+	<changeSet context="schema-change" id="Add_jsonb_path_exists_varchar_function"  author="cgendreau">
+		<sql>
+			CREATE OR REPLACE FUNCTION jsonb_path_exists_varchar(target jsonb, path varchar, vars varchar, caseSensitive boolean)
+			RETURNS boolean AS
+			'
+			BEGIN
+			  IF caseSensitive THEN
+			    RETURN(jsonb_path_exists(target, path::jsonpath, vars::jsonb));
+			  ELSE
+			    RETURN(jsonb_path_exists(lower(target::text)::jsonb, lower(path::text)::jsonpath, lower(vars::text)::jsonb));
+			END IF;
+			END
+			'
+			LANGUAGE plpgsql STABLE;
+		</sql>
+	</changeSet>
+
+	<changeSet context="schema-change" id="init_task_related_tables" author="cgendreau">
+		<createTable tableName="task">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_task_id" />
+			</column>
+			<column name="uuid" type="uuid"/>
+			<column name="power_level" type="integer"/>
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+		</createTable>
+
+		<createTable tableName="project">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_project_id" />
+			</column>
+			<column name="uuid" type="uuid"/>
+			<column name="ac_meta_data_creator" type="uuid"/>
+			<column name="original_author" type="uuid"/>
+			<column name="name" type="varchar(255)"/>
+			<column name="alias" type="varchar(255)"/>
+			<column name="task_id" type="integer">
+				<constraints foreignKeyName="fk_project_task_id" references="task(id)"/>
+			</column>
+
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+		</createTable>
+		<createTable tableName="project_name_translations">
+			<column name="project_id" type="integer">
+			  <constraints foreignKeyName="fk_project_name_translations_project_id" references="project(id)"/>
+			</column>
+			<column name="name_translations_id" type="integer">
+				<constraints foreignKeyName="fk_project_name_translations_complex_object_id" references="complex_object(id)"/>
+			</column>
+		</createTable>
+
 	</changeSet>
 
 	<changeSet id="javers-1" author="cgendreau">
