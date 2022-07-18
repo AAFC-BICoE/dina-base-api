@@ -51,11 +51,12 @@ public class Person implements DinaEntity {
 
   private OffsetDateTime createdOn;
 
-  @OneToOne()
+  @OneToOne
   @JoinColumn(name = "department_id")
   private Department department;
 
+  // one person could be the head backup of multiple departments but a department only has 1 head backup
   @OneToMany
-  @JoinColumn(name = "department_list_fk")
-  private List<Department> departments;
+  @JoinColumn(name = "department_head_backup_id")
+  private List<Department> departmentsHeadBackup;
 }

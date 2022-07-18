@@ -50,6 +50,9 @@
 			<column name="department_head_id" type="integer">
 				<constraints foreignKeyName="fk_department_head_person" references="person(id)"/>
 			</column>
+			<column name="department_head_backup_id" type="integer">
+				<constraints foreignKeyName="fk_department_head_backup_person" references="person(id)"/>
+			</column>
 		</createTable>
 
 		<addColumn tableName="person" >
