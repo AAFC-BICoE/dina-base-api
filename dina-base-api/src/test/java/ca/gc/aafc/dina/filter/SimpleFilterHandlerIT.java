@@ -13,6 +13,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
+import ca.gc.aafc.dina.BasePostgresItContext;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,9 +30,7 @@ import io.crnk.core.repository.ResourceRepository;
 import org.springframework.test.context.ContextConfiguration;
 
 @Transactional
-@SpringBootTest(classes = TestDinaBaseApp.class)
-@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
-public class SimpleFilterHandlerIT  {
+public class SimpleFilterHandlerIT extends BasePostgresItContext {
 
   @Inject
   private ResourceRepository<EmployeeDto, Serializable> employeeRepository;

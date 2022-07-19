@@ -1,9 +1,6 @@
 package ca.gc.aafc.dina.service;
 
-import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
+import ca.gc.aafc.dina.BasePostgresItContext;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
@@ -11,9 +8,7 @@ import javax.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(classes = TestDinaBaseApp.class)
-@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
-public class PostgresJsonbServiceIT {
+public class PostgresJsonbServiceIT extends BasePostgresItContext {
 
   @Inject
   private PostgresJsonbService postgresJsonbService;

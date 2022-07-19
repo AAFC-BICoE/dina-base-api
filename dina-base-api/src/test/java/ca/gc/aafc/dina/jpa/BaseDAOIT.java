@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -13,32 +12,25 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.persistence.PersistenceException;
-import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 
+import ca.gc.aafc.dina.BasePostgresItContext;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.testsupport.DatabaseSupportService;
-import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.DepartmentType;
-import org.springframework.test.context.ContextConfiguration;
 
 @Transactional
-@SpringBootTest(classes = TestDinaBaseApp.class)
-@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
-public class BaseDAOIT {
+public class BaseDAOIT extends BasePostgresItContext {
   
   @Inject
   private BaseDAO baseDAO;

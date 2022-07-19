@@ -120,12 +120,12 @@ public class JsonbKeyValuePredicateIT {
             car.getUuid(), JsonbCar.class);
     
     // Ensure the tanks were persisted correctly.
-    Assertions.assertEquals(expectedValue.toLowerCase(), result.getJsonData().get(KEY).toLowerCase());
+    Assertions.assertEquals(expectedValue.toLowerCase(), result.getJsonData().get(KEY).toString().toLowerCase());
     Assertions.assertEquals(expectedValue.toLowerCase(), result.getJsonListData().get(0).getValue().toLowerCase());
   }
 
   private JsonbCar newCar(String expectedValue) {
-    Map<String, String> data = Map.of(KEY, expectedValue);
+    Map<String, Object> data = Map.of(KEY, expectedValue);
     return JsonbCar.builder()
       .id(RandomUtils.nextInt(0, 10000))
       .jsonData(data)

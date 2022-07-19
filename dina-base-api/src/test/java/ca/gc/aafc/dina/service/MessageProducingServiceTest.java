@@ -31,6 +31,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
 import org.testcontainers.containers.RabbitMQContainer;
@@ -54,6 +55,7 @@ import java.util.concurrent.CountDownLatch;
     "rabbitmq.port=49198"
   })
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
+@DirtiesContext //it's an expensive test and we won't reuse the context
 class MessageProducingServiceTest {
 
   @Inject

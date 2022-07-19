@@ -35,7 +35,7 @@ public class JsonbCar implements DinaEntity {
 
   @Type(type = "jsonb")
   @Column(columnDefinition = "jsonb")
-  private Map<String, String> jsonData;
+  private Map<String, Object> jsonData;
 
   @Type(type = "jsonb")
   @Column(columnDefinition = "jsonb")

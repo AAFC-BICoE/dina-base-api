@@ -203,6 +203,19 @@
 			<column name="created_by" type="varchar(255)"/>
 			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
 		</createTable>
+		<createTable tableName="car_driver">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_car_driver_id" />
+			</column>
+			<column name="uuid" type="uuid">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+			<column name="car_id" type="integer">
+				<constraints foreignKeyName="fk_jsonb_car_id" references="jsonb_car(id)"/>
+			</column>
+		</createTable>
 	</changeSet>
 
 	<changeSet context="schema-change" id="Add_jsonb_path_exists_varchar_function"  author="cgendreau">
@@ -257,7 +270,45 @@
 				<constraints foreignKeyName="fk_project_name_translations_complex_object_id" references="complex_object(id)"/>
 			</column>
 		</createTable>
+	</changeSet>
 
+	<changeSet context="schema-change" id="init_vocabulary_table" author="cgendreau">
+		<createTable tableName="vocabulary">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_vocabulary_id" />
+			</column>
+			<column name="uuid" type="uuid"/>
+			<column name="name" type="varchar(255)"/>
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+		</createTable>
+	</changeSet>
+
+	<changeSet context="schema-change" id="init_chain_table" author="cgendreau">
+		<createTable tableName="chain_templates">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_chain_template_id" />
+			</column>
+			<column name="uuid" type="uuid"/>
+			<column name="name" type="varchar(255)"/>
+			<column name="groupname" type="varchar(255)"/>
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+		</createTable>
+		<createTable tableName="chains">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_chain_id" />
+			</column>
+			<column name="uuid" type="uuid"/>
+			<column name="name" type="varchar(255)"/>
+			<column name="groupname" type="varchar(255)"/>
+			<column name="agent" type="uuid"/>
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+			<column name="chaintemplateid" type="integer">
+				<constraints foreignKeyName="fk_chain_chaintemplateid" references="chain_templates(id)"/>
+			</column>
+		</createTable>
 	</changeSet>
 
 	<changeSet id="javers-1" author="cgendreau">
