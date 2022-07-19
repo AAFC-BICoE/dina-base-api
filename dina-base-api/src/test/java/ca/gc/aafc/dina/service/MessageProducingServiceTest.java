@@ -1,20 +1,16 @@
 package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.entity.Item;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.search.messaging.types.DocumentOperationNotification;
 import ca.gc.aafc.dina.search.messaging.types.DocumentOperationType;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.TransactionTestingHelper;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.hibernate.annotations.NaturalId;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,16 +31,13 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.inject.Inject;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -61,10 +54,12 @@ import java.util.concurrent.CountDownLatch;
     "rabbitmq.host=localhost",
     "rabbitmq.port=49198"
   })
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
+@DirtiesContext //it's an expensive test and we won't reuse the context
 class MessageProducingServiceTest {
 
   @Inject
-  private DefaultDinaService<TestConfig.Item> itemService;
+  private DefaultDinaService<Item> itemService;
 
   @Inject
   private RabbitTemplate template;
@@ -102,7 +97,7 @@ class MessageProducingServiceTest {
   @SneakyThrows
   @Test
   void create() {
-    TestConfig.Item item = TestConfig.Item.builder()
+    Item item = Item.builder()
         .uuid(UUID.randomUUID())
         .group("CNC")
         .build();
@@ -115,7 +110,7 @@ class MessageProducingServiceTest {
   @SneakyThrows
   @Test
   void update() {
-    TestConfig.Item item = TestConfig.Item.builder()
+    Item item = Item.builder()
       .uuid(UUID.randomUUID())
       .group("CNC")
       .build();
@@ -132,7 +127,7 @@ class MessageProducingServiceTest {
   @SneakyThrows
   @Test
   void delete() {
-    TestConfig.Item item = TestConfig.Item.builder()
+    Item item = Item.builder()
       .uuid(UUID.randomUUID())
       .group("CNC")
       .build();
@@ -141,8 +136,8 @@ class MessageProducingServiceTest {
     listener.setLatch(new CountDownLatch(1));
 
     // we need to load the entity before deleting it
-    transactionTestingHelper.doInTransactionWithoutResult( (t) -> itemService.delete(itemService.findOne(item.uuid,
-        TestConfig.Item.class)));
+    transactionTestingHelper.doInTransactionWithoutResult( (t) -> itemService.delete(itemService.findOne(item.getUuid(),
+        Item.class)));
     listener.getLatch().await();
 
     assertResult(DocumentOperationType.DELETE, item.getUuid().toString());
@@ -165,25 +160,8 @@ class MessageProducingServiceTest {
   @EnableRabbit
   static class TestConfig {
 
-    @Data
-    @Entity
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Item implements DinaEntity {
-      private String createdBy;
-      private OffsetDateTime createdOn;
-      @Column(name = "group_name")
-      private String group;
-      @Id
-      @GeneratedValue
-      private Integer id;
-      @NaturalId
-      private UUID uuid;
-    }
-
     @Service
-    public static class ItemService extends MessageProducingService<TestConfig.Item> {
+    public static class ItemService extends MessageProducingService<Item> {
 
       public ItemService(
         @NonNull BaseDAO baseDAO,
@@ -194,7 +172,7 @@ class MessageProducingServiceTest {
       }
 
       @Override
-      protected void preCreate(TestConfig.Item entity) {
+      protected void preCreate(Item entity) {
         entity.setUuid(UUID.randomUUID());
       }
     }

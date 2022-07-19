@@ -3,12 +3,14 @@ package ca.gc.aafc.dina.security;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.entity.Item;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiResource;
@@ -31,12 +33,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
@@ -48,6 +52,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, DinaAdminOnlyAuthTest.DinaAdminOnlyTestConfig.class},
   properties = "keycloak.enabled: true")
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class DinaAdminOnlyAuthTest {
 
   @Inject
@@ -85,7 +90,7 @@ public class DinaAdminOnlyAuthTest {
   @Test
   @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
   void update_WhenAdmin_AccessAccepted() {
-    assertDoesNotThrow(() -> testRepo.save(ItemDto.builder().uuid(persisted.uuid).build()));
+    assertDoesNotThrow(() -> testRepo.save(ItemDto.builder().uuid(persisted.getUuid()).build()));
   }
 
   @Test
@@ -139,23 +144,6 @@ public class DinaAdminOnlyAuthTest {
         buildProperties);
     }
 
-  }
-
-  @Data
-  @Entity
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class Item implements DinaEntity {
-    private String createdBy;
-    private OffsetDateTime createdOn;
-    @Column(name = "group_name")
-    private String group;
-    @Id
-    @GeneratedValue
-    private Integer id;
-    @NaturalId
-    private UUID uuid;
   }
 
   @Data

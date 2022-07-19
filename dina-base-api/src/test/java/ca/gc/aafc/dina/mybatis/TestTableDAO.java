@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper
 public interface TestTableDAO {
 
-  @Select("SELECT id, jdata FROM dina_test_table where id = ${id}")
+  @Select("SELECT id, jdata FROM dina_jsonb where id = ${id}")
   @Options(statementType = StatementType.CALLABLE)
   @Result(property = "jdata", column = "jdata", typeHandler = TestDataTypeHandler.class)
   List<TestTableData> loadData(@Param("id") Integer id);

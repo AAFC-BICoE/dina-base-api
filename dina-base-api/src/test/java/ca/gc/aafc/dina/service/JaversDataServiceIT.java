@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.EmployeeDto;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.javers.core.Javers;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.test.context.ContextConfiguration;
 
 import javax.inject.Inject;
 import java.util.Collections;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @SpringBootTest(classes = TestDinaBaseApp.class, properties = "dina.auditing.enabled = true")
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 class JaversDataServiceIT {
 
   private static final String AUTHOR = "dina_user";

@@ -12,19 +12,17 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 
+import ca.gc.aafc.dina.BasePostgresItContext;
 import ca.gc.aafc.dina.entity.Department;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import io.crnk.core.engine.document.ErrorData;
 import io.crnk.core.engine.error.ErrorResponse;
 import io.crnk.core.repository.ResourceRepository;
 
 @Transactional
-@SpringBootTest(classes = TestDinaBaseApp.class)
-public class ConstraintViolationExceptionMapperIT {
+public class ConstraintViolationExceptionMapperIT extends BasePostgresItContext {
 
   @Inject
   private ConstraintViolationExceptionMapper constraintViolationExceptionMapper;

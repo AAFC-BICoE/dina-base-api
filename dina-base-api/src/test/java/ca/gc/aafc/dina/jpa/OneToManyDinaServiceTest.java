@@ -3,11 +3,14 @@ package ca.gc.aafc.dina.jpa;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.entity.parentchild.Child;
+import ca.gc.aafc.dina.entity.parentchild.Parent;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
@@ -29,6 +32,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
@@ -53,6 +57,7 @@ import static io.restassured.RestAssured.given;
   classes = {TestDinaBaseApp.class, OneToManyDinaServiceTest.OneToManyHibernateHelperTestConfig.class},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Transactional
+@ContextConfiguration(initializers = {PostgresTestContainerInitializer.class})
 class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
   public static final String PARENT_TYPE_NAME = "A";
@@ -257,26 +262,6 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
     }
 
     @Data
-    @Entity
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Parent implements DinaEntity {
-      private String createdBy;
-      private OffsetDateTime createdOn;
-      @Column(name = "group_name")
-      private String group;
-      @Id
-      @GeneratedValue
-      private Integer id;
-      @NaturalId
-      private UUID uuid;
-
-      @OneToMany(mappedBy = "parent")
-      private List<Child> children;
-    }
-
-    @Data
     @JsonApiResource(type = "A")
     @RelatedEntity(Parent.class)
     public static class ParentDto {
@@ -288,26 +273,6 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
       @JsonApiRelation
       private List<ChildDto> children;
-    }
-
-    @Data
-    @Entity
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Child implements DinaEntity {
-      private String createdBy;
-      private OffsetDateTime createdOn;
-      @Column(name = "group_name")
-      private String group;
-      @Id
-      @GeneratedValue
-      private Integer id;
-      @NaturalId
-      private UUID uuid;
-
-      @ManyToOne
-      private Parent parent;
     }
 
     @Data

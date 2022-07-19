@@ -8,8 +8,10 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.validation.ValidationException;
 
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
@@ -19,6 +21,7 @@ import ca.gc.aafc.dina.i18n.MultilingualDescription.MultilingualPair;
 
 @SpringBootTest(classes = TestDinaBaseApp.class,
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class MultilingualDescriptionValidatorTest {
 
   @Inject

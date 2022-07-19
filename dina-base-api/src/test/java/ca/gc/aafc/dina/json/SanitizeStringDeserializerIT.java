@@ -1,10 +1,9 @@
 package ca.gc.aafc.dina.json;
 
-import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.BasePostgresItContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -15,8 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Tested as integration test since we need to make sure the deserializer is used by the Spring
  * managed ObjectMapper.
  */
-@SpringBootTest(classes = TestDinaBaseApp.class)
-public class SanitizeStringDeserializerIT {
+public class SanitizeStringDeserializerIT extends BasePostgresItContext {
 
   @Inject
   private ObjectMapper objectMapper;

@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.mapper;
 
+import ca.gc.aafc.dina.BasePostgresItContext;
 import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
@@ -23,7 +24,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -40,8 +40,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Transactional
-@SpringBootTest(classes = TestDinaBaseApp.class)
-public class DinaMappingLayerIT {
+public class DinaMappingLayerIT extends BasePostgresItContext {
 
   @Inject
   private DefaultDinaService<Task> service;

@@ -1,40 +1,27 @@
 package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
-import ca.gc.aafc.dina.i18n.MultilingualDescription;
+import ca.gc.aafc.dina.entity.ma.TestManagedAttribute;
 import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.validation.ManagedAttributeValueValidator;
 import ca.gc.aafc.dina.validation.ValidationContext;
-import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
-
 import org.apache.commons.lang3.tuple.Pair;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.Errors;
 import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
-
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
-
-import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -44,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, ManagedAttributeServiceIT.ManagedAttributeConfig.class})
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class ManagedAttributeServiceIT {
 
   @Inject
@@ -53,6 +41,7 @@ public class ManagedAttributeServiceIT {
   public void managedAttributeService_OnCreate_KeyCorrectlyGenerated() {
     TestManagedAttribute managedAttribute = testManagedAttributeService
         .create(TestManagedAttribute.builder()
+            .uuid(UUID.randomUUID())
             .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
             .name("dina attribute #12").build());
 
@@ -63,10 +52,12 @@ public class ManagedAttributeServiceIT {
   public void managedAttributeService_OnFindOne_OneReturned() {
     TestManagedAttribute managedAttribute1 = testManagedAttributeService
         .createAndFlush(TestManagedAttribute.builder()
+            .uuid(UUID.randomUUID())
             .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
             .name("dina attribute 1").build());
     testManagedAttributeService
         .createAndFlush(TestManagedAttribute.builder()
+            .uuid(UUID.randomUUID())
             .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
             .name("dina attribute 2").build());
 
@@ -83,11 +74,13 @@ public class ManagedAttributeServiceIT {
     TestManagedAttribute managedAttribute1 = testManagedAttributeService
         .createAndFlush(TestManagedAttribute.builder()
             .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
+            .uuid(UUID.randomUUID())
             .name("dina attribute")
             .createdBy("abc").build());
     testManagedAttributeService
         .createAndFlush(TestManagedAttribute.builder()
             .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
+            .uuid(UUID.randomUUID())
             .name("dina attribute")
             .createdBy("bcd").build());
 
@@ -138,51 +131,6 @@ public class ManagedAttributeServiceIT {
         }
       };
     }
-  }
-
-  /**
-   * Test implementation of a {@link ManagedAttribute}.
-   * Since it's running on H2 the uniqueness if not really define so the test will assume
-   * it is by key or key/component depending on the purpose of the test.
-   */
-  @Data
-  @Builder
-  @Entity
-  @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-  public static class TestManagedAttribute implements ManagedAttribute {
-    @Id
-    @GeneratedValue
-    private Integer id;
-    private UUID uuid;
-    private String name;
-    private String key;
-    @NotNull
-    private ManagedAttributeType managedAttributeType;
-    private String[] acceptedValues;
-    private String createdBy;
-    private OffsetDateTime createdOn;
-    //for testing purpose
-    private boolean failValidateValue;
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
-    private MultilingualDescription multilingualDescription;
-
-    // matches XYZValidationContext toString
-    private String component;
-  }
-
-  @Data
-  @Builder
-  public static class TestManagedAttributeUsage implements DinaEntity {
-    @Id
-    @GeneratedValue
-    private Integer id;
-    private UUID uuid;
-
-    private Map<String, String> managedAttributes;
-
-    private String createdBy;
-    private OffsetDateTime createdOn;
   }
 
   public enum XYZValidationContext implements ValidationContext {

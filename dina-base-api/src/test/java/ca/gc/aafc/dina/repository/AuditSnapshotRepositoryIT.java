@@ -6,6 +6,7 @@ import java.util.Collections;
 
 import javax.inject.Inject;
 
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.apache.commons.lang3.RandomUtils;
 import org.javers.core.Javers;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,8 +24,10 @@ import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.list.ResourceList;
 import io.crnk.core.resource.meta.PagedMetaInformation;
+import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest(classes = TestDinaBaseApp.class, properties = "dina.auditing.enabled = true")
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class AuditSnapshotRepositoryIT {
 
   @Inject

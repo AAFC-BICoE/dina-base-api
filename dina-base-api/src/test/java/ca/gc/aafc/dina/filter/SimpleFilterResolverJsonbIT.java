@@ -2,14 +2,14 @@ package ca.gc.aafc.dina.filter;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.RelatedEntity;
-import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.entity.CarDriver;
+import ca.gc.aafc.dina.entity.JsonbCar;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
@@ -22,9 +22,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.RandomUtils;
-import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,20 +35,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
 import javax.transaction.Transactional;
-import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 @SpringBootTest(classes = {
-  TestDinaBaseApp.class, SimpleFilterResolverJsonbIT.DinaFilterResolverJsonbITConfig.class},
-  properties = "spring.jpa.hibernate.ddl-auto=create-drop")
+  TestDinaBaseApp.class, SimpleFilterResolverJsonbIT.DinaFilterResolverJsonbITConfig.class})
 @ContextConfiguration(initializers = {PostgresTestContainerInitializer.class})
 @ExtendWith(SpringExtension.class)
 @Transactional
@@ -60,32 +50,31 @@ public class SimpleFilterResolverJsonbIT {
   private static final String KEY = "customKey";
 
   @Inject
-  private DinaRepository<DinaFilterResolverJsonbITConfig.SubmarineDto,
-    DinaFilterResolverJsonbITConfig.Submarine> subRepo;
+  private DinaRepository<DinaFilterResolverJsonbITConfig.JsonbCarDto, JsonbCar> subRepo;
+
   @Inject
-  private DinaRepository<DinaFilterResolverJsonbITConfig.SubCommanderDto,
-    DinaFilterResolverJsonbITConfig.SubCommander> commanderRepo;
+  private DinaRepository<DinaFilterResolverJsonbITConfig.CarDriverDto, CarDriver> commanderRepo;
 
   @Test
   void simpleFilter_NestedJsonbField() {
     String expectedValue = "CustomValue";
-    DinaFilterResolverJsonbITConfig.SubmarineDto sub = createSub(newSub(expectedValue));
-    DinaFilterResolverJsonbITConfig.SubmarineDto anotherSub = createSub(newSub("AnotherValue"));
+    DinaFilterResolverJsonbITConfig.JsonbCarDto sub = createCar(newCar(expectedValue));
+    DinaFilterResolverJsonbITConfig.JsonbCarDto anotherSub = createCar(newCar("AnotherValue"));
 
-    DinaFilterResolverJsonbITConfig.SubCommanderDto expectedCommander = commanderRepo.create(
-      DinaFilterResolverJsonbITConfig.SubCommanderDto.builder().submarine(sub).build());
+    DinaFilterResolverJsonbITConfig.CarDriverDto expectedCommander = commanderRepo.create(
+      DinaFilterResolverJsonbITConfig.CarDriverDto.builder().car(sub).build());
     commanderRepo.create(
-      DinaFilterResolverJsonbITConfig.SubCommanderDto.builder().submarine(anotherSub).build());
+      DinaFilterResolverJsonbITConfig.CarDriverDto.builder().car(anotherSub).build());
 
     Assertions.assertEquals(
       2,
-      commanderRepo.findAll(new QuerySpec(DinaFilterResolverJsonbITConfig.SubCommanderDto.class)).size());
+      commanderRepo.findAll(new QuerySpec(DinaFilterResolverJsonbITConfig.CarDriverDto.class)).size());
 
-    QuerySpec querySpec = new QuerySpec(DinaFilterResolverJsonbITConfig.SubCommanderDto.class);
-    querySpec.addFilter(PathSpec.of("submarine", "jsonData", KEY).filter(FilterOperator.EQ, expectedValue));
-    querySpec.includeRelation(PathSpec.of("submarine"));
+    QuerySpec querySpec = new QuerySpec(DinaFilterResolverJsonbITConfig.CarDriverDto.class);
+    querySpec.addFilter(PathSpec.of("car", "jsonData", KEY).filter(FilterOperator.EQ, expectedValue));
+    querySpec.includeRelation(PathSpec.of("car"));
 
-    ResourceList<DinaFilterResolverJsonbITConfig.SubCommanderDto> results = commanderRepo.findAll(querySpec);
+    ResourceList<DinaFilterResolverJsonbITConfig.CarDriverDto> results = commanderRepo.findAll(querySpec);
     Assertions.assertEquals(1, results.size());
     Assertions.assertEquals(expectedCommander.getUuid(), results.get(0).getUuid());
   }
@@ -93,17 +82,17 @@ public class SimpleFilterResolverJsonbIT {
   @Test
   void simpleFilter_FilterOnJsonB() {
     String expectedValue = "CustomValue";
-    DinaFilterResolverJsonbITConfig.SubmarineDto dto = createSub(newSub(expectedValue));
-    createSub(newSub("AnotherValue"));
+    DinaFilterResolverJsonbITConfig.JsonbCarDto dto = createCar(newCar(expectedValue));
+    createCar(newCar("AnotherValue"));
 
     Assertions.assertEquals(
       2,
-      subRepo.findAll(new QuerySpec(DinaFilterResolverJsonbITConfig.SubmarineDto.class)).size());
+      subRepo.findAll(new QuerySpec(DinaFilterResolverJsonbITConfig.JsonbCarDto.class)).size());
 
-    QuerySpec querySpec = new QuerySpec(DinaFilterResolverJsonbITConfig.SubmarineDto.class);
+    QuerySpec querySpec = new QuerySpec(DinaFilterResolverJsonbITConfig.JsonbCarDto.class);
     querySpec.addFilter(PathSpec.of("jsonData", KEY).filter(FilterOperator.EQ, expectedValue));
 
-    ResourceList<DinaFilterResolverJsonbITConfig.SubmarineDto> results = subRepo.findAll(querySpec);
+    ResourceList<DinaFilterResolverJsonbITConfig.JsonbCarDto> results = subRepo.findAll(querySpec);
     Assertions.assertEquals(1, results.size());
     Assertions.assertEquals(dto.getUuid(), results.get(0).getUuid());
   }
@@ -113,36 +102,36 @@ public class SimpleFilterResolverJsonbIT {
     String nestedKey = "nestedKey";
     String expectedValue = "CustomValue";
 
-    DinaFilterResolverJsonbITConfig.SubmarineDto expectedSub = newSub(expectedValue);
+    DinaFilterResolverJsonbITConfig.JsonbCarDto expectedSub = newCar(expectedValue);
     expectedSub.setJsonData(Map.of(KEY, Map.of(nestedKey, expectedValue)));
-    expectedSub = createSub(expectedSub);
+    expectedSub = createCar(expectedSub);
 
-    DinaFilterResolverJsonbITConfig.SubmarineDto anotherSub = newSub("AnotherValue");
+    DinaFilterResolverJsonbITConfig.JsonbCarDto anotherSub = newCar("AnotherValue");
     anotherSub.setJsonData(Map.of(KEY, Map.of(nestedKey, "AnotherValue")));
-    createSub(anotherSub);
+    createCar(anotherSub);
 
     Assertions.assertEquals(
       2,
-      subRepo.findAll(new QuerySpec(DinaFilterResolverJsonbITConfig.SubmarineDto.class)).size());
+      subRepo.findAll(new QuerySpec(DinaFilterResolverJsonbITConfig.JsonbCarDto.class)).size());
 
-    QuerySpec querySpec = new QuerySpec(DinaFilterResolverJsonbITConfig.SubmarineDto.class);
+    QuerySpec querySpec = new QuerySpec(DinaFilterResolverJsonbITConfig.JsonbCarDto.class);
     querySpec.addFilter(PathSpec.of("jsonData", KEY, nestedKey).filter(FilterOperator.EQ, expectedValue));
 
-    ResourceList<DinaFilterResolverJsonbITConfig.SubmarineDto> results = subRepo.findAll(querySpec);
+    ResourceList<DinaFilterResolverJsonbITConfig.JsonbCarDto> results = subRepo.findAll(querySpec);
     Assertions.assertEquals(1, results.size());
     Assertions.assertEquals(expectedSub.getUuid(), results.get(0).getUuid());
   }
 
-  private DinaFilterResolverJsonbITConfig.SubmarineDto newSub(String expectedValue) {
-    return DinaFilterResolverJsonbITConfig.SubmarineDto.builder()
+  private DinaFilterResolverJsonbITConfig.JsonbCarDto newCar(String expectedValue) {
+    return DinaFilterResolverJsonbITConfig.JsonbCarDto.builder()
       .jsonData(Map.of(KEY, expectedValue))
       .build();
   }
 
-  private DinaFilterResolverJsonbITConfig.SubmarineDto createSub(DinaFilterResolverJsonbITConfig.SubmarineDto submarineDto) {
-    DinaFilterResolverJsonbITConfig.SubmarineDto dto = subRepo.create(submarineDto);
+  private DinaFilterResolverJsonbITConfig.JsonbCarDto createCar(DinaFilterResolverJsonbITConfig.JsonbCarDto carDto) {
+    DinaFilterResolverJsonbITConfig.JsonbCarDto dto = subRepo.create(carDto);
     Assertions.assertEquals(dto.getUuid(), subRepo.findOne(
-      dto.getUuid(), new QuerySpec(DinaFilterResolverJsonbITConfig.SubmarineDto.class)).getUuid());
+      dto.getUuid(), new QuerySpec(DinaFilterResolverJsonbITConfig.JsonbCarDto.class)).getUuid());
     return dto;
   }
 
@@ -150,109 +139,72 @@ public class SimpleFilterResolverJsonbIT {
   @EntityScan(basePackageClasses = DinaFilterResolverJsonbITConfig.class)
   public static class DinaFilterResolverJsonbITConfig {
 
-    @Data
-    @Entity
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Table(name = "commander")
-    public static class SubCommander implements DinaEntity {
-      private String createdBy;
-      private OffsetDateTime createdOn;
-      @Id
-      private Integer id;
-      @NaturalId
-      private UUID uuid;
-      @OneToOne
-      private Submarine submarine;
-    }
 
     @Data
-    @JsonApiResource(type = "commander")
+    @JsonApiResource(type = "car-driver")
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @RelatedEntity(SubCommander.class)
-    public static class SubCommanderDto {
+    @RelatedEntity(CarDriver.class)
+    public static class CarDriverDto {
       @JsonApiId
       private UUID uuid;
       @JsonApiRelation
-      private SubmarineDto submarine;
+      private JsonbCarDto car;
     }
 
     @Bean
-    public DinaRepository<SubCommanderDto, SubCommander> commanderRepo(
+    public DinaRepository<CarDriverDto, CarDriver> carDriverRepo(
       BaseDAO baseDAO, SmartValidator val, BuildProperties props
     ) {
       return new DinaRepository<>(
         new DefaultDinaService<>(baseDAO, val) {
           @Override
-          protected void preCreate(SubCommander entity) {
+          protected void preCreate(CarDriver entity) {
             entity.setId(RandomUtils.nextInt(0, 1000));
             entity.setUuid(UUID.randomUUID());
           }
         },
         new AllowAllAuthorizationService(),
         Optional.empty(),
-        new DinaMapper<>(SubCommanderDto.class),
-        SubCommanderDto.class,
-        SubCommander.class,
+        new DinaMapper<>(CarDriverDto.class),
+              CarDriverDto.class,
+              CarDriver.class,
         null,
         null,
         props);
     }
 
     @Data
-    @Entity
+    @JsonApiResource(type = "jsonbcar")
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-    @Table(name = "submarine")
-    public static class Submarine implements DinaEntity {
-      private String createdBy;
-      private OffsetDateTime createdOn;
-      @Id
-      private Integer id;
-      @NaturalId
-      private UUID uuid;
-
-      @Type(type = "jsonb")
-      @Column(columnDefinition = "jsonb")
-      private Map<String, Object> jsonData;
-
-    }
-
-    @Data
-    @JsonApiResource(type = "sub")
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @RelatedEntity(Submarine.class)
-    public static class SubmarineDto {
+    @RelatedEntity(JsonbCar.class)
+    public static class JsonbCarDto {
       @JsonApiId
       private UUID uuid;
       private Map<String, Object> jsonData;
     }
 
     @Bean
-    public DinaRepository<SubmarineDto, Submarine> subRepo(
+    public DinaRepository<JsonbCarDto, JsonbCar> jsonbCarRepo(
       BaseDAO baseDAO, SmartValidator val,
       BuildProperties props
     ) {
       return new DinaRepository<>(
         new DefaultDinaService<>(baseDAO, val) {
           @Override
-          protected void preCreate(Submarine entity) {
+          protected void preCreate(JsonbCar entity) {
             entity.setId(RandomUtils.nextInt(0, 1000));
             entity.setUuid(UUID.randomUUID());
           }
         },
         new AllowAllAuthorizationService(),
         Optional.empty(),
-        new DinaMapper<>(SubmarineDto.class),
-        SubmarineDto.class,
-        Submarine.class,
+        new DinaMapper<>(JsonbCarDto.class),
+              JsonbCarDto.class,
+              JsonbCar.class,
         null,
         null,
         props);

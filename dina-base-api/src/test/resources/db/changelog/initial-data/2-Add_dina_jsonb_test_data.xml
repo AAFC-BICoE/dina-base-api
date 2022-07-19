@@ -1,0 +1,21 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no" ?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://dbchangelog-4.4.xsd">
+
+    <changeSet id="2-Add_dina_jsonb_test_data" context="initial-data" author="cgendreau">
+        <insert tableName="dina_jsonb">
+            <column  name="id" value="1"/>
+            <column  name="name" value="row_one"/>
+            <column  name="value" value="1"/>
+            <column  name="jdata" value="{&quot;attr_01&quot;: &quot;val_01&quot;}"/>
+        </insert>
+        <insert tableName="dina_jsonb">
+            <column  name="id" value="2"/>
+            <column  name="name" value="row_two"/>
+            <column  name="value" value="2"/>
+            <column  name="jdata" value="{&quot;attr_02&quot;: &quot;val_02&quot;}"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

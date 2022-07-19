@@ -8,20 +8,18 @@ import java.sql.Date;
 
 import javax.inject.Inject;
 
+import ca.gc.aafc.dina.BasePostgresItContext;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-import ca.gc.aafc.dina.TestDinaBaseApp;
 import io.crnk.core.engine.document.ErrorData;
 import io.crnk.core.exception.CrnkMappableException;
 import lombok.Data;
 
-@SpringBootTest(classes = TestDinaBaseApp.class)
-public class DateDeserializerIT {
+public class DateDeserializerIT extends BasePostgresItContext {
 
   @Inject
   private ObjectMapper objectMapper;

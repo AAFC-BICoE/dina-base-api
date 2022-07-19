@@ -2,12 +2,14 @@ package ca.gc.aafc.dina.repository.meta;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.entity.Item;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiResource;
@@ -30,6 +32,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
 
 import javax.persistence.Entity;
@@ -49,6 +52,7 @@ import java.util.function.Function;
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(AttributeMetaInfoProviderRestIT.TestConfig.class)
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
 
   public static final String KEY = "duplicate_found";
@@ -60,7 +64,7 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
 
   @Test
   void metaInfo_ReturnedInResponse() {
-    ThingDTO dto = ThingDTO.builder().name("new name").build();
+    ThingDTO dto = ThingDTO.builder().group("new name").build();
     ValidatableResponse response = sendPost(JsonAPITestHelper.toJsonAPIMap(
       "thing", JsonAPITestHelper.toAttributeMap(dto), null, null));
     response.body("data.meta.warnings", Matchers.hasEntry(KEY, VALUE));
@@ -70,31 +74,30 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
   @EntityScan(basePackageClasses = AttributeMetaInfoProviderRestIT.class)
   static class TestConfig {
     @Bean
-    public DinaRepository<ThingDTO, Thing> projectRepo(
+    public DinaRepository<ThingDTO, Item> projectRepo(
       BaseDAO baseDAO,
-      ThingDinaService dinaService
+      ItemDinaService dinaService
     ) {
       Map<String, Object> warnings = new HashMap<>();
       warnings.put(KEY, VALUE);
       return new DinaMetaInfoRepo<>(
         baseDAO,
         dinaService,
-        ThingDTO.class,
-        Thing.class,
+        ThingDTO.class, Item.class,
         thingDTO -> AttributeMetaInfoProvider.DinaJsonMetaInfo.builder()
           .warnings(warnings)
           .build());
     }
 
     @Service
-    public class ThingDinaService extends DefaultDinaService<Thing> {
+    public static class ItemDinaService extends DefaultDinaService<Item> {
   
-      public ThingDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+      public ItemDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
         super(baseDAO, sv);
       }
   
       @Override
-      protected void preCreate(Thing entity) {
+      protected void preCreate(Item entity) {
         entity.setUuid(UUID.randomUUID());
       }
     }
@@ -106,39 +109,12 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
-  @RelatedEntity(Thing.class)
+  @RelatedEntity(Item.class)
   public static class ThingDTO extends AttributeMetaInfoProvider {
     @JsonApiId
     private Integer id;
     private UUID uuid;
-    private String name;
-  }
-
-  @Data
-  @Entity
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class Thing implements DinaEntity {
-    @Id
-    @GeneratedValue
-    private Integer id;
-
-    @NaturalId
-    @NotNull
-    private UUID uuid;
-
-    private String name;
-
-    @Override
-    public String getCreatedBy() {
-      return null;
-    }
-
-    @Override
-    public OffsetDateTime getCreatedOn() {
-      return null;
-    }
+    private String group;
   }
 
   @Repository

@@ -2,12 +2,14 @@ package ca.gc.aafc.dina.jsonapi;
 
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.restassured.http.Header;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -17,6 +19,7 @@ import static io.restassured.RestAssured.given;
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false", "dina.auditing.enabled = true"},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class DinaRepoSoftDeleteRestIt extends BaseRestAssuredTest {
 
   private static final Header CRNK_HEADER = new Header("crnk-compact", "true");

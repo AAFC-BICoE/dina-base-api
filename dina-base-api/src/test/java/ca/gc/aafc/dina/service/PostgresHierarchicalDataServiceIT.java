@@ -7,18 +7,12 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import ca.gc.aafc.dina.BasePostgresItContext;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 
-
-import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.HierarchicalObject;
-import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 
-@SpringBootTest(classes = TestDinaBaseApp.class)
-@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
-public class PostgresHierarchicalDataServiceIT{
+public class PostgresHierarchicalDataServiceIT extends BasePostgresItContext {
 
   @Inject
   private PostgresHierarchicalDataService postgresHierarchicalDataService;
