@@ -57,7 +57,7 @@ public class PersonDTO {
   private DepartmentDto department;
 
   @JsonApiRelation
-  private List<DepartmentDto> departments;
+  private List<DepartmentDto> departmentsHeadBackup;
 
   @IgnoreDinaMapping(reason = "derived from name + / + group")
   private String customField;

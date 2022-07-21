@@ -9,10 +9,9 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import ca.gc.aafc.dina.BasePostgresItContext;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.exception.UnknownAttributeException;
@@ -27,9 +26,8 @@ import io.crnk.core.queryspec.SortSpec;
 import lombok.extern.log4j.Log4j2;
 
 @Transactional
-@SpringBootTest(classes = TestDinaBaseApp.class)
 @Log4j2
-public class UnknownAttributeExceptionMapperIT {
+public class UnknownAttributeExceptionMapperIT extends BasePostgresItContext {
 
   @Inject
   private DinaRepository<PersonDTO, Person> dinaRepository;

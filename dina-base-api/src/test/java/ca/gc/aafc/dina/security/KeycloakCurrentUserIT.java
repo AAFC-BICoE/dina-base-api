@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.jupiter.api.Test;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -18,11 +19,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
+import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest(
   classes = TestDinaBaseApp.class,
   properties = "keycloak.enabled: true"
 )
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class KeycloakCurrentUserIT {
 
   @Inject

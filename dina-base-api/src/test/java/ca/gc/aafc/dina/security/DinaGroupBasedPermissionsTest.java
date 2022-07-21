@@ -5,12 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,9 +27,11 @@ import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.DinaRepository;
+import org.springframework.test.context.ContextConfiguration;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class, properties = "keycloak.enabled: true")
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class DinaGroupBasedPermissionsTest {
 
   @Inject
@@ -44,7 +47,7 @@ public class DinaGroupBasedPermissionsTest {
     KeycloakAuthenticationToken mockToken = Mockito.mock(
       KeycloakAuthenticationToken.class,
       Answers.RETURNS_DEEP_STUBS);
-    TestDinaBaseApp.mockToken(Arrays.asList("/" + GROUP_1 + "/staff"), mockToken);
+    TestDinaBaseApp.mockToken(List.of("/" + GROUP_1 + "/staff"), mockToken);
 
     SecurityContextHolder.getContext().setAuthentication(mockToken);
   }

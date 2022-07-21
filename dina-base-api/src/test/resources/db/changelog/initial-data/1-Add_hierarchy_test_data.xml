@@ -1,0 +1,49 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no" ?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://dbchangelog-4.4.xsd">
+
+    <changeSet id="1-Add_hierarchy_test_data" context="initial-data" author="cgendreau">
+        <insert tableName="hierarchy_test_table">
+            <column  name="id" value="1"/>
+            <column  name="uuid" value="7e0c2c3a-8113-427c-b8ed-83247a82ba43"/>
+            <column  name="name" value="a1"/>
+            <column  name="type_uuid" value="02bd39da-5471-4ca2-b82d-b407551c7f31"/>
+        </insert>
+        <insert tableName="hierarchy_test_table">
+            <column  name="id" value="2"/>
+            <column  name="uuid" value="c779eea7-3e6b-42a2-9ce6-88ca66857dad"/>
+            <column  name="name" value="a2"/>
+            <column name="parent_identifier" value="1"/>
+            <column  name="type_uuid"  value="8d8c6339-4725-4b80-8d04-8e0fa9c5eec8"/>
+        </insert>
+        <insert tableName="hierarchy_test_table">
+            <column  name="id" value="3"/>
+            <column  name="uuid" value="cdeec1e6-9e24-477a-a598-e32af0447d43"/>
+            <column  name="name" value="a3"/>
+            <column name="parent_identifier" value="1"/>
+            <column  name="type_uuid"  value="8d8c6339-4725-4b80-8d04-8e0fa9c5eec8"/>
+        </insert>
+        <insert tableName="hierarchy_test_table">
+            <column  name="id" value="4"/>
+            <column  name="uuid" value="42cb7ad4-6600-4067-90f2-87d81e045172"/>
+            <column  name="name" value="a4"/>
+            <column name="parent_identifier" value="2"/>
+            <column  name="type_uuid"  value="bc090507-bcee-48f8-b7bc-4c5551a2c52a"/>
+        </insert>
+        <insert tableName="hierarchy_test_table">
+            <column  name="id" value="5"/>
+            <column  name="uuid" value="61a75686-a964-451a-86de-b15a89cbcebd"/>
+            <column  name="name" value="a5"/>
+            <column name="parent_identifier" value="2"/>
+            <column  name="type_uuid"  value="bc090507-bcee-48f8-b7bc-4c5551a2c52a"/>
+        </insert>
+        <insert tableName="hierarchy_test_table">
+            <column  name="id" value="6"/>
+            <column  name="uuid" value="ffe87eae-5a10-44d2-8beb-cd2db7b116b9"/>
+            <column  name="name" value="a6"/>
+            <column  name="type_uuid"  value="02bd39da-5471-4ca2-b82d-b407551c7f31"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

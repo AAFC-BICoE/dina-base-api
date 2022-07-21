@@ -36,6 +36,7 @@ public class PostgresTestContainerInitializer
         DockerImageName myImage = DockerImageName
           .parse(Optional.ofNullable(env.getProperty("embedded.postgresql.image")).orElse("postgres"))
           .asCompatibleSubstituteFor("postgres");
+
         sqlContainer = new PostgreSQLContainer<>(myImage)
           .withDatabaseName(
             Optional.ofNullable(env.getProperty("embedded.postgresql.database"))
@@ -45,6 +46,10 @@ public class PostgresTestContainerInitializer
               .orElse("public"))
           .withUsername("sa")
           .withPassword("sa");
+
+        Optional.ofNullable(env.getProperty("embedded.postgresql.max_connection"))
+                .ifPresent( max -> sqlContainer.setCommand("postgres", "-c", "max_connections=" + max));
+
         sqlContainer.withInitScript(env.getProperty("embedded.postgresql.init-script-file"));
         sqlContainer.start();
       }

@@ -4,17 +4,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import javax.inject.Inject;
 
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import com.google.common.collect.Sets;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
+import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest(
   classes = TestDinaBaseApp.class,
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"}
 )
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class DevUserConfigIT {
 
   @Inject

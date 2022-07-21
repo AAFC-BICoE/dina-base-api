@@ -8,6 +8,7 @@ import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -19,7 +20,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public final class Task implements DinaEntity {
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
   @NaturalId
   private UUID uuid;

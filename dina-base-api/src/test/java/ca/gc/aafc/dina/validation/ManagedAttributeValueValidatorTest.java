@@ -3,15 +3,18 @@ package ca.gc.aafc.dina.validation;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
+import ca.gc.aafc.dina.entity.ma.TestManagedAttribute;
+import ca.gc.aafc.dina.entity.ma.TestManagedAttributeUsage;
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
 import ca.gc.aafc.dina.service.ManagedAttributeServiceIT;
-import ca.gc.aafc.dina.service.ManagedAttributeServiceIT.TestManagedAttribute;
 
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
@@ -30,20 +33,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, ManagedAttributeServiceIT.ManagedAttributeConfig.class})
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class ManagedAttributeValueValidatorTest {
 
-  private static final ManagedAttributeServiceIT.TestManagedAttributeUsage ENTITY_PLACEHOLDER = ManagedAttributeServiceIT.TestManagedAttributeUsage
+  private static final TestManagedAttributeUsage ENTITY_PLACEHOLDER = TestManagedAttributeUsage
       .builder()
       .uuid(UUID.randomUUID())
       .build();
 
   @Inject
-  private ManagedAttributeService<ManagedAttributeServiceIT.TestManagedAttribute> testManagedAttributeService;
+  private ManagedAttributeService<TestManagedAttribute> testManagedAttributeService;
 
   @Inject
-  private ManagedAttributeValueValidator<ManagedAttributeServiceIT.TestManagedAttribute> validatorUnderTest;
+  private ManagedAttributeValueValidator<TestManagedAttribute> validatorUnderTest;
 
-  private ManagedAttributeServiceIT.TestManagedAttribute testManagedAttribute;
+  private TestManagedAttribute testManagedAttribute;
 
   @Test
   void validate_WhenValidDateType_NoExceptionThrown() {
@@ -66,8 +70,8 @@ public class ManagedAttributeValueValidatorTest {
 
   @Test
   void validate_WhenValidStringType_NoExceptionThrown() {
-    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
-      name(RandomStringUtils.randomAlphabetic(6))
+    testManagedAttribute = TestManagedAttribute.builder().
+      name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
       .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
       .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
       .build();
@@ -79,8 +83,8 @@ public class ManagedAttributeValueValidatorTest {
 
   @Test
   void validate_WhenValidIntegerType_NoExceptionThrown() {
-    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder()
-        .name(RandomStringUtils.randomAlphabetic(6))
+    testManagedAttribute = TestManagedAttribute.builder()
+        .name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
         .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
         .build();
@@ -93,8 +97,8 @@ public class ManagedAttributeValueValidatorTest {
   @ParameterizedTest
   @ValueSource(strings = {"1.2", "", "  ", "\t", "\n", "a"})
   void validate_WhenInvalidIntegerType_ExceptionThrown(String value) {
-    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder()
-        .name(RandomStringUtils.randomAlphabetic(6))
+    testManagedAttribute = TestManagedAttribute.builder()
+        .name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
         .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
         .build();
@@ -107,8 +111,8 @@ public class ManagedAttributeValueValidatorTest {
 
   @Test
   void validate_WhenInvalidIntegerTypeExceptionThrown() {
-    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder()
-        .name(RandomStringUtils.randomAlphabetic(6))
+    testManagedAttribute = TestManagedAttribute.builder()
+        .name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
         .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
         .build();
@@ -120,8 +124,8 @@ public class ManagedAttributeValueValidatorTest {
 
   @Test
   void validate_WhenPreValidationFailsExceptionThrown() {
-    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder().
-        name(RandomStringUtils.randomAlphabetic(6))
+    testManagedAttribute = TestManagedAttribute.builder().
+        name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
         .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
         .failValidateValue(true)
@@ -134,8 +138,8 @@ public class ManagedAttributeValueValidatorTest {
 
   @Test
   public void assignedValueContainedInAcceptedValues_validationPasses() {
-    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder()
-        .name("My special Attribute")
+    testManagedAttribute = TestManagedAttribute.builder()
+        .name("My special Attribute").uuid(UUID.randomUUID())
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
         .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
         .acceptedValues(new String[]{"val1", "val2"}).build();
@@ -147,8 +151,8 @@ public class ManagedAttributeValueValidatorTest {
 
   @Test
   public void assignedValueNotContainedInAcceptedValues_validationFails() {
-    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder()
-        .name("key2")
+    testManagedAttribute = TestManagedAttribute.builder()
+        .name("key2").uuid(UUID.randomUUID())
         .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
         .acceptedValues(new String[]{"val1", "val2"}).build();
@@ -199,8 +203,8 @@ public class ManagedAttributeValueValidatorTest {
   @Test
   void validate_NonDinaEntity_NoErrors() {
     testManagedAttribute = testManagedAttributeService.create(
-        ManagedAttributeServiceIT.TestManagedAttribute.builder()
-            .name(RandomStringUtils.randomAlphabetic(6))
+        TestManagedAttribute.builder()
+            .name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
             .managedAttributeType(ManagedAttribute.ManagedAttributeType.DATE)
             .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString()).build());
 
@@ -212,8 +216,8 @@ public class ManagedAttributeValueValidatorTest {
 
   @Test
   void validate_NonDinaEntity_WhenInvalidIntegerTypeExceptionThrown() {
-    testManagedAttribute = ManagedAttributeServiceIT.TestManagedAttribute.builder()
-        .name(RandomStringUtils.randomAlphabetic(6))
+    testManagedAttribute = TestManagedAttribute.builder()
+        .name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
         .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
         .build();
     testManagedAttributeService.create(testManagedAttribute);
@@ -225,8 +229,8 @@ public class ManagedAttributeValueValidatorTest {
   @ParameterizedTest
   @ValueSource(strings = {"", "off", "TRUE"})
   void validate_WhenInvalidBoolType_ExceptionThrown(String value) {
-    testManagedAttribute = testManagedAttributeService.create(ManagedAttributeServiceIT.TestManagedAttribute.builder()
-        .name(RandomStringUtils.randomAlphabetic(6))
+    testManagedAttribute = testManagedAttributeService.create(TestManagedAttribute.builder()
+        .name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
         .managedAttributeType(ManagedAttribute.ManagedAttributeType.BOOL)
         .build());
@@ -262,8 +266,8 @@ public class ManagedAttributeValueValidatorTest {
   }
 
   private TestManagedAttribute newTestManagedAttribute(ManagedAttribute.ManagedAttributeType type) {
-    return ManagedAttributeServiceIT.TestManagedAttribute.builder().
-        name(RandomStringUtils.randomAlphabetic(6))
+    return TestManagedAttribute.builder().
+        name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
         .managedAttributeType(type)
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
         .multilingualDescription(MultilingualDescription.builder()

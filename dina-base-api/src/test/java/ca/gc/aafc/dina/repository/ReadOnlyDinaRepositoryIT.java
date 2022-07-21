@@ -4,10 +4,12 @@ import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.VocabularyDto;
 import ca.gc.aafc.dina.entity.Vocabulary;
 import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import io.crnk.core.exception.MethodNotAllowedException;
 import io.crnk.core.queryspec.QuerySpec;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -20,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class)
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class ReadOnlyDinaRepositoryIT {
 
   @Inject

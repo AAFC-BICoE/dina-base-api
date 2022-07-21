@@ -67,7 +67,7 @@ public class DinaMappingRegistryTest {
     Assertions.assertFalse(resultRelation.isCollection());
 
     DinaMappingRegistry.InternalRelation resultCollectionRelation = results.stream()
-      .filter(ir -> ir.getName().equals("departments")).findFirst().orElse(null);
+      .filter(ir -> ir.getName().equals("departmentsHeadBackup")).findFirst().orElse(null);
     Assertions.assertNotNull(resultCollectionRelation);
     Assertions.assertEquals(DepartmentDto.class, resultCollectionRelation.getDtoType());
     Assertions.assertTrue(resultCollectionRelation.isCollection());
@@ -90,7 +90,7 @@ public class DinaMappingRegistryTest {
     Assertions.assertFalse(resultRelation.isCollection());
 
     DinaMappingRegistry.InternalRelation resultCollectionRelation = results.stream()
-      .filter(ir -> ir.getName().equals("departments")).findFirst().orElse(null);
+      .filter(ir -> ir.getName().equals("departmentsHeadBackup")).findFirst().orElse(null);
     Assertions.assertNotNull(resultCollectionRelation);
     Assertions.assertEquals(DepartmentDto.class, resultCollectionRelation.getDtoType());
     Assertions.assertEquals(Department.class, resultCollectionRelation.getEntityType());

@@ -13,6 +13,7 @@ import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.service.OnCreate;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import io.crnk.core.queryspec.PathSpec;
@@ -26,6 +27,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
@@ -42,6 +44,7 @@ import java.util.UUID;
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @Import(DinaRepoEagerLoadingIT.TestConfig.class)
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
 
   public static final String CHAIN_TEMPLATE_PATH = "chainTemplate";

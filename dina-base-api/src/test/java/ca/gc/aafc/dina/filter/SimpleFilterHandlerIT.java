@@ -13,6 +13,8 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
+import ca.gc.aafc.dina.BasePostgresItContext;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -25,10 +27,10 @@ import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepository;
+import org.springframework.test.context.ContextConfiguration;
 
 @Transactional
-@SpringBootTest(classes = TestDinaBaseApp.class)
-public class SimpleFilterHandlerIT  {
+public class SimpleFilterHandlerIT extends BasePostgresItContext {
 
   @Inject
   private ResourceRepository<EmployeeDto, Serializable> employeeRepository;
@@ -44,24 +46,20 @@ public class SimpleFilterHandlerIT  {
     
     String expectedEmpName = "e2";
     
-    Employee emp1 = Employee.builder().name("e1").build();
-    
-    Employee emp2 = Employee.builder().name(expectedEmpName).build();
-    
-    Employee emp3 = Employee.builder().name("e3").build();
-    
-    Employee emp20 = Employee.builder().name("e20").build();
+    Employee emp1 = Employee.builder().uuid(UUID.randomUUID()).name("e1").build();
+    Employee emp2 = Employee.builder().uuid(UUID.randomUUID()).name(expectedEmpName).build();
+    Employee emp3 = Employee.builder().uuid(UUID.randomUUID()).name("e3").build();
+    Employee emp20 = Employee.builder().uuid(UUID.randomUUID()).name("e20").build();
     
     for (Employee newEmp : Arrays.asList(emp1, emp2, emp3, emp20)) {
       entityManager.persist(newEmp);
     }
     
     QuerySpec querySpec = new QuerySpec(EmployeeDto.class);
-    querySpec.addFilter(new FilterSpec(Arrays.asList("name"), FilterOperator.EQ, expectedEmpName));
+    querySpec.addFilter(new FilterSpec(List.of("name"), FilterOperator.EQ, expectedEmpName));
     List<EmployeeDto> empDtos = this.employeeRepository.findAll(querySpec);
     
-    assertEquals(
-        Arrays.asList(expectedEmpName),
+    assertEquals(List.of(expectedEmpName),
         empDtos.stream().map(EmployeeDto::getName).collect(Collectors.toList())
     );
     
@@ -69,33 +67,31 @@ public class SimpleFilterHandlerIT  {
 
   @Test
   public void getRestriction_EqualsNull_FiltersOnEqualsNull() {
-    Employee hasJob = Employee.builder().name("hasJob").job("has a job").build();
-    Employee noJob = Employee.builder().name("noJob").build();
+    Employee hasJob = Employee.builder().uuid(UUID.randomUUID()).name("hasJob").job("has a job").build();
+    Employee noJob = Employee.builder().uuid(UUID.randomUUID()).name("noJob").build();
     entityManager.persist(hasJob);
     entityManager.persist(noJob);
 
     QuerySpec querySpec = new QuerySpec(EmployeeDto.class);
-    querySpec.addFilter(new FilterSpec(Arrays.asList("job"), FilterOperator.EQ, null));
+    querySpec.addFilter(new FilterSpec(List.of("job"), FilterOperator.EQ, null));
     List<EmployeeDto> empDtos = this.employeeRepository.findAll(querySpec);
 
-    assertEquals(
-      Arrays.asList(noJob.getName()),
+    assertEquals(List.of(noJob.getName()),
       empDtos.stream().map(EmployeeDto::getName).collect(Collectors.toList()));
   }
 
   @Test
   public void getRestriction_EqualsNotNull_FiltersOnEqualsNotNull() {
-    Employee hasJob = Employee.builder().name("hasJob").job("has a job").build();
-    Employee noJob = Employee.builder().name("noJob").build();
+    Employee hasJob = Employee.builder().uuid(UUID.randomUUID()).name("hasJob").job("has a job").build();
+    Employee noJob = Employee.builder().uuid(UUID.randomUUID()).name("noJob").build();
     entityManager.persist(hasJob);
     entityManager.persist(noJob);
 
     QuerySpec querySpec = new QuerySpec(EmployeeDto.class);
-    querySpec.addFilter(new FilterSpec(Arrays.asList("job"), FilterOperator.NEQ, null));
+    querySpec.addFilter(new FilterSpec(List.of("job"), FilterOperator.NEQ, null));
     List<EmployeeDto> empDtos = this.employeeRepository.findAll(querySpec);
 
-    assertEquals(
-      Arrays.asList(hasJob.getName()),
+    assertEquals(List.of(hasJob.getName()),
       empDtos.stream().map(EmployeeDto::getName).collect(Collectors.toList()));
   }
 
@@ -108,11 +104,10 @@ public class SimpleFilterHandlerIT  {
 
     // Filter by uuid:
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
-    querySpec.addFilter(new FilterSpec(Arrays.asList("uuid"), FilterOperator.EQ, person1.getUuid().toString()));
+    querySpec.addFilter(new FilterSpec(List.of("uuid"), FilterOperator.EQ, person1.getUuid().toString()));
     List<PersonDTO> personDtos = this.personRepository.findAll(querySpec);
 
-    assertEquals(
-      Arrays.asList(person1.getUuid()),
+    assertEquals(List.of(person1.getUuid()),
       personDtos.stream().map(PersonDTO::getUuid).collect(Collectors.toList())
     );
   }
@@ -129,7 +124,7 @@ public class SimpleFilterHandlerIT  {
 
     // Filter by uuid:
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
-    querySpec.addFilter(new FilterSpec(Arrays.asList("createdOn"), FilterOperator.EQ, creationDateTime.toString()));
+    querySpec.addFilter(new FilterSpec(List.of("createdOn"), FilterOperator.EQ, creationDateTime.toString()));
     List<PersonDTO> personDtos = this.personRepository.findAll(querySpec);
 
     assertEquals(

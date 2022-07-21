@@ -8,6 +8,7 @@ import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.service.DefaultDinaService;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.FilterOperator;
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
@@ -45,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class)
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class DinaRepositoryIT {
 
   @Inject
@@ -329,7 +332,7 @@ public class DinaRepositoryIT {
     for (int i = 0; i < 3; i++) {
       PersonDTO noRelation = createPersonDto();
       noRelation.setDepartment(null);
-      noRelation.setDepartments(null);
+      noRelation.setDepartmentsHeadBackup(null);
       dinaRepository.create(noRelation);
     }
 
@@ -448,7 +451,7 @@ public class DinaRepositoryIT {
 
     dto.setName(expectedName);
     dto.setNickNames(expectedNickNames);
-    dto.setDepartments(newDepartments);
+    dto.setDepartmentsHeadBackup(newDepartments);
     dto.setDepartment(newDepart);
 
     dinaRepository.save(dto);
@@ -463,7 +466,7 @@ public class DinaRepositoryIT {
 
     dto.setName(null);
     dto.setNickNames(null);
-    dto.setDepartments(null);
+    dto.setDepartmentsHeadBackup(null);
     dto.setDepartment(null);
 
     dinaRepository.save(dto);
@@ -472,7 +475,7 @@ public class DinaRepositoryIT {
     assertNull(result.getName());
     assertNull(result.getNickNames());
     assertNull(result.getDepartment());
-    assertNull(result.getDepartments());
+    assertNull(result.getDepartmentsHeadBackup());
   }
 
   @Test
@@ -515,7 +518,7 @@ public class DinaRepositoryIT {
       for (int i = 0; i < collectionRelationUnderTest.size(); i++) {
         assertEquals(
           collectionRelationUnderTest.get(i).getUuid(),
-          result.getDepartments().get(i).getUuid()
+          result.getDepartmentsHeadBackup().get(i).getUuid()
         );
       }
     }
@@ -531,7 +534,7 @@ public class DinaRepositoryIT {
     assertEquals(dto.getName(), entity.getName());
     assertArrayEquals(dto.getNickNames(), entity.getNickNames());
     assertTrue(EqualsBuilder.reflectionEquals(expectedDepartment, entity.getDepartment()));
-    assertThat(expectedDepartments, Is.is(entity.getDepartments()));
+    assertThat(expectedDepartments, Is.is(entity.getDepartmentsHeadBackup()));
   }
 
   private PersonDTO persistPerson() {
@@ -546,9 +549,10 @@ public class DinaRepositoryIT {
     List<DepartmentDto> collectionRelationDtos = collectionRelationUnderTest.stream()
       .map(c -> DepartmentDto.builder().uuid(c.getUuid()).build())
       .collect(Collectors.toList());
+
     return PersonDTO.builder()
       .department(singleRelationDto)
-      .departments(collectionRelationDtos)
+      .departmentsHeadBackup(collectionRelationDtos)
       .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
       .name(RandomStringUtils.randomAlphabetic(4))
       .group(RandomStringUtils.randomAlphabetic(4))

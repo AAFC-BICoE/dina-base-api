@@ -27,6 +27,7 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.ValidationException;
 
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
@@ -37,12 +38,14 @@ import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.DepartmentType;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import lombok.NonNull;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class)
+@ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class DefaultDinaServiceTest {
 
   @Inject
@@ -224,8 +227,7 @@ public class DefaultDinaServiceTest {
   }
 
   private static Department createDepartment() {
-    return Department
-      .builder()
+    return Department.builder()
       .name(RandomStringUtils.random(5))
       .location(RandomStringUtils.random(5))
       .build();
@@ -332,7 +334,7 @@ public class DefaultDinaServiceTest {
 
     @Override
     protected void preUpdate(Department entity) {
-      DepartmentType type = DepartmentType.builder().name("name").build();
+      DepartmentType type = DepartmentType.builder().uuid(UUID.randomUUID()).name("name").build();
       baseDAO.create(type);
       entity.setDepartmentType(type);
     }

@@ -1,20 +1,27 @@
-# Enable to use a postgres Docker container in tests that use the PostgresTestContainerInitializer.
 spring:
   datasource:
-    # Use the default username and password for the embedded postgres container:
-    username: sa
-    password: sa
-    url: jdbc:h2:mem:testdb;INIT=create domain if not exists jsonb as text
+    username: web_user
+    password: test
+  liquibase:
+    liquibase-schema: dina_base
+    user: migration_user
+    password: test
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+    contexts: schema-change, initial-data
 keycloak.enabled: false
 embedded.postgresql:
   enabled: true
   # Need to specify the version the same as in Production
   image: postgis/postgis:12-2.5-alpine
   init-script-file: create-test-data.sql
-
+  database: dina_test
+  schema: dina_base
+  max_connection : 500
+javers:
+  # Don't let Javers create its tables
+  sqlSchemaManagementEnabled: false
 #logging:
 #  level:
 #    org:
 #      hibernate:
 #        SQL: DEBUG
-
