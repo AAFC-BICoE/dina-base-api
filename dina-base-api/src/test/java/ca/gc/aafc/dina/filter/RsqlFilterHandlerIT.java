@@ -56,7 +56,7 @@ public class RsqlFilterHandlerIT {
   @Inject
   protected ResourceRegistry resourceRegistry;
 
-  private static final OffsetDateTime CREATION_DATA_TIME = OffsetDateTime.parse("2013-07-01T17:55:13-07:00");
+  private static final OffsetDateTime CREATION_DATE_TIME = OffsetDateTime.parse("2013-07-01T17:55:13-07:00");
   
   @BeforeEach
   public void initEmployees() {
@@ -68,12 +68,12 @@ public class RsqlFilterHandlerIT {
     entityManager.persist(Employee.builder().uuid(UUID.randomUUID()).name("employee5").build());
     
     // Persist 5 test People:
-    Person person1 = Person.builder().uuid(UUID.randomUUID()).name("person1").createdOn(CREATION_DATA_TIME).build();
+    Person person1 = Person.builder().uuid(UUID.randomUUID()).name("person1").createdOn(CREATION_DATE_TIME).build();
     entityManager.persist(person1);
-    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person2").createdOn(CREATION_DATA_TIME).build());
-    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person3").createdOn(CREATION_DATA_TIME).build());
-    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person4").createdOn(CREATION_DATA_TIME).build());
-    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person5").createdOn(CREATION_DATA_TIME).build());
+    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person2").createdOn(CREATION_DATE_TIME).build());
+    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person3").createdOn(CREATION_DATE_TIME).build());
+    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person4").createdOn(CREATION_DATE_TIME).build());
+    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person5").createdOn(CREATION_DATE_TIME).build());
   }
   
   @Test
@@ -189,7 +189,7 @@ public class RsqlFilterHandlerIT {
             new FilterSpec(
                 Collections.singletonList("rsql"),
                 FilterOperator.EQ,
-                "createdOn==" + CREATION_DATA_TIME
+                "createdOn==" + CREATION_DATE_TIME
             )
         )
     );
@@ -197,7 +197,7 @@ public class RsqlFilterHandlerIT {
     ResourceList<PersonDTO> persons = this.personRepository.findAll(querySpec);
     // All 5 people have the same createdOn time:
     assertEquals(5, persons.size());
-    assertEquals(CREATION_DATA_TIME, persons.get(0).getCreatedOn());
+    assertEquals(CREATION_DATE_TIME, persons.get(0).getCreatedOn());
   }
 
   @Test
