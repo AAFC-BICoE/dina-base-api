@@ -16,4 +16,8 @@
         <notes>CVE about Keycloak server</notes>
         <cve>CVE-2022-1245</cve>
     </suppress>
+    <suppress>
+        <notes>Invalid CVE</notes>
+        <cve>CVE-2022-31514</cve>
+    </suppress>
 </suppressions>
