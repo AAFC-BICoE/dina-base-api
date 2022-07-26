@@ -81,7 +81,7 @@ public class DinaAdminOnlyAuthTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:CNC:SUPER_USER", "GNG:CNC:STAFF", "BNB:CNC:STUDENT"})
+  @WithMockKeycloakUser(groupRole = {"CNC:SUPER_USER", "CNC:STAFF", "CNC:STUDENT"})
   public void create_WhenNotAdmin_AccessDenied() {
     ItemDto dto = ItemDto.builder().uuid(UUID.randomUUID()).group("g").build();
     assertThrows(AccessDeniedException.class, () -> testRepo.create(dto));
@@ -94,7 +94,7 @@ public class DinaAdminOnlyAuthTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:CNC:SUPER_USER", "GNG:CNC:STAFF", "BNB:CNC:STUDENT"})
+  @WithMockKeycloakUser(groupRole = {"CNC:SUPER_USER", "CNC:STAFF", "CNC:STUDENT"})
   public void update_WhenNotAdmin_AccessDenied() {
     ItemDto dto = ItemDto.builder().uuid(UUID.randomUUID()).group("g").build();
     assertThrows(AccessDeniedException.class, () -> testRepo.save(dto));
@@ -107,7 +107,7 @@ public class DinaAdminOnlyAuthTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:CNC:SUPER_USER", "GNG:CNC:STAFF", "BNB:CNC:STUDENT"})
+  @WithMockKeycloakUser(groupRole = {"CNC:SUPER_USER", "CNC:STAFF", "CNC:STUDENT"})
   public void delete_WhenNotAdmin_AccessDenied() {
     assertThrows(AccessDeniedException.class, () -> testRepo.delete(persisted.getUuid()));
   }
