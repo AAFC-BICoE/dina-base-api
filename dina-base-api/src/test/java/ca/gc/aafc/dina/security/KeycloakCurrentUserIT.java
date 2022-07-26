@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -53,7 +52,7 @@ public class KeycloakCurrentUserIT {
   public void getCurrentUser_WhenKeycloakGroupRolesClaims_GroupRolesParsed() {
 
     // Keycloak includes a forward slash to all group
-    List<String> keycloakGroupClaim = Arrays.asList("/group 1/staff", "/group 2/collection-manager");
+    List<String> keycloakGroupClaim = Arrays.asList("/group 1/staff", "/group 2/super-user");
     List<String> expectedGroups = Arrays.asList("group 1", "group 2");
 
     KeycloakAuthenticationToken mockToken = Mockito.mock(
@@ -65,7 +64,7 @@ public class KeycloakCurrentUserIT {
 
     assertTrue(CollectionUtils.isEqualCollection(currentUser.getGroups(), expectedGroups));
 
-    assertEquals(DinaRole.COLLECTION_MANAGER, currentUser.getRolesPerGroup()
+    assertEquals(DinaRole.SUPER_USER, currentUser.getRolesPerGroup()
       .get("group 2").iterator().next());
   }
 

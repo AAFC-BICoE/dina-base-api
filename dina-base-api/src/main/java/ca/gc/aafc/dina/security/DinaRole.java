@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 public enum DinaRole {
 
   DINA_ADMIN("dina-admin", 0),
-  COLLECTION_MANAGER("collection-manager", 1),
+  SUPER_USER("super-user", 1),
   STAFF("staff", 2),
   STUDENT("student", 3),
   READ_ONLY("read-only", 4);
@@ -42,7 +42,7 @@ public enum DinaRole {
 
   /**
    * Similar but more lenient than {@link #valueOf(String)}.
-   * String like "collection-manager" will match COLLECTION_MANAGER.
+   * String like "super-user" will match SUPER_USER.
    * @param str string representing the role.
    * @return {@link DinaRole} as {@link Optional} or {@link Optional#empty()} if not found.
    */
