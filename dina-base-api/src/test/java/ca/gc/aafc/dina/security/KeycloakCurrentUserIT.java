@@ -52,7 +52,7 @@ public class KeycloakCurrentUserIT {
   public void getCurrentUser_WhenKeycloakGroupRolesClaims_GroupRolesParsed() {
 
     // Keycloak includes a forward slash to all group
-    List<String> keycloakGroupClaim = Arrays.asList("/group 1/staff", "/group 2/super-user");
+    List<String> keycloakGroupClaim = Arrays.asList("/group 1/user", "/group 2/super-user");
     List<String> expectedGroups = Arrays.asList("group 1", "group 2");
 
     KeycloakAuthenticationToken mockToken = Mockito.mock(

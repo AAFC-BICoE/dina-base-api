@@ -47,14 +47,14 @@ class DinaPermissionEvaluatorTest {
   @ParameterizedTest
   @ValueSource(strings = {"super_user", "SUPER_USER", "   SUPER_USER   "})
   void hasDinaRole_doesNotHaveRole_returnsFalse(String role) {
-    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STAFF);
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.USER);
     Assertions.assertFalse(evaluator.hasDinaRole(user, role));
   }
 
   @ParameterizedTest
   @NullAndEmptySource
   void hasDinaRole_BlankRole_returnsFalse(String role) {
-    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STAFF);
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.USER);
     Assertions.assertFalse(evaluator.hasDinaRole(user, role));
   }
 
@@ -92,14 +92,14 @@ class DinaPermissionEvaluatorTest {
   @ValueSource(strings = {"group1", "GROUP1", "   group1   "})
   void hasGroupAndRolePermissions_hasGroupButNoRole_returnsTrue(String group) {
     DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.SUPER_USER);
-    Assertions.assertFalse(evaluator.hasGroupAndRolePermissions(user, "staff",
+    Assertions.assertFalse(evaluator.hasGroupAndRolePermissions(user, DinaRole.USER.toString(),
       Person.builder().group(group).build()));
   }
 
   @ParameterizedTest
   @NullAndEmptySource
   void hasGroupAndRolePermissions_BlankRole_returnsFalse(String role) {
-    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STAFF);
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.USER);
     Assertions.assertFalse(evaluator.hasGroupAndRolePermissions(user, role,
       Person.builder().group(GROUP_1).build()));
   }
@@ -107,8 +107,8 @@ class DinaPermissionEvaluatorTest {
   @ParameterizedTest
   @NullAndEmptySource
   void hasGroupAndRolePermissions_BlankGroup_returnsFalse(String group) {
-    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STAFF);
-    Assertions.assertFalse(evaluator.hasGroupAndRolePermissions(user, "staff",
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.USER);
+    Assertions.assertFalse(evaluator.hasGroupAndRolePermissions(user, "user",
       Person.builder().group(group).build()));
   }
 
@@ -116,11 +116,11 @@ class DinaPermissionEvaluatorTest {
   @ValueSource(strings = {"group1", "GROUP1", "   group1   "})
   void hasMinimumGroupAndRolePermissions_hasMinimumRoleAndGroup_returnsTrue(String group) {
     DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.SUPER_USER);
-    Assertions.assertTrue(evaluator.hasMinimumGroupAndRolePermissions(user, "staff",
+    assertTrue(evaluator.hasMinimumGroupAndRolePermissions(user, "user",
       Person.builder().group(group).build()));
-    Assertions.assertTrue(evaluator.hasMinimumGroupAndRolePermissions(user, "super_user",
+    assertTrue(evaluator.hasMinimumGroupAndRolePermissions(user, "super_user",
       Person.builder().group(group).build()));
-    Assertions.assertFalse(evaluator.hasMinimumGroupAndRolePermissions(user, "DINA_ADMIN",
+    assertFalse(evaluator.hasMinimumGroupAndRolePermissions(user, "DINA_ADMIN",
       Person.builder().group(group).build()));
   }
 
@@ -135,14 +135,14 @@ class DinaPermissionEvaluatorTest {
   @ValueSource(strings = {"group1", "GROUP1", "   group1   "})
   void hasMinimumGroupAndRolePermissions_hasGroupButNoRole_returnsTrue(String group) {
     DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STUDENT);
-    Assertions.assertFalse(evaluator.hasMinimumGroupAndRolePermissions(user, "staff",
+    Assertions.assertFalse(evaluator.hasMinimumGroupAndRolePermissions(user, "user",
       Person.builder().group(group).build()));
   }
 
   @ParameterizedTest
   @NullAndEmptySource
   void hasMinimumGroupAndRolePermissions_BlankRole_returnsFalse(String role) {
-    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STAFF);
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.USER);
     Assertions.assertFalse(evaluator.hasMinimumGroupAndRolePermissions(user, role,
       Person.builder().group(GROUP_1).build()));
   }
@@ -150,8 +150,8 @@ class DinaPermissionEvaluatorTest {
   @ParameterizedTest
   @NullAndEmptySource
   void hasMinimumGroupAndRolePermissions_BlankGroup_returnsFalse(String group) {
-    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STAFF);
-    Assertions.assertFalse(evaluator.hasMinimumGroupAndRolePermissions(user, "staff",
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.USER);
+    Assertions.assertFalse(evaluator.hasMinimumGroupAndRolePermissions(user, "user",
       Person.builder().group(group).build()));
   }
 
@@ -195,7 +195,7 @@ class DinaPermissionEvaluatorTest {
 
   @Test
   void hasObjectOwnership_whenObjectNotOwned_returnsFalse() {
-    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STAFF);
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.USER);
 
     Person p = Person.builder().build();
     assertFalse(evaluator.hasObjectOwnership(user, p));
@@ -209,7 +209,7 @@ class DinaPermissionEvaluatorTest {
 
   @Test
   void hasObjectOwnership_whenObjectOwned_returnsTrue() {
-    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STAFF);
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.USER);
     Person p =  Person.builder().group(GROUP_1).createdBy(USERNAME).build();
     assertTrue(evaluator.hasObjectOwnership(user, p));
   }

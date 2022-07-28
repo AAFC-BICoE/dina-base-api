@@ -106,7 +106,7 @@ public class DinaRepoPermissionMetaTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"InvalidGroup:STAFF"})
+  @WithMockKeycloakUser(groupRole = {"InvalidGroup:USER"})
   void permissionsTest_WhenNoPermissions_PermissionsNotReturned() {
     mockHttpHeader(DinaRepository.PERMISSION_META_HEADER_KEY, "true");
     ResourceList<TestConfig.ItemDto> all = testRepo.findAll(new QuerySpec(TestConfig.ItemDto.class));
