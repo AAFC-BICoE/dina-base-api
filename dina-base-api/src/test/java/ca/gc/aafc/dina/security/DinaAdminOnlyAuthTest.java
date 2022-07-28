@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.security;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.RelatedEntity;
-import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.Item;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
@@ -19,7 +18,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import org.hibernate.annotations.NaturalId;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.junit.jupiter.api.Assertions;
@@ -37,11 +35,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -81,7 +74,7 @@ public class DinaAdminOnlyAuthTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:SUPER_USER", "CNC:USER", "CNC:STUDENT"})
+  @WithMockKeycloakUser(groupRole = {"CNC:SUPER_USER", "CNC:USER", "CNC:GUEST"})
   public void create_WhenNotAdmin_AccessDenied() {
     ItemDto dto = ItemDto.builder().uuid(UUID.randomUUID()).group("g").build();
     assertThrows(AccessDeniedException.class, () -> testRepo.create(dto));
@@ -94,7 +87,7 @@ public class DinaAdminOnlyAuthTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:SUPER_USER", "CNC:USER", "CNC:STUDENT"})
+  @WithMockKeycloakUser(groupRole = {"CNC:SUPER_USER", "CNC:USER", "CNC:GUEST"})
   public void update_WhenNotAdmin_AccessDenied() {
     ItemDto dto = ItemDto.builder().uuid(UUID.randomUUID()).group("g").build();
     assertThrows(AccessDeniedException.class, () -> testRepo.save(dto));
@@ -107,7 +100,7 @@ public class DinaAdminOnlyAuthTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:SUPER_USER", "CNC:USER", "CNC:STUDENT"})
+  @WithMockKeycloakUser(groupRole = {"CNC:SUPER_USER", "CNC:USER", "CNC:GUEST"})
   public void delete_WhenNotAdmin_AccessDenied() {
     assertThrows(AccessDeniedException.class, () -> testRepo.delete(persisted.getUuid()));
   }

@@ -18,7 +18,7 @@ public enum DinaRole {
   DINA_ADMIN("dina-admin", 0),
   SUPER_USER("super-user", 1),
   USER("user", 2),
-  STUDENT("student", 3),
+  GUEST("guest", 3),
   READ_ONLY("read-only", 4);
 
   /**

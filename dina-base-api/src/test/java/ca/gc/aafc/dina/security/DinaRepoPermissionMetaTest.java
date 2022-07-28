@@ -205,7 +205,7 @@ public class DinaRepoPermissionMetaTest {
       }
 
       @Override
-      @PreAuthorize("hasDinaRole(@currentUser, 'STUDENT')")
+      @PreAuthorize("hasDinaRole(@currentUser, 'GUEST')")
       public void authorizeDelete(Object entity) {
 
       }

@@ -134,7 +134,7 @@ class DinaPermissionEvaluatorTest {
   @ParameterizedTest
   @ValueSource(strings = {"group1", "GROUP1", "   group1   "})
   void hasMinimumGroupAndRolePermissions_hasGroupButNoRole_returnsTrue(String group) {
-    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.STUDENT);
+    DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.GUEST);
     Assertions.assertFalse(evaluator.hasMinimumGroupAndRolePermissions(user, "user",
       Person.builder().group(group).build()));
   }
@@ -169,7 +169,7 @@ class DinaPermissionEvaluatorTest {
   @Test
   void hasMinimumDinaRole_lowerRole_returnsFalse() {
     // Test a user with a lower role.
-    DinaAuthenticatedUser lowerRoleUser = getDinaAuthenticatedUser(DinaRole.STUDENT);
+    DinaAuthenticatedUser lowerRoleUser = getDinaAuthenticatedUser(DinaRole.GUEST);
     Assertions.assertFalse(evaluator.hasMinimumDinaRole(lowerRoleUser, "super_user"));
   }
 
@@ -190,7 +190,7 @@ class DinaPermissionEvaluatorTest {
   @Test
   void hasMinimumDinaRole_blankUser_returnsFalse() {
     // This should return false since no user was provided.
-    Assertions.assertFalse(evaluator.hasMinimumDinaRole(null, "student"));
+    assertFalse(evaluator.hasMinimumDinaRole(null, DinaRole.GUEST.toString()));
   }
 
   @Test
@@ -216,18 +216,18 @@ class DinaPermissionEvaluatorTest {
 
   @Test
   void dinaRolePriorityComparison() {
-    assertTrue(DinaRole.SUPER_USER.isHigherThan(DinaRole.STUDENT));
+    assertTrue(DinaRole.SUPER_USER.isHigherThan(DinaRole.GUEST));
     assertTrue(DinaRole.SUPER_USER.isHigherOrEqualThan(DinaRole.SUPER_USER));
 
     assertFalse(DinaRole.SUPER_USER.isHigherOrEqualThan(DinaRole.DINA_ADMIN));
-    assertFalse(DinaRole.STUDENT.isHigherOrEqualThan(DinaRole.DINA_ADMIN));
+    assertFalse(DinaRole.GUEST.isHigherOrEqualThan(DinaRole.DINA_ADMIN));
 
-    assertEquals(-1, DinaRole.COMPARATOR.compare(DinaRole.SUPER_USER, DinaRole.STUDENT));
+    assertEquals(-1, DinaRole.COMPARATOR.compare(DinaRole.SUPER_USER, DinaRole.GUEST));
 
     // test sorting by priority
-    List<DinaRole> dinaRoleList = new ArrayList<>(List.of(DinaRole.STUDENT, DinaRole.SUPER_USER, DinaRole.READ_ONLY, DinaRole.DINA_ADMIN));
+    List<DinaRole> dinaRoleList = new ArrayList<>(List.of(DinaRole.GUEST, DinaRole.SUPER_USER, DinaRole.READ_ONLY, DinaRole.DINA_ADMIN));
     dinaRoleList.sort(DinaRole.COMPARATOR);
-    assertEquals(List.of(DinaRole.DINA_ADMIN, DinaRole.SUPER_USER, DinaRole.STUDENT, DinaRole.READ_ONLY), dinaRoleList);
+    assertEquals(List.of(DinaRole.DINA_ADMIN, DinaRole.SUPER_USER, DinaRole.GUEST, DinaRole.READ_ONLY), dinaRoleList);
   }
 
   private static DinaAuthenticatedUser getDinaAuthenticatedUser(DinaRole dinaRole) {
