@@ -123,7 +123,7 @@ public final class JsonAPITestHelper {
    * @return
    */
   public static Map<String, Object> toJsonAPIMap(String typeName,
-      Map<String, Object> attributeMap, Map<String, Object> relationshipMap, String id) {
+      Map<String, Object> attributeMap, Map<String, ?> relationshipMap, String id) {
     Map<String, Object> jsonApiMap = new HashMap<>();
     jsonApiMap.put("type", typeName);
     if (id != null) {

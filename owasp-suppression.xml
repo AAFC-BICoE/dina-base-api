@@ -4,12 +4,20 @@
         <cpe>cpe:/a:pivotal_software:spring_security:5.4.5</cpe>
     </suppress>
     <suppress>
+        <notes>not valid for base-api</notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework/spring.*$</packageUrl>
+        <cve>CVE-2016-1000027</cve>
+    </suppress>
+    <suppress>
         <notes>CVE about Keycloak Server</notes>
         <cve>CVE-2021-4133</cve>
     </suppress>
     <suppress>
-        <notes>not valid for base-api</notes>
-        <packageUrl regex="true">^pkg:maven/org\.springframework/spring.*$</packageUrl>
-        <cve>CVE-2016-1000027</cve>
+        <notes>CVE about Keycloak server</notes>
+        <cve>CVE-2022-1245</cve>
+    </suppress>
+    <suppress>
+        <notes>Invalid CVE</notes>
+        <cve>CVE-2022-31514</cve>
     </suppress>
 </suppressions>
