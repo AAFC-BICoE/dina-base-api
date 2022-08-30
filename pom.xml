@@ -43,13 +43,14 @@
     <dependency.check.version>7.1.1</dependency.check.version>
     <lombok-maven-plugin.version>1.18.20.0</lombok-maven-plugin.version>
     <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
+
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
-    <keycloak-starter.version>15.1.0</keycloak-starter.version>
+    <keycloak-starter.version>18.0.2</keycloak-starter.version>
     <bcprov-jdk15on.version>1.68</bcprov-jdk15on.version>
     <guava.version>30.0-jre</guava.version>
 
-    <testcontainers.version>1.16.2</testcontainers.version>
+    <testcontainers.version>1.17.3</testcontainers.version>
   </properties>
   
   <repositories>

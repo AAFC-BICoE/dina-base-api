@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
-import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.inject.Inject;
 import java.util.Collections;
