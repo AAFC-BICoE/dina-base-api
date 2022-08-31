@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.92-SNAPSHOT</version>
+    <version>0.92</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -27,6 +27,7 @@
     <mybatis.version>2.2.2</mybatis.version>
     <aafc.search.messaging.version>0.20</aafc.search.messaging.version>
     <hibernate-types-52.version>2.16.2</hibernate-types-52.version>
+    <postgresql.version>42.4.1</postgresql.version>
   </properties>
 
   <dependencies>
@@ -118,7 +119,7 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.92-SNAPSHOT</version>
+      <version>0.92</version>
       <scope>test</scope>
     </dependency>
     <!-- Spring mybatis -->
