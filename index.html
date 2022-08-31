@@ -1615,10 +1615,10 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 <p>Change the version by running <code>mvn versions:set -DnewVersion=X.X</code> from the root where <code>X.X</code> is the current version minus the <code>-SNAPSHOT</code></p>
 </li>
 <li>
-<p>Update the <code>README.md</code> Artifact section</p>
+<p>Add and Push to dev with message like "Prepare version x.x release"</p>
 </li>
 <li>
-<p>Add and Push to dev with message like "Prepare version x.x release"</p>
+<p>Wait for CI to complete</p>
 </li>
 </ol>
 </div>
@@ -1631,7 +1631,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 <p>Merge dev into master (do NOT use Pull Request)</p>
 </li>
 <li>
-<p>Push to master (it will trigger the deployment of the artifacts to <a href="https://bintray.com/aafc-bice/BICoE/dina-base-api">BinTray</a> )</p>
+<p>Push to master (it will trigger the deployment to the staging repository of Maven Central)</p>
 </li>
 </ol>
 </div>
@@ -1658,6 +1658,22 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </li>
 <li>
 <p>Add and Push to dev with message like "Prepare next development version"</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Release the artifact to Maven Central</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Login to <a href="https://oss.sonatype.org/" class="bare">https://oss.sonatype.org/</a></p>
+</li>
+<li>
+<p>Close the release from staging repository</p>
+</li>
+<li>
+<p>Release the artifact</p>
 </li>
 </ol>
 </div>
@@ -1862,7 +1878,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-07-21 17:16:45 UTC
+Last updated 2022-08-31 14:42:45 UTC
 </div>
 </div>
 </body>
