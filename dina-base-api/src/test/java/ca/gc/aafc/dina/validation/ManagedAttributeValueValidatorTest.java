@@ -10,6 +10,7 @@ import ca.gc.aafc.dina.service.ManagedAttributeService;
 import ca.gc.aafc.dina.service.ManagedAttributeServiceIT;
 
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -17,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
-import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;

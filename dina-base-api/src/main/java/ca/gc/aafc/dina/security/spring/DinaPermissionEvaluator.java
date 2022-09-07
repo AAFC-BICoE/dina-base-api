@@ -51,7 +51,7 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
    * to.
    *
    * @param user               - Dina user being authenticated
-   * @param targetDomainObject - Target resouce of the request
+   * @param targetDomainObject - Target resource of the request
    * @return - true if the given authenticated user is a member of the group the given target object belongs
    * to.
    */
