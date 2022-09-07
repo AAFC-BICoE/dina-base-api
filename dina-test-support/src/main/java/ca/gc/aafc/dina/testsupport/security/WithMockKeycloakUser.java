@@ -25,4 +25,6 @@ public @interface WithMockKeycloakUser {
 
   String internalIdentifier() default "";
 
+  boolean failOnInvalidNotation() default true;
+
 }

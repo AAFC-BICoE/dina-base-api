@@ -11,7 +11,7 @@ public class DinaRoleTest {
   @Test
   public void testFromString() {
 
-    assertEquals(DinaRole.COLLECTION_MANAGER, DinaRole.fromString("collection-manager").orElse(null));
+    assertEquals(DinaRole.SUPER_USER, DinaRole.fromString("super-user").orElse(null));
 
     // test with a space
     assertEquals(Optional.empty(), DinaRole.fromString(" dina-admin"));

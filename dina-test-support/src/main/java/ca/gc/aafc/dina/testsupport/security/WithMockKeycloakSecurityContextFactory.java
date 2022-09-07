@@ -35,7 +35,7 @@ public class WithMockKeycloakSecurityContextFactory
     AccessToken accessToken = new AccessToken();
 
     List<String> groupRoles = Arrays.stream(mockKeycloakUser.groupRole())
-        .map(WithMockKeycloakSecurityContextFactory::convertToKeycloakNotation)
+        .map(gr -> convertToKeycloakNotation(gr, mockKeycloakUser.failOnInvalidNotation()))
         .collect(Collectors.toList());
     accessToken.setOtherClaims(GROUPS_CLAIM_KEY, groupRoles);
 
@@ -63,11 +63,15 @@ public class WithMockKeycloakSecurityContextFactory
    * Utility method to convert dina testing notation (group:role) to Keycloak notation (/group/role)
    * Ex: group 2:dina-admin -> /group 2/dina-admin
    * @param groupRole
+   * @param failOnInvalidNotation should we throw an exception if the notation is invalid
    * @return
    */
-  private static String convertToKeycloakNotation(String groupRole) {
+  private static String convertToKeycloakNotation(String groupRole, boolean failOnInvalidNotation) {
     String[] groupRoleParts = StringUtils.split(groupRole, ":");
     if(groupRoleParts.length != 2) {
+      if(failOnInvalidNotation) {
+        throw new IllegalArgumentException("Invalid groupRole notation. Excepted group:role.");
+      }
       return "";
     }
     return StringUtils.prependIfMissing(groupRoleParts[0].strip(), "/") + "/" + groupRoleParts[1].strip();
