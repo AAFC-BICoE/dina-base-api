@@ -5,7 +5,6 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
 
@@ -20,7 +19,7 @@ jobs:
         uses: ts-graphviz/setup-graphviz@v1
 
       - name: Build with Maven
-        run: mvn install
+        run: mvn -B install
 
       - name: Run Checkstyle
         run: mvn checkstyle:check
@@ -37,16 +36,18 @@ jobs:
 
       - name: Set up for Maven Central deploy (master branch only)
         if: ${{ github.ref == 'refs/heads/master' }}
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with: # running setup-java again overwrites the settings.xml
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
           server-id: ossrh
           server-username: MAVEN_USERNAME
           server-password: MAVEN_CENTRAL_PW
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
-      - name: Publish to Maven Central (only on master branch)
+      - name: Publish to Maven Central (master branch only)
         run: mvn -DsignArtifacts=true --batch-mode javadoc:jar deploy
         if: ${{ github.ref == 'refs/heads/master' }}
         env:
@@ -54,7 +55,7 @@ jobs:
           MAVEN_CENTRAL_PW: ${{ secrets.MAVEN_CENTRAL_PW }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
-      - name: Deploy GitHub Pages (only on master branch)
+      - name: Deploy GitHub Pages (master branch only)
         if: ${{ github.ref == 'refs/heads/master' }}
         uses: peaceiris/actions-gh-pages@v3
         with:
