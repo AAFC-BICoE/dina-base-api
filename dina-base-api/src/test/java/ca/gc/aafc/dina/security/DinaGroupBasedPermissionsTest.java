@@ -47,7 +47,7 @@ public class DinaGroupBasedPermissionsTest {
     KeycloakAuthenticationToken mockToken = Mockito.mock(
       KeycloakAuthenticationToken.class,
       Answers.RETURNS_DEEP_STUBS);
-    TestDinaBaseApp.mockToken(List.of("/" + GROUP_1 + "/staff"), mockToken);
+    TestDinaBaseApp.mockToken(List.of("/" + GROUP_1 + "/" + DinaRole.USER), mockToken);
 
     SecurityContextHolder.getContext().setAuthentication(mockToken);
   }

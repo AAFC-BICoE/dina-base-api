@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.92</version>
+  <version>0.93</version>
 
   <packaging>pom</packaging>
 
@@ -29,7 +29,7 @@
   <properties>
     <!-- Compile properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <java.version>11</java.version>
+    <java.version>17</java.version>
 
     <crnk.version>3.2.20200419165537</crnk.version>
 

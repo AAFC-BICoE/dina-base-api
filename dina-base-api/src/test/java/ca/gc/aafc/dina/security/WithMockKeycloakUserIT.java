@@ -6,7 +6,6 @@ import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
@@ -32,7 +31,7 @@ public class WithMockKeycloakUserIT {
   @Inject
   private DinaAuthenticatedUser currentUser;
 
-  @WithMockKeycloakUser(groupRole = {"group 1:staff", "group 3:staff"})
+  @WithMockKeycloakUser(groupRole = {"group 1:user", "group 3:user"})
   @Test
   public void create_AuthorizedGroup_CreatesObject() {
     PersonDTO dto = PersonDTO.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
@@ -46,17 +45,17 @@ public class WithMockKeycloakUserIT {
   @WithMockKeycloakUser(
     agentIdentifier = "agent one",
     internalIdentifier = "internal",
-    groupRole = {"group 1:staff", "group 3:staff"})
+    groupRole = {"group 1:user", "group 3:user"})
   @Test
   public void withMockedUser_UserMocked() {
     assertEquals("internal", currentUser.getInternalIdentifier());
     assertEquals("agent one", currentUser.getAgentIdentifier());
   }
 
-  @WithMockKeycloakUser(groupRole = {GROUP_1 + ": staff"})
+  @WithMockKeycloakUser(groupRole = {GROUP_1 + ": user"})
   @Test
   public void withMockKeycloakUser_onSpaceBeforeRole_RoleExtracted() {
-    assertEquals(DinaRole.STAFF, currentUser.getRolesPerGroup().get(GROUP_1).iterator().next());
+    assertEquals(DinaRole.USER, currentUser.getRolesPerGroup().get(GROUP_1).iterator().next());
   }
 
 }
