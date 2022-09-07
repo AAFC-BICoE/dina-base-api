@@ -23,7 +23,7 @@ public class DevUserConfig {
       .agentIdentifier("c628fc6f-c9ad-4bb6-a187-81eb7884bdd7")
       .internalIdentifier("c628fc6f-c9ad-4bb6-a187-81eb7884bdd7")
       .username("dev")
-      .rolesPerGroup(Map.of("dev-group", Set.of(DinaRole.STAFF)))
+      .rolesPerGroup(Map.of("dev-group", Set.of(DinaRole.USER)))
       .build();
   }
 
