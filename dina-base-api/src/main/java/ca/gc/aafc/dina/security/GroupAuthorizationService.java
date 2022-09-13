@@ -6,7 +6,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 /**
- * Authorization service using spring security. Service will only proxy authorization methods on
+ * Authorization Service that checks the group of an object and compare it with the group membership of the user.
+ * The minimum role is also checked.
+ *
+ * Built on Spring Security. Service will only proxy authorization methods on
  * keycloak.enabled = true, see {@link MethodSecurityConfig}.
  *
  */
@@ -24,7 +27,7 @@ public class GroupAuthorizationService extends PermissionAuthorizationService {
    * @param entity
    */
   @Override
-  @PreAuthorize("hasGroupPermission(@currentUser, #entity)")
+  @PreAuthorize("hasMinimumGroupAndRolePermissions(@currentUser, 'GUEST', #entity)")
   public void authorizeCreate(Object entity) {
   }
 
@@ -53,7 +56,7 @@ public class GroupAuthorizationService extends PermissionAuthorizationService {
    * @param entity
    */
   @Override
-  @PreAuthorize("hasGroupPermission(@currentUser, #entity)")
+  @PreAuthorize("hasMinimumGroupAndRolePermissions(@currentUser, 'GUEST', #entity)")
   public void authorizeUpdate(Object entity) {
   }
 
@@ -68,7 +71,7 @@ public class GroupAuthorizationService extends PermissionAuthorizationService {
    * @param entity
    */
   @Override
-  @PreAuthorize("hasGroupPermission(@currentUser, #entity)")
+  @PreAuthorize("hasMinimumGroupAndRolePermissions(@currentUser, 'USER', #entity)")
   public void authorizeDelete(Object entity) {
   }
 
