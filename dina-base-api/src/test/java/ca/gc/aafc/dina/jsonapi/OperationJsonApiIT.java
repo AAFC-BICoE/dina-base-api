@@ -51,16 +51,20 @@ public class OperationJsonApiIT extends BaseRestAssuredTest {
         .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
             .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person1), person1Uuid)) // Crnk requires an identifier even if it's a POST
         .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
-            .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person2),"1234")) //the id can even be a non-uuid value
+            .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person2), UUID.randomUUID().toString()))
         .buildOperation();
 
     ValidatableResponse operationResponse = sendOperation(operationMap);
+    assertEquals(201, operationResponse.extract().body().jsonPath().getInt("[0].status"));
+    assertEquals(201, operationResponse.extract().body().jsonPath().getInt("[1].status"));
 
-    Integer returnCode = operationResponse.extract().body().jsonPath().getInt("[0].status");
     String person1AssignedId = operationResponse.extract().body().jsonPath().getString("[0].data.id");
-
-    assertEquals(201, returnCode);
+    String person2AssignedId = operationResponse.extract().body().jsonPath().getString("[1].data.id");
     assertNotEquals("Assigned id should differ from the one provided", person1Uuid, person1AssignedId);
+
+    //cleanup
+    sendDelete(PersonDTO.TYPE_NAME, person1AssignedId);
+    sendDelete(PersonDTO.TYPE_NAME, person2AssignedId);
   }
 
 }
