@@ -41,11 +41,11 @@ public class OperationJsonApiIT extends BaseRestAssuredTest {
   public void operations_OnCRUDOperations_ExpectedReturnCodesReturned() {
     PersonDTO person1 = PersonDTO.builder()
         .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
-        .name(RandomStringUtils.randomAlphabetic(4)).build();
+        .name("OperationJsonApiIT_" + RandomStringUtils.randomAlphabetic(4)).build();
     String person1Uuid = UUID.randomUUID().toString();
     PersonDTO person2 = PersonDTO.builder()
         .nickNames(Arrays.asList("a", "w", "y").toArray(new String[0]))
-        .name(RandomStringUtils.randomAlphabetic(4)).build();
+        .name("OperationJsonApiIT_" +RandomStringUtils.randomAlphabetic(4)).build();
 
     List<Map<String, Object>> operationMap = JsonAPIOperationBuilder.newBuilder()
         .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
