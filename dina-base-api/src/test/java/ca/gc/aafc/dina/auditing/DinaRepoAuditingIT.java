@@ -60,6 +60,9 @@ public class DinaRepoAuditingIT {
     CdoSnapshot result = javers.getLatestSnapshot(id.toString(), PersonDTO.class).get();
     assertEquals(SnapshotType.INITIAL, result.getType());
     assertEquals(DinaUserConfig.AUTH_USER_NAME, result.getCommitMetadata().getAuthor());
+
+    //cleanup
+    dinaRepository.delete(id);
   }
 
   @Test
@@ -77,6 +80,9 @@ public class DinaRepoAuditingIT {
     CdoSnapshot result = javers.getLatestSnapshot(id.toString(), PersonDTO.class).get();
     assertEquals(SnapshotType.UPDATE, result.getType());
     assertEquals(DinaUserConfig.AUTH_USER_NAME, result.getCommitMetadata().getAuthor());
+
+    //cleanup
+    dinaRepository.delete(id);
   }
 
   @Test
