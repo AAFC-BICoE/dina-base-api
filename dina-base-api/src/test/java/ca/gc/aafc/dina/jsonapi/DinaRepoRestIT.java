@@ -237,7 +237,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     ProjectDTO project = ProjectDTO.builder()
       .nameTranslations(Collections.singletonList(ComplexObject.builder().name("complex").build()))
       .alias(RandomStringUtils.randomAlphabetic(5))
-      .name(RandomStringUtils.randomAlphabetic(5)).build();
+      .name("DinaRepoRestIT_" + RandomStringUtils.randomAlphabetic(5)).build();
     String agentID = UUID.randomUUID().toString();
     String authorID = UUID.randomUUID().toString();
 

@@ -417,6 +417,10 @@ public class DinaRepositoryIT {
   @Test
   public void findAll_NothingPersisted_ReturnsEmpty() {
     List<PersonDTO> result = dinaRepository.findAll(null, new QuerySpec(PersonDTO.class));
+
+    //debug
+    System.out.println(Arrays.toString(result.toArray()));
+
     assertEquals(0, result.size());
   }
 
@@ -554,7 +558,7 @@ public class DinaRepositoryIT {
       .department(singleRelationDto)
       .departmentsHeadBackup(collectionRelationDtos)
       .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
-      .name(RandomStringUtils.randomAlphabetic(4))
+      .name("DinaRepositoryIT_" + RandomStringUtils.randomAlphabetic(4))
       .group(RandomStringUtils.randomAlphabetic(4))
       .build();
   }
