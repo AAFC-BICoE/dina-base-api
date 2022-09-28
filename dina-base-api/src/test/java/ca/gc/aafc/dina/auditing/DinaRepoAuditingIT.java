@@ -101,7 +101,7 @@ public class DinaRepoAuditingIT {
   private PersonDTO createPersonDto() {
     return PersonDTO.builder()
       .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
-      .name(RandomStringUtils.random(4)).build();
+      .name("DinaRepoAuditingIT_" + RandomStringUtils.random(4)).build();
   }
 
 }
