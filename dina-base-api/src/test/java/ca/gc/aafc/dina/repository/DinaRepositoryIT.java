@@ -488,6 +488,13 @@ public class DinaRepositoryIT {
   }
 
   @Test
+  public void save_UnsafePayload_ExceptionThrown() {
+    PersonDTO personDTO = createPersonDto();
+    personDTO.setName("abc<iframe src=javascript:alert(32311)>");
+    assertThrows(IllegalArgumentException.class, () -> dinaRepository.create(personDTO));
+  }
+
+  @Test
   public void delete_ValidResource_ResourceRemoved() {
     PersonDTO dto = persistPerson();
 
