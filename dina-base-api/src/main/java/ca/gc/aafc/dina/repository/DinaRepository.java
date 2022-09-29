@@ -386,4 +386,5 @@ public class DinaRepository<D, E extends DinaEntity>
   protected DinaMappingLayer<D, E> getMappingLayer() {
     return mappingLayer;
   }
+
 }
