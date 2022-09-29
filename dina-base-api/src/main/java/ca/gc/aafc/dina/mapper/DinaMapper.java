@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
+import ca.gc.aafc.dina.security.TextHtmlSanitizer;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -269,8 +270,27 @@ public class DinaMapper<D, E> {
   ) {
     for (String attribute : selectedFields) {
       log.trace("Mapping property [{}] of class [{}]", () -> attribute, () -> source.getClass().toString());
-      PropertyUtils.setProperty(target, attribute, PropertyUtils.getProperty(source, attribute));
+      PropertyUtils.setProperty(target, attribute,
+              safeGetProperty(PropertyUtils.getProperty(source, attribute), attribute));
     }
+  }
+
+  /**
+   * Ensures a value is safe before moving it from a source to target.
+   * Limited to String field for now.
+   * @param property
+   * @return
+   */
+  private static Object safeGetProperty(Object property, String attribute) {
+    if (property instanceof String text) {
+      if (TextHtmlSanitizer.isSafeText(text)) {
+        return property;
+      }
+      else{
+        throw new IllegalArgumentException("unsafe value detected in attribute " + attribute);
+      }
+    }
+    return property;
   }
 
   private <T> DinaMappingRegistry.InternalRelation findInternalRelation(
