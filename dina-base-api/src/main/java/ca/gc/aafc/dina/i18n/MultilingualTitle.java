@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.javers.core.metamodel.annotation.Value;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Max;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;

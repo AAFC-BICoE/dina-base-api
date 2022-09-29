@@ -564,12 +564,11 @@ public class DinaRepositoryIT {
   }
 
   private static Department createDepartment(String name, String Location) {
-    Department depart = Department.builder()
+    return Department.builder()
       .uuid(UUID.randomUUID())
       .name(name)
       .location(Location)
       .build();
-    return depart;
   }
 
   private Department persistDepartment() {
@@ -587,7 +586,7 @@ public class DinaRepositoryIT {
   }
 
   private static List<IncludeRelationSpec> createIncludeRelationSpecs(String... args) {
-    return Arrays.asList(args).stream()
+    return Arrays.stream(args)
       .map(Arrays::asList)
       .map(IncludeRelationSpec::new)
       .collect(Collectors.toList());
