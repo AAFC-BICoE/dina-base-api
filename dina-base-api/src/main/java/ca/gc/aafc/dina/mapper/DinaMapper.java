@@ -291,8 +291,7 @@ public class DinaMapper<D, E> {
     if (property instanceof String text) {
       if (TextHtmlSanitizer.isSafeText(text)) {
         return property;
-      }
-      else{
+      } else {
         throw new IllegalArgumentException("unsafe value detected in attribute " + attribute);
       }
     }
