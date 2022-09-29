@@ -86,7 +86,7 @@ public class DinaMapper<D, E> {
     Set<String> relations
   ) {
     D dto = dtoClass.getConstructor().newInstance();
-    mapSourceToTarget(entity, dto, selectedFieldPerClass, relations, new IdentityHashMap<>());
+    mapSourceToTarget(entity, dto, selectedFieldPerClass, relations, new IdentityHashMap<>(), false);
     return dto;
   }
 
@@ -119,7 +119,7 @@ public class DinaMapper<D, E> {
     Map<Class<?>, Set<String>> selectedFieldPerClass,
     Set<String> relations
   ) {
-    mapSourceToTarget(dto, entity, selectedFieldPerClass, relations, new IdentityHashMap<>());
+    mapSourceToTarget(dto, entity, selectedFieldPerClass, relations, new IdentityHashMap<>(), true);
   }
 
   /**
@@ -131,7 +131,8 @@ public class DinaMapper<D, E> {
    * @param target                - target of the mapping
    * @param selectedFieldPerClass - selected fields to map
    * @param relations             - relations to map
-   * @param visited               - map of visted objects and there corresponding target.
+   * @param visited               - map of visited objects and there corresponding target.
+   * @param useSafeGet            - see {@link #mapFieldsToTarget(Object, Object, Set, boolean)}
    */
   @SuppressWarnings("unchecked")
   private <T, S> void mapSourceToTarget(
@@ -139,7 +140,8 @@ public class DinaMapper<D, E> {
     @NonNull T target,
     @NonNull Map<Class<?>, Set<String>> selectedFieldPerClass,
     @NonNull Set<String> relations,
-    @NonNull Map<Object, Object> visited
+    @NonNull Map<Object, Object> visited,
+    boolean useSafeGet
   ) {
     visited.putIfAbsent(source, target);
     // The source could be a Hibernate-proxied entity; unproxy it here:
@@ -147,7 +149,7 @@ public class DinaMapper<D, E> {
     Class<?> sourceType = unproxied.getClass();
     Set<String> selectedFields = selectedFieldPerClass.getOrDefault(sourceType, Set.of());
 
-    mapFieldsToTarget(unproxied, target, selectedFields);
+    mapFieldsToTarget(unproxied, target, selectedFields, useSafeGet);
     mapRelationsToTarget(unproxied, target, selectedFieldPerClass, relations, visited);
 
     registry.findFieldAdapterForClass(sourceType)
@@ -244,11 +246,11 @@ public class DinaMapper<D, E> {
      * side contains the relationships.
      */
     if (CollectionUtils.isNotEmpty(set1)) {
-      mapSourceToTarget(unBoxed, target, fields, set1, visited);
+      mapSourceToTarget(unBoxed, target, fields, set1, visited, false);
     } else if (CollectionUtils.isNotEmpty(set2)) {
-      mapSourceToTarget(unBoxed, target, fields, set2, visited);
+      mapSourceToTarget(unBoxed, target, fields, set2, visited, false);
     } else {
-      mapSourceToTarget(unBoxed, target, fields, Collections.emptySet(), visited);
+      mapSourceToTarget(unBoxed, target, fields, Collections.emptySet(), visited, false);
     }
     return target;
   }
@@ -261,17 +263,20 @@ public class DinaMapper<D, E> {
    * @param source         - source of the mapping
    * @param target         - target of the mapping
    * @param selectedFields - Selected fields to apply
+   * @param useSafeGet     - Should a safeGet be used to map the field from source to destination. Should be used
+   *                       when the data is coming from an untrusted source (from DTO received on-the-wire)
    */
   @SneakyThrows
   private static <T, S> void mapFieldsToTarget(
     S source,
     T target,
-    Set<String> selectedFields
+    Set<String> selectedFields, boolean useSafeGet
   ) {
     for (String attribute : selectedFields) {
       log.trace("Mapping property [{}] of class [{}]", () -> attribute, () -> source.getClass().toString());
       PropertyUtils.setProperty(target, attribute,
-              safeGetProperty(PropertyUtils.getProperty(source, attribute), attribute));
+              useSafeGet ? safeGetProperty(PropertyUtils.getProperty(source, attribute), attribute) :
+                      PropertyUtils.getProperty(source, attribute));
     }
   }
 
@@ -279,6 +284,7 @@ public class DinaMapper<D, E> {
    * Ensures a value is safe before moving it from a source to target.
    * Limited to String field for now.
    * @param property
+   * @param attribute
    * @return
    */
   private static Object safeGetProperty(Object property, String attribute) {
