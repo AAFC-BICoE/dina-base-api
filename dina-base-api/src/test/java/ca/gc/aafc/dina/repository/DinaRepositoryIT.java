@@ -54,6 +54,9 @@ public class DinaRepositoryIT {
   private DinaRepository<PersonDTO, Person> dinaRepository;
 
   @Inject
+  private DinaRepository<DepartmentDto, Department> departmentRepository;
+
+  @Inject
   private BaseDAO baseDAO;
 
   private Department singleRelationUnderTest;
@@ -417,10 +420,6 @@ public class DinaRepositoryIT {
   @Test
   public void findAll_NothingPersisted_ReturnsEmpty() {
     List<PersonDTO> result = dinaRepository.findAll(null, new QuerySpec(PersonDTO.class));
-
-    //debug
-    System.out.println(Arrays.toString(result.toArray()));
-
     assertEquals(0, result.size());
   }
 
@@ -488,10 +487,20 @@ public class DinaRepositoryIT {
   }
 
   @Test
-  public void save_UnsafePayload_ExceptionThrown() {
+  public void save_unsafePayload_ExceptionThrown() {
     PersonDTO personDTO = createPersonDto();
     personDTO.setName("abc<iframe src=javascript:alert(32311)>");
     assertThrows(IllegalArgumentException.class, () -> dinaRepository.create(personDTO));
+  }
+
+  @Test
+  public void create_unsafeNestedPayload_ExceptionThrown() {
+    Department.DepartmentDetails departmentDetails = new Department.DepartmentDetails("note<iframe src=javascript:alert(32311)>");
+    DepartmentDto departmentDto = DepartmentDto.builder()
+            .uuid(UUID.randomUUID())
+            .departmentDetails(departmentDetails)
+            .build();
+    assertThrows(IllegalArgumentException.class, () -> departmentRepository.create(departmentDto));
   }
 
   @Test
