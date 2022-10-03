@@ -41,26 +41,30 @@ public class OperationJsonApiIT extends BaseRestAssuredTest {
   public void operations_OnCRUDOperations_ExpectedReturnCodesReturned() {
     PersonDTO person1 = PersonDTO.builder()
         .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
-        .name(RandomStringUtils.randomAlphabetic(4)).build();
+        .name("OperationJsonApiIT_" + RandomStringUtils.randomAlphabetic(4)).build();
     String person1Uuid = UUID.randomUUID().toString();
     PersonDTO person2 = PersonDTO.builder()
         .nickNames(Arrays.asList("a", "w", "y").toArray(new String[0]))
-        .name(RandomStringUtils.randomAlphabetic(4)).build();
+        .name("OperationJsonApiIT_" +RandomStringUtils.randomAlphabetic(4)).build();
 
     List<Map<String, Object>> operationMap = JsonAPIOperationBuilder.newBuilder()
         .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
             .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person1), person1Uuid)) // Crnk requires an identifier even if it's a POST
         .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
-            .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person2),"1234")) //the id can even be a non-uuid value
+            .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person2), UUID.randomUUID().toString()))
         .buildOperation();
 
     ValidatableResponse operationResponse = sendOperation(operationMap);
+    assertEquals(201, operationResponse.extract().body().jsonPath().getInt("[0].status"));
+    assertEquals(201, operationResponse.extract().body().jsonPath().getInt("[1].status"));
 
-    Integer returnCode = operationResponse.extract().body().jsonPath().getInt("[0].status");
     String person1AssignedId = operationResponse.extract().body().jsonPath().getString("[0].data.id");
-
-    assertEquals(201, returnCode);
+    String person2AssignedId = operationResponse.extract().body().jsonPath().getString("[1].data.id");
     assertNotEquals("Assigned id should differ from the one provided", person1Uuid, person1AssignedId);
+
+    //cleanup
+    sendDelete(PersonDTO.TYPE_NAME, person1AssignedId);
+    sendDelete(PersonDTO.TYPE_NAME, person2AssignedId);
   }
 
 }

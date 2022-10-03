@@ -22,7 +22,6 @@ import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.Is;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -418,6 +417,10 @@ public class DinaRepositoryIT {
   @Test
   public void findAll_NothingPersisted_ReturnsEmpty() {
     List<PersonDTO> result = dinaRepository.findAll(null, new QuerySpec(PersonDTO.class));
+
+    //debug
+    System.out.println(Arrays.toString(result.toArray()));
+
     assertEquals(0, result.size());
   }
 
@@ -482,6 +485,13 @@ public class DinaRepositoryIT {
   @Test
   public void save_NoResourceFound_ThrowsResourceNotFoundException() {
     assertThrows(ResourceNotFoundException.class, () -> dinaRepository.save(createPersonDto()));
+  }
+
+  @Test
+  public void save_UnsafePayload_ExceptionThrown() {
+    PersonDTO personDTO = createPersonDto();
+    personDTO.setName("abc<iframe src=javascript:alert(32311)>");
+    assertThrows(IllegalArgumentException.class, () -> dinaRepository.create(personDTO));
   }
 
   @Test
@@ -555,18 +565,17 @@ public class DinaRepositoryIT {
       .department(singleRelationDto)
       .departmentsHeadBackup(collectionRelationDtos)
       .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
-      .name(RandomStringUtils.randomAlphabetic(4))
+      .name("DinaRepositoryIT_" + RandomStringUtils.randomAlphabetic(4))
       .group(RandomStringUtils.randomAlphabetic(4))
       .build();
   }
 
   private static Department createDepartment(String name, String Location) {
-    Department depart = Department.builder()
+    return Department.builder()
       .uuid(UUID.randomUUID())
       .name(name)
       .location(Location)
       .build();
-    return depart;
   }
 
   private Department persistDepartment() {
@@ -584,7 +593,7 @@ public class DinaRepositoryIT {
   }
 
   private static List<IncludeRelationSpec> createIncludeRelationSpecs(String... args) {
-    return Arrays.asList(args).stream()
+    return Arrays.stream(args)
       .map(Arrays::asList)
       .map(IncludeRelationSpec::new)
       .collect(Collectors.toList());
