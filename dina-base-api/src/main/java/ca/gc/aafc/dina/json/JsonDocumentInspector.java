@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.json;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 /**
@@ -10,7 +11,8 @@ import java.util.function.Predicate;
  */
 public final class JsonDocumentInspector {
 
-  private JsonDocumentInspector() {}
+  private JsonDocumentInspector() {
+  }
 
   /**
    * Apply the predicate on all values of a json document and return as soon as the predicate returns false.
@@ -22,6 +24,9 @@ public final class JsonDocumentInspector {
    * @return
    */
   public static boolean testPredicateOnValues(Map<String, Object> jsonElements, Predicate<String> predicate) {
+
+    Objects.requireNonNull(jsonElements);
+    Objects.requireNonNull(predicate);
 
     for (Map.Entry<String, ?> entry : jsonElements.entrySet()) {
       if (entry.getValue() instanceof Map) {
