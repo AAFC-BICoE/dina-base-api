@@ -44,10 +44,14 @@ public class DinaGroupBasedPermissionsTest {
 
   @BeforeEach
   public void beforeEach() {
+    setupMockToken(GROUP_1, DinaRole.USER);
+  }
+
+  private static void setupMockToken(String group, DinaRole role) {
     KeycloakAuthenticationToken mockToken = Mockito.mock(
-      KeycloakAuthenticationToken.class,
-      Answers.RETURNS_DEEP_STUBS);
-    TestDinaBaseApp.mockToken(List.of("/" + GROUP_1 + "/" + DinaRole.USER), mockToken);
+            KeycloakAuthenticationToken.class,
+            Answers.RETURNS_DEEP_STUBS);
+    TestDinaBaseApp.mockToken(List.of("/" + group + "/" + role), mockToken);
 
     SecurityContextHolder.getContext().setAuthentication(mockToken);
   }
@@ -79,6 +83,18 @@ public class DinaGroupBasedPermissionsTest {
 
     String resultName = baseDAO.findOneByNaturalId(persisted.getUuid(), Person.class).getName();
     assertEquals(expectedName, resultName);
+  }
+
+  @Test
+  public void save_ReadOnlyRole_ExceptionThrown() {
+    String expectedName = RandomStringUtils.random(6);
+    Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
+    baseDAO.create(persisted);
+
+    //change the role
+    setupMockToken(GROUP_1, DinaRole.READ_ONLY);
+    PersonDTO updateDto = PersonDTO.builder().uuid(persisted.getUuid()).name(expectedName).build();
+    assertThrows(AccessDeniedException.class, () -> dinaRepository.save(updateDto));
   }
 
   @Test

@@ -130,7 +130,7 @@ public class DinaMapper<D, E> {
    * @param target                - target of the mapping
    * @param selectedFieldPerClass - selected fields to map
    * @param relations             - relations to map
-   * @param visited               - map of visted objects and there corresponding target.
+   * @param visited               - map of visited objects and there corresponding target.
    */
   @SuppressWarnings("unchecked")
   private <T, S> void mapSourceToTarget(

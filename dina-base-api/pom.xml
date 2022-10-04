@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.93</version>
+    <version>0.94</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -28,6 +28,7 @@
     <aafc.search.messaging.version>0.20</aafc.search.messaging.version>
     <hibernate-types-52.version>2.16.2</hibernate-types-52.version>
     <postgresql.version>42.4.1</postgresql.version>
+    <jsoup.version>1.15.3</jsoup.version>
   </properties>
 
   <dependencies>
@@ -113,13 +114,18 @@
       <version>${commons.beanutils.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
+      <version>${jsoup.version}</version>
+    </dependency>
+    <dependency>
       <groupId>javax.validation</groupId>
       <artifactId>validation-api</artifactId>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.93</version>
+      <version>0.94</version>
       <scope>test</scope>
     </dependency>
     <!-- Spring mybatis -->

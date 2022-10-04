@@ -18,6 +18,7 @@ import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIOperationBuilder;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import io.crnk.core.engine.http.HttpMethod;
 import io.crnk.core.queryspec.PathSpec;
@@ -237,7 +238,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     ProjectDTO project = ProjectDTO.builder()
       .nameTranslations(Collections.singletonList(ComplexObject.builder().name("complex").build()))
       .alias(RandomStringUtils.randomAlphabetic(5))
-      .name(RandomStringUtils.randomAlphabetic(5)).build();
+      .name("DinaRepoRestIT_" + RandomStringUtils.randomAlphabetic(5)).build();
     String agentID = UUID.randomUUID().toString();
     String authorID = UUID.randomUUID().toString();
 
@@ -310,7 +311,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
     @Bean
     public DinaRepository<ProjectDTO, Project> projectRepo(
       ExternalResourceProvider externalResourceProvider,
-      ProjectDinaService projectDinaService
+      ProjectDinaService projectDinaService, ObjectMapper objMapper
     ) {
       return new DinaRepository<>(
         projectDinaService,
@@ -321,14 +322,14 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         Project.class,
         null,
         externalResourceProvider,
-        new BuildProperties(new Properties())
+        new BuildProperties(new Properties()), objMapper
       );
     }
 
     @Bean
     public DinaRepository<TaskDTO, Task> taskRepo(
       ExternalResourceProvider externalResourceProvider,
-      TaskDinaService taskDinaService
+      TaskDinaService taskDinaService, ObjectMapper objMapper
     ) {
       return new DinaRepository<>(
         taskDinaService,
@@ -339,7 +340,7 @@ public class DinaRepoRestIT extends BaseRestAssuredTest {
         Task.class,
         null,
         externalResourceProvider,
-        new BuildProperties(new Properties())
+        new BuildProperties(new Properties()), objMapper
       );
     }
 

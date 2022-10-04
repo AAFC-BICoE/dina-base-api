@@ -16,6 +16,7 @@ import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIRelationship;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
@@ -162,7 +163,8 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
     public DinaRepository<ChainDto, Chain> chainRepo(
       BaseDAO baseDAO,
       ChainDinaService chainDinaService,
-      ExternalResourceProvider externalResourceProvider
+      ExternalResourceProvider externalResourceProvider,
+      ObjectMapper objMapper
       ) {
       return new DinaRepository<>(
         chainDinaService,
@@ -173,12 +175,13 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
         Chain.class,
         null,
         externalResourceProvider,
-        new BuildProperties(new Properties())
+        new BuildProperties(new Properties()), objMapper
       );
     }
 
     @Bean
-    public DinaRepository<ChainTemplateDto, ChainTemplate> TemplateRepo(BaseDAO baseDAO, TemplateDinaService templateDinaService) {
+    public DinaRepository<ChainTemplateDto, ChainTemplate> templateRepo(
+            BaseDAO baseDAO, TemplateDinaService templateDinaService, ObjectMapper objMapper) {
       return new DinaRepository<>(
         templateDinaService,
         new AllowAllAuthorizationService(),
@@ -188,7 +191,7 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
         ChainTemplate.class,
         null,
         null,
-        new BuildProperties(new Properties())
+        new BuildProperties(new Properties()), objMapper
       );
     }
 

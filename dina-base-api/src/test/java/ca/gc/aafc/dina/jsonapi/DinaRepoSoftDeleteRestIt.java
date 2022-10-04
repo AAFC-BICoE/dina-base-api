@@ -51,7 +51,7 @@ public class DinaRepoSoftDeleteRestIt extends BaseRestAssuredTest {
   private static PersonDTO createPersonDto() {
     return PersonDTO.builder()
       .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
-      .name(RandomStringUtils.random(4)).build();
+      .name("DinaRepoSoftDeleteRestIt_" + RandomStringUtils.random(4)).build();
   }
 
 }

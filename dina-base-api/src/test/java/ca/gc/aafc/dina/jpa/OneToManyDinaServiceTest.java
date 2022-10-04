@@ -11,6 +11,7 @@ import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
 import io.crnk.core.resource.annotations.JsonApiResource;
@@ -218,7 +219,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
 
     @Bean
     public DinaRepository<ParentDto, Parent> testRepoA(
-      ParentService parentService
+      ParentService parentService, ObjectMapper objMapper
     ) {
       return new DinaRepository<>(
         parentService,
@@ -229,13 +230,13 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
         Parent.class,
         null,
         null,
-        new BuildProperties(new Properties())
+        new BuildProperties(new Properties()), objMapper
       );
     }
 
     @Bean
     public DinaRepository<ChildDto, Child> testRepoB(
-      ChildService childService
+      ChildService childService, ObjectMapper objMapper
     ) {
       return new DinaRepository<>(
         childService,
@@ -246,7 +247,7 @@ class OneToManyDinaServiceTest extends BaseRestAssuredTest {
         Child.class,
         null,
         null,
-        new BuildProperties(new Properties())
+        new BuildProperties(new Properties()), objMapper
       );
     }
 
