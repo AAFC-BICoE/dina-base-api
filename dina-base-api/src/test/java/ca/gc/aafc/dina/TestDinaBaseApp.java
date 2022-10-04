@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Properties;
 import javax.inject.Inject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -49,7 +50,10 @@ public class TestDinaBaseApp {
   private GroupAuthorizationService groupAuthService;
 
   @Bean
-  public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO, DepartmentDinaService departmentDinaService) {
+  public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO,
+                                                                        DepartmentDinaService departmentDinaService,
+                                                                        ObjectMapper objMapper
+  ) {
     return new DinaRepository<>(
       departmentDinaService,
       new AllowAllAuthorizationService(),
@@ -59,11 +63,12 @@ public class TestDinaBaseApp {
       Department.class,
       null,
       null,
-      buildProperties());
+      buildProperties(), objMapper);
   }
 
   @Bean
-  public DinaRepository<EmployeeDto, Employee> employeeRepository(BaseDAO baseDAO, EmployeeDinaService employeeDinaService) {
+  public DinaRepository<EmployeeDto, Employee> employeeRepository(BaseDAO baseDAO, EmployeeDinaService employeeDinaService,
+                                                                  ObjectMapper objMapper) {
     return new DinaRepository<>(
       employeeDinaService,
       new AllowAllAuthorizationService(),
@@ -73,7 +78,7 @@ public class TestDinaBaseApp {
       Employee.class,
       null,
       null,
-      buildProperties());
+      buildProperties(), objMapper);
   }
 
   @Bean
@@ -89,7 +94,8 @@ public class TestDinaBaseApp {
   @Bean
   public DinaRepository<PersonDTO, Person> dinaRepository(
     DinaPersonService service,
-    Optional<AuditService> auditService
+    Optional<AuditService> auditService,
+    ObjectMapper objMapper
   ) {
     DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(PersonDTO.class);
     return new DinaRepository<>(
@@ -101,7 +107,7 @@ public class TestDinaBaseApp {
       Person.class,
       new DinaFilterResolver(new PersonRsqlAdapter()),
       null,
-      buildProperties());
+      buildProperties(), objMapper);
   }
 
   @Bean

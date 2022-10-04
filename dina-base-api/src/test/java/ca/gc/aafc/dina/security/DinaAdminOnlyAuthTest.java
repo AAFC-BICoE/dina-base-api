@@ -11,6 +11,7 @@ import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.AllArgsConstructor;
@@ -122,7 +123,7 @@ public class DinaAdminOnlyAuthTest {
       DinaAdminCUDAuthorizationService authorizationService,
       BuildProperties buildProperties,
       BaseDAO baseDao,
-      DefaultDinaService<Item> defaultService
+      DefaultDinaService<Item> defaultService, ObjectMapper objMapper
     ) {
       DinaMapper<ItemDto, Item> dinaMapper = new DinaMapper<>(ItemDto.class);
       return new DinaRepository<>(
@@ -134,7 +135,7 @@ public class DinaAdminOnlyAuthTest {
         Item.class,
         null,
         null,
-        buildProperties);
+        buildProperties, objMapper);
     }
 
   }
