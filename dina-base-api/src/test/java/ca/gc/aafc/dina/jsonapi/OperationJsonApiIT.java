@@ -67,4 +67,17 @@ public class OperationJsonApiIT extends BaseRestAssuredTest {
     sendDelete(PersonDTO.TYPE_NAME, person2AssignedId);
   }
 
+  @Test
+  public void operations_onUnsafeInvalidType_errorDetailSanitized() {
+    PersonDTO person1 = PersonDTO.builder()
+            .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
+            .name("OperationJsonApiIT_" + RandomStringUtils.randomAlphabetic(4)).build();
+    List<Map<String, Object>> operationMap = JsonAPIOperationBuilder.newBuilder()
+            .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
+                    .toJsonAPIMap("invalidtype<iframe src=javascript:alert(32311)>", JsonAPITestHelper.toAttributeMap(person1), UUID.randomUUID().toString())) // Crnk requires an identifier even if it's a POST
+            .buildOperation();
+    ValidatableResponse operationResponse = sendOperation(operationMap);
+    // response should be sanitized
+    assertEquals("Repository for a resource not found: invalidtype", operationResponse.extract().body().jsonPath().getString("[0].errors[0].detail"));
+  }
 }
