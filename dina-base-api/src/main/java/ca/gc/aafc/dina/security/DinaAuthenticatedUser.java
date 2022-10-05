@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Represent an authenticated user in the context of a DINA Module. This class is immutable.
@@ -51,5 +52,33 @@ public class DinaAuthenticatedUser {
       .filter(rolePerGroup -> rolePerGroup.getKey().equalsIgnoreCase(group.strip()))
       .map(Map.Entry::getValue)
       .findFirst();
+  }
+
+  /**
+   * Given a minimumRole, returns the group where the user has this role or higher.
+   *
+   * @param minimumRole
+   * @return Set of groups where the user has the minimumRole or higher. Otherwise, empty set.
+   */
+  public Set<String> getGroupsForMinimumRole(DinaRole minimumRole) {
+    return this.rolesPerGroup.entrySet()
+            .stream().filter(es -> hasMinimumRoleOrHigher(es.getValue(), minimumRole))
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toSet());
+  }
+
+  /**
+   * Checks if the set of roles contains a minimum role or higher.
+   * @param roles
+   * @param minimumRole
+   * @return
+   */
+  private static boolean hasMinimumRoleOrHigher(Set<DinaRole> roles, DinaRole minimumRole) {
+    for (DinaRole role : roles) {
+      if (role.isHigherOrEqualThan(minimumRole)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
