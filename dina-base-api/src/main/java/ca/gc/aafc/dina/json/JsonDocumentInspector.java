@@ -40,8 +40,7 @@ public final class JsonDocumentInspector {
     // if we have a map, send it back to the main method
     if (value instanceof Map) {
       return testPredicateOnValues((Map<String, Object>) value, predicate);
-    } // if we have a list, iterate and send it back to this method for each values
-    else if (value instanceof List<?> list) {
+    } else if (value instanceof List<?> list) { // if we have a list, iterate and send it back to this method for each values
       for (Object o : list) {
         if (!testValue(o, predicate)) {
           return false;
