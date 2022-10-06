@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JsonDocumentInspectorTest {
 
@@ -29,5 +30,10 @@ public class JsonDocumentInspectorTest {
     Person p = Person.builder().nickNames(new String[]{"a", ""}).build();
     assertFalse(JsonDocumentInspector.testPredicateOnValues(
             JsonAPITestHelper.toAttributeMap(p), StringUtils::isNotBlank));
+
+    // make sure our assumption is right
+    Person p2 = Person.builder().nickNames(new String[]{"a", "b"}).build();
+    assertTrue(JsonDocumentInspector.testPredicateOnValues(
+            JsonAPITestHelper.toAttributeMap(p2), StringUtils::isNotBlank));
   }
 }

@@ -20,7 +20,7 @@ public final class JsonDocumentInspector {
    *
    * @param jsonElements json elements as returned by Jackson. Map of key values where the value can be an element, a list or a map.
    * @param predicate predicate representing the expected state of the value. When the predicate returns false
-   *                  the inspection of the document stops and return.
+   *                  the inspection of the document stops and return. The predicate must handle null.
    * @return
    */
   public static boolean testPredicateOnValues(Map<String, Object> jsonElements, Predicate<String> predicate) {
@@ -43,12 +43,12 @@ public final class JsonDocumentInspector {
     } // if we have a list, iterate and send it back to this method for each values
     else if (value instanceof List<?> list) {
       for (Object o : list) {
-        if (testValue(o, predicate)) {
+        if (!testValue(o, predicate)) {
           return false;
         }
       }
     } else { // if we do not have a map or a list then we have a simple value
-      return predicate.test(value.toString());
+      return predicate.test(value == null ? null : value.toString());
     }
     return true;
   }
