@@ -29,25 +29,26 @@ public final class JsonDocumentInspector {
     Objects.requireNonNull(predicate);
 
     for (Map.Entry<String, ?> entry : jsonElements.entrySet()) {
-      if (entry.getValue() instanceof Map) {
-        if (!testPredicateOnValues((Map<String, Object>) entry.getValue(), predicate)) {
+      if (!testValue(entry.getValue(), predicate)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean testValue(Object value, Predicate<String> predicate) {
+    // if we have a map, send it back to the main method
+    if (value instanceof Map) {
+      return testPredicateOnValues((Map<String, Object>) value, predicate);
+    } // if we have a list, iterate and send it back to this method for each values
+    else if (value instanceof List<?> list) {
+      for (Object o : list) {
+        if (testValue(o, predicate)) {
           return false;
         }
-      } else if (entry.getValue() instanceof List<?> list) {
-        for (Object o : list) {
-          if (o instanceof Map) {
-            if (!testPredicateOnValues((Map<String, Object>) o, predicate)) {
-              return false;
-            }
-          }
-        }
-      } else {
-        if (entry.getValue() != null) {
-          if (!predicate.test(entry.getValue().toString())) {
-            return false;
-          }
-        }
       }
+    } else { // if we do not have a map or a list then we have a simple value
+      return predicate.test(value.toString());
     }
     return true;
   }
