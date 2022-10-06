@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.BasePostgresItContext;
 import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
-import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.dto.ProjectDTO;
@@ -15,6 +14,7 @@ import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
@@ -236,7 +236,7 @@ public class DinaMappingLayerIT extends BasePostgresItContext {
     public DinaRepository<ProjectDTO, Project> projectRepo(
       ExternalResourceProvider externalResourceProvider,
       BuildProperties buildProperties,
-      ProjectDinaService projectDinaService
+      ProjectDinaService projectDinaService, ObjectMapper objMapper
     ) {
       return new DinaRepository<>(
         projectDinaService,
@@ -247,7 +247,7 @@ public class DinaMappingLayerIT extends BasePostgresItContext {
         Project.class,
         null,
         externalResourceProvider,
-        buildProperties
+        buildProperties, objMapper
       );
     }
 
@@ -255,7 +255,7 @@ public class DinaMappingLayerIT extends BasePostgresItContext {
     public DinaRepository<TaskDTO, Task> taskRepo(
       ExternalResourceProvider externalResourceProvider,
       BuildProperties buildProperties,
-      TaskDinaService taskDinaService
+      TaskDinaService taskDinaService, ObjectMapper objMapper
     ) {
       return new DinaRepository<>(
         taskDinaService,
@@ -266,7 +266,7 @@ public class DinaMappingLayerIT extends BasePostgresItContext {
         Task.class,
         null,
         externalResourceProvider,
-        buildProperties
+        buildProperties, objMapper
       );
     }
 

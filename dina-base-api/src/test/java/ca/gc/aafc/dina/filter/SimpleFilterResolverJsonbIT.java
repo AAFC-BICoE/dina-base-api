@@ -10,6 +10,7 @@ import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
@@ -155,7 +156,7 @@ public class SimpleFilterResolverJsonbIT {
 
     @Bean
     public DinaRepository<CarDriverDto, CarDriver> carDriverRepo(
-      BaseDAO baseDAO, SmartValidator val, BuildProperties props
+      BaseDAO baseDAO, SmartValidator val, BuildProperties props, ObjectMapper objMapper
     ) {
       return new DinaRepository<>(
         new DefaultDinaService<>(baseDAO, val) {
@@ -172,7 +173,7 @@ public class SimpleFilterResolverJsonbIT {
               CarDriver.class,
         null,
         null,
-        props);
+        props, objMapper);
     }
 
     @Data
@@ -190,7 +191,7 @@ public class SimpleFilterResolverJsonbIT {
     @Bean
     public DinaRepository<JsonbCarDto, JsonbCar> jsonbCarRepo(
       BaseDAO baseDAO, SmartValidator val,
-      BuildProperties props
+      BuildProperties props, ObjectMapper objMapper
     ) {
       return new DinaRepository<>(
         new DefaultDinaService<>(baseDAO, val) {
@@ -207,7 +208,7 @@ public class SimpleFilterResolverJsonbIT {
               JsonbCar.class,
         null,
         null,
-        props);
+        props, objMapper);
     }
 
   }

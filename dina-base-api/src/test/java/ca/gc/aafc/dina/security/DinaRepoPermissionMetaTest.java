@@ -10,6 +10,7 @@ import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.crnk.core.engine.http.HttpRequestContext;
 import io.crnk.core.engine.http.HttpRequestContextProvider;
 import io.crnk.core.engine.query.QueryContext;
@@ -142,7 +143,8 @@ public class DinaRepoPermissionMetaTest {
     public DinaRepository<ItemDto, Item> testRepo(
       SpecialAuthServiceUnderTest authorizationService,
       BuildProperties buildProperties,
-      DefaultDinaService<Item> defaultService
+      DefaultDinaService<Item> defaultService,
+      ObjectMapper objMapper
     ) {
       DinaMapper<ItemDto, Item> dinaMapper = new DinaMapper<>(
         ItemDto.class);
@@ -155,7 +157,7 @@ public class DinaRepoPermissionMetaTest {
         Item.class,
         null,
         null,
-        buildProperties);
+        buildProperties, objMapper);
     }
 
     @Data

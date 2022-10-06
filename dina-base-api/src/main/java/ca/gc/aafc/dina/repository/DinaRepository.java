@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.repository;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.exception.UnknownAttributeException;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
+import ca.gc.aafc.dina.json.JsonDocumentInspector;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMappingLayer;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
@@ -11,8 +12,11 @@ import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.security.DinaAuthorizationService;
+import ca.gc.aafc.dina.security.TextHtmlSanitizer;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.crnk.core.engine.http.HttpRequestContextAware;
 import io.crnk.core.engine.http.HttpRequestContextProvider;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
@@ -57,6 +61,8 @@ public class DinaRepository<D, E extends DinaEntity>
   private static final long DEFAULT_LIMIT = 100;
   public static final String PERMISSION_META_HEADER_KEY = "include-dina-permission";
 
+  protected static final TypeReference<Map<String, Object>> IT_OM_TYPE_REF = new TypeReference<>() { };
+
   @Getter
   private final Class<D> resourceClass;
   private final Class<E> entityClass;
@@ -71,6 +77,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private final List<Map<String, String>> externalMetaMap;
 
+  private final ObjectMapper objMapper;
   private final BuildProperties buildProperties;
   private final DinaMappingRegistry registry;
   private final boolean hasFieldAdapters;
@@ -88,7 +95,8 @@ public class DinaRepository<D, E extends DinaEntity>
     @NonNull Class<E> entityClass,
     DinaFilterResolver filterResolver,
     ExternalResourceProvider externalResourceProvider,
-    @NonNull BuildProperties buildProperties
+    @NonNull BuildProperties buildProperties,
+    ObjectMapper objMapper
   ) {
     this.dinaService = dinaService;
     this.authorizationService = authorizationService;
@@ -97,7 +105,9 @@ public class DinaRepository<D, E extends DinaEntity>
     this.entityClass = entityClass;
     this.filterResolver = Objects.requireNonNullElseGet(
       filterResolver, () -> new DinaFilterResolver(null));
+    this.objMapper = objMapper;
     this.buildProperties = buildProperties;
+
     if (externalResourceProvider != null) {
       this.externalMetaMap =
         DinaMetaInfo.parseExternalTypes(resourceClass, externalResourceProvider);
@@ -283,6 +293,10 @@ public class DinaRepository<D, E extends DinaEntity>
   @Transactional
   @Override
   public <S extends D> S save(S resource) {
+
+    // make sure data is safe to manipulate
+    checkSubmittedData(resource);
+
     Object id = PropertyUtils.getProperty(resource, idFieldName);
 
     E entity = dinaService.findOne(id, entityClass);
@@ -314,6 +328,10 @@ public class DinaRepository<D, E extends DinaEntity>
   @SneakyThrows
   @SuppressWarnings("unchecked")
   public <S extends D> S create(S resource) {
+
+    // make sure data is safe to manipulate
+    checkSubmittedData(resource);
+
     E entity = entityClass.getConstructor().newInstance();
 
     mappingLayer.mapToEntity(resource, entity);
@@ -385,6 +403,16 @@ public class DinaRepository<D, E extends DinaEntity>
    */
   protected DinaMappingLayer<D, E> getMappingLayer() {
     return mappingLayer;
+  }
+
+  protected <S extends D> void checkSubmittedData(S resource) {
+    // objMapper should not be null here since the only use case where it can be null is for read-only repository
+    Objects.requireNonNull(objMapper);
+
+    if(!JsonDocumentInspector.testPredicateOnValues(
+            objMapper.convertValue(resource, IT_OM_TYPE_REF), TextHtmlSanitizer::isSafeText)) {
+      throw new IllegalArgumentException("unsafe value detected in attributes");
+    }
   }
 
 }

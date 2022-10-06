@@ -11,6 +11,7 @@ import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import io.restassured.response.ValidatableResponse;
@@ -22,7 +23,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import org.hamcrest.Matchers;
-import org.hibernate.annotations.NaturalId;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.info.BuildProperties;
@@ -35,12 +35,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
-
-import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -76,7 +70,7 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
     @Bean
     public DinaRepository<ThingDTO, Item> projectRepo(
       BaseDAO baseDAO,
-      ItemDinaService dinaService
+      ItemDinaService dinaService, ObjectMapper objMapper
     ) {
       Map<String, Object> warnings = new HashMap<>();
       warnings.put(KEY, VALUE);
@@ -86,7 +80,7 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
         ThingDTO.class, Item.class,
         thingDTO -> AttributeMetaInfoProvider.DinaJsonMetaInfo.builder()
           .warnings(warnings)
-          .build());
+          .build(), objMapper);
     }
 
     @Service
@@ -128,7 +122,8 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
       DefaultDinaService<E> dinaService,
       Class<D> resourceClass,
       Class<E> entityClass,
-      Function<D, AttributeMetaInfoProvider.DinaJsonMetaInfo> handler
+      Function<D, AttributeMetaInfoProvider.DinaJsonMetaInfo> handler,
+      ObjectMapper objMapper
     ) {
       super(
         dinaService,
@@ -139,7 +134,7 @@ public class AttributeMetaInfoProviderRestIT extends BaseRestAssuredTest {
         entityClass,
         null,
         null,
-        new BuildProperties(new Properties()));
+        new BuildProperties(new Properties()), objMapper);
       this.handler = handler;
     }
 
