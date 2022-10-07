@@ -1,12 +1,11 @@
 package ca.gc.aafc.dina.security;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DinaAuthenticatedUserTest {
 
@@ -32,6 +31,9 @@ public class DinaAuthenticatedUserTest {
 
     assertEquals("group2", user.getGroupsForMinimumRole(DinaRole.USER).iterator().next());
     assertEquals(2, user.getGroupsForMinimumRole(DinaRole.GUEST).size());
+
+    // when none, empty set should be returned
+    assertTrue(user.getGroupsForMinimumRole(DinaRole.SUPER_USER).isEmpty());
   }
 
 }
