@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.json;
 
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -35,5 +36,14 @@ public class JsonDocumentInspectorTest {
     Person p2 = Person.builder().nickNames(new String[]{"a", "b"}).build();
     assertTrue(JsonDocumentInspector.testPredicateOnValues(
             JsonAPITestHelper.toAttributeMap(p2), StringUtils::isNotBlank));
+  }
+
+  @Test
+  public void testPredicateOnValues_onPredicateReturnsFalse_inspectorReturnsFalseOnNestedArrayElements() {
+    Person p = Person.builder().nickNames(new String[]{"a", ""}).build();
+    Department d = Department.builder().name("department").departmentHead(p).build();
+
+    assertFalse(JsonDocumentInspector.testPredicateOnValues(
+      JsonAPITestHelper.toAttributeMap(d), StringUtils::isNotBlank));
   }
 }
