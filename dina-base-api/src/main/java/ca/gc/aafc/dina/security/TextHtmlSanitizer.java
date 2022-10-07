@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.security;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
 
@@ -21,10 +22,16 @@ public final class TextHtmlSanitizer {
    * @return
    */
   public static String sanitizeText(String txt) {
+    if (StringUtils.isBlank(txt)) {
+      return txt;
+    }
     return Jsoup.clean(txt, NONE);
   }
 
   public static boolean isSafeText(String txt) {
+    if (StringUtils.isBlank(txt)) {
+      return true;
+    }
     return Jsoup.isValid(txt, NONE);
   }
 }
