@@ -21,9 +21,13 @@ public class StorageGridLayoutTest {
 
     assertTrue(sgl.isValidLocation(1,2));
     assertTrue(sgl.isValidLocation(5,5));
+    assertTrue(sgl.isValidRow(5));
+    assertTrue(sgl.isValidColumn(5));
 
     // numbers are 1-based
     assertFalse(sgl.isValidLocation(0, 0));
+    assertFalse(sgl.isValidRow(0));
+    assertFalse(sgl.isValidColumn(0));
 
     assertFalse(sgl.isValidLocation(5, 6));
 
