@@ -12,7 +12,6 @@ public class StorageGridLayoutTest {
 
   @Test
   public void testStorageGridLayout() {
-
     StorageGridLayout sgl = StorageGridLayout.builder()
             .numberOfRows(5)
             .numberOfColumns(5)
@@ -44,20 +43,22 @@ public class StorageGridLayoutTest {
   @Test
   public void testStorageGridLayoutCalculateCellNumber() {
     StorageGridLayout sgl = StorageGridLayout.builder()
-            .numberOfRows(5)
+            .numberOfRows(3)
             .numberOfColumns(5)
             .fillDirection(StorageGridLayout.FillDirection.BY_ROW)
             .build();
 
     assertEquals(1, sgl.calculateCellNumber(1,1));
+    assertEquals(2, sgl.calculateCellNumber(1,2));
     assertEquals(8, sgl.calculateCellNumber(2,3));
-    assertEquals(25, sgl.calculateCellNumber(5,5));
+    assertEquals(15, sgl.calculateCellNumber(3,5));
 
     //test by column
     sgl.setFillDirection(StorageGridLayout.FillDirection.BY_COLUMN);
     assertEquals(1, sgl.calculateCellNumber(1,1));
-    assertEquals(12, sgl.calculateCellNumber(2,3));
-    assertEquals(25, sgl.calculateCellNumber(5,5));
+    assertEquals(4, sgl.calculateCellNumber(1,2));
+    assertEquals(8, sgl.calculateCellNumber(2,3));
+    assertEquals(15, sgl.calculateCellNumber(3,5));
 
     // test exception
     assertThrows(IllegalArgumentException.class, ()-> sgl.calculateCellNumber(5,25));

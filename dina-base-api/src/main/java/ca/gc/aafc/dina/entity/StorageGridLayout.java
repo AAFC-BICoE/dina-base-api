@@ -113,8 +113,8 @@ public class StorageGridLayout {
    * BY_ROW: 1 2 3 4 5 6 7 8 9
    * BY_COLUMN: 1 4 7 2 5 8 3 6 9
    *
-   * @param rowNumber
-   * @param columnNumber
+   * @param rowNumber 1-based row number
+   * @param columnNumber 1-based column number
    * @return the cell number or {@link IllegalArgumentException} for invalid arguments
    */
   public int calculateCellNumber(int rowNumber, int columnNumber) {
@@ -127,8 +127,8 @@ public class StorageGridLayout {
     }
 
     return switch (fillDirection) {
-      case BY_ROW -> (((rowNumber - 1) * numberOfColumns) + columnNumber);
-      case BY_COLUMN -> (((columnNumber - 1) * numberOfRows) + rowNumber);
+      case BY_ROW -> ((rowNumber - 1) * numberOfColumns) + columnNumber;
+      case BY_COLUMN -> ((columnNumber - 1) * numberOfRows) + rowNumber;
     };
   }
 
