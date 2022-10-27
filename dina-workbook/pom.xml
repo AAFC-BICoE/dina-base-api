@@ -17,7 +17,7 @@
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <properties>
-    <poi-ooxml.version>4.1.2</poi-ooxml.version>
+    <poi-ooxml.version>5.2.3</poi-ooxml.version>
   </properties>
 
   <dependencies>
