@@ -6,6 +6,7 @@ import lombok.Data;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -101,6 +102,34 @@ public class StorageGridLayout {
       return false;
     }
     return columnNumber <= numberOfColumns;
+  }
+
+  /**
+   * Calculates the cell number given row and column location.
+   * The {@link #fillDirection} will determine how the cell number is calculated.
+   *
+   * Given a 3x3 square, reading it left to right, by row, cell numbers will be:
+   *
+   * BY_ROW: 1 2 3 4 5 6 7 8 9
+   * BY_COLUMN: 1 4 7 2 5 8 3 6 9
+   *
+   * @param rowNumber
+   * @param columnNumber
+   * @return the cell number or {@link IllegalArgumentException} for invalid arguments
+   */
+  public int calculateCellNumber(int rowNumber, int columnNumber) {
+    Objects.requireNonNull(fillDirection);
+    Objects.requireNonNull(numberOfRows);
+    Objects.requireNonNull(numberOfColumns);
+
+    if (!isValidLocation(rowNumber, columnNumber)) {
+      throw new IllegalArgumentException("Invalid row/column");
+    }
+
+    return switch (fillDirection) {
+      case BY_ROW -> (((rowNumber - 1) * numberOfColumns) + columnNumber);
+      case BY_COLUMN -> (((columnNumber - 1) * numberOfRows) + rowNumber);
+    };
   }
 
 }

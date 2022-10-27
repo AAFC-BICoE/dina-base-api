@@ -39,9 +39,29 @@ public class StorageGridLayoutTest {
             .build();
 
     assertFalse(sgl.isValidLocation(1,2));
-
   }
 
+  @Test
+  public void testStorageGridLayoutCalculateCellNumber() {
+    StorageGridLayout sgl = StorageGridLayout.builder()
+            .numberOfRows(5)
+            .numberOfColumns(5)
+            .fillDirection(StorageGridLayout.FillDirection.BY_ROW)
+            .build();
+
+    assertEquals(1, sgl.calculateCellNumber(1,1));
+    assertEquals(8, sgl.calculateCellNumber(2,3));
+    assertEquals(25, sgl.calculateCellNumber(5,5));
+
+    //test by column
+    sgl.setFillDirection(StorageGridLayout.FillDirection.BY_COLUMN);
+    assertEquals(1, sgl.calculateCellNumber(1,1));
+    assertEquals(12, sgl.calculateCellNumber(2,3));
+    assertEquals(25, sgl.calculateCellNumber(5,5));
+
+    // test exception
+    assertThrows(IllegalArgumentException.class, ()-> sgl.calculateCellNumber(5,25));
+  }
 
   @ParameterizedTest
   @ValueSource(strings = { "r0w", "2125", "col umn", "#%#&!", "" })
