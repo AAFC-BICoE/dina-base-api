@@ -69,14 +69,38 @@ public class StorageGridLayout {
    * Note: if the grid layout is in invalid state (numberOfRows or numberOfColumns is null), this method will return false.
    * @param rowNumber 1-based row number
    * @param columnNumber 1-based column number
-   * @return true if the number of rows and columns is valid for the grid layout. false otherwise.
+   * @return true if the row number and column number are valid for the grid layout. false otherwise.
    */
   public boolean isValidLocation(int rowNumber, int columnNumber) {
+    return isValidRow(rowNumber) && isValidColumn(columnNumber);
+  }
+
+  /**
+   * Checks if the provided row number is valid for the current grid layout.
+   * Note: if the grid layout is in invalid state (numberOfRows is null), this method will return false.
+   * @param rowNumber 1-based row number
+   * @return true if the row number is valid for the grid layout. false otherwise.
+   */
+  public boolean isValidRow(int rowNumber) {
     // numbers start at 1
-    if (rowNumber <= 0 || columnNumber <= 0 || numberOfRows == null || numberOfColumns == null) {
+    if (rowNumber <= 0 || numberOfRows == null) {
       return false;
     }
-
-    return rowNumber <= numberOfRows && columnNumber <= numberOfColumns;
+    return rowNumber <= numberOfRows;
   }
+
+  /**
+   * Checks if the provided column number is valid for the current grid layout.
+   * Note: if the grid layout is in invalid state (numberOfColumns is null), this method will return false.
+   * @param columnNumber 1-based column number
+   * @return true if the column number is valid for the grid layout. false otherwise.
+   */
+  public boolean isValidColumn(int columnNumber) {
+    // numbers start at 1
+    if (columnNumber <= 0 || numberOfColumns == null) {
+      return false;
+    }
+    return columnNumber <= numberOfColumns;
+  }
+
 }
