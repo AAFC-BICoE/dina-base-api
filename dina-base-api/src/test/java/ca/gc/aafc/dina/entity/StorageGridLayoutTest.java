@@ -12,7 +12,6 @@ public class StorageGridLayoutTest {
 
   @Test
   public void testStorageGridLayout() {
-
     StorageGridLayout sgl = StorageGridLayout.builder()
             .numberOfRows(5)
             .numberOfColumns(5)
@@ -21,9 +20,13 @@ public class StorageGridLayoutTest {
 
     assertTrue(sgl.isValidLocation(1,2));
     assertTrue(sgl.isValidLocation(5,5));
+    assertTrue(sgl.isValidRow(5));
+    assertTrue(sgl.isValidColumn(5));
 
     // numbers are 1-based
     assertFalse(sgl.isValidLocation(0, 0));
+    assertFalse(sgl.isValidRow(0));
+    assertFalse(sgl.isValidColumn(0));
 
     assertFalse(sgl.isValidLocation(5, 6));
 
@@ -35,9 +38,31 @@ public class StorageGridLayoutTest {
             .build();
 
     assertFalse(sgl.isValidLocation(1,2));
-
   }
 
+  @Test
+  public void testStorageGridLayoutCalculateCellNumber() {
+    StorageGridLayout sgl = StorageGridLayout.builder()
+            .numberOfRows(3)
+            .numberOfColumns(5)
+            .fillDirection(StorageGridLayout.FillDirection.BY_ROW)
+            .build();
+
+    assertEquals(1, sgl.calculateCellNumber(1,1));
+    assertEquals(2, sgl.calculateCellNumber(1,2));
+    assertEquals(8, sgl.calculateCellNumber(2,3));
+    assertEquals(15, sgl.calculateCellNumber(3,5));
+
+    //test by column
+    sgl.setFillDirection(StorageGridLayout.FillDirection.BY_COLUMN);
+    assertEquals(1, sgl.calculateCellNumber(1,1));
+    assertEquals(4, sgl.calculateCellNumber(1,2));
+    assertEquals(8, sgl.calculateCellNumber(2,3));
+    assertEquals(15, sgl.calculateCellNumber(3,5));
+
+    // test exception
+    assertThrows(IllegalArgumentException.class, ()-> sgl.calculateCellNumber(5,25));
+  }
 
   @ParameterizedTest
   @ValueSource(strings = { "r0w", "2125", "col umn", "#%#&!", "" })
