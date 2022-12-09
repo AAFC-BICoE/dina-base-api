@@ -7,7 +7,7 @@ import ca.gc.aafc.dina.i18n.MultilingualDescription;
  */
 public interface TypedVocabularyElement extends VocabularyElement {
 
-  enum ManagedAttributeType {
+  enum VocabularyElementType {
     INTEGER, STRING, DATE, BOOL
   }
 
@@ -19,7 +19,7 @@ public interface TypedVocabularyElement extends VocabularyElement {
   String getKey();
   void setKey(String key);
 
-  ManagedAttributeType getManagedAttributeType();
+  VocabularyElementType getManagedAttributeType();
   String[] getAcceptedValues();
 
   MultilingualDescription getMultilingualDescription();

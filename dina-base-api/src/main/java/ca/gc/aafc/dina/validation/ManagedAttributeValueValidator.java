@@ -135,7 +135,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     }
 
     attributesPerKey.forEach((key, ma) -> {
-      TypedVocabularyElement.ManagedAttributeType maType = ma.getManagedAttributeType();
+      TypedVocabularyElement.VocabularyElementType maType = ma.getManagedAttributeType();
       String assignedValue = attributesAndValues.get(key);
 
       if(preValidateValue(ma, assignedValue, errors, validationContext)) {

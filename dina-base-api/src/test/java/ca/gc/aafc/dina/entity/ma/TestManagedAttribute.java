@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.entity.ma;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
+import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Builder;
@@ -41,7 +42,7 @@ public class TestManagedAttribute implements ManagedAttribute {
 
   @NotNull
   @Enumerated(EnumType.STRING)
-  private ManagedAttributeType managedAttributeType;
+  private TypedVocabularyElement.VocabularyElementType managedAttributeType;
 
   @Type(type = "string-array")
   private String[] acceptedValues;
