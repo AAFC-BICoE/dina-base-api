@@ -2,8 +2,8 @@ package ca.gc.aafc.dina.validation;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
-import ca.gc.aafc.dina.entity.ManagedAttribute.ManagedAttributeType;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
+import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -135,7 +135,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     }
 
     attributesPerKey.forEach((key, ma) -> {
-      ManagedAttributeType maType = ma.getManagedAttributeType();
+      TypedVocabularyElement.ManagedAttributeType maType = ma.getManagedAttributeType();
       String assignedValue = attributesAndValues.get(key);
 
       if(preValidateValue(ma, assignedValue, errors, validationContext)) {

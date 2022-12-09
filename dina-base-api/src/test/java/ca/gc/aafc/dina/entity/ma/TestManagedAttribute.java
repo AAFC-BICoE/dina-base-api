@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.entity.ma;
 
 import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
+import ca.gc.aafc.dina.i18n.MultilingualTitle;
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Builder;
@@ -57,4 +58,13 @@ public class TestManagedAttribute implements ManagedAttribute {
   // matches XYZValidationContext toString
   private String component;
 
+  @Override
+  public String getTerm() {
+    return null;
+  }
+
+  @Override
+  public MultilingualTitle getMultilingualTitle() {
+    return null;
+  }
 }
