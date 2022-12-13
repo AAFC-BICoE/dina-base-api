@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.97-SNAPSHOT</version>
+  <version>0.98-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.7.5</version>
+    <version>2.7.6</version>
   </parent>
 
   <modules>
@@ -36,11 +36,11 @@
     <!-- Build plugin properties -->
     <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
     <checkstyle.version>9.3</checkstyle.version>
-    <spotbugs.version>4.7.1</spotbugs.version>
-    <maven-spotbugs.version>4.6.0.0</maven-spotbugs.version>
+    <spotbugs.version>4.7.3</spotbugs.version>
+    <maven-spotbugs.version>4.7.3.0</maven-spotbugs.version>
     <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.1.0</asciidoctorj.diagram.version>
-    <dependency.check.version>7.3.0</dependency.check.version>
+    <dependency.check.version>7.3.2</dependency.check.version>
     <lombok-maven-plugin.version>1.18.20.0</lombok-maven-plugin.version>
     <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
 

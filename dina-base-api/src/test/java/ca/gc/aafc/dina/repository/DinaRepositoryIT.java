@@ -494,6 +494,22 @@ public class DinaRepositoryIT {
   }
 
   @Test
+  public void save_unsafePayloadInRelationship_NoExceptionThrown() {
+    PersonDTO personDTO = createPersonDto();
+
+    // The goal here is to bypass the repository layer to insert illegal content to make sure it won't break
+    // the main resource when used as a relationship. It's the responsibility of the repository of the resource to
+    // validate it<s own content but not the relationship.
+    UUID depUUID = UUID.randomUUID();
+    Department depDTO = Department.builder().uuid(depUUID).name("abc<iframe src=javascript:alert(32311)>").build();
+    baseDAO.create(depDTO, true);
+    DepartmentDto deptDTO = departmentRepository.findOne(depUUID, new QuerySpec(PersonDTO.class));
+
+    personDTO.setDepartment(deptDTO);
+    dinaRepository.create(personDTO);
+  }
+
+  @Test
   public void create_unsafeNestedPayload_ExceptionThrown() {
     Department.DepartmentDetails departmentDetails = new Department.DepartmentDetails("note<iframe src=javascript:alert(32311)>");
     DepartmentDto departmentDto = DepartmentDto.builder()

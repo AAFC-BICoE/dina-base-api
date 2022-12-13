@@ -409,9 +409,15 @@ public class DinaRepository<D, E extends DinaEntity>
     // objMapper should not be null here since the only use case where it can be null is for read-only repository
     Objects.requireNonNull(objMapper);
 
-    if(!JsonDocumentInspector.testPredicateOnValues(
-            objMapper.convertValue(resource, IT_OM_TYPE_REF), TextHtmlSanitizer::isSafeText)) {
-      throw new IllegalArgumentException("unsafe value detected in attributes");
+    Map<String, Object> convertedObj = objMapper.convertValue(resource, IT_OM_TYPE_REF);
+    // if it is a known resource class limit validation to attributes and exclude relationships
+    Set<String> attributesForClass = registry.getAttributesPerClass().get(resource.getClass());
+    if (attributesForClass != null) {
+      convertedObj.keySet().removeIf(k -> !attributesForClass.contains(k));
+    }
+
+    if(!JsonDocumentInspector.testPredicateOnValues(convertedObj, TextHtmlSanitizer::isSafeText)) {
+      throw new IllegalArgumentException("Unaccepted value detected in attributes");
     }
   }
 
