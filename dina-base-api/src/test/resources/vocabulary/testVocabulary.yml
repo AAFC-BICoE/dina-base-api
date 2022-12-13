@@ -1,0 +1,9 @@
+vocabulary:
+  testVocab:
+    - name: option1
+      term: abc
+      multilingualTitle.titles:
+        - lang: en
+          title: title
+        - lang: fr
+          title: titre
