@@ -136,7 +136,7 @@ public class DinaRepositoryIT {
 
   @Test
   public void findAll_FilterWithRSQL_FiltersOnRSQL() {
-    String expectedName = RandomStringUtils.random(4);
+    String expectedName = RandomStringUtils.randomAlphabetic(4);
     int expectedNumberOfResults = 10;
 
     for (int i = 0; i < expectedNumberOfResults; i++) {
@@ -157,7 +157,7 @@ public class DinaRepositoryIT {
 
   @Test
   public void findAll_FilterOnFieldEquals_FiltersOnField() {
-    String expectedName = RandomStringUtils.random(4);
+    String expectedName = RandomStringUtils.randomAlphabetic(4);
     int expectedNumberOfResults = 10;
 
     for (int i = 0; i < expectedNumberOfResults; i++) {
