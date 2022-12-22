@@ -18,7 +18,16 @@ public class TextHtmlSanitizerTest {
   @Test
   public void testUnsafeText() {
     assertFalse(TextHtmlSanitizer.isSafeText("abc<iframe src=javascript:alert(32311)>"));
+    assertFalse(TextHtmlSanitizer.isSafeText("abc<iframe src=javascript:alert(32311)>", true));
     assertEquals("abc", TextHtmlSanitizer.sanitizeText("abc<iframe src=javascript:alert(32311)>"));
+  }
+
+  @Test
+  public void testOCRText() {
+    String ocrText = "'No.) $i a7 bnchIL ky Altitude : i; od f am, — 2 — tS a ~ Ww a — = = < - ©\n" +
+            "    3 = Yi J a = og = \"O O DAO PUNT 01- FLORA OF Locality & Habitat : Native Name:";
+    assertFalse(TextHtmlSanitizer.isSafeText(ocrText));
+    assertTrue(TextHtmlSanitizer.isSafeText(ocrText, true));
   }
 
 }
