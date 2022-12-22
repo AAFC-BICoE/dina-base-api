@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.security;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
+import org.jsoup.parser.Parser;
 import org.jsoup.safety.Safelist;
 
 /**
@@ -29,9 +30,33 @@ public final class TextHtmlSanitizer {
   }
 
   public static boolean isSafeText(String txt) {
+    return isSafeText(txt, NONE, false);
+  }
+
+  public static boolean isSafeText(String txt, boolean allowUnescapedEntities) {
+    return isSafeText(txt, NONE, allowUnescapedEntities);
+  }
+
+  /**
+   * Check if the text is safe to use in HTML according to the Safelist.
+   * Optionally, the check can skip unescapedEntities (e.g. <, > ) if the text will be used in something else than html.
+   * @param txt the text input
+   * @param allowUnescapedEntities should unescaped entities be identified as safe or no
+   * @return
+   */
+  public static boolean isSafeText(String txt, Safelist safelist, boolean allowUnescapedEntities) {
     if (StringUtils.isBlank(txt)) {
       return true;
     }
-    return Jsoup.isValid(txt, NONE);
+
+    if(Jsoup.isValid(txt, safelist)) {
+      return true;
+    }
+
+    // make sure that the unescaped entities are not part of an unsafe html so, we sanitize the input first.
+    if(allowUnescapedEntities) {
+      return StringUtils.normalizeSpace(txt).equals(Parser.unescapeEntities(TextHtmlSanitizer.sanitizeText(txt), false));
+    }
+    return false;
   }
 }
