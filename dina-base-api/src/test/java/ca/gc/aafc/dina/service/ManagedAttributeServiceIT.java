@@ -42,7 +42,7 @@ public class ManagedAttributeServiceIT {
     TestManagedAttribute managedAttribute = testManagedAttributeService
         .create(TestManagedAttribute.builder()
             .uuid(UUID.randomUUID())
-            .managedAttributeType(TypedVocabularyElement.VocabularyElementType.STRING)
+            .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.STRING)
             .name("dina attribute #12").build());
 
     assertEquals("dina_attribute_12", managedAttribute.getKey());
@@ -53,12 +53,12 @@ public class ManagedAttributeServiceIT {
     TestManagedAttribute managedAttribute1 = testManagedAttributeService
         .createAndFlush(TestManagedAttribute.builder()
             .uuid(UUID.randomUUID())
-            .managedAttributeType(TypedVocabularyElement.VocabularyElementType.STRING)
+            .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.STRING)
             .name("dina attribute 1").build());
     testManagedAttributeService
         .createAndFlush(TestManagedAttribute.builder()
             .uuid(UUID.randomUUID())
-            .managedAttributeType(TypedVocabularyElement.VocabularyElementType.STRING)
+            .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.STRING)
             .name("dina attribute 2").build());
 
     TestManagedAttribute managedAttribute = testManagedAttributeService.findOneByKey(managedAttribute1.getKey());
@@ -73,13 +73,13 @@ public class ManagedAttributeServiceIT {
     // we create a duplicate and use the createdBy to distinct them
     TestManagedAttribute managedAttribute1 = testManagedAttributeService
         .createAndFlush(TestManagedAttribute.builder()
-            .managedAttributeType(TypedVocabularyElement.VocabularyElementType.STRING)
+            .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.STRING)
             .uuid(UUID.randomUUID())
             .name("dina attribute")
             .createdBy("abc").build());
     testManagedAttributeService
         .createAndFlush(TestManagedAttribute.builder()
-            .managedAttributeType(TypedVocabularyElement.VocabularyElementType.STRING)
+            .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.STRING)
             .uuid(UUID.randomUUID())
             .name("dina attribute")
             .createdBy("bcd").build());
