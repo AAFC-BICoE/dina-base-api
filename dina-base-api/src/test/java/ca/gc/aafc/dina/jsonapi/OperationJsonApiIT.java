@@ -79,26 +79,5 @@ public class OperationJsonApiIT extends BaseRestAssuredTest {
     // response should be sanitized
     assertEquals("Repository for a resource not found: invalidtype", operationResponse.extract().body().jsonPath().getString("[0].errors[0].detail"));
   }
-
-  @Test
-  public void operations_onPathWithQueryParamsType_errorDetailSanitized() {
-    PersonDTO person1 = PersonDTO.builder()
-            .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
-            .name("OperationJsonApiIT_" + RandomStringUtils.randomAlphabetic(4)).build();
-    List<Map<String, Object>> operationMap = JsonAPIOperationBuilder.newBuilder()
-            .addOperation(HttpMethod.POST, PersonDTO.TYPE_NAME, JsonAPITestHelper
-                    .toJsonAPIMap(PersonDTO.TYPE_NAME, JsonAPITestHelper.toAttributeMap(person1), UUID.randomUUID().toString())) // Crnk requires an identifier even if it's a POST
-            .buildOperation();
-    ValidatableResponse operationResponse = sendOperation(operationMap);
-    assertEquals(201, operationResponse.extract().body().jsonPath().getInt("[0].status"));
-    String person1AssignedId = operationResponse.extract().body().jsonPath().getString("[0].data.id");
-
-    List<Map<String, Object>> updateOperationMap = JsonAPIOperationBuilder.newBuilder()
-            .addOperation(HttpMethod.GET, PersonDTO.TYPE_NAME + "/"+ person1AssignedId + "?include=department))(&name=a", Map.of()) // Crnk requires an identifier even if it's a POST
-            .buildOperation();
-    operationResponse = sendOperation(updateOperationMap);
-    System.out.print(operationResponse.extract().body().asString());
-    // response should be sanitized
-   // assertEquals("Repository for a resource not found: invalidtype", operationResponse.extract().body().jsonPath().getString("[0].errors[0].detail"));
-  }
+  
 }
