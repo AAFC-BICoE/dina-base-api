@@ -1,8 +1,5 @@
 package ca.gc.aafc.dina.jsonapi;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
@@ -20,6 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integration test making sure the operation endpoint is available and working as expected.
@@ -80,4 +79,5 @@ public class OperationJsonApiIT extends BaseRestAssuredTest {
     // response should be sanitized
     assertEquals("Repository for a resource not found: invalidtype", operationResponse.extract().body().jsonPath().getString("[0].errors[0].detail"));
   }
+  
 }

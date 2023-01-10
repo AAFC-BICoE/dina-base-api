@@ -9,6 +9,8 @@ spring:
     change-log: classpath:/db/changelog/db.changelog-master.xml
     contexts: schema-change, initial-data
 keycloak.enabled: false
+crnk:
+  allow-unknown-attributes: true
 embedded.postgresql:
   enabled: true
   # Need to specify the version the same as in Production

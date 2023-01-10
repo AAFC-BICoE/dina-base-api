@@ -19,7 +19,7 @@ public interface TypedVocabularyElement extends VocabularyElement {
   String getKey();
   void setKey(String key);
 
-  VocabularyElementType getManagedAttributeType();
+  VocabularyElementType getVocabularyElementType();
   String[] getAcceptedValues();
 
   MultilingualDescription getMultilingualDescription();

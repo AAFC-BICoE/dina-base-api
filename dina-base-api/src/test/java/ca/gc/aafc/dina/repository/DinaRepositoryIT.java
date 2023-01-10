@@ -604,7 +604,7 @@ public class DinaRepositoryIT {
   }
 
   private Department persistDepartment() {
-    Department depart = createDepartment(RandomStringUtils.random(4), RandomStringUtils.random(4));
+    Department depart = createDepartment(RandomStringUtils.randomAlphabetic(4), RandomStringUtils.randomAlphabetic(4));
     baseDAO.create(depart);
     return depart;
   }

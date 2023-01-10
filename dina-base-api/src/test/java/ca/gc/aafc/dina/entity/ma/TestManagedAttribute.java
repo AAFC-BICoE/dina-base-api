@@ -42,7 +42,7 @@ public class TestManagedAttribute implements ManagedAttribute {
 
   @NotNull
   @Enumerated(EnumType.STRING)
-  private TypedVocabularyElement.VocabularyElementType managedAttributeType;
+  private TypedVocabularyElement.VocabularyElementType vocabularyElementType;
 
   @Type(type = "string-array")
   private String[] acceptedValues;

@@ -3,6 +3,9 @@ package ca.gc.aafc.dina.extension;
 import java.util.List;
 import java.util.Objects;
 
+import ca.gc.aafc.dina.i18n.MultilingualDescription;
+import ca.gc.aafc.dina.i18n.MultilingualTitle;
+import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,6 +13,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import javax.validation.constraints.NotEmpty;
 
 @Builder
 @Getter
@@ -40,6 +45,10 @@ public class FieldExtensionDefinition {
       return getFieldByTerm(term) != null;
     }
 
+    public boolean containsKey(String key) {
+      return getFieldByKey(key) != null;
+    }
+
     public Field getFieldByTerm(String term) {
       if (CollectionUtils.isEmpty(fields)) {
         return null;
@@ -52,6 +61,19 @@ public class FieldExtensionDefinition {
       }
       return null;
     }
+
+    public Field getFieldByKey(String key) {
+      if (CollectionUtils.isEmpty(fields)) {
+        return null;
+      }
+
+      for (Field field : fields) {
+        if (field.keyEquals(key)) {
+          return field;
+        }
+      }
+      return null;
+    }
   }
   
   @Builder
@@ -59,12 +81,21 @@ public class FieldExtensionDefinition {
   @Setter
   @AllArgsConstructor
   @NoArgsConstructor
-  public static class Field {
-  
-    private String term;
+  public static class Field implements TypedVocabularyElement {
+
+    @NotEmpty
+    private String key;
+
     private String name;
-    private String definition;
+
+    // usually a URI
+    private String term;
+
+    private VocabularyElementType vocabularyElementType;
     private String[] acceptedValues;
+
+    private MultilingualDescription multilingualDescription;
+    private MultilingualTitle multilingualTitle;
     private String dinaComponent;
 
     /**
@@ -86,6 +117,10 @@ public class FieldExtensionDefinition {
 
     public boolean termEquals(String term) {
       return StringUtils.equals(this.term, term);
+    }
+
+    public boolean keyEquals(String key) {
+      return StringUtils.equals(this.key, key);
     }
   }
   
