@@ -426,7 +426,7 @@ public class DinaRepository<D, E extends DinaEntity>
    * Override this method to change the default predicate used.
    * @return
    */
-  protected Predicate<String> supplyPredicate(){
+  protected Predicate<String> supplyPredicate() {
     return TextHtmlSanitizer::isSafeText;
   }
 
