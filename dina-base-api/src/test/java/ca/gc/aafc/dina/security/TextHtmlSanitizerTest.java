@@ -26,8 +26,8 @@ public class TextHtmlSanitizerTest {
   public void testOCRText() {
     String ocrText = "'No.) $i a7 bnchIL ky Altitude : i; od f am, — 2 — tS a ~ Ww a — = = < - ©\n" +
             "    3 = Yi J a = og = \"O O DAO PUNT 01- FLORA OF Locality & Habitat : Native Name:";
-    assertFalse(TextHtmlSanitizer.isSafeText(ocrText));
-    assertTrue(TextHtmlSanitizer.isSafeText(ocrText, true));
+    assertTrue(TextHtmlSanitizer.isSafeText(ocrText));
+    assertFalse(TextHtmlSanitizer.isSafeText(ocrText, false));
   }
 
 }
