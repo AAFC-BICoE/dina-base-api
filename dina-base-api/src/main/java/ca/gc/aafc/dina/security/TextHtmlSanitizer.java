@@ -100,8 +100,8 @@ public final class TextHtmlSanitizer {
     }
 
     // if some parsing errors are not in the accepted list it should be rejected
-    if(!p.getErrors().stream()
-            .allMatch(pe -> StringUtils.startsWith(pe.getErrorMessage(), CONDITIONAL_ACCEPTED_PARSE_ERROR))){
+    if (!p.getErrors().stream()
+            .allMatch(pe -> StringUtils.startsWith(pe.getErrorMessage(), CONDITIONAL_ACCEPTED_PARSE_ERROR))) {
       return false;
     }
 
