@@ -29,8 +29,14 @@ public final class TextHtmlSanitizer {
     return Jsoup.clean(txt, NONE);
   }
 
+  /**
+   * Check if the provided text can be considered as safe for html.
+   * allowUnescapedEntities is set to true
+   * @param txt
+   * @return
+   */
   public static boolean isSafeText(String txt) {
-    return isSafeText(txt, NONE, false);
+    return isSafeText(txt, NONE, true);
   }
 
   public static boolean isSafeText(String txt, boolean allowUnescapedEntities) {
@@ -41,8 +47,9 @@ public final class TextHtmlSanitizer {
    * Check if the text is safe to use in HTML according to the Safelist.
    * Optionally, the check can skip unescapedEntities (e.g. <, > ) if the text will be used in something else than html.
    * @param txt the text input
+   * @param safelist JSoup Safelist instance
    * @param allowUnescapedEntities should unescaped entities be identified as safe or no
-   * @return
+   * @return can the text be considered safe or not
    */
   public static boolean isSafeText(String txt, Safelist safelist, boolean allowUnescapedEntities) {
     if (StringUtils.isBlank(txt)) {
