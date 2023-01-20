@@ -2,7 +2,9 @@ package ca.gc.aafc.dina.security;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.parser.Parser;
+import org.jsoup.safety.Cleaner;
 import org.jsoup.safety.Safelist;
 
 /**
@@ -12,6 +14,11 @@ import org.jsoup.safety.Safelist;
 public final class TextHtmlSanitizer {
 
   private static final Safelist NONE = Safelist.none();
+  private static final Safelist BASIC = Safelist.basic();
+
+  private static final int HTML_SHELL_SIZE = Document.createShell("").getAllElements().size();
+  private static final int MAX_ERROR_TRACKED = 5;
+  private static final String CONDITIONAL_ACCEPTED_PARSE_ERROR = "Unexpectedly reached end of file (EOF)";
 
   private TextHtmlSanitizer() {
     //utility class
@@ -65,5 +72,57 @@ public final class TextHtmlSanitizer {
       return StringUtils.normalizeSpace(txt).equals(Parser.unescapeEntities(TextHtmlSanitizer.sanitizeText(txt), false));
     }
     return false;
+  }
+
+  /**
+   * Check if the text can be considered acceptable. Acceptable does NOT mean safe.
+   * The result should still be used with caution and proper escaping in html.
+   *
+   * Acceptable is defined by a text that only contains unclosed tag without creating additional html elements.
+   * If they were to prefix another html element it should only create an element from the Basic Safelist.
+   *
+   * @param txt
+   * @return
+   */
+  public static boolean isAcceptableText(String txt) {
+    Parser p = Parser.htmlParser();
+    p.setTrackErrors(MAX_ERROR_TRACKED);
+    Document d = p.parseInput(txt, "");
+
+    // if a single element is added it should be rejected
+    if(d.getAllElements().size() != HTML_SHELL_SIZE) {
+      return false;
+    }
+
+    // if we reached the maximum number of errors it should be rejected
+    if(p.getErrors().size() == MAX_ERROR_TRACKED) {
+      return false;
+    }
+
+    // if some parsing errors are not in the accepted list it should be rejected
+    if(!p.getErrors().stream()
+            .allMatch(pe -> StringUtils.startsWith(pe.getErrorMessage(), CONDITIONAL_ACCEPTED_PARSE_ERROR))){
+      return false;
+    }
+
+    // check the impact of prefixing the txt with a paragraph
+    return isFollowedByParagraphOnlyCreatesBasicElement(txt);
+  }
+
+  /**
+   * Tries to evaluate the impact of having the acceptable text before a html paragraph.
+   * The browser may use the paragraph to close tags in the provided txt. We allow it if the impact is still passing the SafeList BASIC.
+   * @param txt
+   * @return
+   */
+  private static boolean isFollowedByParagraphOnlyCreatesBasicElement(String txt) {
+    Parser p = Parser.htmlParser();
+    Document d = p.parseInput(txt + "<p>abc</p>", "");
+
+    Cleaner c = new Cleaner(BASIC);
+    Document dd = c.clean(d);
+
+    // if a single element is cleaned it should be rejected
+    return d.getAllElements().size() == dd.getAllElements().size();
   }
 }
