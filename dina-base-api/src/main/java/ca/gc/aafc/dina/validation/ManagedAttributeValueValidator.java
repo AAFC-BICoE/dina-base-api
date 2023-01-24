@@ -8,6 +8,7 @@ import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.Errors;
@@ -29,6 +30,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   private static final String MANAGED_ATTRIBUTE_INVALID_KEY = "managedAttribute.key.invalid";
   private static final String MANAGED_ATTRIBUTE_INVALID_KEY_CONTEXT = "managedAttribute.keyContext.invalid";
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
+  //private static final Pattern DECIMAL_PATTERN = Pattern.compile("\\d+");
 
   private final ManagedAttributeService<E> dinaService;
   private final MessageSource messageSource;
@@ -156,6 +158,10 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
               rejectInvalidValue(errors, key, assignedValue);
             }
             break;
+          case DECIMAL:
+            if(!NumberUtils.isParsable(assignedValue)) {
+              rejectInvalidValue(errors, key, assignedValue);
+            }
           default: //noop
         }
 

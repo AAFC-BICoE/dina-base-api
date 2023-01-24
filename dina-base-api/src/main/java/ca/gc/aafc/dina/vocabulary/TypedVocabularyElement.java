@@ -8,7 +8,7 @@ import ca.gc.aafc.dina.i18n.MultilingualDescription;
 public interface TypedVocabularyElement extends VocabularyElement {
 
   enum VocabularyElementType {
-    INTEGER, STRING, DATE, BOOL
+    INTEGER, STRING, DATE, BOOL, DECIMAL
   }
 
   /**
