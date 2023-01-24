@@ -1,6 +1,8 @@
 package ca.gc.aafc.dina.security;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,6 +30,22 @@ public class TextHtmlSanitizerTest {
             "    3 = Yi J a = og = \"O O DAO PUNT 01- FLORA OF Locality & Habitat : Native Name:";
     assertTrue(TextHtmlSanitizer.isSafeText(ocrText));
     assertFalse(TextHtmlSanitizer.isSafeText(ocrText, false));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"© nye ) 4 4 i as f Fd 4 ag LO : oy ; wi Pye oA ad DAO i+<i TT 01-01558099"})
+  public void testAcceptableText(String txt) {
+    assertTrue(TextHtmlSanitizer.isAcceptableText(txt));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"© nye ) 4 4 i as f Fd 4 ag LO : oy ; wi Pye oA ad DAO <img src=no onerror=alert(1) foo= ",
+          "abc <svg/onload=alert(1)",
+          "<html><body><svg/onload=alert(123)</body></html>",
+          "abc<iframe src=javascript:alert(32311)>",
+          "© nye ) 4 4 i as f Fd 4 ag LO : oy ; wi Pye oA ad DAO i+<iframe src=javascript:alert(32311)"})
+  public void testNotAcceptableText(String txt) {
+    assertFalse(TextHtmlSanitizer.isAcceptableText(txt));
   }
 
 }
