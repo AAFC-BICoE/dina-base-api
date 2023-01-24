@@ -30,7 +30,6 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
   private static final String MANAGED_ATTRIBUTE_INVALID_KEY = "managedAttribute.key.invalid";
   private static final String MANAGED_ATTRIBUTE_INVALID_KEY_CONTEXT = "managedAttribute.keyContext.invalid";
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
-  //private static final Pattern DECIMAL_PATTERN = Pattern.compile("\\d+");
 
   private final ManagedAttributeService<E> dinaService;
   private final MessageSource messageSource;
@@ -162,6 +161,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
             if(!NumberUtils.isParsable(assignedValue)) {
               rejectInvalidValue(errors, key, assignedValue);
             }
+            break;
           default: //noop
         }
 
