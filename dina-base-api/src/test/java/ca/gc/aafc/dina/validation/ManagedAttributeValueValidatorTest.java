@@ -248,6 +248,26 @@ public class ManagedAttributeValueValidatorTest {
     validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X);
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {"a.3", "A", "-2.3a", "2,3"})
+  void validate_InvalidDecimalType_ExceptionThrown(String value) {
+    testManagedAttribute = testManagedAttributeService.create(newTestManagedAttribute(
+            TypedVocabularyElement.VocabularyElementType.DECIMAL));
+
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), value);
+    assertThrows(ValidationException.class, () -> validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"0.3", "123.543", "-2.3", "2"})
+  void validate_ValidDecimalType_NoExceptionThrown(String value) {
+    testManagedAttribute = testManagedAttributeService.create(newTestManagedAttribute(
+            TypedVocabularyElement.VocabularyElementType.DECIMAL));
+
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), value);
+    validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X);
+  }
+
   @Test
   void validate_duplicatedKeysDifferentContext_ValidationWorks() {
     TestManagedAttribute testManagedAttribute1 = newTestManagedAttribute(TypedVocabularyElement.VocabularyElementType.BOOL);

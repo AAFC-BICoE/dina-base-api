@@ -8,6 +8,7 @@ import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.Errors;
@@ -153,6 +154,11 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
             break;
           case BOOL:
             if (!isValidBool(assignedValue)) {
+              rejectInvalidValue(errors, key, assignedValue);
+            }
+            break;
+          case DECIMAL:
+            if(!NumberUtils.isParsable(assignedValue)) {
               rejectInvalidValue(errors, key, assignedValue);
             }
             break;
