@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * JSONAPI repository that interfaces using DTOs, and uses JPA entities internally. Sparse fields
@@ -416,9 +417,17 @@ public class DinaRepository<D, E extends DinaEntity>
       convertedObj.keySet().removeIf(k -> !attributesForClass.contains(k));
     }
 
-    if(!JsonDocumentInspector.testPredicateOnValues(convertedObj, TextHtmlSanitizer::isSafeText)) {
+    if(!JsonDocumentInspector.testPredicateOnValues(convertedObj, supplyPredicate())) {
       throw new IllegalArgumentException("Unaccepted value detected in attributes");
     }
+  }
+
+  /**
+   * Override this method to change the default predicate used.
+   * @return
+   */
+  protected Predicate<String> supplyPredicate() {
+    return TextHtmlSanitizer::isSafeText;
   }
 
 }
