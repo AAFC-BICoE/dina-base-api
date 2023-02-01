@@ -7,6 +7,8 @@ import org.jsoup.parser.Parser;
 import org.jsoup.safety.Cleaner;
 import org.jsoup.safety.Safelist;
 
+import java.util.Set;
+
 /**
  * Utility class to check and sanitize text received from the user in case it could be unsafe.
  * Safe means safe to display on a html page.
@@ -18,7 +20,10 @@ public final class TextHtmlSanitizer {
 
   private static final int HTML_SHELL_SIZE = Document.createShell("").getAllElements().size();
   private static final int MAX_ERROR_TRACKED = 5;
-  private static final String CONDITIONAL_ACCEPTED_PARSE_ERROR = "Unexpectedly reached end of file (EOF)";
+
+  private static final Set<String> CONDITIONAL_ACCEPTED_PARSE_ERROR =
+          Set.of("Unexpectedly reached end of file (EOF)",
+                  "Invalid character reference: missing semicolon on [");
 
   private TextHtmlSanitizer() {
     //utility class
@@ -101,12 +106,23 @@ public final class TextHtmlSanitizer {
 
     // if some parsing errors are not in the accepted list it should be rejected
     if (!p.getErrors().stream()
-            .allMatch(pe -> StringUtils.startsWith(pe.getErrorMessage(), CONDITIONAL_ACCEPTED_PARSE_ERROR))) {
+            .allMatch(pe -> isAcceptableParseError(pe.getErrorMessage()))) {
       return false;
     }
 
     // check the impact of prefixing the txt with a paragraph
     return isFollowedByParagraphOnlyCreatesBasicElement(txt);
+  }
+
+  /**
+   * Checks if the errorMessage is part of the acceptable parse errors Set.
+   * The check is done on the prefix since the last part of the message is the concrete text.
+   * @param errorMessage
+   * @return
+   */
+  private static boolean isAcceptableParseError(String errorMessage) {
+    return CONDITIONAL_ACCEPTED_PARSE_ERROR.stream()
+            .anyMatch( t -> StringUtils.startsWith(errorMessage, t));
   }
 
   /**
