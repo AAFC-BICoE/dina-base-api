@@ -34,7 +34,7 @@ public class TextHtmlSanitizerTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"© nye ) 4 4 i as f Fd 4 ag LO : oy ; wi Pye oA ad DAO i+<i TT 01-01558099",
-          "HS Jackson&LT White"})
+          "HS Jackson&LT White", "Antrodia vaillantii <-"})
   public void testAcceptableText(String txt) {
     assertTrue(TextHtmlSanitizer.isAcceptableText(txt));
   }

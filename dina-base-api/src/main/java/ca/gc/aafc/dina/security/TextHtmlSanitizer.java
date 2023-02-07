@@ -23,7 +23,8 @@ public final class TextHtmlSanitizer {
 
   private static final Set<String> CONDITIONAL_ACCEPTED_PARSE_ERROR =
           Set.of("Unexpectedly reached end of file (EOF)",
-                  "Invalid character reference: missing semicolon on [");
+                  "Invalid character reference: missing semicolon on [",
+                  "Unexpected character ");
 
   private TextHtmlSanitizer() {
     //utility class
