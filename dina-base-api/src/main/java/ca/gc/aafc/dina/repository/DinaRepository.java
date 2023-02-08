@@ -80,9 +80,10 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private final ObjectMapper objMapper;
   private final BuildProperties buildProperties;
-  private final DinaMappingRegistry registry;
   private final boolean hasFieldAdapters;
   private HttpRequestContextProvider httpRequestContextProvider;
+
+  protected final DinaMappingRegistry registry;
 
   @Setter
   private boolean caseSensitiveOrderBy = false;
@@ -417,16 +418,16 @@ public class DinaRepository<D, E extends DinaEntity>
       convertedObj.keySet().removeIf(k -> !attributesForClass.contains(k));
     }
 
-    if(!JsonDocumentInspector.testPredicateOnValues(convertedObj, supplyPredicate())) {
+    if(!JsonDocumentInspector.testPredicateOnValues(convertedObj, supplyCheckSubmittedDataPredicate())) {
       throw new IllegalArgumentException("Unaccepted value detected in attributes");
     }
   }
 
   /**
-   * Override this method to change the default predicate used.
+   * Override this method to change the default predicate used on submitted data.
    * @return
    */
-  protected Predicate<String> supplyPredicate() {
+  protected Predicate<String> supplyCheckSubmittedDataPredicate() {
     return TextHtmlSanitizer::isSafeText;
   }
 
