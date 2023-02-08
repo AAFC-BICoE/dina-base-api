@@ -80,9 +80,10 @@ public class DinaRepository<D, E extends DinaEntity>
 
   private final ObjectMapper objMapper;
   private final BuildProperties buildProperties;
-  private final DinaMappingRegistry registry;
   private final boolean hasFieldAdapters;
   private HttpRequestContextProvider httpRequestContextProvider;
+
+  protected final DinaMappingRegistry registry;
 
   @Setter
   private boolean caseSensitiveOrderBy = false;
