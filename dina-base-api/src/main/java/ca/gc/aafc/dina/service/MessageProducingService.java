@@ -51,12 +51,12 @@ public class MessageProducingService<E extends DinaEntity> extends DefaultDinaSe
   }
 
   /**
-   * Sends a message only after the main transaction is successful committed.
+   * Sends a message only after the main transaction is successfully committed.
    * 
    * @param persisted entity to be sent as a message.
    * @param op operation type (example: DocumentOperationType.DELETE)
    */
-  private void publishEvent(E persisted, DocumentOperationType op) {
+  protected void publishEvent(E persisted, DocumentOperationType op) {
     EntityChanged event = EntityChanged.builder().op(op)
         .resourceType(resourceType)
         .uuid(persisted.getUuid())
