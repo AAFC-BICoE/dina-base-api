@@ -301,7 +301,9 @@ public class DinaRepository<D, E extends DinaEntity>
 
     Object id = PropertyUtils.getProperty(resource, idFieldName);
 
-    E entity = dinaService.findOne(id, entityClass);
+    // entity context is optional we need to carry it between findOne and update
+    DinaService.EntityChangeContext<E> entityContext = dinaService.newEntityChangeContext();
+    E entity = dinaService.findOneForUpdate(id, entityClass, entityContext);
 
     authorizationService.authorizeUpdate(entity);
 
@@ -311,7 +313,7 @@ public class DinaRepository<D, E extends DinaEntity>
     }
 
     mappingLayer.mapToEntity(resource, entity);
-    dinaService.update(entity);
+    dinaService.update(entity, entityContext);
     auditService.ifPresent(service -> service.audit(resource));
     return resource;
   }

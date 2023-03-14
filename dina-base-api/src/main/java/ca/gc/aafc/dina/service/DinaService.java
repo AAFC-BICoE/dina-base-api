@@ -37,6 +37,8 @@ public interface DinaService<E extends DinaEntity> {
    */
   E update(E entity);
 
+  E update(E entity, EntityChangeContext<E> context);
+
   /**
    * Deletes a given entity from the data source
    *
@@ -52,6 +54,17 @@ public interface DinaService<E extends DinaEntity> {
    * @return the matched entity
    */
   <T> T findOne(Object naturalId, Class<T> entityClass);
+
+  /**
+   * Find an entity before updating it with incoming changes.
+   * The context can be used to track field where some business logic may need to know if they changed.
+   *
+   * @param naturalId
+   * @param entityClass
+   * @param context optional context. Usually provided by {{@link #newEntityChangeContext()}}
+   * @return the matched entity
+   */
+  E findOneForUpdate(Object naturalId, Class<E> entityClass, EntityChangeContext<E> context);
 
   /**
    * Returns a reference to an entity that should exist without actually loading it. Useful to set
@@ -140,5 +153,25 @@ public interface DinaService<E extends DinaEntity> {
    * @param entity
    */
   void validateBusinessRules(E entity);
+
+  /**
+   * Optional method to create a custom EntityChangeContext.
+   *
+   * @return null unless overwritten
+   */
+  default EntityChangeContext<E> newEntityChangeContext() {
+    return null;
+  }
+
+  /**
+   * Representing the context of the implementation of the service.
+   * Used to track specific state changes.
+   *
+   * @param <E>
+   */
+  interface EntityChangeContext<E> {
+    void recordState(E entity);
+    boolean isStateChanged(E entity);
+  }
 
 }

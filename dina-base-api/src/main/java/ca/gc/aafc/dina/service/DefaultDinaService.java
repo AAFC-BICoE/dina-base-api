@@ -99,6 +99,19 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   /**
+   * Same as {@link #update(DinaEntity)} but with postUpdate called with the EntityChangeContext.
+   * @param entity
+   * @param context
+   * @return
+   */
+  @Override
+  public E update(E entity, EntityChangeContext<E> context) {
+    E updatedEntity = update(entity);
+    postUpdate(entity, context);
+    return updatedEntity;
+  }
+
+  /**
    * Remove the given entity from the database.
    *
    * @param entity entity to delete
@@ -220,6 +233,16 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     return baseDAO.findOneByNaturalId(naturalId, entityClass);
   }
 
+  @Override
+  public E findOneForUpdate(Object naturalId, Class<E> entityClass, EntityChangeContext<E> context) {
+    E entity = baseDAO.findOneByNaturalId(naturalId, entityClass);
+
+    if(context != null) {
+      context.recordState(entity);
+    }
+    return entity;
+  }
+
   /**
    * Find an entity by its database id.
    *
@@ -303,6 +326,16 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
    */
   protected void preUpdate(E entity) {
     // Defaults to do nothing
+  }
+
+  /**
+   * Run after the {@link DefaultDinaService#update(DinaEntity, EntityChangeContext)} method.
+   *
+   * @param entity entity being updated by {@link DefaultDinaService#update(DinaEntity)}
+   * @param changeContext the {@link ca.gc.aafc.dina.service.DinaService.EntityChangeContext}
+   */
+  protected void postUpdate(E entity, EntityChangeContext<E> changeContext) {
+    // Defaults to nothing
   }
 
   /**

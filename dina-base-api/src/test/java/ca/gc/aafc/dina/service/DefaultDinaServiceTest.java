@@ -8,11 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -37,6 +39,8 @@ import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.DepartmentType;
 import ca.gc.aafc.dina.jpa.BaseDAO;
+
+import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
@@ -195,6 +199,25 @@ public class DefaultDinaServiceTest {
   }
 
   @Test
+  public void testEntityChangeContext() {
+    Department department = persistDepartment();
+    String previousName = department.getName();
+
+    DinaService.EntityChangeContext<Department> ctx = serviceUnderTest.newEntityChangeContext();
+    Department reloaded = serviceUnderTest.findOneForUpdate(department.getUuid(), Department.class, ctx);
+    reloaded.setName("testEntityChangeContext_UpdatedName");
+    serviceUnderTest.update(reloaded, ctx);
+
+    // make sure the states changed then cast to get the details
+   if (ctx.isStateChanged(reloaded) && ctx instanceof DepartmentChangeContext dcc) {
+     assertEquals(dcc.getPreviousDepartmentName(), previousName);
+   }
+   else {
+     fail();
+   }
+  }
+
+  @Test
   public void preCreate_SetUuid_RunsBeforeCreate() {
     Department result = persistDepartment();
     assertNotNull(result.getUuid());
@@ -350,6 +373,32 @@ public class DefaultDinaServiceTest {
       // this is just to avoid create a dummy validator for a imaginary business rule
       validateConstraints(entity, null);
     }
+
+    @Override
+    public EntityChangeContext<Department> newEntityChangeContext() {
+      return new DepartmentChangeContext();
+    }
+
+  }
+
+  /**
+   * Test EntityChangeContext tracking the value of name before an update.
+   */
+  @Getter
+  public static class DepartmentChangeContext implements DinaService.EntityChangeContext<Department> {
+    private String previousDepartmentName;
+
+    @Override
+    public void recordState(Department entity) {
+      previousDepartmentName = entity.getName();
+    }
+
+    @Override
+    public boolean isStateChanged(Department entity) {
+      return !Objects.equals(entity.getName(), previousDepartmentName);
+    }
+
+
   }
 
 }
