@@ -106,7 +106,7 @@
 			</column>
 			<column name="component" type="varchar(255)"/>
 			<column name="accepted_values" type="text[]"/>
-			<column name="managed_attribute_type" type="varchar(50)"/>
+			<column name="vocabulary_element_type" type="varchar(50)"/>
 			<column name="multilingual_description" type="jsonb"/>
 		</createTable>
 	</changeSet>

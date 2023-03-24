@@ -3,11 +3,7 @@ package ca.gc.aafc.dina.vocabulary;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-public class VocabularyConfiguration<T extends VocabularyConfiguration.VocabularyElement> {
+public class VocabularyConfiguration<T extends VocabularyElement> {
   
   private final Map<String, List<T>> vocabulary;
 
@@ -19,12 +15,4 @@ public class VocabularyConfiguration<T extends VocabularyConfiguration.Vocabular
     return vocabulary;
   }
 
-  @NoArgsConstructor
-  @Getter
-  @Setter
-  public static class VocabularyElement {
-    private String name;
-    private String term;
-    private Map<String, String> labels;
-  }
 }

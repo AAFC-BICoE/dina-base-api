@@ -9,8 +9,8 @@
         <cve>CVE-2016-1000027</cve>
     </suppress>
     <suppress>
-        <notes>CVE about Keycloak Server</notes>
-        <cve>CVE-2021-4133</cve>
+        <notes>no untrusted source</notes>
+        <cve>CVE-2022-1471</cve>
     </suppress>
     <suppress>
         <notes>CVE about Keycloak server</notes>

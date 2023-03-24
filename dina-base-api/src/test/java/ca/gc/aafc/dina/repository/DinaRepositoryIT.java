@@ -136,7 +136,7 @@ public class DinaRepositoryIT {
 
   @Test
   public void findAll_FilterWithRSQL_FiltersOnRSQL() {
-    String expectedName = RandomStringUtils.random(4);
+    String expectedName = RandomStringUtils.randomAlphabetic(4);
     int expectedNumberOfResults = 10;
 
     for (int i = 0; i < expectedNumberOfResults; i++) {
@@ -157,7 +157,7 @@ public class DinaRepositoryIT {
 
   @Test
   public void findAll_FilterOnFieldEquals_FiltersOnField() {
-    String expectedName = RandomStringUtils.random(4);
+    String expectedName = RandomStringUtils.randomAlphabetic(4);
     int expectedNumberOfResults = 10;
 
     for (int i = 0; i < expectedNumberOfResults; i++) {
@@ -604,7 +604,7 @@ public class DinaRepositoryIT {
   }
 
   private Department persistDepartment() {
-    Department depart = createDepartment(RandomStringUtils.random(4), RandomStringUtils.random(4));
+    Department depart = createDepartment(RandomStringUtils.randomAlphabetic(4), RandomStringUtils.randomAlphabetic(4));
     baseDAO.create(depart);
     return depart;
   }

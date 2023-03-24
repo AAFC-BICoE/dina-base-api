@@ -2,12 +2,13 @@ package ca.gc.aafc.dina.validation;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
-import ca.gc.aafc.dina.entity.ManagedAttribute.ManagedAttributeType;
 import ca.gc.aafc.dina.service.ManagedAttributeService;
+import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.Errors;
@@ -135,7 +136,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     }
 
     attributesPerKey.forEach((key, ma) -> {
-      ManagedAttributeType maType = ma.getManagedAttributeType();
+      TypedVocabularyElement.VocabularyElementType maType = ma.getVocabularyElementType();
       String assignedValue = attributesAndValues.get(key);
 
       if(preValidateValue(ma, assignedValue, errors, validationContext)) {
@@ -153,6 +154,11 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
             break;
           case BOOL:
             if (!isValidBool(assignedValue)) {
+              rejectInvalidValue(errors, key, assignedValue);
+            }
+            break;
+          case DECIMAL:
+            if(!NumberUtils.isParsable(assignedValue)) {
               rejectInvalidValue(errors, key, assignedValue);
             }
             break;

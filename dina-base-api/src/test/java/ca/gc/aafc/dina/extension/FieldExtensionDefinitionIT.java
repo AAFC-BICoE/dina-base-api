@@ -7,12 +7,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.validation.annotation.Validated;
 
 import javax.inject.Inject;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest( classes = FieldExtensionDefinitionIT.ExtensionTestConfiguration.class)
 public class FieldExtensionDefinitionIT {
@@ -26,10 +26,12 @@ public class FieldExtensionDefinitionIT {
 
     FieldExtensionDefinition.Extension cfiaPPC = config.getExtension().get("cfia_ppc");
     assertTrue(cfiaPPC.matchesKeyVersion("cfia_ppc", "2022-02"));
-    assertTrue(cfiaPPC.containsTerm("level"));
-    assertTrue(cfiaPPC.getFieldByTerm("level").isAcceptedValues("Level 2 (PPC-2)"));
+    assertTrue(cfiaPPC.containsKey("level"));
+    assertTrue(cfiaPPC.getFieldByKey("level").isAcceptedValues("Level 2 (PPC-2)"));
+    assertFalse(cfiaPPC.getFieldByTerm("level-term").getMultilingualDescription().getDescriptions().isEmpty());
   }
 
+  @Validated
   @Configuration
   @ConfigurationProperties
   @PropertySource(value = "classpath:extension/cfia_ppc.yml", factory  = YamlPropertyLoaderFactory.class)

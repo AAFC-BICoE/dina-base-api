@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.validation;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.Department;
-import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.entity.ma.TestManagedAttribute;
 import ca.gc.aafc.dina.entity.ma.TestManagedAttributeUsage;
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
@@ -10,6 +9,7 @@ import ca.gc.aafc.dina.service.ManagedAttributeService;
 import ca.gc.aafc.dina.service.ManagedAttributeServiceIT;
 
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -52,7 +52,7 @@ public class ManagedAttributeValueValidatorTest {
   @Test
   void validate_WhenValidDateType_NoExceptionThrown() {
     testManagedAttribute = testManagedAttributeService.create(
-        newTestManagedAttribute(ManagedAttribute.ManagedAttributeType.DATE));
+        newTestManagedAttribute(TypedVocabularyElement.VocabularyElementType.DATE));
 
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), LocalDate.now().toString());
     validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X);
@@ -62,7 +62,7 @@ public class ManagedAttributeValueValidatorTest {
   @ValueSource(strings = {"1.2", "", "  ", "\t", "\n", "a", "99-02-01", "11-23-2020", "11-1999-01", "01-01-01"})
   void validate_WhenInvalidDateType_ExceptionThrown(String value) {
     testManagedAttribute = testManagedAttributeService.create(
-        newTestManagedAttribute(ManagedAttribute.ManagedAttributeType.DATE));
+        newTestManagedAttribute(TypedVocabularyElement.VocabularyElementType.DATE));
 
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), value);
     assertThrows(ValidationException.class, () -> validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X));
@@ -72,7 +72,7 @@ public class ManagedAttributeValueValidatorTest {
   void validate_WhenValidStringType_NoExceptionThrown() {
     testManagedAttribute = TestManagedAttribute.builder().
       name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
-      .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
+      .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.STRING)
       .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
       .build();
     testManagedAttributeService.create(testManagedAttribute);
@@ -85,7 +85,7 @@ public class ManagedAttributeValueValidatorTest {
   void validate_WhenValidIntegerType_NoExceptionThrown() {
     testManagedAttribute = TestManagedAttribute.builder()
         .name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
-        .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
+        .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.INTEGER)
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
         .build();
     testManagedAttributeService.create(testManagedAttribute);
@@ -99,7 +99,7 @@ public class ManagedAttributeValueValidatorTest {
   void validate_WhenInvalidIntegerType_ExceptionThrown(String value) {
     testManagedAttribute = TestManagedAttribute.builder()
         .name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
-        .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
+        .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.INTEGER)
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
         .build();
     testManagedAttributeService.create(testManagedAttribute);
@@ -114,7 +114,7 @@ public class ManagedAttributeValueValidatorTest {
     testManagedAttribute = TestManagedAttribute.builder()
         .name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
-        .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
+        .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.INTEGER)
         .build();
     testManagedAttributeService.create(testManagedAttribute);
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), "1.2");
@@ -126,7 +126,7 @@ public class ManagedAttributeValueValidatorTest {
   void validate_WhenPreValidationFailsExceptionThrown() {
     testManagedAttribute = TestManagedAttribute.builder().
         name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
-        .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
+        .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.INTEGER)
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
         .failValidateValue(true)
         .build();
@@ -141,7 +141,7 @@ public class ManagedAttributeValueValidatorTest {
     testManagedAttribute = TestManagedAttribute.builder()
         .name("My special Attribute").uuid(UUID.randomUUID())
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
-        .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
+        .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.STRING)
         .acceptedValues(new String[]{"val1", "val2"}).build();
     testManagedAttributeService.create(testManagedAttribute);
 
@@ -153,7 +153,7 @@ public class ManagedAttributeValueValidatorTest {
   public void assignedValueNotContainedInAcceptedValues_validationFails() {
     testManagedAttribute = TestManagedAttribute.builder()
         .name("key2").uuid(UUID.randomUUID())
-        .managedAttributeType(ManagedAttribute.ManagedAttributeType.STRING)
+        .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.STRING)
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
         .acceptedValues(new String[]{"val1", "val2"}).build();
     testManagedAttributeService.create(testManagedAttribute);
@@ -205,7 +205,7 @@ public class ManagedAttributeValueValidatorTest {
     testManagedAttribute = testManagedAttributeService.create(
         TestManagedAttribute.builder()
             .name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
-            .managedAttributeType(ManagedAttribute.ManagedAttributeType.DATE)
+            .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.DATE)
             .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString()).build());
 
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), LocalDate.now().toString());
@@ -218,7 +218,7 @@ public class ManagedAttributeValueValidatorTest {
   void validate_NonDinaEntity_WhenInvalidIntegerTypeExceptionThrown() {
     testManagedAttribute = TestManagedAttribute.builder()
         .name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
-        .managedAttributeType(ManagedAttribute.ManagedAttributeType.INTEGER)
+        .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.INTEGER)
         .build();
     testManagedAttributeService.create(testManagedAttribute);
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), "1.2");
@@ -232,7 +232,7 @@ public class ManagedAttributeValueValidatorTest {
     testManagedAttribute = testManagedAttributeService.create(TestManagedAttribute.builder()
         .name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
-        .managedAttributeType(ManagedAttribute.ManagedAttributeType.BOOL)
+        .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.BOOL)
         .build());
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), value);
     assertThrows(ValidationException.class, () -> validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X));
@@ -242,7 +242,27 @@ public class ManagedAttributeValueValidatorTest {
   @ValueSource(strings = {"true", "false"})
   void validate_ValidBoolType_NoExceptionThrown(String value) {
     testManagedAttribute = testManagedAttributeService.create(newTestManagedAttribute(
-        ManagedAttribute.ManagedAttributeType.BOOL));
+        TypedVocabularyElement.VocabularyElementType.BOOL));
+
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), value);
+    validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"a.3", "A", "-2.3a", "2,3"})
+  void validate_InvalidDecimalType_ExceptionThrown(String value) {
+    testManagedAttribute = testManagedAttributeService.create(newTestManagedAttribute(
+            TypedVocabularyElement.VocabularyElementType.DECIMAL));
+
+    Map<String, String> mav = Map.of(testManagedAttribute.getKey(), value);
+    assertThrows(ValidationException.class, () -> validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"0.3", "123.543", "-2.3", "2"})
+  void validate_ValidDecimalType_NoExceptionThrown(String value) {
+    testManagedAttribute = testManagedAttributeService.create(newTestManagedAttribute(
+            TypedVocabularyElement.VocabularyElementType.DECIMAL));
 
     Map<String, String> mav = Map.of(testManagedAttribute.getKey(), value);
     validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X);
@@ -250,13 +270,13 @@ public class ManagedAttributeValueValidatorTest {
 
   @Test
   void validate_duplicatedKeysDifferentContext_ValidationWorks() {
-    TestManagedAttribute testManagedAttribute1 = newTestManagedAttribute(ManagedAttribute.ManagedAttributeType.BOOL);
+    TestManagedAttribute testManagedAttribute1 = newTestManagedAttribute(TypedVocabularyElement.VocabularyElementType.BOOL);
     testManagedAttribute1.setName("name1");
     testManagedAttribute1.setComponent(ManagedAttributeServiceIT.XYZValidationContext.X.toString());
     testManagedAttribute1 = testManagedAttributeService.createAndFlush(testManagedAttribute1);
 
     // same name but on a different component
-    TestManagedAttribute testManagedAttribute2 = newTestManagedAttribute(ManagedAttribute.ManagedAttributeType.BOOL);
+    TestManagedAttribute testManagedAttribute2 = newTestManagedAttribute(TypedVocabularyElement.VocabularyElementType.BOOL);
     testManagedAttribute2.setName("name1");
     testManagedAttribute2.setComponent(ManagedAttributeServiceIT.XYZValidationContext.Y.toString());
     testManagedAttributeService.createAndFlush(testManagedAttribute2);
@@ -265,10 +285,10 @@ public class ManagedAttributeValueValidatorTest {
     validatorUnderTest.validate(ENTITY_PLACEHOLDER, mav, ManagedAttributeServiceIT.XYZValidationContext.X);
   }
 
-  private TestManagedAttribute newTestManagedAttribute(ManagedAttribute.ManagedAttributeType type) {
+  private TestManagedAttribute newTestManagedAttribute(TypedVocabularyElement.VocabularyElementType type) {
     return TestManagedAttribute.builder().
         name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
-        .managedAttributeType(type)
+        .vocabularyElementType(type)
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
         .multilingualDescription(MultilingualDescription.builder()
             .descriptions(ImmutableList.of(

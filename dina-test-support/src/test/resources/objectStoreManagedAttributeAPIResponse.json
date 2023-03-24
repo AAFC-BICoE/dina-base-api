@@ -9,7 +9,7 @@
       "createdBy": "STRING",
       "createdOn": "2020-02-14T09:39:11.375928-05:00",
       "key": "OBJECT_attr",
-      "managedAttributeType": "STRING",
+      "vocabularyElementType": "STRING",
       "name": "OBJECT attr",
       "acceptedValues": ["a", 1, 2],
       "multilingualDescription": {
