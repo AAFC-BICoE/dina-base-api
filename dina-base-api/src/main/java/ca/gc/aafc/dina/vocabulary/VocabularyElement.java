@@ -10,7 +10,7 @@ public interface VocabularyElement {
 
   /**
    * Immutable and stable key representing the vocabulary.
-   * Used a stable identifier without the system boundaries.
+   * Used as stable identifier within the system boundaries.
    *
    * @return
    */
