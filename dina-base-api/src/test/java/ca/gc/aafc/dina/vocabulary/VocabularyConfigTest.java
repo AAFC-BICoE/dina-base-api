@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.validation.annotation.Validated;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -35,6 +36,7 @@ public class VocabularyConfigTest {
   @Configuration
   @PropertySource(value = "classpath:vocabulary/testVocabulary.yml", factory = YamlPropertyLoaderFactory.class)
   @ConfigurationProperties
+  @Validated
   static class VocabularySpringConfiguration extends VocabularyConfiguration<VocabularyElementConfiguration> {
 
     public VocabularySpringConfiguration(Map<String, List<VocabularyElementConfiguration>> vocabulary) {
