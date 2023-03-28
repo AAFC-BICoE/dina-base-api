@@ -46,7 +46,7 @@
 
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
-    <keycloak-starter.version>18.0.2</keycloak-starter.version>
+    <keycloak-starter.version>19.0.3</keycloak-starter.version>
     <bcprov-jdk15on.version>1.68</bcprov-jdk15on.version>
     <guava.version>30.0-jre</guava.version>
     <snakeyaml.version>1.33</snakeyaml.version>
