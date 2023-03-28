@@ -1,6 +1,7 @@
 vocabulary:
   testVocab:
-    - name: option1
+    - key: option_1
+      name: option1
       term: abc
       multilingualTitle.titles:
         - lang: en
