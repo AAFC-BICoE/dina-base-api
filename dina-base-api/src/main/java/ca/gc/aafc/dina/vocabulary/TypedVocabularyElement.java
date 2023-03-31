@@ -11,12 +11,6 @@ public interface TypedVocabularyElement extends VocabularyElement {
     INTEGER, STRING, DATE, BOOL, DECIMAL
   }
 
-  /**
-   * Immutable key representing the managed attribute.
-   *
-   * @return
-   */
-  String getKey();
   void setKey(String key);
 
   VocabularyElementType getVocabularyElementType();

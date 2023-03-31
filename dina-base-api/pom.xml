@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.103-SNAPSHOT</version>
+    <version>0.104-SNAPSHOT</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -23,10 +23,10 @@
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
     <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
-    <javers.version>6.8.2</javers.version>
+    <javers.version>6.13.0</javers.version>
     <mybatis.version>2.2.2</mybatis.version>
     <aafc.search.messaging.version>0.20</aafc.search.messaging.version>
-    <hibernate-types-55.version>2.20.0</hibernate-types-55.version>
+    <hibernate-types-55.version>2.21.1</hibernate-types-55.version>
     <postgresql.version>42.4.3</postgresql.version>
     <jsoup.version>1.15.3</jsoup.version>
   </properties>
@@ -125,7 +125,7 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.103-SNAPSHOT</version>
+      <version>0.104-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <!-- Spring mybatis -->

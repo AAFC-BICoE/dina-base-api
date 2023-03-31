@@ -6,6 +6,8 @@ import java.util.Objects;
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
 import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
+
+import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,8 +15,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-
-import javax.validation.constraints.NotEmpty;
 
 @Builder
 @Getter
@@ -83,7 +83,7 @@ public class FieldExtensionDefinition {
   @NoArgsConstructor
   public static class Field implements TypedVocabularyElement {
 
-    @NotEmpty
+    @NotBlank
     private String key;
 
     private String name;
