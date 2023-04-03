@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.jpa;
 
 import io.crnk.core.engine.information.bean.BeanInformation;
+import java.util.UUID;
 import lombok.NonNull;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -90,6 +91,25 @@ public class BaseDAO {
     EntityGraph<T> graph = entityManager.createEntityGraph(entityClass);
     graph.addAttributeNodes(attributeNodes);
     return graph;
+  }
+
+  /**
+   * Find a POJO/scalar(class that is not necessary an entity) Projection from a query.
+   * @param typeClass class of the result
+   * @param sql sql query. Usually a jpql query.
+   * @param parameters optional parameters for the query
+   * @return
+   * @param <T>
+   */
+  public <T> T findOneByQuery(Class<T> typeClass, String sql,
+                              List<Pair<String, Object>> parameters) {
+    TypedQuery<T> tq = entityManager.createQuery(sql, typeClass);
+    if (parameters != null) {
+      for (Pair<String, Object> param : parameters) {
+        tq.setParameter(param.getKey(), param.getValue());
+      }
+    }
+    return tq.getSingleResult();
   }
 
   /**
