@@ -103,7 +103,7 @@ public class DinaMappingLayerIT extends BasePostgresItContext {
     DinaMappingLayer<DepartmentDto, Department> departmentMappingLayer = new DinaMappingLayer<>(
         DepartmentDto.class, departmentService, new DinaMapper<>(DepartmentDto.class));
 
-    // Create the departments, with an employee in each.
+    // Create the department.
     Department dep1 = Department.builder()
         .uuid(UUID.randomUUID())
         .name("Dunder Mifflin Paper Company, Inc.")
@@ -111,7 +111,7 @@ public class DinaMappingLayerIT extends BasePostgresItContext {
         .build();
     baseDAO.create(dep1, true);
 
-    // Create employee, it will be stored in the departments.
+    // Create the employee, associated with a department.
     Employee emp1 = Employee.builder()
         .uuid(UUID.randomUUID())
         .name("Dwight Schrute")
