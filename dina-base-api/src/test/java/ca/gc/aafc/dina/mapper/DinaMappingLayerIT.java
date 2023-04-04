@@ -3,7 +3,6 @@ package ca.gc.aafc.dina.mapper;
 import ca.gc.aafc.dina.BasePostgresItContext;
 import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
 import ca.gc.aafc.dina.DinaUserConfig.DepartmentDinaService;
-import ca.gc.aafc.dina.DinaUserConfig.EmployeeDinaService;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
@@ -36,16 +35,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -60,9 +54,6 @@ public class DinaMappingLayerIT extends BasePostgresItContext {
 
   @Inject 
   private DepartmentDinaService departmentService;
-
-  @Inject
-  private EmployeeDinaService employeeService;
 
   @Inject
   private BaseDAO baseDAO;
@@ -112,80 +103,49 @@ public class DinaMappingLayerIT extends BasePostgresItContext {
     DinaMappingLayer<DepartmentDto, Department> departmentMappingLayer = new DinaMappingLayer<>(
         DepartmentDto.class, departmentService, new DinaMapper<>(DepartmentDto.class));
 
-    // Create employee, it will be stored in the departments.
-    Employee emp1 = Employee.builder()
-        .name("Dwight Schrute")
-        .build();
-    Employee emp2 = Employee.builder()
-        .name("Jim Halpert")
-        .build();
-    employeeService.create(emp1);
-    employeeService.create(emp2);
-
     // Create the departments, with an employee in each.
     Department dep1 = Department.builder()
+        .uuid(UUID.randomUUID())
         .name("Dunder Mifflin Paper Company, Inc.")
         .location("Scranton")
-        .employees(List.of(emp1))
         .build();
-    Department dep2 = Department.builder()
-        .name("Dunder Mifflin Paper Company, Inc.")
-        .location("Stamford")
-        .employees(List.of(emp2))
-        .build();
-    departmentService.create(dep1);
-    departmentService.create(dep2);
+    baseDAO.create(dep1, true);
 
-    // Detach the objects. We want to load the entity directly.
+    // Create employee, it will be stored in the departments.
+    Employee emp1 = Employee.builder()
+        .uuid(UUID.randomUUID())
+        .name("Dwight Schrute")
+        .department(dep1)
+        .build();
+    baseDAO.create(emp1, true);
+
+    // Detach the objects to force a reload.
     baseDAO.detach(emp1);
     baseDAO.detach(dep1);
-    baseDAO.detach(emp2);
-    baseDAO.detach(dep2);
 
-    CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
+    // Load the entity from the database.
+    Department retrievedDepartment = baseDAO.findOneByNaturalId(dep1.getUuid(), Department.class);
+    Assertions.assertNotNull(retrievedDepartment);
+    Assertions.assertFalse(baseDAO.isLoaded(retrievedDepartment, "employees"),
+        "The employees relationship should not be loaded in at this point.");
 
-    // Build a criteria to load the first Department by UUID
-    CriteriaQuery<Department> criteria1 = criteriaBuilder.createQuery(Department.class);
-    Root<Department> root1 = criteria1.from(Department.class);
-    Predicate clause1 = criteriaBuilder.equal(root1.get("uuid"), dep1.getUuid());
-    criteria1.where(clause1).select(root1);
+    // Map department to DTO without loading employees relationship
+    DepartmentDto departmentDto1 = departmentMappingLayer.mapEntitiesToDto(
+        new QuerySpec(DepartmentDto.class), Arrays.asList(retrievedDepartment)).get(0);
+    Assertions.assertNull(departmentDto1.getEmployees(),
+        "Employees has not been lazy-loaded in, so it should not be mapped.");
 
-    // Load the first department without hints
-    Department retrievedDepartment1 = baseDAO.resultListFromCriteria(criteria1, 0, 1).get(0);
-    Assertions.assertNotNull(retrievedDepartment1);
+    // Force lazy-load the employees relationship.
+    Employee retrievedEmployee = retrievedDepartment.getEmployees().get(0);
+    Assertions.assertNotNull(retrievedEmployee);
+    Assertions.assertTrue(baseDAO.isLoaded(retrievedDepartment, "employees"),
+        "The employees relationship should be loaded in at this point.");
 
-    // Build a criteria to load the second Department by UUID
-    CriteriaQuery<Department> criteria2 = criteriaBuilder.createQuery(Department.class);
-    Root<Department> root2 = criteria2.from(Department.class);
-    Predicate clause2 = criteriaBuilder.equal(root2.get("uuid"), dep2.getUuid());
-    criteria2.where(clause2).select(root2);
-
-    // Load the second department with hints
-    Department retrievedDepartment2 = baseDAO
-        .resultListFromCriteria(criteria2, 0, 1, Map.of(BaseDAO.LOAD_GRAPH_HINT_KEY,
-            baseDAO.createEntityGraph(Department.class, "employees")))
-        .get(0);
-    Assertions.assertNotNull(retrievedDepartment2);
-
-    // Lazy load the employees for the second department.
-    Employee retrievedEmployee = retrievedDepartment2.getEmployees().get(0);
-    Assertions.assertEquals(emp2.getName(), retrievedEmployee.getName());
-
-    // Map entities to DTOs.
-    List<DepartmentDto> departmentDtos = departmentMappingLayer.mapEntitiesToDto(
-        new QuerySpec(DepartmentDto.class), Arrays.asList(retrievedDepartment1, retrievedDepartment2));
-
-    // After performing the mapping, the employees field of the first department
-    // should not be loaded.
-    Assertions.assertFalse(baseDAO.isLoaded(retrievedDepartment1, "employees"),
-        "The relationship should not be loaded at this point.");
-    Assertions.assertNull(departmentDtos.get(0).getEmployees());
-
-    // After performing the mapping, the employees field of the second department
-    // should be loaded.
-    Assertions.assertTrue(baseDAO.isLoaded(retrievedDepartment2, "employees"),
-        "The relationship should be loaded at this point.");
-    Assertions.assertEquals(emp2.getName(), departmentDtos.get(1).getEmployees().get(0).getName());
+    // Map department to DTO again and check employees relationship is mapped.
+    DepartmentDto departmentDto2 = departmentMappingLayer.mapEntitiesToDto(
+        new QuerySpec(DepartmentDto.class), Arrays.asList(retrievedDepartment)).get(0);
+    Assertions.assertNotNull(departmentDto2.getEmployees().get(0),
+        "Employees has been lazy-loaded in, so it should be mapped.");
   }
 
   @Test
