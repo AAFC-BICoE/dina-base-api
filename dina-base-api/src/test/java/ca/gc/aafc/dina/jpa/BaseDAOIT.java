@@ -20,6 +20,7 @@ import javax.transaction.Transactional;
 
 import ca.gc.aafc.dina.BasePostgresItContext;
 import ca.gc.aafc.dina.entity.Employee;
+import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.testsupport.DatabaseSupportService;
 import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -285,7 +286,20 @@ public class BaseDAOIT extends BasePostgresItContext {
             baseDAO.createEntityGraph(Department.class,"employees")));
     // make sure the relationship is loaded
     assertTrue(baseDAO.isLoaded(depList.get(0), "employees"));
+  }
 
+  @Test
+  public void resultListFromQuery_onValidQuery_expectedResultsReturned() {
+    Person p1 = Person.builder().name("abc").uuid(UUID.randomUUID()).build();
+    Person p2 = Person.builder().name("bcd").uuid(UUID.randomUUID()).build();
+    baseDAO.create(p1, true);
+    baseDAO.create(p2, true);
+
+    String sql = "SELECT new " + DinaObjectSummary.class.getCanonicalName() +
+      "(t.uuid, t.group, t.createdBy) FROM Person t WHERE name LIKE CONCAT('%',:name,'%') ORDER BY id";
+
+    List<DinaObjectSummary> objList = baseDAO.resultListFromQuery(DinaObjectSummary.class, sql, 0, 10, List.of(Pair.of("name", "bc")));
+    assertEquals(2, objList.size());
   }
 
 }
