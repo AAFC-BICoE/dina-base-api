@@ -93,6 +93,24 @@ public class BaseDAO {
   }
 
   /**
+   * Find a POJO/scalar(class that is not necessary an entity) Projection from a query.
+   * @param typeClass class of the result
+   * @param sql sql query. Usually a jpql query.
+   * @param parameters optional parameters for the query
+   * @return
+   */
+  public <T> T findOneByQuery(Class<T> typeClass, String sql,
+                              List<Pair<String, Object>> parameters) {
+    TypedQuery<T> tq = entityManager.createQuery(sql, typeClass);
+    if (parameters != null) {
+      for (Pair<String, Object> param : parameters) {
+        tq.setParameter(param.getKey(), param.getValue());
+      }
+    }
+    return tq.getSingleResult();
+  }
+
+  /**
    * Find an entity by its primary key.
    *
    * @param id
@@ -418,6 +436,30 @@ public class BaseDAO {
             .setFirstResult(start)
             .setMaxResults(maxResult)
             .getResultList();
+  }
+
+  /**
+   * Find records (the class doesn't need to be an entity) from a query.
+   * If paging is used (start != 0) make sure to have an order by clause.
+   * @param typeClass
+   * @param sql
+   * @param start
+   * @param maxResult
+   * @param parameters
+   * @return
+   */
+  public <T> List<T> resultListFromQuery(Class<T> typeClass, String sql,
+                                         int start, int maxResult, List<Pair<String, Object>> parameters) {
+    TypedQuery<T> tq = entityManager.createQuery(sql, typeClass);
+    if (parameters != null) {
+      for (Pair<String, Object> param : parameters) {
+        tq.setParameter(param.getKey(), param.getValue());
+      }
+    }
+    return tq
+      .setFirstResult(start)
+      .setMaxResults(maxResult)
+      .getResultList();
   }
 
   /**
