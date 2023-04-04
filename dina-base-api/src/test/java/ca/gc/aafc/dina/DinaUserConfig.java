@@ -51,6 +51,11 @@ public class DinaUserConfig {
     }
 
     @Override
+    protected void preCreate(Employee entity) {
+      entity.setUuid(UUID.randomUUID());
+    }
+
+    @Override
     public void validateBusinessRules(Employee entity) {
       validateConstraints(entity,null);
     }

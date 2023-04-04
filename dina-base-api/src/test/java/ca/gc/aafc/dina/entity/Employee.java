@@ -39,7 +39,7 @@ public class Employee implements DinaEntity {
   private Integer id;
 
   @NaturalId
-  @Null(groups = OnCreate.class)
+  @NotNull(groups = OnCreate.class)
   @NotNull(groups = OnUpdate.class)
   private UUID uuid;
 
