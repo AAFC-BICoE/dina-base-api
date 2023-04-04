@@ -1,7 +1,6 @@
 package ca.gc.aafc.dina.jpa;
 
 import io.crnk.core.engine.information.bean.BeanInformation;
-import java.util.UUID;
 import lombok.NonNull;
 
 import org.apache.commons.lang3.tuple.Pair;
