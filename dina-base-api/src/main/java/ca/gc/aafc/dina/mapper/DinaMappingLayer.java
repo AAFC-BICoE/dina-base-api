@@ -44,6 +44,8 @@ public class DinaMappingLayer<D, E> {
   private final DinaService<? extends DinaEntity> dinaService;
   private final DinaMappingRegistry registry;
 
+  private static final PersistenceUtil PERSISTENCE_UTIL = Persistence.getPersistenceUtil();
+
   public DinaMappingLayer(
     Class<D> resourceClass,
     DinaService<? extends DinaEntity> dinaService,
@@ -248,8 +250,7 @@ public class DinaMappingLayer<D, E> {
       Class<?> relationType = relation.getDtoType();
 
       // Only map the relationship if it has already been lazy loaded in.
-      PersistenceUtil persistenceUnitUtil = Persistence.getPersistenceUtil();
-      if (persistenceUnitUtil.isLoaded(source, relationName)) {
+      if (PERSISTENCE_UTIL.isLoaded(source, relationName)) {
         if (relation.isCollection()) {
           Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(
             source, relationName);
