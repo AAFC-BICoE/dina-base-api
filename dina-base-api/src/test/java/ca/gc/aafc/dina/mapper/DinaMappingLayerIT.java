@@ -2,10 +2,14 @@ package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.BasePostgresItContext;
 import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
+import ca.gc.aafc.dina.DinaUserConfig.DepartmentDinaService;
+import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.TaskDTO;
+import ca.gc.aafc.dina.entity.Department;
+import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.entity.Project;
 import ca.gc.aafc.dina.entity.Task;
@@ -48,6 +52,12 @@ public class DinaMappingLayerIT extends BasePostgresItContext {
   @Inject
   private DefaultDinaService<Person> personDefaultDinaService;
 
+  @Inject 
+  private DepartmentDinaService departmentService;
+
+  @Inject
+  private BaseDAO baseDAO;
+
   private DinaMappingLayer<ProjectDTO, Project> mappingLayer;
 
   @BeforeEach
@@ -86,6 +96,56 @@ public class DinaMappingLayerIT extends BasePostgresItContext {
     Assertions.assertNull(
       results.get(1).getTask(),
       "Null Relation should map as null");
+  }
+
+  @Test
+  void mapEntitiesToDto_lazyLoadedRelationshipsNotIncluded_notMapped() {
+    DinaMappingLayer<DepartmentDto, Department> departmentMappingLayer = new DinaMappingLayer<>(
+        DepartmentDto.class, departmentService, new DinaMapper<>(DepartmentDto.class));
+
+    // Create the department.
+    Department dep1 = Department.builder()
+        .uuid(UUID.randomUUID())
+        .name("Dunder Mifflin Paper Company, Inc.")
+        .location("Scranton")
+        .build();
+    baseDAO.create(dep1, true);
+
+    // Create the employee, associated with a department.
+    Employee emp1 = Employee.builder()
+        .uuid(UUID.randomUUID())
+        .name("Dwight Schrute")
+        .department(dep1)
+        .build();
+    baseDAO.create(emp1, true);
+
+    // Detach the objects to force a reload.
+    baseDAO.detach(emp1);
+    baseDAO.detach(dep1);
+
+    // Load the entity from the database.
+    Department retrievedDepartment = baseDAO.findOneByNaturalId(dep1.getUuid(), Department.class);
+    Assertions.assertNotNull(retrievedDepartment);
+    Assertions.assertFalse(baseDAO.isLoaded(retrievedDepartment, "employees"),
+        "The employees relationship should not be loaded in at this point.");
+
+    // Map department to DTO without loading employees relationship
+    DepartmentDto departmentDto1 = departmentMappingLayer.mapEntitiesToDto(
+        new QuerySpec(DepartmentDto.class), Arrays.asList(retrievedDepartment)).get(0);
+    Assertions.assertNull(departmentDto1.getEmployees(),
+        "Employees has not been lazy-loaded in, so it should not be mapped.");
+
+    // Force lazy-load the employees relationship.
+    Employee retrievedEmployee = retrievedDepartment.getEmployees().get(0);
+    Assertions.assertNotNull(retrievedEmployee);
+    Assertions.assertTrue(baseDAO.isLoaded(retrievedDepartment, "employees"),
+        "The employees relationship should be loaded in at this point.");
+
+    // Map department to DTO again and check employees relationship is mapped.
+    DepartmentDto departmentDto2 = departmentMappingLayer.mapEntitiesToDto(
+        new QuerySpec(DepartmentDto.class), Arrays.asList(retrievedDepartment)).get(0);
+    Assertions.assertNotNull(departmentDto2.getEmployees().get(0),
+        "Employees has been lazy-loaded in, so it should be mapped.");
   }
 
   @Test
