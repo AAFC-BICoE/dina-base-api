@@ -20,6 +20,7 @@ import javax.transaction.Transactional;
 
 import ca.gc.aafc.dina.BasePostgresItContext;
 import ca.gc.aafc.dina.entity.Employee;
+import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.testsupport.DatabaseSupportService;
 import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -250,19 +251,19 @@ public class BaseDAOIT extends BasePostgresItContext {
 
   @Test
   public void resultListFromCriteria_withQueryHint_lazyRelEagerlyLoaded() {
-    Employee emp = Employee.builder().name("abc").uuid(UUID.randomUUID()).build();
-    baseDAO.create(emp, true);
-    //employees
     Department dep = Department.builder()
-            .name("dep1")
-            .uuid(UUID.randomUUID())
-            .location("dep location")
-            .employees(List.of(emp))
-            .build();
+      .name("dep1")
+      .uuid(UUID.randomUUID())
+      .location("dep location")
+      .build();
     baseDAO.create(dep, true);
+
+    Employee emp = Employee.builder().name("abc").department(dep).uuid(UUID.randomUUID()).build();
+    baseDAO.create(emp, true);
 
     //detach the entity to force reload
     baseDAO.detach(dep);
+    baseDAO.detach(emp);
 
     // Build a criteria to load the Department by UUID
     CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
@@ -276,16 +277,33 @@ public class BaseDAOIT extends BasePostgresItContext {
     assertFalse(depList.isEmpty());
     // Test that the relationship is not loaded. It means Hibernate would need to make a new call to the db to load it
     assertFalse(baseDAO.isLoaded(depList.get(0), "employees"));
+    // Force a lazy-load to make sure it exists
+    assertNotNull(depList.get(0).getEmployees().get(0));
 
     //detach the entity to force reload
     baseDAO.detach(dep);
+    baseDAO.detach(emp);
 
     // Load the department with loadgraph hint
     depList = baseDAO.resultListFromCriteria(criteria,0,10, Map.of(BaseDAO.LOAD_GRAPH_HINT_KEY,
-            baseDAO.createEntityGraph(Department.class,"employees")));
+      baseDAO.createEntityGraph(Department.class,"employees")));
     // make sure the relationship is loaded
     assertTrue(baseDAO.isLoaded(depList.get(0), "employees"));
-
+    assertNotNull(depList.get(0).getEmployees().get(0));
   }
 
+  @Test
+  public void resultListFromQuery_onValidQuery_expectedResultsReturned() {
+    Person p1 = Person.builder().name("abc").uuid(UUID.randomUUID()).build();
+    Person p2 = Person.builder().name("bcd").uuid(UUID.randomUUID()).build();
+    baseDAO.create(p1, true);
+    baseDAO.create(p2, true);
+
+    String sql = "SELECT new " + DinaObjectSummary.class.getCanonicalName() +
+      "(t.uuid, t.group, t.createdBy) FROM Person t WHERE name LIKE CONCAT('%',:name,'%') ORDER BY id";
+
+    List<DinaObjectSummary> objList = baseDAO.resultListFromQuery(DinaObjectSummary.class, sql, 0, 10, List.of(Pair.of("name", "bc")));
+    assertEquals(2, objList.size());
+  }
+  
 }

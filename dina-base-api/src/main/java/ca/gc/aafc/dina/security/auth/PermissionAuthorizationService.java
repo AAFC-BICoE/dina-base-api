@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.security;
+package ca.gc.aafc.dina.security.auth;
 
 import ca.gc.aafc.dina.security.spring.SecurityChecker;
 
