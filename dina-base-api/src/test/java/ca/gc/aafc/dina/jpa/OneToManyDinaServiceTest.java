@@ -6,7 +6,7 @@ import ca.gc.aafc.dina.entity.parentchild.Child;
 import ca.gc.aafc.dina.entity.parentchild.Parent;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
-import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
+import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;

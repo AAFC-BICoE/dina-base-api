@@ -1,5 +1,7 @@
-package ca.gc.aafc.dina.security;
+package ca.gc.aafc.dina.security.auth;
 
+import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
+import ca.gc.aafc.dina.security.auth.PermissionAuthorizationService;
 import ca.gc.aafc.dina.security.spring.DinaPermissionEvaluator;
 import ca.gc.aafc.dina.security.spring.MethodSecurityConfig;
 import org.springframework.security.access.prepost.PreAuthorize;

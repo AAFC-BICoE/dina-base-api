@@ -1,6 +1,6 @@
 package ca.gc.aafc.dina.security.spring;
 
-import ca.gc.aafc.dina.security.DinaAuthorizationService;
+import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
