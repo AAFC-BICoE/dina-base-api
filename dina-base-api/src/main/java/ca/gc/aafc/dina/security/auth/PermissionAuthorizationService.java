@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.security.auth;
 
-import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
 import ca.gc.aafc.dina.security.spring.SecurityChecker;
 
 import javax.inject.Inject;

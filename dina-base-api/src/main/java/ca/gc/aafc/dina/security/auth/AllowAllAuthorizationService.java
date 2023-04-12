@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.security.auth;
 
 import java.util.Set;
 
-import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
 import ca.gc.aafc.dina.security.spring.SecurityChecker;
 
 /**
