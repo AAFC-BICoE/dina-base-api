@@ -16,7 +16,7 @@ import ca.gc.aafc.dina.entity.Task;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
-import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
+import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.crnk.core.queryspec.PathSpec;

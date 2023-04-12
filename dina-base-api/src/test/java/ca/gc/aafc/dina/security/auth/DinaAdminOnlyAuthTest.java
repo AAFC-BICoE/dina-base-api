@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.security;
+package ca.gc.aafc.dina.security.auth;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.RelatedEntity;
@@ -122,7 +122,6 @@ public class DinaAdminOnlyAuthTest {
       Optional<AuditService> auditService,
       DinaAdminCUDAuthorizationService authorizationService,
       BuildProperties buildProperties,
-      BaseDAO baseDao,
       DefaultDinaService<Item> defaultService, ObjectMapper objMapper
     ) {
       DinaMapper<ItemDto, Item> dinaMapper = new DinaMapper<>(ItemDto.class);

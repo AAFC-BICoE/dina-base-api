@@ -56,11 +56,10 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
    * to.
    */
   public boolean hasGroupPermission(DinaAuthenticatedUser user, Object targetDomainObject) {
-    if (user == null || !(targetDomainObject instanceof DinaEntity)) {
+    if (user == null || !(targetDomainObject instanceof DinaEntity entity)) {
       return false;
     }
 
-    DinaEntity entity = (DinaEntity) targetDomainObject;
     Set<String> userGroups = user.getGroups();
 
     if (CollectionUtils.isEmpty(userGroups) || entity.getGroup() == null) {
