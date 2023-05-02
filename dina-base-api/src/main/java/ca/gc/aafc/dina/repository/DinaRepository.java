@@ -11,7 +11,7 @@ import ca.gc.aafc.dina.repository.auditlog.AuditSnapshotRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
-import ca.gc.aafc.dina.security.DinaAuthorizationService;
+import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
 import ca.gc.aafc.dina.security.TextHtmlSanitizer;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;

@@ -18,6 +18,9 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import javax.persistence.Persistence;
+import javax.persistence.PersistenceUtil;
+
 /**
  * Mapping layer handles the responsibilities for dina repo mapping operations. Those
  * responsibilities are the following.
@@ -40,6 +43,8 @@ public class DinaMappingLayer<D, E> {
   private final DinaMapper<D, E> dinaMapper;
   private final DinaService<? extends DinaEntity> dinaService;
   private final DinaMappingRegistry registry;
+
+  private static final PersistenceUtil PERSISTENCE_UTIL = Persistence.getPersistenceUtil();
 
   public DinaMappingLayer(
     Class<D> resourceClass,
@@ -243,19 +248,23 @@ public class DinaMappingLayer<D, E> {
     for (DinaMappingRegistry.InternalRelation relation : relations) {
       String relationName = relation.getName();
       Class<?> relationType = relation.getDtoType();
-      if (relation.isCollection()) {
-        Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(
-          source, relationName);
-        if (relationValue != null) {
-          Collection<?> mappedCollection = relationValue.stream()
-            .map(rel -> mapper.apply(relationType, rel)).collect(Collectors.toList());
-          PropertyUtils.setProperty(target, relationName, mappedCollection);
-        }
-      } else {
-        Object relationValue = PropertyUtils.getProperty(source, relationName);
-        if (relationValue != null) {
-          Object mappedRelation = mapper.apply(relationType, relationValue);
-          PropertyUtils.setProperty(target, relationName, mappedRelation);
+
+      // Only map the relationship if it has already been lazy loaded in.
+      if (PERSISTENCE_UTIL.isLoaded(source, relationName)) {
+        if (relation.isCollection()) {
+          Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(
+            source, relationName);
+          if (relationValue != null) {
+            Collection<?> mappedCollection = relationValue.stream()
+              .map(rel -> mapper.apply(relationType, rel)).collect(Collectors.toList());
+            PropertyUtils.setProperty(target, relationName, mappedCollection);
+          }
+        } else {
+          Object relationValue = PropertyUtils.getProperty(source, relationName);
+          if (relationValue != null) {
+            Object mappedRelation = mapper.apply(relationType, relationValue);
+            PropertyUtils.setProperty(target, relationName, mappedRelation);
+          }
         }
       }
     }

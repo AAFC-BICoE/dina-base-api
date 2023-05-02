@@ -1,4 +1,4 @@
-package ca.gc.aafc.dina.security;
+package ca.gc.aafc.dina.security.auth;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -11,6 +11,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;

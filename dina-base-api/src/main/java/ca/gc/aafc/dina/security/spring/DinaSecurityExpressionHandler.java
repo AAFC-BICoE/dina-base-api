@@ -11,7 +11,7 @@ import org.springframework.security.core.Authentication;
  * Custom security expression handler using a custom SecurityExpressionRoot
  */
 public class DinaSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
-  private AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
+  private final AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
 
   @Override
   protected MethodSecurityExpressionOperations createSecurityExpressionRoot(

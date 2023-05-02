@@ -33,8 +33,8 @@ import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
 import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
-import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
-import ca.gc.aafc.dina.security.GroupAuthorizationService;
+import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
+import ca.gc.aafc.dina.security.auth.GroupAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaServiceTest.DinaServiceTestImplementation;
 
