@@ -4,6 +4,7 @@ import ca.gc.aafc.dina.jpa.JsonbKeyValuePredicate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
+import java.lang.reflect.AccessibleObject;
 import lombok.NonNull;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -176,27 +177,37 @@ public final class SimpleFilterHandler {
   /**
    * Check if the attribute contains a JSONB type annotation on either the field or the method.
    */
-  private static boolean isJsonb(@NonNull Attribute<?, ?> attribute) {
-    Boolean annotationExists = false;
+  private static boolean isJsonb(@NonNull Attribute<?,?> attribute) {
+    Class<?> clazz = attribute.getJavaMember().getDeclaringClass();
 
-    try {
-      Field field = attribute.getJavaMember().getDeclaringClass().getDeclaredField(attribute.getName());
-      if (field.isAnnotationPresent(Type.class) && field.getAnnotation(Type.class).type().equals("jsonb")) {
-        annotationExists = true;
-      }
-    } catch (NoSuchFieldException | SecurityException ignored) {
+    AccessibleObject ao = safeGetDeclaredField(clazz, attribute.getName());
+    if (ao == null) {
+      ao = safeGetDeclaredMethod(clazz, attribute.getJavaMember().getName());
     }
 
-    try {
-      Method method = attribute.getJavaMember().getDeclaringClass()
-          .getDeclaredMethod(attribute.getJavaMember().getName());
-      if (method.isAnnotationPresent(Type.class) && method.getAnnotation(Type.class).type().equals("jsonb")) {
-        annotationExists = true;
-      }
-    } catch (NoSuchMethodException | SecurityException ignored) {
+    if (ao != null && ao.isAnnotationPresent(Type.class) &&
+      ao.getAnnotation(Type.class).type().equals("jsonb")) {
+      return true;
     }
+    return false;
+  }
 
-    return annotationExists;
+  private static Field safeGetDeclaredField(Class<?> clazz , String attributeName) {
+    try {
+      return clazz.getDeclaredField(attributeName);
+    } catch (NoSuchFieldException e) {
+      // ignore
+    }
+    return null;
+  }
+
+  private static Method safeGetDeclaredMethod(Class<?> clazz , String methodName) {
+    try {
+      return clazz.getDeclaredMethod(methodName);
+    } catch (NoSuchMethodException e) {
+      // ignore
+    }
+    return null;
   }
 
 }
