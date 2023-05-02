@@ -5,11 +5,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
 import lombok.NonNull;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Type;
 
-import javax.annotation.Nullable;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
@@ -17,7 +17,7 @@ import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.Metamodel;
 import java.lang.reflect.Field;
-import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,11 +69,11 @@ public final class SimpleFilterHandler {
             path = path.get(pathElement);
             if (SimpleFilterHandler.isBasicAttribute(attribute.get())) {
               // basic attribute start generating predicates
-              addPredicates(cb, parser, predicates, filterSpec, path, attribute.get().getJavaMember());
+              addPredicates(cb, parser, predicates, filterSpec, path, attribute.get());
             }
           }
         }
-      } catch (IllegalArgumentException | NoSuchFieldException e) {
+      } catch (IllegalArgumentException | NoSuchFieldException | NoSuchMethodException e) {
         // This FilterHandler will ignore filter parameters that do not map to fields on the DTO,
         // like "rsql" or others that are only handled by other FilterHandlers.
       } catch (JsonProcessingException e) {
@@ -89,16 +89,15 @@ public final class SimpleFilterHandler {
     @NonNull List<Predicate> predicates,
     @NonNull FilterSpec spec,
     @NonNull Path<?> path,
-    @NonNull Member member
-  ) throws NoSuchFieldException, JsonProcessingException {
+    @NonNull Attribute<?, ?> attribute
+  ) throws NoSuchFieldException, NoSuchMethodException, JsonProcessingException {
     Object filterValue = spec.getValue();
     if (filterValue == null) {
       predicates.add(generateNullComparisonPredicate(cb, path, spec.getOperator()));
     } else {
-      String memberName = member.getName();
-      if (isJsonb(member.getDeclaringClass().getDeclaredField(memberName))) {
+      if (isJsonb(attribute)) {
         predicates.add(generateJsonbPredicate(
-          path.getParentPath(), cb, spec.getAttributePath(), memberName, filterValue.toString()));
+          path.getParentPath(), cb, spec.getAttributePath(), attribute.getName(), filterValue.toString()));
       } else {
         predicates.add(cb.equal(path, parser.apply(filterValue.toString(), path.getJavaType())));
       }
@@ -150,9 +149,9 @@ public final class SimpleFilterHandler {
     Class<?> rootJavaType = rootType;
     Attribute<?, ?> attribute = null;
     for (String pathField : attributePath) {
-      attribute = metamodel.managedType(rootJavaType).getAttributes()
+      attribute = metamodel.entity(rootJavaType).getAttributes()
         .stream()
-        .filter(a -> a.getJavaMember().getName().equalsIgnoreCase(pathField))
+        .filter(a -> a.getName().equalsIgnoreCase(pathField))
         .findFirst().orElse(null);
       if (attribute == null || isBasicAttribute(attribute)) {
         return Optional.ofNullable(attribute);
@@ -174,14 +173,30 @@ public final class SimpleFilterHandler {
     return Attribute.PersistentAttributeType.BASIC.equals(attribute.getPersistentAttributeType());
   }
 
-  private static boolean isJsonb(@Nullable Field declaredField) {
-    if (declaredField == null) {
-      return false;
+  /**
+   * Check if the attribute contains a JSONB type annotation on either the field or the method.
+   */
+  private static boolean isJsonb(@NonNull Attribute<?, ?> attribute) {
+    Boolean annotationExists = false;
+
+    try {
+      Field field = attribute.getJavaMember().getDeclaringClass().getDeclaredField(attribute.getName());
+      if (field.isAnnotationPresent(Type.class) && field.getAnnotation(Type.class).type().equals("jsonb")) {
+        annotationExists = true;
+      }
+    } catch (NoSuchFieldException | SecurityException ignored) {
     }
-    Type fieldAnnotation = declaredField.getAnnotation(Type.class);
-    return fieldAnnotation != null
-      && StringUtils.isNotBlank(fieldAnnotation.type())
-      && fieldAnnotation.type().equalsIgnoreCase("jsonb");
+
+    try {
+      Method method = attribute.getJavaMember().getDeclaringClass()
+          .getDeclaredMethod(attribute.getJavaMember().getName());
+      if (method.isAnnotationPresent(Type.class) && method.getAnnotation(Type.class).type().equals("jsonb")) {
+        annotationExists = true;
+      }
+    } catch (NoSuchMethodException | SecurityException ignored) {
+    }
+
+    return annotationExists;
   }
 
 }
