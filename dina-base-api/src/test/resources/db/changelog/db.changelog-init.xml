@@ -203,6 +203,17 @@
 			<column name="created_by" type="varchar(255)"/>
 			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
 		</createTable>
+		<createTable tableName="jsonb_method">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_jsonb_method_id" />
+			</column>
+			<column name="uuid" type="uuid">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="json_data" type="jsonb"/>
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+		</createTable>
 		<createTable tableName="car_driver">
 			<column autoIncrement="true" name="id" type="SERIAL">
 				<constraints primaryKey="true" primaryKeyName="pk_car_driver_id" />

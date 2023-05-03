@@ -175,20 +175,32 @@ public final class SimpleFilterHandler {
   }
 
   /**
-   * Check if the attribute contains a JSONB type annotation on either the field or the method.
+   * Check if the attribute contains a JSONB type annotation on either the field
+   * or the method.
+   * 
+   * The getJavaMember() reflects the identifying information about a single
+   * member (a field or a method) where is where the annotation is stored. 
+   * 
+   * The getJavaMember().getName() will return the method or field name.
    */
   private static boolean isJsonb(@NonNull Attribute<?,?> attribute) {
     Class<?> clazz = attribute.getJavaMember().getDeclaringClass();
 
+    // Check field for annotation.
     AccessibleObject ao = safeGetDeclaredField(clazz, attribute.getName());
-    if (ao == null) {
-      ao = safeGetDeclaredMethod(clazz, attribute.getJavaMember().getName());
-    }
-
     if (ao != null && ao.isAnnotationPresent(Type.class) &&
       ao.getAnnotation(Type.class).type().equals("jsonb")) {
       return true;
     }
+
+    // If no annotation is present on the field, check the method instead.
+    ao = safeGetDeclaredMethod(clazz, attribute.getJavaMember().getName());
+    if (ao != null && ao.isAnnotationPresent(Type.class) &&
+      ao.getAnnotation(Type.class).type().equals("jsonb")) {
+      return true;
+    }
+
+    // Could not find the annotation, not detected as jsonb.
     return false;
   }
 
