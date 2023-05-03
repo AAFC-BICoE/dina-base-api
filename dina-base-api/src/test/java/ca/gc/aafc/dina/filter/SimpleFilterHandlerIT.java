@@ -14,11 +14,8 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
 import ca.gc.aafc.dina.BasePostgresItContext;
-import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Employee;
@@ -27,7 +24,6 @@ import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepository;
-import org.springframework.test.context.ContextConfiguration;
 
 @Transactional
 public class SimpleFilterHandlerIT extends BasePostgresItContext {
