@@ -4,6 +4,7 @@ import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.CarDriver;
 import ca.gc.aafc.dina.entity.JsonbCar;
+import ca.gc.aafc.dina.entity.JsonbMethod;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
@@ -51,7 +52,10 @@ public class SimpleFilterResolverJsonbIT {
   private static final String KEY = "customKey";
 
   @Inject
-  private DinaRepository<DinaFilterResolverJsonbITConfig.JsonbCarDto, JsonbCar> subRepo;
+  private DinaRepository<DinaFilterResolverJsonbITConfig.JsonbCarDto, JsonbCar> carRepo;
+
+  @Inject
+  private DinaRepository<DinaFilterResolverJsonbITConfig.JsonbMethodDto, JsonbMethod> methodRepo;
 
   @Inject
   private DinaRepository<DinaFilterResolverJsonbITConfig.CarDriverDto, CarDriver> commanderRepo;
@@ -81,19 +85,37 @@ public class SimpleFilterResolverJsonbIT {
   }
 
   @Test
-  void simpleFilter_FilterOnJsonB() {
+  void simpleFilter_FilterOnJsonB_jsonbDefinedOnField() {
     String expectedValue = "CustomValue";
     DinaFilterResolverJsonbITConfig.JsonbCarDto dto = createCar(newCar(expectedValue));
     createCar(newCar("AnotherValue"));
 
     Assertions.assertEquals(
       2,
-      subRepo.findAll(new QuerySpec(DinaFilterResolverJsonbITConfig.JsonbCarDto.class)).size());
+      carRepo.findAll(new QuerySpec(DinaFilterResolverJsonbITConfig.JsonbCarDto.class)).size());
 
     QuerySpec querySpec = new QuerySpec(DinaFilterResolverJsonbITConfig.JsonbCarDto.class);
     querySpec.addFilter(PathSpec.of("jsonData", KEY).filter(FilterOperator.EQ, expectedValue));
 
-    ResourceList<DinaFilterResolverJsonbITConfig.JsonbCarDto> results = subRepo.findAll(querySpec);
+    ResourceList<DinaFilterResolverJsonbITConfig.JsonbCarDto> results = carRepo.findAll(querySpec);
+    Assertions.assertEquals(1, results.size());
+    Assertions.assertEquals(dto.getUuid(), results.get(0).getUuid());
+  }
+
+  @Test
+  void simpleFilter_FilterOnJsonB_jsonbDefinedOnMethod() {
+    String expectedValue = "CustomValue";
+    DinaFilterResolverJsonbITConfig.JsonbMethodDto dto = createMethod(newMethod(expectedValue));
+    createMethod(newMethod("AnotherValue"));
+
+    Assertions.assertEquals(
+      2,
+      methodRepo.findAll(new QuerySpec(DinaFilterResolverJsonbITConfig.JsonbMethodDto.class)).size());
+
+    QuerySpec querySpec = new QuerySpec(DinaFilterResolverJsonbITConfig.JsonbMethodDto.class);
+    querySpec.addFilter(PathSpec.of("jsonData", KEY).filter(FilterOperator.EQ, expectedValue));
+
+    ResourceList<DinaFilterResolverJsonbITConfig.JsonbMethodDto> results = methodRepo.findAll(querySpec);
     Assertions.assertEquals(1, results.size());
     Assertions.assertEquals(dto.getUuid(), results.get(0).getUuid());
   }
@@ -113,12 +135,12 @@ public class SimpleFilterResolverJsonbIT {
 
     Assertions.assertEquals(
       2,
-      subRepo.findAll(new QuerySpec(DinaFilterResolverJsonbITConfig.JsonbCarDto.class)).size());
+      carRepo.findAll(new QuerySpec(DinaFilterResolverJsonbITConfig.JsonbCarDto.class)).size());
 
     QuerySpec querySpec = new QuerySpec(DinaFilterResolverJsonbITConfig.JsonbCarDto.class);
     querySpec.addFilter(PathSpec.of("jsonData", KEY, nestedKey).filter(FilterOperator.EQ, expectedValue));
 
-    ResourceList<DinaFilterResolverJsonbITConfig.JsonbCarDto> results = subRepo.findAll(querySpec);
+    ResourceList<DinaFilterResolverJsonbITConfig.JsonbCarDto> results = carRepo.findAll(querySpec);
     Assertions.assertEquals(1, results.size());
     Assertions.assertEquals(expectedSub.getUuid(), results.get(0).getUuid());
   }
@@ -129,10 +151,23 @@ public class SimpleFilterResolverJsonbIT {
       .build();
   }
 
-  private DinaFilterResolverJsonbITConfig.JsonbCarDto createCar(DinaFilterResolverJsonbITConfig.JsonbCarDto carDto) {
-    DinaFilterResolverJsonbITConfig.JsonbCarDto dto = subRepo.create(carDto);
-    Assertions.assertEquals(dto.getUuid(), subRepo.findOne(
+  private DinaFilterResolverJsonbITConfig.JsonbMethodDto newMethod(String expectedValue) {
+    return DinaFilterResolverJsonbITConfig.JsonbMethodDto.builder()
+      .jsonData(Map.of(KEY, expectedValue))
+      .build();
+  }
+
+  private DinaFilterResolverJsonbITConfig.JsonbCarDto createCar(DinaFilterResolverJsonbITConfig.JsonbCarDto methodDto) {
+    DinaFilterResolverJsonbITConfig.JsonbCarDto dto = carRepo.create(methodDto);
+    Assertions.assertEquals(dto.getUuid(), carRepo.findOne(
       dto.getUuid(), new QuerySpec(DinaFilterResolverJsonbITConfig.JsonbCarDto.class)).getUuid());
+    return dto;
+  }
+
+  private DinaFilterResolverJsonbITConfig.JsonbMethodDto createMethod(DinaFilterResolverJsonbITConfig.JsonbMethodDto methodDto) {
+    DinaFilterResolverJsonbITConfig.JsonbMethodDto dto = methodRepo.create(methodDto);
+    Assertions.assertEquals(dto.getUuid(), methodRepo.findOne(
+      dto.getUuid(), new QuerySpec(DinaFilterResolverJsonbITConfig.JsonbMethodDto.class)).getUuid());
     return dto;
   }
 
@@ -186,6 +221,7 @@ public class SimpleFilterResolverJsonbIT {
       @JsonApiId
       private UUID uuid;
       private Map<String, Object> jsonData;
+      private Map<String, Object> jsonDataMethodDefined;
     }
 
     @Bean
@@ -206,6 +242,41 @@ public class SimpleFilterResolverJsonbIT {
         new DinaMapper<>(JsonbCarDto.class),
               JsonbCarDto.class,
               JsonbCar.class,
+        null,
+        null,
+        props, objMapper);
+    }
+
+    @Data
+    @JsonApiResource(type = "jsonb-method")
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @RelatedEntity(JsonbMethod.class)
+    public static class JsonbMethodDto {
+      @JsonApiId
+      private UUID uuid;
+      private Map<String, Object> jsonData;
+    }
+
+    @Bean
+    public DinaRepository<JsonbMethodDto, JsonbMethod> jsonbMethodRepo(
+      BaseDAO baseDAO, SmartValidator val,
+      BuildProperties props, ObjectMapper objMapper
+    ) {
+      return new DinaRepository<>(
+        new DefaultDinaService<>(baseDAO, val) {
+          @Override
+          protected void preCreate(JsonbMethod entity) {
+            entity.setId(RandomUtils.nextInt(0, 1000));
+            entity.setUuid(UUID.randomUUID());
+          }
+        },
+        new AllowAllAuthorizationService(),
+        Optional.empty(),
+        new DinaMapper<>(JsonbMethodDto.class),
+              JsonbMethodDto.class,
+              JsonbMethod.class,
         null,
         null,
         props, objMapper);
