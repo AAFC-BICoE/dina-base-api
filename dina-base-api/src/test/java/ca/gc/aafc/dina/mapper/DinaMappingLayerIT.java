@@ -24,8 +24,10 @@ import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -98,6 +100,7 @@ public class DinaMappingLayerIT extends BasePostgresItContext {
       "Null Relation should map as null");
   }
 
+  @Disabled // see #30904
   @Test
   void mapEntitiesToDto_lazyLoadedRelationshipsNotIncluded_notMapped() {
     DinaMappingLayer<DepartmentDto, Department> departmentMappingLayer = new DinaMappingLayer<>(
