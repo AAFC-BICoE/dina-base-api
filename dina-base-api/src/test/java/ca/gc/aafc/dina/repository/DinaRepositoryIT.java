@@ -510,6 +510,39 @@ public class DinaRepositoryIT {
   }
 
   @Test
+  public void savingPersonWithDepartment_shouldMaintainDepartmentRelationship() {
+      // Create a department
+      Department department = createDepartment("name", "location");
+      baseDAO.create(department);
+  
+      // Create a person and associate them with the department
+      PersonDTO personDto = PersonDTO.builder()
+              .name("Brandon Andre")
+              .department(DepartmentDto.builder().uuid(department.getUuid()).build())
+              .build();
+      personDto = dinaRepository.create(personDto);
+  
+      // Fetch the person with the department relationship included
+      QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+      querySpec.setIncludedRelations(createIncludeRelationSpecs("department"));
+      PersonDTO foundPerson = dinaRepository.findOne(personDto.getUuid(), querySpec);
+  
+      // Assert that the department relationship was set correctly
+      assertEquals(department.getUuid(), foundPerson.getDepartment().getUuid());
+  
+      // Update the name of the person
+      PersonDTO updatedPersonDto = PersonDTO.builder()
+              .uuid(personDto.getUuid())
+              .name("Brandon Andre 2")
+              .build();
+      dinaRepository.save(updatedPersonDto);
+  
+      // Fetch the person again and assert that the department relationship was maintained
+      PersonDTO foundUpdatedPerson = dinaRepository.findOne(personDto.getUuid(), querySpec);
+      assertEquals(department.getUuid(), foundUpdatedPerson.getDepartment().getUuid());
+  }
+
+  @Test
   public void create_unsafeNestedPayload_ExceptionThrown() {
     Department.DepartmentDetails departmentDetails = new Department.DepartmentDetails("note<iframe src=javascript:alert(32311)>");
     DepartmentDto departmentDto = DepartmentDto.builder()
