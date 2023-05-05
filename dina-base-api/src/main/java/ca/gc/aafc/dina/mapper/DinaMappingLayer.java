@@ -249,8 +249,8 @@ public class DinaMappingLayer<D, E> {
       String relationName = relation.getName();
       Class<?> relationType = relation.getDtoType();
 
-      // Only map the relationship if it has already been lazy loaded in.
-      if (PERSISTENCE_UTIL.isLoaded(source, relationName)) {
+      // Only map the relationship if it has already been lazy loaded in #30904
+      //if (PERSISTENCE_UTIL.isLoaded(source, relationName)) { see ticket
         if (relation.isCollection()) {
           Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(
             source, relationName);
@@ -265,7 +265,7 @@ public class DinaMappingLayer<D, E> {
             Object mappedRelation = mapper.apply(relationType, relationValue);
             PropertyUtils.setProperty(target, relationName, mappedRelation);
           }
-        }
+    //    }
       }
     }
   }
