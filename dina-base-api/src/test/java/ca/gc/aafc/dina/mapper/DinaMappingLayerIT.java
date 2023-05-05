@@ -161,7 +161,7 @@ public class DinaMappingLayerIT extends BasePostgresItContext {
             .build();
     baseDAO.create(project);
 
-    // Fetch the project with the department relationship included
+    // Fetch the project that was created.
     Project retrievedProject1 = baseDAO.findOneByNaturalId(project.getUuid(), Project.class);
 
     // Assert that the task relationship was set correctly.
