@@ -249,21 +249,21 @@ public class DinaMappingLayer<D, E> {
 
       // Only map the relationship if it has already been lazy loaded in #30904
       //if (PERSISTENCE_UTIL.isLoaded(source, relationName)) { see ticket
-        if (relation.isCollection()) {
-          Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(
-            source, relationName);
-          if (relationValue != null) {
-            Collection<?> mappedCollection = relationValue.stream()
-              .map(rel -> mapper.apply(relationType, rel)).collect(Collectors.toList());
-            PropertyUtils.setProperty(target, relationName, mappedCollection);
-          }
-        } else {
-          Object relationValue = PropertyUtils.getProperty(source, relationName);
-          if (relationValue != null) {
-            Object mappedRelation = mapper.apply(relationType, relationValue);
-            PropertyUtils.setProperty(target, relationName, mappedRelation);
-          }
-    //    }
+      if (relation.isCollection()) {
+        Collection<?> relationValue = (Collection<?>) PropertyUtils.getProperty(
+          source, relationName);
+        if (relationValue != null) {
+          Collection<?> mappedCollection = relationValue.stream()
+            .map(rel -> mapper.apply(relationType, rel)).collect(Collectors.toList());
+          PropertyUtils.setProperty(target, relationName, mappedCollection);
+        }
+      } else {
+        Object relationValue = PropertyUtils.getProperty(source, relationName);
+        if (relationValue != null) {
+          Object mappedRelation = mapper.apply(relationType, relationValue);
+          PropertyUtils.setProperty(target, relationName, mappedRelation);
+        }
+        //    }
       }
     }
   }
