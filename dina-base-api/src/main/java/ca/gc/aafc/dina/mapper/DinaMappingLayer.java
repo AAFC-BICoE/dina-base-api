@@ -18,8 +18,6 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.persistence.Persistence;
-import javax.persistence.PersistenceUtil;
 
 /**
  * Mapping layer handles the responsibilities for dina repo mapping operations. Those
@@ -44,7 +42,7 @@ public class DinaMappingLayer<D, E> {
   private final DinaService<? extends DinaEntity> dinaService;
   private final DinaMappingRegistry registry;
 
-  private static final PersistenceUtil PERSISTENCE_UTIL = Persistence.getPersistenceUtil();
+  //private static final PersistenceUtil PERSISTENCE_UTIL = Persistence.getPersistenceUtil();
 
   public DinaMappingLayer(
     Class<D> resourceClass,
