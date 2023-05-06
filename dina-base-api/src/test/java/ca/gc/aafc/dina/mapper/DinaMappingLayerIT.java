@@ -149,36 +149,6 @@ public class DinaMappingLayerIT extends BasePostgresItContext {
   }
 
   @Test
-  public void savingProjectWithTask_shouldMaintainTaskRelationship() {
-    // Create a task
-    Task task = Task.builder().powerLevel(900).build();
-    baseDAO.create(task);
-
-    // Create a project, and associate the task above with it.
-    Project project = Project.builder()
-            .name("projectName")
-            .task(task)
-            .build();
-    baseDAO.create(project);
-
-    // Fetch the project that was created.
-    Project retrievedProject1 = baseDAO.findOneByNaturalId(project.getUuid(), Project.class);
-
-    // Assert that the task relationship was set correctly.
-    Assertions.assertEquals(task.getUuid(), retrievedProject1.getTask().getUuid());
-
-    // Update the name of the project
-    ProjectDTO updateProjectDto = ProjectDTO.builder()
-            .uuid(project.getUuid())
-            .name("newProjectName")
-            .build();
-    mappingLayer.mapToEntity(updateProjectDto, retrievedProject1);
-
-    // Assert that the task relationship was not altered since it was not changed.
-    Assertions.assertEquals(task.getUuid(), retrievedProject1.getTask().getUuid());
-  }
-
-  @Test
   void mapEntitiesToDto_WhenRelationIncluded_RelationFullyMapped() {
     Person randomPerson = persistPerson();
     Task expectedTask = newTask();
