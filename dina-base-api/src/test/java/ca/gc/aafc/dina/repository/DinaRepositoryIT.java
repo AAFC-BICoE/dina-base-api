@@ -54,6 +54,9 @@ public class DinaRepositoryIT {
   private DinaRepository<PersonDTO, Person> dinaRepository;
 
   @Inject
+  private DinaPersonService personService;
+
+  @Inject
   private DinaRepository<DepartmentDto, Department> departmentRepository;
 
   @Inject
@@ -510,7 +513,7 @@ public class DinaRepositoryIT {
   }
 
   @Test
-  public void savingPersonWithDepartment_shouldMaintainDepartmentRelationship() {
+  public void savingEntityWithoutLoadingLazyRelationship_shouldMaintainRelationship() {
     // Create a department
     Department department = createDepartment("name", "location");
     baseDAO.create(department);
@@ -530,12 +533,19 @@ public class DinaRepositoryIT {
     // Assert that the department relationship was set correctly
     assertEquals(department.getUuid(), foundPerson.getDepartment().getUuid());
 
-    // Update the name of the person
+    // Flush the cache to mimic what the SPI would do (we would get the update in another request)
+    Person p = personService.findOne(personDto.getUuid(), Person.class);
+    personService.detach(p.getDepartment());
+    personService.detach(p);
+
+    // Reload with no relationship since we don't want to touch it
+    foundPerson = dinaRepository.findOne(personDto.getUuid(), new QuerySpec(PersonDTO.class));
+
+    // Update the name of the person only and save
     foundPerson.setName("personName2");
     dinaRepository.save(foundPerson);
 
     // Fetch the person again and assert that the department relationship was maintained
-    // TODO We think it might be a caching issue. Not sure yet.
     PersonDTO foundUpdatedPerson = dinaRepository.findOne(personDto.getUuid(), querySpec);
     assertEquals(department.getUuid(), foundUpdatedPerson.getDepartment().getUuid());
     assertEquals("personName2", foundUpdatedPerson.getName());
