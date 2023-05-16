@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.entity;
 
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,5 +38,10 @@ public class Item implements DinaEntity {
   private OffsetDateTime createdOn;
 
   private Boolean publiclyReleasable;
+
+  @Override
+  public Optional<Boolean> isPubliclyReleasable() {
+    return Optional.ofNullable(publiclyReleasable);
+  }
 
 }

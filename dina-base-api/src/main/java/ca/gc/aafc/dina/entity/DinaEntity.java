@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.entity;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -24,13 +25,13 @@ public interface DinaEntity {
   }
 
   /**
-   * Is the entity considered publicly releasable ?
-   * null means inapplicable or unknown and needs to be interpreted by the caller.
+   * Is the entity considered publicly releasable?
+   * Optional.empty() means inapplicable or unknown and needs to be interpreted by the caller.
    *
-   * @return
+   * @return Optional with the isPubliclyReleasable flag or Optional.empty() if inapplicable or unknown
    */
-  default Boolean isPubliclyReleasable() {
-    return null;
+  default Optional<Boolean> isPubliclyReleasable() {
+    return Optional.empty();
   }
 
   String getCreatedBy();

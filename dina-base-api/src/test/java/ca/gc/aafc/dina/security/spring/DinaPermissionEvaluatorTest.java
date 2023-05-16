@@ -223,7 +223,7 @@ class DinaPermissionEvaluatorTest {
   @Test
   void isObjectPubliclyReleasable_whenObjectIsPubliclyReleasable_returnsTrue() {
     Item i = Item.builder().group(GROUP_1).createdBy(USERNAME).publiclyReleasable(true).build();
-    assertFalse(evaluator.isObjectPubliclyReleasable(i));
+    assertTrue(evaluator.isObjectPubliclyReleasable(i));
   }
 
   @Test

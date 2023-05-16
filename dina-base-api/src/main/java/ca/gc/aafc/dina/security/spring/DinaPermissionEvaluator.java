@@ -204,7 +204,7 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
     if (!(targetDomainObject instanceof DinaEntity)) {
       return false;
     }
-    return BooleanUtils.isTrue(((DinaEntity) targetDomainObject).isPubliclyReleasable());
+    return ((DinaEntity) targetDomainObject).isPubliclyReleasable().orElse(false);
   }
 
   @Override
