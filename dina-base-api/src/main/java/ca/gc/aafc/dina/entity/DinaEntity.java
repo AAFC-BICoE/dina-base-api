@@ -23,6 +23,16 @@ public interface DinaEntity {
     return null;
   }
 
+  /**
+   * Is the entity considered publicly releasable ?
+   * null means inapplicable or unknown and needs to be interpreted by the caller.
+   *
+   * @return
+   */
+  default Boolean isPubliclyReleasable() {
+    return null;
+  }
+
   String getCreatedBy();
 
   OffsetDateTime getCreatedOn();

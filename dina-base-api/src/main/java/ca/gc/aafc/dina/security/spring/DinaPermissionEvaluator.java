@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
@@ -192,6 +193,18 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
       return false;
     }
     return StringUtils.equals(user.getUsername(), ((DinaEntity) targetDomainObject).getCreatedBy());
+  }
+
+  /**
+   * Check if the target object is publicly releasable.
+   * @param targetDomainObject object to check
+   * @return true if isPubliclyReleasable returns TRUE, false otherwise (including null)
+   */
+  public boolean isObjectPubliclyReleasable(Object targetDomainObject) {
+    if (!(targetDomainObject instanceof DinaEntity)) {
+      return false;
+    }
+    return BooleanUtils.isTrue(((DinaEntity) targetDomainObject).isPubliclyReleasable());
   }
 
   @Override

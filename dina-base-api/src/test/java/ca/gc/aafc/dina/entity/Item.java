@@ -36,4 +36,6 @@ public class Item implements DinaEntity {
   private String createdBy;
   private OffsetDateTime createdOn;
 
+  private Boolean publiclyReleasable;
+
 }
