@@ -194,6 +194,18 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
     return StringUtils.equals(user.getUsername(), ((DinaEntity) targetDomainObject).getCreatedBy());
   }
 
+  /**
+   * Check if the target object is publicly releasable.
+   * @param targetDomainObject object to check
+   * @return true if isPubliclyReleasable returns TRUE, false otherwise (including null)
+   */
+  public boolean isObjectPubliclyReleasable(Object targetDomainObject) {
+    if (!(targetDomainObject instanceof DinaEntity)) {
+      return false;
+    }
+    return ((DinaEntity) targetDomainObject).isPubliclyReleasable().orElse(false);
+  }
+
   @Override
   public Object getThis() {
     return this;
