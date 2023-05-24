@@ -237,9 +237,9 @@ class DinaPermissionEvaluatorTest {
     assertEquals(-1, DinaRole.COMPARATOR.compare(DinaRole.SUPER_USER, DinaRole.GUEST));
 
     // test sorting by priority
-    List<DinaRole> dinaRoleList = new ArrayList<>(List.of(DinaRole.GUEST, DinaRole.SUPER_USER, DinaRole.READ_ONLY, DinaRole.DINA_ADMIN));
+    List<DinaRole> dinaRoleList = new ArrayList<>(List.of(DinaRole.GUEST, DinaRole.SUPER_USER, DinaRole.READ_ONLY, DinaRole.DINA_ADMIN, DinaRole.READ_ONLY_ADMIN));
     dinaRoleList.sort(DinaRole.COMPARATOR);
-    assertEquals(List.of(DinaRole.DINA_ADMIN, DinaRole.SUPER_USER, DinaRole.GUEST, DinaRole.READ_ONLY), dinaRoleList);
+    assertEquals(List.of(DinaRole.DINA_ADMIN, DinaRole.SUPER_USER, DinaRole.GUEST, DinaRole.READ_ONLY_ADMIN, DinaRole.READ_ONLY), dinaRoleList);
   }
 
   private static DinaAuthenticatedUser getDinaAuthenticatedUser(DinaRole dinaRole) {
