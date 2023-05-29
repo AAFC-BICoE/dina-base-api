@@ -8,6 +8,7 @@ import ca.gc.aafc.dina.i18n.MultilingualTitle;
 import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -83,7 +84,12 @@ public class FieldExtensionDefinition {
   @NoArgsConstructor
   public static class Field implements TypedVocabularyElement {
 
+    /**
+     * The key should not contain dot(.) since it is the character used to reference
+     * a key within an extension.
+     */
     @NotBlank
+    @Pattern(regexp = "^[^.]+$")
     private String key;
 
     private String name;
