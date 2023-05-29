@@ -27,8 +27,10 @@ final class TypedVocabularyElementValidator {
     return isAcceptedValue(assignedValue, acceptedValues, true);
   }
 
-  static boolean isAcceptedValue(@NonNull String assignedValue, String[] acceptedValues, boolean ignoreCase) {
-    return Arrays.stream(acceptedValues).anyMatch(ignoreCase ? assignedValue::equalsIgnoreCase: assignedValue::equals);
+  static boolean isAcceptedValue(@NonNull String assignedValue, String[] acceptedValues,
+                                 boolean ignoreCase) {
+    return Arrays.stream(acceptedValues)
+      .anyMatch(ignoreCase ? assignedValue::equalsIgnoreCase : assignedValue::equals);
   }
 
   /**

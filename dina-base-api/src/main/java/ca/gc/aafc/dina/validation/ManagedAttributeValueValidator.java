@@ -133,7 +133,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
       if(preValidateValue(ma, assignedValue, errors, validationContext)) {
 
-        if( !TypedVocabularyElementValidator.isValidElement(ma, assignedValue)){
+        if (!TypedVocabularyElementValidator.isValidElement(ma, assignedValue)) {
           rejectInvalidValue(errors, key, assignedValue);
         }
 
