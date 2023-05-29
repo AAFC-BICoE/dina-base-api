@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.security.spring;
 
+import ca.gc.aafc.dina.entity.Item;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import ca.gc.aafc.dina.security.DinaRole;
@@ -204,7 +205,6 @@ class DinaPermissionEvaluatorTest {
     assertFalse(evaluator.hasObjectOwnership(user, p));
 
     assertFalse(evaluator.hasObjectOwnership(user, null));
-
   }
 
   @Test
@@ -212,6 +212,18 @@ class DinaPermissionEvaluatorTest {
     DinaAuthenticatedUser user = getDinaAuthenticatedUser(DinaRole.USER);
     Person p =  Person.builder().group(GROUP_1).createdBy(USERNAME).build();
     assertTrue(evaluator.hasObjectOwnership(user, p));
+  }
+
+  @Test
+  void isObjectPubliclyReleasable_whenObjectNotPubliclyReleasable_returnsFalse() {
+    Person p =  Person.builder().group(GROUP_1).createdBy(USERNAME).build();
+    assertFalse(evaluator.isObjectPubliclyReleasable(p));
+  }
+
+  @Test
+  void isObjectPubliclyReleasable_whenObjectIsPubliclyReleasable_returnsTrue() {
+    Item i = Item.builder().group(GROUP_1).createdBy(USERNAME).publiclyReleasable(true).build();
+    assertTrue(evaluator.isObjectPubliclyReleasable(i));
   }
 
   @Test
@@ -225,9 +237,9 @@ class DinaPermissionEvaluatorTest {
     assertEquals(-1, DinaRole.COMPARATOR.compare(DinaRole.SUPER_USER, DinaRole.GUEST));
 
     // test sorting by priority
-    List<DinaRole> dinaRoleList = new ArrayList<>(List.of(DinaRole.GUEST, DinaRole.SUPER_USER, DinaRole.READ_ONLY, DinaRole.DINA_ADMIN));
+    List<DinaRole> dinaRoleList = new ArrayList<>(List.of(DinaRole.GUEST, DinaRole.SUPER_USER, DinaRole.READ_ONLY, DinaRole.DINA_ADMIN, DinaRole.READ_ONLY_ADMIN));
     dinaRoleList.sort(DinaRole.COMPARATOR);
-    assertEquals(List.of(DinaRole.DINA_ADMIN, DinaRole.SUPER_USER, DinaRole.GUEST, DinaRole.READ_ONLY), dinaRoleList);
+    assertEquals(List.of(DinaRole.DINA_ADMIN, DinaRole.SUPER_USER, DinaRole.GUEST, DinaRole.READ_ONLY_ADMIN, DinaRole.READ_ONLY), dinaRoleList);
   }
 
   private static DinaAuthenticatedUser getDinaAuthenticatedUser(DinaRole dinaRole) {

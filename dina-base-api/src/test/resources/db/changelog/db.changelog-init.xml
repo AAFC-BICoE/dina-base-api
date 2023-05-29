@@ -156,6 +156,7 @@
 				<constraints nullable="false" unique="true" />
 			</column>
 			<column name="group_name" type="varchar(255)"/>
+			<column name="publicly_releasable" type="boolean"/>
 			<column name="created_by" type="varchar(255)"/>
 			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
 		</createTable>
