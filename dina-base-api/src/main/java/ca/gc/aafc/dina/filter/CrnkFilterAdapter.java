@@ -63,24 +63,16 @@ public final class CrnkFilterAdapter {
    * @return Filter expression operator.
    */
   public static Ops convertCrnkOperatorToFilterExpressionOperator(FilterOperator crnkOperator) {
-    switch (crnkOperator.toString()) {
-      case "EQ":
-        return Ops.EQ;
-      case "NEQ":
-        return Ops.NE;
-      case "LIKE":
-        return Ops.LIKE;
-      case "LT":
-        return Ops.LT;
-      case "LE":
-        return Ops.LOE;
-      case "GT":
-        return Ops.GT;
-      case "GE":
-        return Ops.GOE;
-      default:
-        throw new IllegalArgumentException("Unsupported CRNK operator to convert: " + crnkOperator);
-    }
+    return switch (crnkOperator.toString()) {
+      case "EQ" -> Ops.EQ;
+      case "NEQ" -> Ops.NE;
+      case "LIKE" -> Ops.LIKE;
+      case "LT" -> Ops.LT;
+      case "LE" -> Ops.LOE;
+      case "GT" -> Ops.GT;
+      case "GE" -> Ops.GOE;
+      default -> throw new IllegalArgumentException("Unsupported CRNK operator to convert: " + crnkOperator.toString());
+    };
   }
 
   /**
@@ -92,13 +84,10 @@ public final class CrnkFilterAdapter {
    * @return Conjunction enum converted from the crnk operator.
    */
   public static Conjunction convertCrnkOperatorToFilterGroupConjunction(FilterOperator crnkOperator) {
-    switch (crnkOperator.toString()) {
-      case "AND":
-        return Conjunction.AND;
-      case "OR":
-        return Conjunction.OR;
-      default:
-        throw new IllegalArgumentException("Unsupported CRNK conjunction operator to convert: " + crnkOperator);
-    }
+    return switch (crnkOperator.toString()) {
+      case "AND" -> Conjunction.AND;
+      case "OR" -> Conjunction.OR;
+      default -> throw new IllegalArgumentException("Unsupported CRNK conjunction operator to convert: " + crnkOperator);
+    };
   }
 }
