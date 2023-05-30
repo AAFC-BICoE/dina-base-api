@@ -68,6 +68,16 @@ public final class CrnkFilterAdapter {
         return Ops.EQ;
       case "NEQ":
         return Ops.NE;
+      case "LIKE":
+        return Ops.LIKE;
+      case "LT":
+        return Ops.LT;
+      case "LE":
+        return Ops.LOE;
+      case "GT":
+        return Ops.GT;
+      case "GE":
+        return Ops.GOE;
       default:
         throw new IllegalArgumentException("Unsupported CRNK operator to convert: " + crnkOperator);
     }
