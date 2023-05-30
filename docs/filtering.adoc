@@ -1,0 +1,30 @@
+= Filtering
+
+image::FilterSpec_Diagram.png[]
+
+The main component used to represent a filter expression is the `FilterExpression` class. It consists of an `attribute`, `operator`, and `value` to define the filter condition.
+
+A `FilterGroup` is used to group multiple filter components together and combine them using either the "AND" or "OR" conjunctions.
+
+For example, consider the following SQL where query:
+
+[source, sql]
+----
+(firstName == "John" AND lastName == "Doe") OR (firstName == "Jane" AND lastName == "Smith")
+----
+
+Could be expressed using the following filter components:
+
+[source]
+----
+new FilterGroup().or(
+  new FilterGroup().and(
+    new FilterExpression("firstName", EQ, "John"), 
+    new FilterExpression("lastName", EQ, "Doe")
+  ), 
+  new FilterGroup().and(
+    new FilterExpression("firstName", EQ, "Jane"), 
+    new FilterExpression("lastName", EQ, "Smith")
+  )
+)
+----
