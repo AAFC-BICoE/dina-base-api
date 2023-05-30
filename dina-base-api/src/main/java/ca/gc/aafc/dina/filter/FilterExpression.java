@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.filter;
 
 import com.querydsl.core.types.Ops;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +19,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@AllArgsConstructor
 public class FilterExpression implements FilterComponent {
 
   /**

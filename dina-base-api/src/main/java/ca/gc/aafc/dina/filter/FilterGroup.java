@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.filter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class FilterGroup implements FilterComponent {
    * All of the filter expressions for this group. Groups can also be nested here so you can have
    * groups inside groups.
    */
-  private List<FilterComponent> expressions;
+  private List<FilterComponent> expressions = new ArrayList<>();
 
   /**
    * Sets the conjunction to 'AND' and adds the provided filter components to the list of expressions.
@@ -36,8 +37,18 @@ public class FilterGroup implements FilterComponent {
    * @param components the filter components to be added.
    */
   public void and(FilterComponent... components) {
+    and(Arrays.asList(components));
+  }
+
+  /**
+   * Sets the conjunction to 'AND' and adds the provided filter components to the
+   * list of expressions.
+   *
+   * @param components List of filter components.
+   */
+  public void and(List<FilterComponent> components) {
     conjunction = Conjunction.AND;
-    expressions.addAll(Arrays.asList(components));
+    expressions = components;
   }
 
   /**
@@ -46,8 +57,17 @@ public class FilterGroup implements FilterComponent {
   * @param components the filter components to be added.
   */
   public void or(FilterComponent... components) {
+    or(Arrays.asList(components));
+  }
+
+  /**
+  * Sets the conjunction to 'OR' and adds the provided filter components to the list of expressions.
+  *
+  * @param components List of filter components.
+  */
+  public void or(List<FilterComponent> components) {
     conjunction = Conjunction.OR;
-    expressions.addAll(Arrays.asList(components));
+    expressions = components;
   }
 
   /**
