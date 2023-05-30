@@ -12,7 +12,10 @@ import io.crnk.core.queryspec.FilterSpec;
 /**
  * Converts Crnk based filters into Dina Filter Components.
  */
-public class CrnkFilterAdapter {
+public final class CrnkFilterAdapter {
+  private CrnkFilterAdapter() {
+  }
+
   /**
    * Converts a Crnk {@link FilterSpec} to a {@link FilterComponent}.
    *
