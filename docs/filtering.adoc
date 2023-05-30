@@ -6,25 +6,19 @@ The main component used to represent a filter expression is the `FilterExpressio
 
 A `FilterGroup` is used to group multiple filter components together and combine them using either the "AND" or "OR" conjunctions.
 
-For example, consider the following SQL where query:
+For example, consider the following simple filter:
 
-[source, sql]
+[source]
 ----
-(firstName == "John" AND lastName == "Doe") OR (firstName == "Jane" AND lastName == "Smith")
+GET /person?filter[firstName][EQ]=John&filter[lastName][EQ]=Doe
 ----
 
 Could be expressed using the following filter components:
 
-[source]
+[source, java]
 ----
-new FilterGroup().or(
-  new FilterGroup().and(
-    new FilterExpression("firstName", EQ, "John"), 
-    new FilterExpression("lastName", EQ, "Doe")
-  ), 
-  new FilterGroup().and(
-    new FilterExpression("firstName", EQ, "Jane"), 
-    new FilterExpression("lastName", EQ, "Smith")
-  )
+new FilterGroup().and(
+  new FilterExpression("firstName", EQ, "John"), 
+  new FilterExpression("lastName", EQ, "Doe")
 )
 ----
