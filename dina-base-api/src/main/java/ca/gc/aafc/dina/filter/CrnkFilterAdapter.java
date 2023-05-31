@@ -1,11 +1,9 @@
 package ca.gc.aafc.dina.filter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.querydsl.core.types.Ops;
 
 import ca.gc.aafc.dina.filter.FilterGroup.Conjunction;
+import ca.gc.aafc.dina.filter.FilterGroup.FilterGroupBuilder;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.FilterSpec;
 
@@ -39,20 +37,15 @@ public final class CrnkFilterAdapter {
       return filter;
     } else {
       // Group of expressions found, convert into a FilterGroup.
-      FilterGroup group = new FilterGroup();
-      List<FilterComponent> expressions = new ArrayList<>();
+      FilterGroupBuilder groupBuilder = FilterGroup.builder();
       for (FilterSpec subFilterSpec : filterSpec.getExpression()) {
-        expressions.add(convertFilterSpecToComponent(subFilterSpec));
+        groupBuilder.add(convertFilterSpecToComponent(subFilterSpec));
       }
 
       // Check the type of conjunction being performed on the group (AND/OR)
-      Conjunction conjunction = convertCrnkOperatorToFilterGroupConjunction(filterSpec.getOperator());
-      if (conjunction == Conjunction.AND) {
-        group.and(expressions);
-      } else {
-        group.or(expressions);
-      }
-      return group;
+      groupBuilder.conjunction(convertCrnkOperatorToFilterGroupConjunction(filterSpec.getOperator()));
+
+      return groupBuilder.build();
     }
   }
 
