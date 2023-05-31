@@ -17,8 +17,9 @@ Could be expressed using the following filter components:
 
 [source, java]
 ----
-new FilterGroup().and(
-  new FilterExpression("firstName", Ops.EQ, "John"), 
-  new FilterExpression("lastName", Ops.EQ, "Doe")
-)
+FilterGroup.builder()
+  .conjunction(Conjunction.AND)
+  .component(new FilterExpression("firstName", Ops.EQ, "John"))
+  .component(new FilterExpression("lastName", Ops.EQ, "Doe"))
+  .build();
 ----
