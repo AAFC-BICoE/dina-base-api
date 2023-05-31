@@ -39,7 +39,7 @@ public final class CrnkFilterAdapter {
       // Group of expressions found, convert into a FilterGroup.
       FilterGroupBuilder groupBuilder = FilterGroup.builder();
       for (FilterSpec subFilterSpec : filterSpec.getExpression()) {
-        groupBuilder.add(convertFilterSpecToComponent(subFilterSpec));
+        groupBuilder.component(convertFilterSpecToComponent(subFilterSpec));
       }
 
       // Check the type of conjunction being performed on the group (AND/OR)

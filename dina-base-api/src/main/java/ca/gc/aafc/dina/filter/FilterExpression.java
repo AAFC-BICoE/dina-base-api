@@ -2,10 +2,6 @@ package ca.gc.aafc.dina.filter;
 
 import com.querydsl.core.types.Ops;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
 /**
  * Represents a filter expression used for filtering data.
  * 
@@ -17,25 +13,5 @@ import lombok.Setter;
  * This class implements the {@link FilterComponent} interface, indicating that it can be used as a 
  * filter component within a filtering system.
  */
-@Getter
-@Setter
-@AllArgsConstructor
-public class FilterExpression implements FilterComponent {
-
-  /**
-   * The attribute to be filtered.
-   */
-  private String attribute;
-
-  /**
-   * The operation to be performed. 
-   * Example: "EQ" enum for equals.
-   */
-  private Ops operator;
-
-  /**
-   * The value to be compared with the attribute.
-   */
-  private String value;
-
-}
+public record FilterExpression(String attribute, Ops operator, String value)
+        implements FilterComponent { }

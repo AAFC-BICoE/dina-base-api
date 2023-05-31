@@ -26,19 +26,19 @@ public class CrnkFilterAdapterTest {
 
     // Check the FilterGroup to ensure it's "AND" and 2 expressions are found within it.
     assertEquals(Conjunction.AND, component.getConjunction());
-    assertEquals(2, component.getExpressions().size());
+    assertEquals(2, component.getComponents().size());
 
-    FilterExpression firstNameExpression = (FilterExpression) component.getExpressions().get(0);
-    FilterExpression lastNameExpression = (FilterExpression) component.getExpressions().get(1);
+    FilterExpression firstNameExpression = (FilterExpression) component.getComponents().get(0);
+    FilterExpression lastNameExpression = (FilterExpression) component.getComponents().get(1);
 
     // Verify the first name and last name.
-    assertEquals("firstName", firstNameExpression.getAttribute());
-    assertEquals(Ops.EQ, firstNameExpression.getOperator());
-    assertEquals("John", firstNameExpression.getValue());
+    assertEquals("firstName", firstNameExpression.attribute());
+    assertEquals(Ops.EQ, firstNameExpression.operator());
+    assertEquals("John", firstNameExpression.value());
 
-    assertEquals("lastName", lastNameExpression.getAttribute());
-    assertEquals(Ops.EQ, lastNameExpression.getOperator());
-    assertEquals("Doe", lastNameExpression.getValue());
+    assertEquals("lastName", lastNameExpression.attribute());
+    assertEquals(Ops.EQ, lastNameExpression.operator());
+    assertEquals("Doe", lastNameExpression.value());
   }
 
   @Test
@@ -50,8 +50,8 @@ public class CrnkFilterAdapterTest {
     FilterExpression filterGenerated = (FilterExpression) CrnkFilterAdapter.convertFilterSpecToComponent(simpleFilter);
 
     // Assert that it generates an equivalent filter expression from the crnk filter spec.
-    assertEquals("firstName", filterGenerated.getAttribute());
-    assertEquals(Ops.EQ, filterGenerated.getOperator());
-    assertEquals("Jane", filterGenerated.getValue());
+    assertEquals("firstName", filterGenerated.attribute());
+    assertEquals(Ops.EQ, filterGenerated.operator());
+    assertEquals("Jane", filterGenerated.value());
   }
 }
