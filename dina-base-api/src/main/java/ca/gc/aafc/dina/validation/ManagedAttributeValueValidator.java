@@ -1,35 +1,28 @@
 package ca.gc.aafc.dina.validation;
 
-import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.entity.ManagedAttribute;
-import ca.gc.aafc.dina.service.ManagedAttributeService;
-import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
-import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
-import javax.inject.Named;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.util.Arrays;
+import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.entity.ManagedAttribute;
+import ca.gc.aafc.dina.service.ManagedAttributeService;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Pattern;
+import javax.inject.Named;
+import lombok.NonNull;
 
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
 
   private static final String MANAGED_ATTRIBUTE_INVALID_VALUE = "managedAttribute.value.invalid";
   private static final String MANAGED_ATTRIBUTE_INVALID_KEY = "managedAttribute.key.invalid";
   private static final String MANAGED_ATTRIBUTE_INVALID_KEY_CONTEXT = "managedAttribute.keyContext.invalid";
-  private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
   private final ManagedAttributeService<E> dinaService;
   private final MessageSource messageSource;
@@ -136,37 +129,17 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     }
 
     attributesPerKey.forEach((key, ma) -> {
-      TypedVocabularyElement.VocabularyElementType maType = ma.getVocabularyElementType();
       String assignedValue = attributesAndValues.get(key);
 
       if(preValidateValue(ma, assignedValue, errors, validationContext)) {
 
-        switch(maType) {
-          case DATE :
-            if (!isValidLocalDate(assignedValue)) {
-              rejectInvalidValue(errors, key, assignedValue);
-            }
-            break;
-          case INTEGER:
-            if (!INTEGER_PATTERN.matcher(assignedValue).matches()) {
-              rejectInvalidValue(errors, key, assignedValue);
-            }
-            break;
-          case BOOL:
-            if (!isValidBool(assignedValue)) {
-              rejectInvalidValue(errors, key, assignedValue);
-            }
-            break;
-          case DECIMAL:
-            if(!NumberUtils.isParsable(assignedValue)) {
-              rejectInvalidValue(errors, key, assignedValue);
-            }
-            break;
-          default: //noop
+        if (!TypedVocabularyElementValidator.isValidElement(ma, assignedValue)) {
+          rejectInvalidValue(errors, key, assignedValue);
         }
 
         String[] acceptedValues = ma.getAcceptedValues();
-        if (isNotAnAcceptedValue(assignedValue, acceptedValues)) {
+        // if acceptedValues is empty we skip the check
+        if (ArrayUtils.isNotEmpty(acceptedValues) && !TypedVocabularyElementValidator.isAcceptedValue(assignedValue, acceptedValues)) {
           errors.reject(MANAGED_ATTRIBUTE_INVALID_VALUE, getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
         }
       }
@@ -197,11 +170,6 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     });
   }
 
-  private static boolean isNotAnAcceptedValue(@NonNull String assignedValue, String[] acceptedValues) {
-    return ArrayUtils.isNotEmpty(acceptedValues) && Arrays.stream(acceptedValues)
-      .noneMatch(assignedValue::equalsIgnoreCase);
-  }
-
   private void rejectInvalidValue(Errors errors, String key, String assignedValue) {
     errors.reject(MANAGED_ATTRIBUTE_INVALID_VALUE,
         getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
@@ -209,19 +177,6 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
   private String getMessageForKey(String key, Object... objects) {
     return messageSource.getMessage(key, objects, LocaleContextHolder.getLocale());
-  }
-
-  private static boolean isValidLocalDate(String assignedValue) {
-    try {
-      LocalDate.parse(assignedValue);
-    } catch (DateTimeParseException e) {
-      return false;
-    }
-    return true;
-  }
-
-  private static boolean isValidBool(String assignedValue) {
-    return BooleanUtils.TRUE.equals(assignedValue) || BooleanUtils.FALSE.equals(assignedValue);
   }
 
 }

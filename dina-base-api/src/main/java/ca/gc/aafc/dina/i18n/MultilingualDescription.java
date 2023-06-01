@@ -40,7 +40,7 @@ public class MultilingualDescription {
     @Pattern(regexp = "^[a-zA-Z]{2,3}$")
     private String lang;
 
-    @Size(min = 2, max = 1000)
+    @Size(min = 2, max = 5000)
     private String desc;
 
     public static MultilingualPair of(String lang, String desc) {
