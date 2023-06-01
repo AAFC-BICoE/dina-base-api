@@ -15,6 +15,7 @@ public interface TypedVocabularyElement extends VocabularyElement {
 
   VocabularyElementType getVocabularyElementType();
   String[] getAcceptedValues();
+  String getUnit();
 
   MultilingualDescription getMultilingualDescription();
 

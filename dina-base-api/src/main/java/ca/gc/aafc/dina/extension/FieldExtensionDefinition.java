@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 public class FieldExtensionDefinition {
   
   private Extension extension;
- 
+
   @Builder
   @Getter
   @Setter
@@ -96,6 +96,8 @@ public class FieldExtensionDefinition {
 
     // usually a URI
     private String term;
+
+    private String unit;
 
     private VocabularyElementType vocabularyElementType;
     private String[] acceptedValues;
