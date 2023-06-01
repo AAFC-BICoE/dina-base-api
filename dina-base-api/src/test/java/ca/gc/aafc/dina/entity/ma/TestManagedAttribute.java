@@ -39,6 +39,7 @@ public class TestManagedAttribute implements ManagedAttribute {
   private UUID uuid;
   private String name;
   private String key;
+  private String unit;
 
   @NotNull
   @Enumerated(EnumType.STRING)

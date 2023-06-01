@@ -29,6 +29,7 @@ public class FieldExtensionDefinitionIT {
     assertTrue(cfiaPPC.containsKey("level"));
     assertTrue(cfiaPPC.getFieldByKey("level").isAcceptedValues("Level 2 (PPC-2)"));
     assertFalse(cfiaPPC.getFieldByTerm("level-term").getMultilingualDescription().getDescriptions().isEmpty());
+    assertEquals("PPC Level", cfiaPPC.getFieldByKey("level").getUnit());
   }
 
   @Validated

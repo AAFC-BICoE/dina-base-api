@@ -290,6 +290,7 @@ public class ManagedAttributeValueValidatorTest {
         name(RandomStringUtils.randomAlphabetic(6)).uuid(UUID.randomUUID())
         .vocabularyElementType(type)
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
+        .unit(RandomStringUtils.randomAlphabetic(3))
         .multilingualDescription(MultilingualDescription.builder()
             .descriptions(ImmutableList.of(
                 MultilingualDescription.MultilingualPair.of("en", "test"))
