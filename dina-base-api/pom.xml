@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.105.1</version>
+    <version>0.106</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -125,8 +125,12 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.105.1</version>
+      <version>0.106</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.querydsl</groupId>
+      <artifactId>querydsl-core</artifactId>
     </dependency>
     <!-- Spring mybatis -->
     <dependency>
@@ -169,6 +173,13 @@
       <plugin>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok-maven-plugin</artifactId>
+        <dependencies>
+          <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+          </dependency>
+        </dependencies>
         <configuration>
           <sourceDirectory>src/main/java</sourceDirectory>
           <outputDirectory>${project.build.directory}/delombok</outputDirectory>

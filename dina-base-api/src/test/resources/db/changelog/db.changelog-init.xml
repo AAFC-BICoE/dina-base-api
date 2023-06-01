@@ -101,6 +101,7 @@
 			<column name="created_by" type="varchar(255)"/>
 			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
 			<column name="key" type="varchar(255)"/>
+      <column name="unit" type="varchar(50)"/>
 			<column name="fail_validate_value" type="boolean">
 				<constraints nullable="false"/>
 			</column>
@@ -156,6 +157,7 @@
 				<constraints nullable="false" unique="true" />
 			</column>
 			<column name="group_name" type="varchar(255)"/>
+			<column name="publicly_releasable" type="boolean"/>
 			<column name="created_by" type="varchar(255)"/>
 			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
 		</createTable>

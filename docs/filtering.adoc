@@ -1,0 +1,25 @@
+= Filtering
+
+image::FilterSpec_Diagram.png[]
+
+The main component used to represent a filter expression is the `FilterExpression` class. It consists of an `attribute`, `operator`, and `value` to define the filter condition.
+
+A `FilterGroup` is used to group multiple filter components together and combine them using either the "AND" or "OR" conjunctions.
+
+For example, consider the following simple filter:
+
+[source]
+----
+GET /person?filter[firstName][EQ]=John&filter[lastName][EQ]=Doe
+----
+
+Could be expressed using the following filter components:
+
+[source, java]
+----
+FilterGroup.builder()
+  .conjunction(Conjunction.AND)
+  .component(new FilterExpression("firstName", Ops.EQ, "John"))
+  .component(new FilterExpression("lastName", Ops.EQ, "Doe"))
+  .build();
+----

@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 /**
  * Represent user role in the context of a DINA module.
+ * The roles that end with _ADMIN mean that they are now restricted by group.
  */
 @RequiredArgsConstructor
 public enum DinaRole {
@@ -19,7 +20,8 @@ public enum DinaRole {
   SUPER_USER("super-user", 1),
   USER("user", 2),
   GUEST("guest", 3),
-  READ_ONLY("read-only", 4);
+  READ_ONLY_ADMIN("read-only-admin", 4), // for service accounts like search-cli
+  READ_ONLY("read-only", 5);
 
   /**
    * Read carefully since sorting is done based on priority:

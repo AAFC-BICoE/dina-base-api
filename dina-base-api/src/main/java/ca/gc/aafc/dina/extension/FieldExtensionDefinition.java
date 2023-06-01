@@ -8,6 +8,7 @@ import ca.gc.aafc.dina.i18n.MultilingualTitle;
 import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 public class FieldExtensionDefinition {
   
   private Extension extension;
- 
+
   @Builder
   @Getter
   @Setter
@@ -83,13 +84,20 @@ public class FieldExtensionDefinition {
   @NoArgsConstructor
   public static class Field implements TypedVocabularyElement {
 
+    /**
+     * The key should not contain dot(.) since it is the character used to reference
+     * a key within an extension.
+     */
     @NotBlank
+    @Pattern(regexp = "^[^.]+$")
     private String key;
 
     private String name;
 
     // usually a URI
     private String term;
+
+    private String unit;
 
     private VocabularyElementType vocabularyElementType;
     private String[] acceptedValues;
