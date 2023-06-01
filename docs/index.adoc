@@ -1,3 +1,4 @@
+:imagesdir: ./images/
 :sectnums:
 
 = Developer Documentation
@@ -17,6 +18,8 @@ include::authentication.adoc[]
 include::authorization.adoc[]
 
 include::cors.adoc[]
+
+include::filtering.adoc[]
 
 include::actuators.adoc[]
 
