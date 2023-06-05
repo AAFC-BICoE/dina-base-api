@@ -15,7 +15,7 @@ import lombok.NonNull;
  * Package protected utility class to validate assigned values for TypedVocabularyElement.
  * Can be used with managed attributes and field extension.
  */
-final class TypedVocabularyElementValidator {
+public final class TypedVocabularyElementValidator {
 
   private TypedVocabularyElementValidator() {
     // utility class
