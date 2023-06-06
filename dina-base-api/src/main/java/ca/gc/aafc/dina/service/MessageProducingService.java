@@ -61,7 +61,7 @@ public class MessageProducingService<E extends DinaEntity> extends DefaultDinaSe
   @Override
   public E update(E entity) {
     E persisted = super.update(entity);
-    if(supportedMessageOperations.contains(DocumentOperationType.UPDATE)){
+    if(supportedMessageOperations.contains(DocumentOperationType.UPDATE)) {
       triggerEvent(persisted, DocumentOperationType.UPDATE);
     }
     return persisted;
