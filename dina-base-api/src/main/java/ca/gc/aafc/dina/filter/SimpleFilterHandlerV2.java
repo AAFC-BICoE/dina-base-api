@@ -55,17 +55,24 @@ public final class SimpleFilterHandlerV2 {
       @NonNull CriteriaBuilder cb,
       @NonNull BiFunction<String, Class<?>, Object> parser,
       @NonNull Metamodel metamodel,
-      @NonNull List<FilterExpression> filters) {
+      @NonNull List<FilterComponent> filters) {
 
     // Final list of predicates this method will generate.
     List<Predicate> predicates = new ArrayList<>();
 
-    for (FilterExpression component : filters) {
+    for (FilterComponent component : filters) {
+      // Only FilterExpressions are supported for simple filters.
+      if (component instanceof FilterGroup) {
+        continue; // Move to the next component.
+      }
+
+      FilterExpression expression = (FilterExpression) component;
+
       try {
         // Using the attribute path on the component, generate a list of all the path steps.
         // "data.attributes.name" --> ["data", "attributes", "name"]
         List<String> attributePath = Arrays.asList(
-          StringUtils.split(component.attribute(), '.')
+          StringUtils.split(expression.attribute(), '.')
         );
 
         if (CollectionUtils.isEmpty(attributePath)) {
@@ -81,7 +88,7 @@ public final class SimpleFilterHandlerV2 {
             path = path.get(pathElement);
             if (SimpleFilterHandlerV2.isBasicAttribute(attribute.get())) {
               // basic attribute start generating predicates
-              addPredicates(cb, parser, predicates, component, path, attribute.get());
+              addPredicates(cb, parser, predicates, expression, path, attribute.get(), attributePath);
             }
           }
         }
@@ -100,13 +107,14 @@ public final class SimpleFilterHandlerV2 {
   /**
    * Using a filter and the current list of predicates, generate a new predicate to this array.
    * 
-   * @param cb          The CriteriaBuilder used to construct the predicate
-   * @param parser      Lambda Expression to convert a given string value to a
-   *                    given class representation of that value
-   * @param predicates  The existing list of predicates to add to.
-   * @param component   The Filter Expression to generate the predicate from.
-   * @param path        
-   * @param attribute   Metamodel attribute.
+   * @param cb            The CriteriaBuilder used to construct the predicate
+   * @param parser        Lambda Expression to convert a given string value to a
+   *                      given class representation of that value
+   * @param predicates    The existing list of predicates to add to.
+   * @param component     The Filter Expression to generate the predicate from.
+   * @param path          Used for determining the type of the entity.
+   * @param attribute     Metamodel attribute.
+   * @param attributePath A list containing the full path, used for traversing the path.
    * @throws NoSuchFieldException
    * @throws NoSuchMethodException
    * @throws JsonProcessingException
@@ -117,19 +125,20 @@ public final class SimpleFilterHandlerV2 {
       @NonNull List<Predicate> predicates,
       @NonNull FilterExpression component,
       @NonNull Path<?> path,
-      @NonNull Attribute<?, ?> attribute) throws NoSuchFieldException, NoSuchMethodException, JsonProcessingException {
+      @NonNull Attribute<?, ?> attribute,
+      @NonNull List<String> attributePath
+  ) throws NoSuchFieldException, NoSuchMethodException, JsonProcessingException {
     Object filterValue = component.value();
     if (filterValue == null) {
       predicates.add(generateNullComparisonPredicate(cb, path, component.operator()));
     } else {
       if (isJsonb(attribute)) {
-        // TODO: I need to get this working...
-        // predicates.add(generateJsonbPredicate(
-        //     path.getParentPath(), cb, component.attribute(), attribute.getName(), filterValue.toString()));
+        predicates.add(generateJsonbPredicate(
+            path.getParentPath(), cb, attributePath, attribute.getName(), filterValue.toString()));
       } else {
         predicates.add(cb.equal(path, parser.apply(filterValue.toString(), path.getJavaType())));
       }
-    }
+    } 
   }
 
   /**
@@ -149,6 +158,18 @@ public final class SimpleFilterHandlerV2 {
     };
   }
 
+  /**
+   * Generates a JSONB predicate for querying a path based on the provided attribute path, 
+   * column name, and value.
+   *
+   * @param root           the root path.
+   * @param cb             the CriteriaBuilder instance.
+   * @param attributePath  the list of attribute paths to traverse within the JSONB structure.
+   * @param columnName     the name of the column to match within the JSONB structure.
+   * @param value          the value to match against the specified column name.
+   * @return a Predicate representing the generated JSONB predicate.
+   * @throws JsonProcessingException if an error occurs during JSON processing.
+   */
   private static <E> Predicate generateJsonbPredicate(
     Path<E> root, CriteriaBuilder cb, List<String> attributePath, String columnName, String value
   ) throws JsonProcessingException {
