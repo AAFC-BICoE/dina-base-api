@@ -47,7 +47,7 @@ public final class SimpleFilterHandlerV2 {
    * @param root      The root type, cannot be null
    * @param parser    Lambda Expression to convert a given string value to a
    *                  given class representation of that value
-   * @param metamodel - JPA Metamodel
+   * @param metamodel JPA Metamodel
    * @return Generates a predicate for a given filter component.
    */
   public static <E> Predicate getRestriction(
@@ -107,14 +107,14 @@ public final class SimpleFilterHandlerV2 {
   /**
    * Using a filter and the current list of predicates, generate a new predicate to this array.
    * 
-   * @param cb            The CriteriaBuilder used to construct the predicate
-   * @param parser        Lambda Expression to convert a given string value to a
-   *                      given class representation of that value
-   * @param predicates    The existing list of predicates to add to.
-   * @param component     The Filter Expression to generate the predicate from.
-   * @param path          Used for determining the type of the entity.
-   * @param attribute     Metamodel attribute.
-   * @param attributePath A list containing the full path, used for traversing the path.
+   * @param cb              The CriteriaBuilder used to construct the predicate.
+   * @param parser          Lambda Expression to convert a given string value to a
+   *                        given class representation of that value.
+   * @param predicates      The existing list of predicates to add a new one to.
+   * @param component       The Filter Expression to generate the predicate from.
+   * @param path            Used for determining the type of the entity.
+   * @param attribute       Metamodel attribute.
+   * @param attributePath   Required for jsonb fields.
    * @throws NoSuchFieldException
    * @throws NoSuchMethodException
    * @throws JsonProcessingException

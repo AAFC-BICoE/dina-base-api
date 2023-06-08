@@ -24,6 +24,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.RandomUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,6 +67,14 @@ public class SimpleFilterResolverJsonbV2IT {
     carRepo.setUseFilterComponents(true);
     methodRepo.setUseFilterComponents(true);
     commanderRepo.setUseFilterComponents(true);
+  }
+
+  @AfterEach
+  public void afterEach() {
+    // Other tests using these repositories should use the non-filter component version.
+    carRepo.setUseFilterComponents(false);
+    methodRepo.setUseFilterComponents(false);
+    commanderRepo.setUseFilterComponents(false);
   }
 
   @Test

@@ -14,6 +14,7 @@ import javax.transaction.Transactional;
 
 import ca.gc.aafc.dina.BasePostgresItContext;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -43,6 +44,13 @@ public class SimpleFilterHandlerV2IT extends BasePostgresItContext {
     // Toggle the useFilterComponent on the dina repository.
     employeeRepository.setUseFilterComponents(true);
     personRepository.setUseFilterComponents(true);
+  }
+
+  @AfterEach
+  public void afterEach() {
+    // Other tests using these repositories should use the non-filter component version.
+    employeeRepository.setUseFilterComponents(false);
+    personRepository.setUseFilterComponents(false);
   }
   
   @Test
