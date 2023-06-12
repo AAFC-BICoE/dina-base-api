@@ -5,6 +5,8 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.messaging.EntityChanged;
 import ca.gc.aafc.dina.messaging.MessageQueueNotifier;
 import ca.gc.aafc.dina.search.messaging.types.DocumentOperationType;
+
+import java.util.EnumSet;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.validation.SmartValidator;
@@ -20,6 +22,7 @@ public class MessageProducingService<E extends DinaEntity> extends DefaultDinaSe
 
   private final String resourceType;
   private final ApplicationEventPublisher eventPublisher;
+  private final EnumSet<DocumentOperationType> supportedMessageOperations;
 
   public MessageProducingService(
     BaseDAO baseDAO,
@@ -27,29 +30,49 @@ public class MessageProducingService<E extends DinaEntity> extends DefaultDinaSe
     String resourceType,
     ApplicationEventPublisher eventPublisher
   ) {
+    this(baseDAO, validator, resourceType,
+      EnumSet.of(DocumentOperationType.ADD, DocumentOperationType.UPDATE,
+        DocumentOperationType.DELETE),
+      eventPublisher);
+  }
+
+  public MessageProducingService(
+    BaseDAO baseDAO,
+    SmartValidator validator,
+    String resourceType,
+    EnumSet<DocumentOperationType> supportedMessageOperations,
+    ApplicationEventPublisher eventPublisher
+  ) {
     super(baseDAO, validator);
     this.resourceType = resourceType;
     this.eventPublisher = eventPublisher;
+    this.supportedMessageOperations = supportedMessageOperations;
   }
 
   @Override
   public E create(E entity) {
     E persisted = super.create(entity);
-    triggerEvent(persisted, DocumentOperationType.ADD);
+    if(supportedMessageOperations.contains(DocumentOperationType.ADD)) {
+      triggerEvent(persisted, DocumentOperationType.ADD);
+    }
     return persisted;
   }
 
   @Override
   public E update(E entity) {
     E persisted = super.update(entity);
-    triggerEvent(persisted, DocumentOperationType.UPDATE);
+    if(supportedMessageOperations.contains(DocumentOperationType.UPDATE)) {
+      triggerEvent(persisted, DocumentOperationType.UPDATE);
+    }
     return persisted;
   }
 
   @Override
   public void delete(E entity) {
     super.delete(entity);
-    triggerEvent(entity, DocumentOperationType.DELETE);
+    if(supportedMessageOperations.contains(DocumentOperationType.DELETE)) {
+      triggerEvent(entity, DocumentOperationType.DELETE);
+    }
   }
 
   /**
