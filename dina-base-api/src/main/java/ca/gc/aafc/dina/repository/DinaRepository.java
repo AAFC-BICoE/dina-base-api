@@ -88,6 +88,13 @@ public class DinaRepository<D, E extends DinaEntity>
   @Setter
   private boolean caseSensitiveOrderBy = false;
 
+  /**
+   * Switches DinaFilterResolver to use SimpleFilterHandlerV2 if true. The crnk based
+   * SimpleFilterHandler will be used if false.
+   */
+  @Setter
+  private boolean useFilterComponents = false;
+
   public DinaRepository(
     @NonNull DinaService<E> dinaService,
     @NonNull DinaAuthorizationService authorizationService,
@@ -185,7 +192,7 @@ public class DinaRepository<D, E extends DinaEntity>
 
     // Generate meta information
     Long resourceCount = dinaService.getResourceCount( entityClass,
-      (criteriaBuilder, root, em) -> filterResolver.buildPredicates(querySpec, criteriaBuilder, root, ids, idFieldName, em));
+      (criteriaBuilder, root, em) -> filterResolver.buildPredicates(querySpec, criteriaBuilder, root, ids, idFieldName, em, useFilterComponents));
     DefaultPagedMetaInformation metaInformation = new DefaultPagedMetaInformation();
     metaInformation.setTotalResourceCount(resourceCount);
 
@@ -220,7 +227,7 @@ public class DinaRepository<D, E extends DinaEntity>
       entityClass,
       (criteriaBuilder, root, em) -> {
         DinaFilterResolver.leftJoinSortRelations(root, spec, registry);
-        return filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idFieldName, em);
+        return filterResolver.buildPredicates(spec, criteriaBuilder, root, ids, idFieldName, em, useFilterComponents);
       },
       (cb, root) -> DinaFilterResolver.getOrders(spec, cb, root, caseSensitiveOrderBy),
       Math.toIntExact(spec.getOffset()),

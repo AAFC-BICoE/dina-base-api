@@ -30,7 +30,7 @@ public final class CrnkFilterAdapter {
     if (filterSpec.getExpression() == null || filterSpec.getExpression().isEmpty()) {
       // Singular expression found, convert into a FilterExpression.
       FilterExpression filter = new FilterExpression(
-          filterSpec.getAttributePath().get(0),
+          filterSpec.getPath().toString(),
           convertCrnkOperatorToFilterExpressionOperator(filterSpec.getOperator()),
           filterSpec.getValue());
 
