@@ -54,4 +54,18 @@ public class CrnkFilterAdapterTest {
     assertEquals(Ops.EQ, filterGenerated.operator());
     assertEquals("Jane", filterGenerated.value());
   }
+
+  @Test
+  void convertCrnkFilterSpec_nestedFilterPath_generatesEquivalentFilterGroup() {
+    // GET /person?filter[person.firstName][EQ]=Jane
+    FilterSpec nestedFilter = new FilterSpec(List.of("person.firstName"), FilterOperator.EQ, "David");
+
+    // Convert to a filter expression.
+    FilterExpression filterGenerated = (FilterExpression) CrnkFilterAdapter.convertFilterSpecToComponent(nestedFilter);
+
+    // Assert that it generates an equivalent filter expression from the crnk filter spec.
+    assertEquals("person.firstName", filterGenerated.attribute());
+    assertEquals(Ops.EQ, filterGenerated.operator());
+    assertEquals("David", filterGenerated.value());
+  }
 }

@@ -232,14 +232,24 @@ public class DinaFilterResolver {
     @NonNull Root<E> root,
     Collection<Serializable> ids,
     String idFieldName,
-    @NonNull EntityManager em
+    @NonNull EntityManager em,
+    boolean useFilterComponents
   ) throws UnknownAttributeException {
     final List<Predicate> restrictions = new ArrayList<>();
 
-    //Simple Filters
-    restrictions.add(SimpleFilterHandler.getRestriction(
-      root, cb, rsqlArgumentParser::parse, em.getMetamodel(), querySpec.getFilters()));
-    //Rsql Filters
+    // Simple Filters
+    if (useFilterComponents) {
+      // Convert the QuerySpec into Filter Components.
+      List<FilterComponent> components = querySpec.getFilters().stream()
+          .map(CrnkFilterAdapter::convertFilterSpecToComponent)
+          .toList();
+      restrictions.add(SimpleFilterHandlerV2.getRestriction(root, cb, rsqlArgumentParser::parse, em.getMetamodel(), components));
+    } else {
+      restrictions.add(SimpleFilterHandler.getRestriction(
+        root, cb, rsqlArgumentParser::parse, em.getMetamodel(), querySpec.getFilters()));
+    }
+
+    // RSQL Filters
     Optional<FilterSpec> rsql = querySpec.findFilter(PathSpec.of("rsql"));
     if (rsql.isPresent() && StringUtils.isNotBlank(rsql.get().getValue())) {
       try {
