@@ -241,7 +241,7 @@ public class DinaFilterResolver {
     if (useFilterComponents) {
       // Convert the QuerySpec into Filter Components.
       List<FilterComponent> components = querySpec.getFilters().stream()
-          .map(filter -> CrnkFilterAdapter.convertFilterSpecToComponent(filter))
+          .map(CrnkFilterAdapter::convertFilterSpecToComponent)
           .toList();
       restrictions.add(SimpleFilterHandlerV2.getRestriction(root, cb, rsqlArgumentParser::parse, em.getMetamodel(), components));
     } else {

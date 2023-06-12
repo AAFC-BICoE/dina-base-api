@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.function.BiFunction;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Simple filter handler for filtering by a value in a single attribute.
@@ -35,6 +36,7 @@ import java.util.function.BiFunction;
  * Example GET request where pcrPrimer's:
  * [name] == '101F' : http://localhost:8080/api/pcrPrimer?filter[name]=101F
  */
+@Log4j2
 public final class SimpleFilterHandlerV2 {
 
   private SimpleFilterHandlerV2() {
@@ -59,45 +61,42 @@ public final class SimpleFilterHandlerV2 {
 
     // Final list of predicates this method will generate.
     List<Predicate> predicates = new ArrayList<>();
-
     for (FilterComponent component : filters) {
-      // Only FilterExpressions are supported for simple filters.
-      if (component instanceof FilterGroup) {
-        continue; // Move to the next component.
-      }
+      // Only FilterExpression are supported for simple filters.
+      if (component instanceof FilterExpression expression) {
+        try {
+          // Using the attribute path on the component, generate a list of all the path steps.
+          // "data.attributes.name" --> ["data", "attributes", "name"]
+          List<String> attributePath = Arrays.asList(
+            StringUtils.split(expression.attribute(), '.')
+          );
 
-      FilterExpression expression = (FilterExpression) component;
+          if (CollectionUtils.isEmpty(attributePath)) {
+            continue; // Move to the next filter spec.
+          }
 
-      try {
-        // Using the attribute path on the component, generate a list of all the path steps.
-        // "data.attributes.name" --> ["data", "attributes", "name"]
-        List<String> attributePath = Arrays.asList(
-          StringUtils.split(expression.attribute(), '.')
-        );
-
-        if (CollectionUtils.isEmpty(attributePath)) {
-          continue; // Move to the next filter spec.
-        }
-
-        Path<?> path = root;
-        for (String pathElement : attributePath) {
-          Optional<Attribute<?, ?>> attribute = SimpleFilterHandlerV2.findAttribute(
+          Path<?> path = root;
+          for (String pathElement : attributePath) {
+            Optional<Attribute<?, ?>> attribute = findAttribute(
               metamodel, List.of(pathElement), path.getJavaType());
 
-          if (attribute.isPresent()) {
-            path = path.get(pathElement);
-            if (SimpleFilterHandlerV2.isBasicAttribute(attribute.get())) {
-              // basic attribute start generating predicates
-              addPredicates(cb, parser, predicates, expression, path, attribute.get(), attributePath);
+            if (attribute.isPresent()) {
+              path = path.get(pathElement);
+              if (isBasicAttribute(attribute.get())) {
+                // basic attribute start generating predicates
+                addPredicates(cb, parser, predicates, expression, path, attribute.get(),
+                  attributePath);
+              }
             }
           }
+        } catch (IllegalArgumentException | NoSuchFieldException | NoSuchMethodException e) {
+          // This FilterHandler will ignore filter parameters that do not map to fields on
+          // the DTO, like "rsql" or others that are only handled by other FilterHandlers.
+        } catch (JsonProcessingException e) {
+          throw new IllegalArgumentException("Invalid Json filter value", e);
         }
-
-      } catch (IllegalArgumentException | NoSuchFieldException | NoSuchMethodException e) {
-        // This FilterHandler will ignore filter parameters that do not map to fields on
-        // the DTO, like "rsql" or others that are only handled by other FilterHandlers.
-      } catch (JsonProcessingException e) {
-        throw new IllegalArgumentException("Invalid Json filter value", e);
+      } else {
+        log.info("Ignoring FilterComponent that is not an instance of FilterExpression");
       }
     }
 
