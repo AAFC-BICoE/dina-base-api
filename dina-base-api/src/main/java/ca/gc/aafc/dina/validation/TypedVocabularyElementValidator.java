@@ -23,11 +23,11 @@ public final class TypedVocabularyElementValidator {
 
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
-  static boolean isAcceptedValue(@NonNull String assignedValue, String[] acceptedValues) {
+  public static boolean isAcceptedValue(@NonNull String assignedValue, String[] acceptedValues) {
     return isAcceptedValue(assignedValue, acceptedValues, true);
   }
 
-  static boolean isAcceptedValue(@NonNull String assignedValue, String[] acceptedValues,
+  public static boolean isAcceptedValue(@NonNull String assignedValue, String[] acceptedValues,
                                  boolean ignoreCase) {
     return Arrays.stream(acceptedValues)
       .anyMatch(ignoreCase ? assignedValue::equalsIgnoreCase : assignedValue::equals);
@@ -41,7 +41,7 @@ public final class TypedVocabularyElementValidator {
    * @param assignedValue
    * @return
    */
-  static boolean isValidElement(TypedVocabularyElement tvElement, String assignedValue) {
+  public static boolean isValidElement(TypedVocabularyElement tvElement, String assignedValue) {
     TypedVocabularyElement.VocabularyElementType tvType = tvElement.getVocabularyElementType();
     switch(tvType) {
       case DATE :
