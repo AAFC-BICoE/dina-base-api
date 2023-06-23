@@ -36,6 +36,14 @@ public class MessageProducingService<E extends DinaEntity> extends DefaultDinaSe
       eventPublisher);
   }
 
+  /**
+   *
+   * @param baseDAO
+   * @param validator
+   * @param resourceType
+   * @param supportedMessageOperations operations that should send a message
+   * @param eventPublisher
+   */
   public MessageProducingService(
     BaseDAO baseDAO,
     SmartValidator validator,
@@ -51,8 +59,18 @@ public class MessageProducingService<E extends DinaEntity> extends DefaultDinaSe
 
   @Override
   public E create(E entity) {
+    return create(entity, supportedMessageOperations.contains(DocumentOperationType.ADD));
+  }
+
+  /**
+   * Create the given entity and emit a message if emitMessage is true.
+   * @param entity
+   * @param emitMessage
+   * @return
+   */
+  public E create(E entity, boolean emitMessage) {
     E persisted = super.create(entity);
-    if(supportedMessageOperations.contains(DocumentOperationType.ADD)) {
+    if (emitMessage) {
       triggerEvent(persisted, DocumentOperationType.ADD);
     }
     return persisted;
@@ -60,8 +78,18 @@ public class MessageProducingService<E extends DinaEntity> extends DefaultDinaSe
 
   @Override
   public E update(E entity) {
+    return update(entity, supportedMessageOperations.contains(DocumentOperationType.UPDATE));
+  }
+
+  /**
+   * Update the given entity and emit a message if emitMessage is true.
+   * @param entity
+   * @param emitMessage
+   * @return
+   */
+  public E update(E entity, boolean emitMessage) {
     E persisted = super.update(entity);
-    if(supportedMessageOperations.contains(DocumentOperationType.UPDATE)) {
+    if (emitMessage) {
       triggerEvent(persisted, DocumentOperationType.UPDATE);
     }
     return persisted;
@@ -69,8 +97,18 @@ public class MessageProducingService<E extends DinaEntity> extends DefaultDinaSe
 
   @Override
   public void delete(E entity) {
+    delete(entity, supportedMessageOperations.contains(DocumentOperationType.DELETE));
+  }
+
+  /**
+   * Delete the given entity and emit a message if emitMessage is true.
+   * @param entity
+   * @param emitMessage
+   * @return
+   */
+  public void delete(E entity, boolean emitMessage) {
     super.delete(entity);
-    if(supportedMessageOperations.contains(DocumentOperationType.DELETE)) {
+    if (emitMessage) {
       triggerEvent(entity, DocumentOperationType.DELETE);
     }
   }
