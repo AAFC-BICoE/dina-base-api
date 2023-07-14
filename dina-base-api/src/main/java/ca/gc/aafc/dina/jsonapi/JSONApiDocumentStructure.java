@@ -1,6 +1,10 @@
 package ca.gc.aafc.dina.jsonapi;
 
+import java.util.Optional;
+
 import com.fasterxml.jackson.core.JsonPointer;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -30,6 +34,7 @@ public final class JSONApiDocumentStructure {
   public static final JsonPointer INCLUDED_PTR = JsonPointer.valueOf("/" + INCLUDED);
   public static final JsonPointer META_PTR = JsonPointer.valueOf("/" + META);
   public static final JsonPointer ATTRIBUTES_PTR = JsonPointer.valueOf("/" + DATA + "/" + ATTRIBUTES);
+  public static final JsonPointer RELATIONSHIP_PTR = JsonPointer.valueOf("/" + DATA + "/" + RELATIONSHIPS);
 
 
   /**
@@ -54,6 +59,17 @@ public final class JSONApiDocumentStructure {
       return false;
     }
     return currentPath.startsWith(DATA_ATTRIBUTES_PATH);
+  }
+
+  /**
+   * Returns a document's part represented by the JsonPointer or Optional.empty if not found.
+   * @param document
+   * @param ptr
+   * @return
+   */
+  private static Optional<JsonNode> atJsonPtr(JsonNode document, JsonPointer ptr) {
+    JsonNode node = document.at(ptr);
+    return node.isMissingNode() ? Optional.empty() : Optional.of(node);
   }
 
   /**
