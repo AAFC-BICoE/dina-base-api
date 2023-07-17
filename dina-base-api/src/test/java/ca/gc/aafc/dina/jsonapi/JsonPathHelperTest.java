@@ -24,11 +24,9 @@ public class JsonPathHelperTest {
 
   @Test
   public void extractById_onList_rightDocumentSectionReturned() {
-    List<Map<String, Object>> document = List.of(
-      Map.of("id", "A", "attribute1", "val1"),
-      Map.of("id", "B", "attribute1", "val2"),
-      Map.of("id", "C", "attribute1", "val3")
-    );
+    String document = """
+      [{"id":"A","attribute1":"val1"},{"id":"B","attribute1":"val2"},{"id":"C","attribute1":"val3"}]
+      """;
     DocumentContext dc = JsonPath.using(JSON_PATH_CONF).parse(document);
     TypeRef<List<Map<String, Object>>> typeRef = new TypeRef<>() {
       };
