@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.108</version>
+  <version>0.109</version>
 
   <packaging>pom</packaging>
 
@@ -49,6 +49,8 @@
     <keycloak-starter.version>19.0.3</keycloak-starter.version>
     <bcprov-jdk15on.version>1.68</bcprov-jdk15on.version>
     <snakeyaml.version>1.33</snakeyaml.version>
+
+    <spring-security.version>5.7.10</spring-security.version>
 
     <testcontainers.version>1.17.3</testcontainers.version>
   </properties>
