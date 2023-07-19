@@ -50,6 +50,8 @@
     <bcprov-jdk15on.version>1.68</bcprov-jdk15on.version>
     <snakeyaml.version>1.33</snakeyaml.version>
 
+    <spring-security.version>5.7.10</spring-security.version>
+
     <testcontainers.version>1.17.3</testcontainers.version>
   </properties>
   
