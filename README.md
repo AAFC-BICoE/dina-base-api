@@ -1,4 +1,4 @@
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.aafc-bicoe/dina-base-api.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.aafc-bicoe%22%20AND%20a:%22dina-base-api%22)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.aafc-bicoe/dina-base-api.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.aafc-bicoe/dina-base-api/)
 # DINA Base API
 
 Base [DINA](https://www.dina-project.net) API package for Java built on [SpringBoot](https://spring.io/projects/spring-boot) and [Crnk](https://github.com/crnk-project/crnk-framework).
