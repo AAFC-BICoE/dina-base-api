@@ -29,6 +29,8 @@
     <hibernate-types-55.version>2.21.1</hibernate-types-55.version>
     <postgresql.version>42.4.3</postgresql.version>
     <jsoup.version>1.15.3</jsoup.version>
+
+    <antlr4.version>4.13.0</antlr4.version>
   </properties>
 
   <dependencies>
@@ -155,6 +157,11 @@
       <groupId>com.vladmihalcea</groupId>
       <artifactId>hibernate-types-55</artifactId>
       <version>${hibernate-types-55.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
+      <version>${antlr4.version}</version>
     </dependency>
 
     <dependency>
@@ -291,6 +298,18 @@
                 </rule>
               </rules>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <version>${antlr4.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
