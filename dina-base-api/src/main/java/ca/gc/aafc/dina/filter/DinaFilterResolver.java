@@ -134,9 +134,9 @@ public class DinaFilterResolver {
       return;
     }
 
-    List<Set<String>> relationsToJoin = new ArrayList<>();
+    List<String> relationsToJoin = new ArrayList<>();
     querySpec.getSort().forEach(sort ->
-            relationsToJoin.add(parseMappablePaths(registry, querySpec.getResourceClass(), sort.getAttributePath())));
+            relationsToJoin.add(parseMappablePath(registry, querySpec.getResourceClass(), sort.getAttributePath())));
 
     relationsToJoin.forEach(relation -> joinAttributePath(root, relation));
   }
@@ -172,7 +172,7 @@ public class DinaFilterResolver {
 
     Set<String> relationsToJoin = new HashSet<>();
     querySpec.getIncludedRelations().forEach(ir ->
-            relationsToJoin.addAll(parseMappablePaths(registry, querySpec.getResourceClass(), ir.getAttributePath())));
+            relationsToJoin.add(parseMappablePath(registry, querySpec.getResourceClass(), ir.getAttributePath())));
     return relationsToJoin;
   }
 
@@ -183,21 +183,23 @@ public class DinaFilterResolver {
    * @param attributePath
    * @return never null
    */
-  private static Set<String> parseMappablePaths(
-          @NonNull DinaMappingRegistry registry,
-          @NonNull Class<?> resourceClass,
-          @NonNull List<String> attributePath) {
-    Set<String> relationPaths = new HashSet<>();
+  private static String parseMappablePath(
+      @NonNull DinaMappingRegistry registry,
+      @NonNull Class<?> resourceClass,
+      @NonNull List<String> attributePath) {
+    List<String> fullPath = new ArrayList<>();
     Class<?> dtoClass = resourceClass;
+
     for (String attr : attributePath) {
       if (hasMappableRelation(registry, dtoClass, attr)) {
-        relationPaths.add(attr);
+        fullPath.add(attr);
         dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
       } else {
         break;
       }
     }
-    return relationPaths;
+
+    return String.join(".", fullPath);
   }
 
   /**
@@ -309,14 +311,12 @@ public class DinaFilterResolver {
     }).collect(Collectors.toList());
   }
 
-  private static void joinAttributePath(Root<?> root, Set<String> attributePath) {
-    if (root == null || CollectionUtils.isEmpty(attributePath)) {
+  private static void joinAttributePath(Root<?> root, String attributePath) {
+    if (root == null || attributePath == null) {
       return;
     }
     FetchParent<?, ?> join = root;
-    for (String path : attributePath) {
-      join = join.fetch(path, JoinType.LEFT);
-    }
+    join.fetch(attributePath, JoinType.LEFT);
   }
 
   /**

@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.repository;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
+import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
@@ -115,6 +116,17 @@ public class DinaRepositoryIT {
       PersonDTO expectedDto = expectedPersons.get(resultElement.getUuid());
       assertEqualsPersonDtos(expectedDto, resultElement, true);
     }
+  }
+
+  @Test
+  public void findAll_NestedRelations_FindsResourceAndRelations() {
+    PersonDTO dto = persistPerson();
+
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.setIncludedRelations(createIncludeRelationSpecs("department.employees"));
+
+    List<PersonDTO> result = dinaRepository.findAll(null, querySpec);
+    assertNotNull(result.get(0).getDepartment().getEmployees());
   }
 
   @Test
@@ -581,6 +593,9 @@ public class DinaRepositoryIT {
   private PersonDTO createPersonDto() {
     DepartmentDto singleRelationDto = DepartmentDto.builder()
       .uuid(singleRelationUnderTest.getUuid())
+      .employees(List.of(
+        EmployeeDto.builder().name(RandomStringUtils.randomAlphabetic(10)).build()
+      ))
       .build();
     List<DepartmentDto> collectionRelationDtos = collectionRelationUnderTest.stream()
       .map(c -> DepartmentDto.builder().uuid(c.getUuid()).build())
