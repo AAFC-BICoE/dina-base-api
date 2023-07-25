@@ -35,9 +35,9 @@ public class DevUserConfig {
         .internalIdentifier("c628fc6f-c9ad-4bb6-a187-81eb7884bdd7")
         .username("dev");
 
-    if(MapUtils.isNotEmpty(devSettings.getRolesPerGroup())) {
+    if (MapUtils.isNotEmpty(devSettings.getRolesPerGroup())) {
       authenticatedUserBuilder.rolesPerGroup(devSettings.getRolesPerGroup());
-    } else{
+    } else {
       authenticatedUserBuilder.rolesPerGroup(Map.of("dev-group", Set.of(DinaRole.USER)));
     }
 
