@@ -22,6 +22,13 @@ embedded.postgresql:
 javers:
   # Don't let Javers create its tables
   sqlSchemaManagementEnabled: false
+
+dev-user:
+  groupRole :
+    aafc :
+      - user
+    bicoe :
+      - read-only
 #logging:
 #  level:
 #    org:
