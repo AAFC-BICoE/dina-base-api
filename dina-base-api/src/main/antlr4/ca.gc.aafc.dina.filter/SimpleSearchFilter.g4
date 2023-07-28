@@ -2,8 +2,11 @@ grammar SimpleSearchFilter;
 
 expr: filterExpression;
 
-// We define methodCall to be a method name followed by an opening
-// paren, an optional list of arguments, and a closing paren.
+// Examples:
+// filter[name]=a name&filter[theDate][GT]=2015-10-01
+// sort=name,-shortName
+// page[offset]=0&page[limit]=10
+// include=author.name
 filterExpression
   : 'filter[' filterAttribute ']' '[' filterOp ']=' filterValue (','filterValue)* ('&' filterExpression)*
   ;
@@ -15,5 +18,7 @@ filterValue: TEXT;
 // lexer rule in order
 EQ: 'EQ';
 NEQ: 'NEQ';
-TEXT: [a-zA-Z_][a-zA-Z0-9_]*;
+//NUMBER
+//VAR_NAME: [a-zA-Z_][a-zA-Z0-9_]*;
+TEXT: [a-zA-Z0-9_]*;
 WS: [ \n\t\r]+ -> skip;
