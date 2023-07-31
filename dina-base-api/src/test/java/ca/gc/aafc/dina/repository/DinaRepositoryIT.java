@@ -120,13 +120,32 @@ public class DinaRepositoryIT {
 
   @Test
   public void findAll_NestedRelations_FindsResourceAndRelations() {
-    PersonDTO dto = persistPerson();
+    PersonDTO ownerDto = PersonDTO.builder()
+        .uuid(UUID.randomUUID())
+        .name("Test 1")
+        .build();
+    ownerDto = dinaRepository.create(ownerDto);
+
+    DepartmentDto departmentDto = DepartmentDto.builder()
+        .uuid(UUID.randomUUID())
+        .name("department")
+        .location("ottawa")
+        .departmentOwner(ownerDto)
+        .build();
+    departmentDto = departmentRepository.create(departmentDto);
+
+    PersonDTO personDto = PersonDTO.builder()
+        .uuid(UUID.randomUUID())
+        .name("Test 2")
+        .department(departmentDto)
+        .build();
+    personDto = dinaRepository.create(personDto);
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
-    querySpec.setIncludedRelations(createIncludeRelationSpecs("department.employees"));
+    querySpec.setIncludedRelations(createIncludeRelationSpecs("department.departmentOwner"));
 
-    List<PersonDTO> result = dinaRepository.findAll(null, querySpec);
-    assertNotNull(result.get(0).getDepartment().getEmployees());
+    List<PersonDTO> result = dinaRepository.findAll(List.of(personDto.getUuid()), querySpec);
+    assertEquals(ownerDto.getName(), result.get(0).getDepartment().getDepartmentOwner().getName());
   }
 
   @Test
