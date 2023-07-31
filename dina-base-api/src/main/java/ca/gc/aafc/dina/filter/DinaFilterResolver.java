@@ -42,7 +42,7 @@ import java.util.stream.Stream;
  * DinaFilterResolver handles the responsibilities for dina repo filtering operations. Those responsibilities
  * are the following.
  * <pre>
- *    <ul>
+ *   <ul>
  *    <li>Resolving filter adapter</li>
  *    <li>Generating JPA predicates for filtering</li>
  *    <li>Generating JPA Order by's for filtering</li>
@@ -138,7 +138,7 @@ public class DinaFilterResolver {
 
     List<Set<String>> relationsToJoin = new ArrayList<>();
     querySpec.getSort().forEach(sort ->
-            relationsToJoin.add(parseMappablePathSet(registry, querySpec.getResourceClass(), sort.getAttributePath())));
+            relationsToJoin.add(parseMappablePath(registry, querySpec.getResourceClass(), sort.getAttributePath())));
 
     relationsToJoin.forEach(relation -> joinAttributePath(root, relation));
   }
@@ -190,8 +190,8 @@ public class DinaFilterResolver {
     }
 
     Set<String> relationsToJoin = new HashSet<>();
-    querySpec.getIncludedRelations().forEach(ir ->
-            relationsToJoin.add(parseMappablePath(registry, querySpec.getResourceClass(), ir.getAttributePath())));
+    querySpec.getIncludedRelations().forEach(ir -> relationsToJoin
+        .add(String.join(".", parseMappablePath(registry, querySpec.getResourceClass(), ir.getAttributePath()))));
     return relationsToJoin;
   }
 
@@ -203,7 +203,7 @@ public class DinaFilterResolver {
    * @param attributePath The list of attribute paths to be parsed.
    * @return A Set containing mappable attribute paths in the order they appear in attributePath.
    */
-  private static Set<String> parseMappablePathSet(
+  private static Set<String> parseMappablePath(
       @NonNull DinaMappingRegistry registry,
       @NonNull Class<?> resourceClass,
       @NonNull List<String> attributePath) {
@@ -220,23 +220,6 @@ public class DinaFilterResolver {
     }
 
     return fullPath;
-  }
-
-  /**
-   * Parses the attribute path and returns it as a single dot-separated string.
-   *
-   * @param registry      The DinaMappingRegistry used for mapping information.
-   * @param resourceClass The resourceClass where the attribute paths are to be parsed.
-   * @param attributePath The list of attribute paths to be parsed.
-   * @return A string representing the mappable attribute path with dot separators.
-   *         The mappable attribute paths are extracted from the attributePath list
-   *         and are concatenated using dots, in the order they appear in the list.
-   */
-  private static String parseMappablePath(
-      @NonNull DinaMappingRegistry registry,
-      @NonNull Class<?> resourceClass,
-      @NonNull List<String> attributePath) {
-    return String.join(".", parseMappablePathSet(registry, resourceClass, attributePath));
   }
 
   /**
