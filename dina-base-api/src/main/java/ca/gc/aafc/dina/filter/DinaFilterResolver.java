@@ -13,6 +13,8 @@ import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
+import lombok.extern.log4j.Log4j2;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -49,6 +51,7 @@ import java.util.stream.Stream;
  *  </ul>
  * </pre>
  */
+@Log4j2
 public class DinaFilterResolver {
 
   private final JpaPredicateVisitor<Object> visitor = new JpaPredicateVisitor<>();
@@ -190,17 +193,27 @@ public class DinaFilterResolver {
     }
 
     Set<String> relationsToJoin = new HashSet<>();
-    querySpec.getIncludedRelations().forEach(ir -> relationsToJoin
-        .add(String.join(".", parseMappablePath(registry, querySpec.getResourceClass(), ir.getAttributePath()))));
+    querySpec.getIncludedRelations().forEach(ir -> {
+        List<String> attributePath = ir.getAttributePath();
+        if (!attributePath.isEmpty()) {
+            Set<String> mappablePath = parseMappablePath(registry, querySpec.getResourceClass(), attributePath);
+            if (!mappablePath.isEmpty()) {
+                relationsToJoin.add(String.join(".", mappablePath));
+            }
+        }
+    });
     return relationsToJoin;
   }
 
   /**
-   * Parses the attribute path to find a set of mappable paths in a given resourceClass.
+   * Parses the attribute path to find a set of mappable path in a given resourceClass.
+   * 
+   * External relationships and attributes that cannot be found will be ignored.
    *
    * @param registry      The DinaMappingRegistry used for mapping information.
-   * @param resourceClass The resourceClass where the attribute paths are to be parsed.
-   * @param attributePath The list of attribute paths to be parsed.
+   * @param resourceClass The resourceClass where to start the search for the attribute.
+   * @param attributePath The attribute path to parse, 
+   *                      like ("department", "employees") -> department.employees
    * @return A Set containing mappable attribute paths in the order they appear in attributePath.
    */
   private static Set<String> parseMappablePath(
@@ -215,6 +228,15 @@ public class DinaFilterResolver {
         fullPath.add(attr);
         dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
       } else {
+        // Cannot be found or is an external relationship.
+        fullPath.clear();
+
+        String attributePathStr = String.join(".", attributePath);
+        String resourceClassName = resourceClass.getCanonicalName();
+        log.debug(
+            "The attribute path '{}' cannot be found on the '{}' resource. Please ensure that the attribute is present on the resource and it's not pointing to an external relationship. The include will be ignored.",
+            attributePathStr, resourceClassName);
+
         break;
       }
     }
