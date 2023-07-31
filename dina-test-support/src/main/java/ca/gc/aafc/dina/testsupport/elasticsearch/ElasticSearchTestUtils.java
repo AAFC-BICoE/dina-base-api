@@ -7,6 +7,7 @@ import org.testcontainers.utility.DockerImageName;
 import ca.gc.aafc.dina.testsupport.TestResourceHelper;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.Refresh;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
@@ -72,6 +73,9 @@ public final class ElasticSearchTestUtils {
       .index(indexName)
       .id(docId)
       .withJson(new StringReader(jsonContent))
+      // From ES documentation: This should ONLY be done after careful thought and verification that it does not lead to poor performance
+      // For testing we can afford the performance hit since we need the document indexed to continue the test
+      .refresh(Refresh.True)
     );
     client.index(indexRequest);
   }
