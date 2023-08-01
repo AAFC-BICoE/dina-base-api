@@ -46,4 +46,6 @@ public class EmployeeDto {
   @DiffIgnore
   private DepartmentDto department;
 
+  @JsonApiRelation
+  private PersonDTO manager;
 }

@@ -104,14 +104,22 @@ public class DinaMappingRegistryTest {
     Set<DinaMappingRegistry.InternalRelation> results = registry
       .findMappableRelationsForClass(Department.class);
 
-    Assertions.assertEquals(1, results.size());
+    // Employee and person should be found.
+    Assertions.assertEquals(2, results.size());
 
-    DinaMappingRegistry.InternalRelation resultRelation = results.stream()
+    DinaMappingRegistry.InternalRelation employeesRelation = results.stream()
       .filter(ir -> ir.getName().equals("employees")).findFirst().orElse(null);
-    Assertions.assertNotNull(resultRelation);
-    Assertions.assertEquals(Employee.class, resultRelation.getEntityType());
-    Assertions.assertEquals(EmployeeDto.class, resultRelation.getDtoType());
-    Assertions.assertTrue(resultRelation.isCollection());
+    Assertions.assertNotNull(employeesRelation);
+    Assertions.assertEquals(Employee.class, employeesRelation.getEntityType());
+    Assertions.assertEquals(EmployeeDto.class, employeesRelation.getDtoType());
+    Assertions.assertTrue(employeesRelation.isCollection());
+
+    DinaMappingRegistry.InternalRelation personRelation = results.stream()
+      .filter(ir -> ir.getName().equals("departmentOwner")).findFirst().orElse(null);
+    Assertions.assertNotNull(personRelation);
+    Assertions.assertEquals(Person.class, personRelation.getEntityType());
+    Assertions.assertEquals(PersonDTO.class, personRelation.getDtoType());
+    Assertions.assertFalse(personRelation.isCollection());
   }
 
   @Test
