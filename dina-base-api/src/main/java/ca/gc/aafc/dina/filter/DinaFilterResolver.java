@@ -8,6 +8,7 @@ import com.github.tennaito.rsql.misc.ArgumentParser;
 import cz.jirutka.rsql.parser.RSQLParser;
 import cz.jirutka.rsql.parser.ast.Node;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
+import io.crnk.core.queryspec.AbstractPathSpec;
 import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.PathSpec;
@@ -31,7 +32,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -141,8 +141,8 @@ public class DinaFilterResolver {
 
     // Remove the last element from the sort attribute path since we want to only include the nested
     // relationship. Ex. "department.name" would retrieve "department".
-    List<Set<String>> relationsToJoin = new ArrayList<>();
-    querySpec.getSort().stream().map(sort -> sort.getAttributePath()).forEach(sort -> relationsToJoin
+    List<List<String>> relationsToJoin = new ArrayList<>();
+    querySpec.getSort().stream().map(AbstractPathSpec::getAttributePath).forEach(sort -> relationsToJoin
         .add(parseMappableRelationshipPath(registry, querySpec.getResourceClass(),
             sort.size() <= 1 ? sort
                 : sort.subList(0, sort.size() - 1))));
@@ -200,7 +200,7 @@ public class DinaFilterResolver {
     querySpec.getIncludedRelations().forEach(ir -> {
       List<String> attributePath = ir.getAttributePath();
       if (!attributePath.isEmpty()) {
-        Set<String> mappablePath = parseMappableRelationshipPath(registry, querySpec.getResourceClass(), attributePath);
+        List<String> mappablePath = parseMappableRelationshipPath(registry, querySpec.getResourceClass(), attributePath);
         if (!mappablePath.isEmpty()) {
           relationsToJoin.add(String.join(".", mappablePath));
         }
@@ -213,20 +213,20 @@ public class DinaFilterResolver {
    * Parses an attribute path starting from the given resourceClass, searching for mappable relationships.
    * 
    * This method iterates through each part of the attribute path and checks if the relationship can be found
-   * within the given resourceClass. If a part of the path cannot be found, an empty set is returned.
+   * within the given resourceClass. If a part of the path cannot be found, an empty list is returned.
    * 
    * External relationships and relationships that cannot be found will be ignored.
    * 
    * @param registry      The DinaMappingRegistry used for mapping information.
    * @param resourceClass The resourceClass from where to start the search for the attribute.
    * @param attributePath The attribute path to parse, e.g., ("department", "employees") -> department.employees.
-   * @return A Set containing mappable attribute paths in the order they appear in attributePath.
+   * @return A List containing mappable attribute paths in the order they appear in attributePath.
    */
-  private static Set<String> parseMappableRelationshipPath(
+  private static List<String> parseMappableRelationshipPath(
       @NonNull DinaMappingRegistry registry,
       @NonNull Class<?> resourceClass,
       @NonNull List<String> attributePath) {
-    Set<String> fullPath = new LinkedHashSet<>();
+    List<String> fullPath = new ArrayList<>(attributePath.size());
     Class<?> dtoClass = resourceClass;
 
     for (String attr : attributePath) {
@@ -234,19 +234,13 @@ public class DinaFilterResolver {
         fullPath.add(attr);
         dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
       } else {
-        // Internal relationship not found. Clear the attribute path and return an empty path.
-        fullPath.clear();
-
-        String attributePathStr = String.join(".", attributePath);
-        String resourceClassName = resourceClass.getCanonicalName();
+        // Internal relationship not found. Return an empty path.
         log.debug(
-            "The attribute path '{}' cannot be found on the '{}' resource. Please ensure that the attribute is present on the resource and it's not pointing to an external relationship. The include will be ignored.",
-            attributePathStr, resourceClassName);
-
-        break;
+          "The attribute path '{}' cannot be found on the '{}' resource. Please ensure that the attribute is present on the resource and it's not pointing to an external relationship. The include will be ignored.",
+          ()->String.join(".", attributePath), resourceClass::getCanonicalName);
+        return List.of();
       }
     }
-
     return fullPath;
   }
 
@@ -368,13 +362,13 @@ public class DinaFilterResolver {
    * Joins multiple attribute paths in a Root object using LEFT JOIN fetches.
    *
    * This method is used to join multiple attribute paths in a Root object using LEFT JOIN fetches.
-   * The attribute paths are provided as a Set of Strings, and the method performs successive LEFT JOIN
-   * fetches for each attribute path in the set.
+   * The attribute paths are provided as a List of Strings, and the method performs successive LEFT JOIN
+   * fetches for each attribute path in the list.
    *
    * @param root          The Root object to which the attribute paths are to be joined.
-   * @param attributePath A Set of Strings representing the attribute paths to be joined.
+   * @param attributePath A List of Strings representing the attribute paths to be joined.
    */
-  private static void joinAttributePath(Root<?> root, Set<String> attributePath) {
+  private static void joinAttributePath(Root<?> root, List<String> attributePath) {
     if (root == null || CollectionUtils.isEmpty(attributePath)) {
       return;
     }
