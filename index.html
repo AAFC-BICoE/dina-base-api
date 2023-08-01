@@ -1042,17 +1042,24 @@ methods are called. So calling logCurrentUserName() will print the currentUser f
 <h3 id="_using_a_dev_mode_user_without_needing_to_authenticate_manually">5.2. Using a dev-mode user without needing to authenticate manually</h3>
 <div class="paragraph">
 <p>To have a 'dev' user set automatically without needing to authenticate via Keycloak token or other
-manual method, add these properties to your launch config:</p>
+manual method, set these properties:</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>dev-user.enabled: true</p>
-</li>
-<li>
-<p>keycloak.enabled: false</p>
-</li>
-</ul>
+<div class="paragraph">
+<p><code>keycloak.enabled: false</code> and <code>dev-user.enabled: true</code> (must be set together).</p>
+</div>
+<div class="paragraph">
+<p>If specific group/role is required, use the following config:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-yaml" data-lang="yaml">dev-user:
+  enabled: true
+  groupRole :
+    aafc :
+      - user
+    bicoe :
+      - read-only</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -1915,7 +1922,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2023-07-19 16:10:48 UTC
+Last updated 2023-08-01 20:04:16 UTC
 </div>
 </div>
 </body>
