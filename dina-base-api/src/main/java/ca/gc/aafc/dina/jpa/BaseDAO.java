@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.jpa;
 import io.crnk.core.engine.information.bean.BeanInformation;
 import lombok.NonNull;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.Session;
 import org.hibernate.SimpleNaturalIdLoadAccess;
@@ -99,12 +100,10 @@ public class BaseDAO {
     EntityGraph<T> graph = entityManager.createEntityGraph(entityClass);
     for (String attribute : attributeNodes) {
       if (attribute.contains(".")) {
-        String[] parts = attribute.split("\\.", 2);
+        String[] parts = StringUtils.split(attribute, ".", 2);
 
         if (parts.length == 2) {
-          String subgraphAttribute = parts[0];
-          String attributeNode = parts[1];
-          graph.addSubgraph(subgraphAttribute).addAttributeNodes(attributeNode);          
+          graph.addSubgraph(parts[0]).addAttributeNodes(parts[1]);
         }
       } else {
         graph.addAttributeNodes(attribute);

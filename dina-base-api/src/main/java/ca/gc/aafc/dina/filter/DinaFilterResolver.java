@@ -237,7 +237,7 @@ public class DinaFilterResolver {
         // Internal relationship not found. Return an empty path.
         log.debug(
           "The attribute path '{}' cannot be found on the '{}' resource. Please ensure that the attribute is present on the resource and it's not pointing to an external relationship. The include will be ignored.",
-          ()->String.join(".", attributePath), resourceClass::getCanonicalName);
+          () -> String.join(".", attributePath), resourceClass::getCanonicalName);
         return List.of();
       }
     }
