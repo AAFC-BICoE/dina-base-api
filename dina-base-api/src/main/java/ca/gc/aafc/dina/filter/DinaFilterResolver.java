@@ -192,19 +192,19 @@ public class DinaFilterResolver {
    */
   public static Set<String> extractRelationships(@NonNull QuerySpec querySpec, @NonNull DinaMappingRegistry registry) {
     // getIncludedRelations never returns null
-    if( querySpec.getIncludedRelations().isEmpty() ) {
+    if (querySpec.getIncludedRelations().isEmpty()) {
       return Set.of();
     }
 
     Set<String> relationsToJoin = new HashSet<>();
     querySpec.getIncludedRelations().forEach(ir -> {
-        List<String> attributePath = ir.getAttributePath();
-        if (!attributePath.isEmpty()) {
-            Set<String> mappablePath = parseMappableRelationshipPath(registry, querySpec.getResourceClass(), attributePath);
-            if (!mappablePath.isEmpty()) {
-                relationsToJoin.add(String.join(".", mappablePath));
-            }
+      List<String> attributePath = ir.getAttributePath();
+      if (!attributePath.isEmpty()) {
+        Set<String> mappablePath = parseMappableRelationshipPath(registry, querySpec.getResourceClass(), attributePath);
+        if (!mappablePath.isEmpty()) {
+          relationsToJoin.add(String.join(".", mappablePath));
         }
+      }
     });
     return relationsToJoin;
   }
