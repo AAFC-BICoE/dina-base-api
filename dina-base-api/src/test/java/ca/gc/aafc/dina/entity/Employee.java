@@ -56,6 +56,9 @@ public class Employee implements DinaEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   private Department department;
 
+  @OneToOne(fetch = FetchType.LAZY)
+  private Person manager;
+
   @Override
   public String getCreatedBy() {
     return null;

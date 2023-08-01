@@ -29,7 +29,18 @@ methods are called. So calling logCurrentUserName() will print the currentUser f
 == Using a dev-mode user without needing to authenticate manually
 
 To have a 'dev' user set automatically without needing to authenticate via Keycloak token or other
-manual method, add these properties to your launch config:
+manual method, set these properties:
 
-* dev-user.enabled: true
-* keycloak.enabled: false
+`keycloak.enabled: false` and `dev-user.enabled: true` (must be set together).
+
+If specific group/role is required, use the following config:
+
+```yaml
+dev-user:
+  enabled: true
+  groupRole :
+    aafc :
+      - user
+    bicoe :
+      - read-only
+```

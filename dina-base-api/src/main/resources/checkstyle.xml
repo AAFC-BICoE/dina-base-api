@@ -273,7 +273,9 @@ limitations under the License.
         com.google.common.collect.ImmutableList,
         com.google.common.collect.ImmutableMap,
         com.google.common.collect.ImmutableSet,
-        com.google.common.base.Optional
+        com.google.common.base.Optional,
+        javax.annotation.Nullable,
+        javax.annotation.Nonnull
         "/>
       </module>
       <module name="RedundantImport">

@@ -293,6 +293,72 @@ public class BaseDAOIT extends BasePostgresItContext {
   }
 
   @Test
+  public void resultListFromCriteria_withNestedQueryHint_lazyRelEagerlyLoaded() {
+    Department department = Department.builder()
+        .name("nestedDepartment")
+        .uuid(UUID.randomUUID())
+        .location("nested dep location")
+        .build();
+    baseDAO.create(department, true);
+
+    Person nestedManager = Person.builder()
+        .uuid(UUID.randomUUID())
+        .name("John Doe")
+        .build();
+    baseDAO.create(nestedManager, true);
+
+    Employee emp1 = Employee.builder()
+        .name("abc1")
+        .uuid(UUID.randomUUID())
+        .department(department)
+        .manager(nestedManager)
+        .build();
+    Employee emp2 = Employee.builder()
+        .name("abc2")
+        .uuid(UUID.randomUUID())
+        .department(department)
+        .manager(nestedManager)
+        .build();
+    baseDAO.create(emp1, true);
+    baseDAO.create(emp2, true);
+
+    // Detach created test data
+    baseDAO.detach(emp1);
+    baseDAO.detach(emp2);
+    baseDAO.detach(department);
+    baseDAO.detach(nestedManager);
+
+    // Build a criteria to load the Department by UUID
+    CriteriaBuilder criteriaBuilder = baseDAO.getCriteriaBuilder();
+    CriteriaQuery<Department> criteria = criteriaBuilder.createQuery(Department.class);
+    Root<Department> root = criteria.from(Department.class);
+    Predicate clause = criteriaBuilder.equal(root.get("uuid"), department.getUuid());
+    criteria.where(clause).select(root);
+
+    // Load the department without any nested hints provided.
+    List<Department> depList = baseDAO.resultListFromCriteria(criteria, 0, 1);
+    assertFalse(depList.isEmpty());
+    assertFalse(baseDAO.isLoaded(depList.get(0), "employees"));
+    assertEquals(2, depList.get(0).getEmployees().size());
+    assertFalse(baseDAO.isLoaded(depList.get(0).getEmployees().get(0), "manager"));
+    assertNotNull(depList.get(0).getEmployees().get(0).getManager());
+
+    // detach the entities to force reload
+    baseDAO.detach(emp1);
+    baseDAO.detach(emp2);
+    baseDAO.detach(department);
+    baseDAO.detach(nestedManager);
+
+    // Load the department with nested hints provided.
+    depList = baseDAO.resultListFromCriteria(criteria, 0, 10, Map.of(BaseDAO.LOAD_GRAPH_HINT_KEY,
+        baseDAO.createEntityGraph(Department.class, "employees.manager")));
+    assertFalse(depList.isEmpty());
+    assertTrue(baseDAO.isLoaded(depList.get(0), "employees"));
+    assertTrue(baseDAO.isLoaded(depList.get(0).getEmployees().get(0), "manager"));
+    assertNotNull(depList.get(0).getEmployees().get(0).getManager());
+  }
+
+  @Test
   public void resultListFromQuery_onValidQuery_expectedResultsReturned() {
     Person p1 = Person.builder().name("abc").uuid(UUID.randomUUID()).build();
     Person p2 = Person.builder().name("bcd").uuid(UUID.randomUUID()).build();

@@ -118,6 +118,43 @@ public class DinaRepositoryIT {
   }
 
   @Test
+  public void findAll_NestedRelations_FindsResourceAndRelations() {
+    // Create the owner (personDto)
+    PersonDTO ownerDto = PersonDTO.builder()
+        .uuid(UUID.randomUUID())
+        .name("Person_" + RandomStringUtils.randomAlphabetic(5))
+        .build();
+    ownerDto = dinaRepository.create(ownerDto);
+
+    // Create the department and connect the department owner to the person created above.
+    DepartmentDto departmentDto = DepartmentDto.builder()
+        .uuid(UUID.randomUUID())
+        .name("Department_" + RandomStringUtils.randomAlphabetic(5))
+        .location("Ottawa, Ontario, Canada")
+        .departmentOwner(ownerDto)
+        .build();
+    departmentDto = departmentRepository.create(departmentDto);
+
+    // Separate person that will be connected to the department.
+    PersonDTO personDto = PersonDTO.builder()
+        .uuid(UUID.randomUUID())
+        .name("John Doe")
+        .department(departmentDto)
+        .build();
+    personDto = dinaRepository.create(personDto);
+
+    // Create the query with the nested include (personDto -> department -> ownerDto).
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.setIncludedRelations(List.of(
+      new IncludeRelationSpec(List.of("department", "departmentOwner"))
+    ));
+
+    // Starting the query from the personDto, try to retrieve the ownerDto using nested includes.
+    List<PersonDTO> result = dinaRepository.findAll(List.of(personDto.getUuid()), querySpec);
+    assertEquals(ownerDto.getName(), result.get(0).getDepartment().getDepartmentOwner().getName());
+  }
+
+  @Test
   public void findAll_FilterByIds_FindsById() {
     List<Serializable> idList = new ArrayList<>();
 

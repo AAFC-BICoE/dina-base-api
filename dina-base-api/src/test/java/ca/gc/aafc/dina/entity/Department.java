@@ -57,6 +57,10 @@ public class Department implements DinaEntity {
   @JoinColumn(name = "department_head_id")
   private Person departmentHead;
 
+  @ManyToOne
+  @JoinColumn(name = "department_owner_id")
+  private Person departmentOwner;
+
   @Builder.Default
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "department", targetEntity = Employee.class)
   private List<Employee> employees = new ArrayList<>();
