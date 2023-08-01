@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.repository;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.DepartmentDto;
-import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
@@ -120,30 +119,37 @@ public class DinaRepositoryIT {
 
   @Test
   public void findAll_NestedRelations_FindsResourceAndRelations() {
+    // Create the owner (personDto)
     PersonDTO ownerDto = PersonDTO.builder()
         .uuid(UUID.randomUUID())
-        .name("Test 1")
+        .name("Person_" + RandomStringUtils.randomAlphabetic(5))
         .build();
     ownerDto = dinaRepository.create(ownerDto);
 
+    // Create the department and connect the department owner to the person created above.
     DepartmentDto departmentDto = DepartmentDto.builder()
         .uuid(UUID.randomUUID())
-        .name("department")
-        .location("ottawa")
+        .name("Department_" + RandomStringUtils.randomAlphabetic(5))
+        .location("Ottawa, Ontario, Canada")
         .departmentOwner(ownerDto)
         .build();
     departmentDto = departmentRepository.create(departmentDto);
 
+    // Separate person that will be connected to the department.
     PersonDTO personDto = PersonDTO.builder()
         .uuid(UUID.randomUUID())
-        .name("Test 2")
+        .name("John Doe")
         .department(departmentDto)
         .build();
     personDto = dinaRepository.create(personDto);
 
+    // Create the query with the nested include (personDto -> department -> ownerDto).
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
-    querySpec.setIncludedRelations(createIncludeRelationSpecs("department.departmentOwner"));
+    querySpec.setIncludedRelations(List.of(
+      new IncludeRelationSpec(List.of("department", "departmentOwner"))
+    ));
 
+    // Starting the query from the personDto, try to retrieve the ownerDto using nested includes.
     List<PersonDTO> result = dinaRepository.findAll(List.of(personDto.getUuid()), querySpec);
     assertEquals(ownerDto.getName(), result.get(0).getDepartment().getDepartmentOwner().getName());
   }
@@ -612,9 +618,6 @@ public class DinaRepositoryIT {
   private PersonDTO createPersonDto() {
     DepartmentDto singleRelationDto = DepartmentDto.builder()
       .uuid(singleRelationUnderTest.getUuid())
-      .employees(List.of(
-        EmployeeDto.builder().name(RandomStringUtils.randomAlphabetic(10)).build()
-      ))
       .build();
     List<DepartmentDto> collectionRelationDtos = collectionRelationUnderTest.stream()
       .map(c -> DepartmentDto.builder().uuid(c.getUuid()).build())
