@@ -139,9 +139,13 @@ public class DinaFilterResolver {
       return;
     }
 
+    // Remove the last element from the sort attribute path since we want to only include the nested
+    // relationship. Ex. "department.name" would retrieve "department".
     List<Set<String>> relationsToJoin = new ArrayList<>();
-    querySpec.getSort().forEach(sort -> relationsToJoin
-        .add(parseMappablePath(registry, querySpec.getResourceClass(), sort.getAttributePath(), true)));
+    querySpec.getSort().stream().map(sort -> sort.getAttributePath()).forEach(sort -> relationsToJoin
+        .add(parseMappableRelationshipPath(registry, querySpec.getResourceClass(),
+            sort.size() <= 1 ? sort
+                : sort.subList(0, sort.size() - 1))));
 
     relationsToJoin.forEach(relation -> joinAttributePath(root, relation));
   }
@@ -196,7 +200,7 @@ public class DinaFilterResolver {
     querySpec.getIncludedRelations().forEach(ir -> {
         List<String> attributePath = ir.getAttributePath();
         if (!attributePath.isEmpty()) {
-            Set<String> mappablePath = parseMappablePath(registry, querySpec.getResourceClass(), attributePath, false);
+            Set<String> mappablePath = parseMappableRelationshipPath(registry, querySpec.getResourceClass(), attributePath);
             if (!mappablePath.isEmpty()) {
                 relationsToJoin.add(String.join(".", mappablePath));
             }
@@ -209,23 +213,19 @@ public class DinaFilterResolver {
    * Parses an attribute path starting from the given resourceClass, searching for mappable relationships.
    * 
    * This method iterates through each part of the attribute path and checks if the relationship can be found
-   * within the given resourceClass. If a part of the path cannot be found, an empty set is returned, unless
-   * the partialMatch parameter is set to true, in which case it will return the mappable part of the path up
-   * until the point where it breaks.
+   * within the given resourceClass. If a part of the path cannot be found, an empty set is returned.
    * 
-   * External relationships and attributes that cannot be found will be ignored.
+   * External relationships and relationships that cannot be found will be ignored.
    * 
    * @param registry      The DinaMappingRegistry used for mapping information.
    * @param resourceClass The resourceClass from where to start the search for the attribute.
    * @param attributePath The attribute path to parse, e.g., ("department", "employees") -> department.employees.
-   * @param partialMatch  If true, provides the mappable attribute path up until the path breaks, otherwise returns an empty set.
    * @return A Set containing mappable attribute paths in the order they appear in attributePath.
    */
-  private static Set<String> parseMappablePath(
+  private static Set<String> parseMappableRelationshipPath(
       @NonNull DinaMappingRegistry registry,
       @NonNull Class<?> resourceClass,
-      @NonNull List<String> attributePath,
-      boolean partialMatch) {
+      @NonNull List<String> attributePath) {
     Set<String> fullPath = new LinkedHashSet<>();
     Class<?> dtoClass = resourceClass;
 
@@ -234,16 +234,14 @@ public class DinaFilterResolver {
         fullPath.add(attr);
         dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
       } else {
-        // Cannot be found or is an external relationship.
-        if (!partialMatch) {
-          fullPath.clear();
+        // Internal relationship not found. Clear the attribute path and return an empty path.
+        fullPath.clear();
 
-          String attributePathStr = String.join(".", attributePath);
-          String resourceClassName = resourceClass.getCanonicalName();
-          log.debug(
-              "The attribute path '{}' cannot be found on the '{}' resource. Please ensure that the attribute is present on the resource and it's not pointing to an external relationship. The include will be ignored.",
-              attributePathStr, resourceClassName);
-        }
+        String attributePathStr = String.join(".", attributePath);
+        String resourceClassName = resourceClass.getCanonicalName();
+        log.debug(
+            "The attribute path '{}' cannot be found on the '{}' resource. Please ensure that the attribute is present on the resource and it's not pointing to an external relationship. The include will be ignored.",
+            attributePathStr, resourceClassName);
 
         break;
       }
