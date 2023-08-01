@@ -89,6 +89,9 @@
 			<column name="department_id" type="integer">
 				<constraints foreignKeyName="fk_employee_department" references="department(id)"/>
 			</column>
+			<column name="manager_id" type="integer">
+				<constraints foreignKeyName="fk_employee_manager" references="person(id)"/>
+			</column>
 		</createTable>
 	</changeSet>
 
