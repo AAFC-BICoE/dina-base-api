@@ -57,5 +57,25 @@ public class JSONApiDocumentStructureTest {
 
     Map<String, Object> mergedMap = JSONApiDocumentStructure.mergeNestedMapUsingDotNotation(testMap);
     assertEquals("val nested 1", mergedMap.get("attribute2.nested1"));
+    // attributes1 should be there
+    assertEquals("val1", mergedMap.get("attribute1"));
   }
+
+  @Test
+  public void onExtractNestedMapUsingDotNotation_expectedResultReturned() {
+
+    Map<String, Object> testMap = Map.of(
+      "attribute1", "val1",
+      "attribute2", Map.of("nested1", "val nested 1"));
+
+    JSONApiDocumentStructure.ExtractNestedMapResult nestedMap =
+      JSONApiDocumentStructure.extractNestedMapUsingDotNotation(testMap);
+
+    assertEquals("attribute2", nestedMap.usedKeys().iterator().next());
+    assertEquals("val nested 1", nestedMap.nestedMapsMap().get("attribute2.nested1"));
+
+    // attribute1 should not be extracted since it doesn't point to a map
+    assertNull(nestedMap.nestedMapsMap().get("attribute1"));
+  }
+
 }
