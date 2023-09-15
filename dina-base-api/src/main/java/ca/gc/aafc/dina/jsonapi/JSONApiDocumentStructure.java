@@ -109,22 +109,47 @@ public final class JSONApiDocumentStructure {
 
   /**
    * If the value of a map entry from the provided map is another map, extract it using dot notation.
-   * See {@link #extractNestedMapUsingDotNotation(Map)}
+   * This function will recursively extract nested maps.
+   * See {@link #mergeNestedMapUsingDotNotation(Map)}
    * @param theMap
    * @return result of the extraction as {@link ExtractNestedMapResult}
    */
   public static ExtractNestedMapResult extractNestedMapUsingDotNotation(Map<String, Object> theMap) {
     Set<String> keysUsed = new HashSet<>();
     Map<String, Object> newMap = new HashMap<>();
+
     for (var entry : theMap.entrySet()) {
-      if (entry.getValue() instanceof Map<?, ?> entryAsMap) {
+      if (entry.getValue() instanceof Map<?, ?> entryAsMapInitialLevel) {
         keysUsed.add(entry.getKey());
-        for (var b : entryAsMap.entrySet()) {
-          newMap.put(entry.getKey() + "." + b.getKey(), b.getValue());
+        // Try to see if we have another map inside the current map
+        ExtractNestedMapResult nextLevelResult = extractNestedMapUsingDotNotation(
+          (Map<String, Object>) entryAsMapInitialLevel);
+
+        // add elements under the new computed key except if the value is another map
+        for (var initialMapElement : entryAsMapInitialLevel.entrySet()) {
+          if(!nextLevelResult.isUsedKey(initialMapElement.getKey().toString())) {
+            addToMapWithContext(entry.getKey(), initialMapElement.getKey().toString(), initialMapElement.getValue(), newMap);
+          }
+        }
+        // add the elements of the next (deeper) map (if there are some)
+        for(var nextLevelMapElement : nextLevelResult.nestedMapsMap().entrySet()) {
+          addToMapWithContext(entry.getKey(),
+            nextLevelMapElement.getKey(), nextLevelMapElement.getValue(), newMap);
         }
       }
     }
     return new ExtractNestedMapResult(newMap, keysUsed);
+  }
+
+  /**
+   * Compute a new key with a context prefix to add a value to the provided map.
+   * @param context
+   * @param key
+   * @param value
+   * @param theMap
+   */
+  private static void addToMapWithContext(String context, String key, Object value, Map<String, Object> theMap) {
+    theMap.put(context + "." + key, value);
   }
 
   /**
@@ -144,6 +169,13 @@ public final class JSONApiDocumentStructure {
    * @param usedKeys keys that were representing a map before getting extracted into nestedMapsMap
    */
   public record ExtractNestedMapResult(Map<String, Object> nestedMapsMap, Set<String> usedKeys) {
+
+    public boolean isUsedKey(String key) {
+      if (usedKeys == null || key == null) {
+        return false;
+      }
+      return usedKeys.contains(key);
+    }
   }
 
 }
