@@ -8,7 +8,9 @@ import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.UUID;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -19,7 +21,7 @@ public class DinaObjectSummaryServiceIT extends BasePostgresItContext {
   private DinaRepositoryIT.DinaPersonService personService;
 
   @Inject
-  private DinaObjectSummaryService authorizationSummaryService;
+  private DinaObjectSummaryService summaryService;
 
   @Test
   public void findDinaObjectSummaryByUUID_onUniqueEntry_dinaObjectSummaryLoadedByUUID() {
@@ -28,8 +30,13 @@ public class DinaObjectSummaryServiceIT extends BasePostgresItContext {
     personService.flush();
 
     DinaObjectSummary
-      as = authorizationSummaryService.findDinaObjectSummaryByUUID(Person.class, person1.getUuid());
+      as = summaryService.findDinaObjectSummaryByUUID(Person.class, person1.getUuid());
     assertEquals(person1.getGroup(), as.getGroup());
+  }
+
+  @Test
+  public void findDinaObjectSummaryByUUID_onNotFound_nullReturned() {
+    assertNull(summaryService.findDinaObjectSummaryByUUID(Person.class, UUID.randomUUID()));
   }
 
 }
