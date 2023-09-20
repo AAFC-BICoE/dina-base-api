@@ -1,6 +1,11 @@
 grammar SimpleSearchFilter;
 
-expr: filterExpression;
+expr: simpleSimple;
+
+simpleSimple: (filterExpression
+  | sortExpression
+  | pageExpression
+  | includeExpression)*;
 
 // Examples:
 // filter[name]=a name&filter[theDate][GT]=2015-10-01
@@ -8,17 +13,29 @@ expr: filterExpression;
 // page[offset]=0&page[limit]=10
 // include=author.name
 filterExpression
-  : 'filter[' filterAttribute ']' '[' filterOp ']=' filterValue (','filterValue)* ('&' filterExpression)*
+  : ('&')* 'filter[' attributeValue ']' '[' filterOp ']='
+  filterValue (','filterValue)*
+  ;
+sortExpression
+  : ('&')* 'sort='attributeValue (','attributeValue)*
+  ;
+pageExpression
+  : ('&')* 'page[' pageOp ']='NUMBER
+  ;
+includeExpression
+  : ('&')* 'include='attributeValue (','attributeValue)*
   ;
 
-filterAttribute: TEXT;
+attributeValue: TEXT;
 filterOp: EQ | NEQ;
-filterValue: TEXT;
+pageOp: LIMIT | OFFSET;
+filterValue: NUMBER | TEXT;
 
 // lexer rule in order
 EQ: 'EQ';
 NEQ: 'NEQ';
-//NUMBER
-//VAR_NAME: [a-zA-Z_][a-zA-Z0-9_]*;
-TEXT: [a-zA-Z0-9_]*;
+LIMIT: 'limit';
+OFFSET: 'offset';
+NUMBER: [0-9]+;
+TEXT: [a-zA-Z0-9_\-.]+;
 WS: [ \n\t\r]+ -> skip;
