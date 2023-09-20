@@ -8,11 +8,14 @@ import com.github.tennaito.rsql.misc.ArgumentParser;
 import cz.jirutka.rsql.parser.RSQLParser;
 import cz.jirutka.rsql.parser.ast.Node;
 import io.crnk.core.engine.internal.utils.PropertyUtils;
+import io.crnk.core.queryspec.AbstractPathSpec;
 import io.crnk.core.queryspec.Direction;
 import io.crnk.core.queryspec.FilterSpec;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
+import lombok.extern.log4j.Log4j2;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -41,13 +44,14 @@ import java.util.stream.Stream;
  * DinaFilterResolver handles the responsibilities for dina repo filtering operations. Those responsibilities
  * are the following.
  * <pre>
- *    <ul>
+ *   <ul>
  *    <li>Resolving filter adapter</li>
  *    <li>Generating JPA predicates for filtering</li>
  *    <li>Generating JPA Order by's for filtering</li>
  *  </ul>
  * </pre>
  */
+@Log4j2
 public class DinaFilterResolver {
 
   private final JpaPredicateVisitor<Object> visitor = new JpaPredicateVisitor<>();
@@ -119,13 +123,14 @@ public class DinaFilterResolver {
   }
 
   /**
-   * Convenience method to left join relations that have been parsed from a given querySpec using a mapping
-   * registry.
+   * Performs LEFT JOIN fetches to join the related entities specified in the QuerySpec's sort attributes.
    *
-   * @param <E>       root entity type
-   * @param root      root path of entity
-   * @param querySpec query spec to parse
-   * @param registry  registry to use to determine relations
+   * This method is used to perform LEFT JOIN fetches on related entities in a Root object, based on
+   * the sort attributes specified in a QuerySpec object.
+   *
+   * @param root       The Root object to which the related entities are to be joined.
+   * @param querySpec  The QuerySpec object containing the sorting information.
+   * @param registry   The DinaMappingRegistry used for mapping information.
    */
   public static <E extends DinaEntity> void leftJoinSortRelations(Root<E> root, @NonNull QuerySpec querySpec,
     @NonNull DinaMappingRegistry registry) {
@@ -134,17 +139,29 @@ public class DinaFilterResolver {
       return;
     }
 
-    List<Set<String>> relationsToJoin = new ArrayList<>();
-    querySpec.getSort().forEach(sort ->
-            relationsToJoin.add(parseMappablePaths(registry, querySpec.getResourceClass(), sort.getAttributePath())));
+    // Remove the last element from the sort attribute path since we want to only include the nested
+    // relationship. Ex. "department.name" would retrieve "department".
+    List<List<String>> relationsToJoin = new ArrayList<>();
+    querySpec.getSort().stream().map(AbstractPathSpec::getAttributePath).forEach(sort -> relationsToJoin
+        .add(parseMappableRelationshipPath(registry, querySpec.getResourceClass(),
+            sort.size() <= 1 ? sort
+                : sort.subList(0, sort.size() - 1))));
 
     relationsToJoin.forEach(relation -> joinAttributePath(root, relation));
   }
 
   /**
-   * Return the include section of the JSON:API call.
-   * @param querySpec
-   * @return Set with all the includes or an empty set. Never null.
+   * Extracts the included attribute paths from the given QuerySpec as a Set.
+   *
+   * This method extracts the included attribute paths from the provided QuerySpec and returns
+   * them as a Set of Strings. The included attribute paths represent chains of relationships between
+   * entities, using dot notation. For example, "departments.employees" represents a join between the
+   * Department entity and the Employee entity via the "employees" attribute.
+   *
+   * @param querySpec The QuerySpec object from which the included attribute paths are extracted.
+   * @return A Set containing the included attribute paths in the QuerySpec.
+   *         The attribute paths are represented as chains of relationship names separated by dots.
+   *         If no attribute paths are included in the QuerySpec, an empty Set is returned.
    */
   public static Set<String> extractIncludesSet(@NonNull QuerySpec querySpec) {
     // getIncludedRelations never returns null
@@ -154,59 +171,91 @@ public class DinaFilterResolver {
 
     Set<String> includes = new HashSet<>();
     querySpec.getIncludedRelations().forEach(ir ->
-            includes.addAll(ir.getAttributePath()));
+        includes.add(String.join(".", ir.getAttributePath())));
     return includes;
   }
-
+  
   /**
-   * Extracts relationships from the query specs and make sure they are valid.
-   * @param querySpec
-   * @param registry
-   * @return Set with all the relationships or an empty set. Never null.
+   * Extracts relationships from the QuerySpec and ensures their validity.
+   *
+   * This method extracts the relationships (attribute paths) from the provided QuerySpec and validates
+   * them using the given DinaMappingRegistry. The relationships are represented as chains of relationship
+   * names separated by dots, and nested relationships will be broken up to individual components.
+   * For example, "departments.employees" represents a join between the Department entity and the Employee
+   * entity via the "employees" attribute.
+   *
+   * @param querySpec The QuerySpec object from which the relationships are extracted and validated.
+   * @param registry  The DinaMappingRegistry used for mapping information to validate the relationships.
+   * @return A Set containing the extracted relationships from the QuerySpec.
+   *         The relationships are represented as valid chains of relationship names separated by dots.
+   *         If no relationships are present in the QuerySpec, an empty Set is returned.
    */
   public static Set<String> extractRelationships(@NonNull QuerySpec querySpec, @NonNull DinaMappingRegistry registry) {
     // getIncludedRelations never returns null
-    if( querySpec.getIncludedRelations().isEmpty() ) {
+    if (querySpec.getIncludedRelations().isEmpty()) {
       return Set.of();
     }
 
     Set<String> relationsToJoin = new HashSet<>();
-    querySpec.getIncludedRelations().forEach(ir ->
-            relationsToJoin.addAll(parseMappablePaths(registry, querySpec.getResourceClass(), ir.getAttributePath())));
+    querySpec.getIncludedRelations().forEach(ir -> {
+      List<String> attributePath = ir.getAttributePath();
+      if (!attributePath.isEmpty()) {
+        List<String> mappablePath = parseMappableRelationshipPath(registry, querySpec.getResourceClass(), attributePath);
+        if (!mappablePath.isEmpty()) {
+          relationsToJoin.add(String.join(".", mappablePath));
+        }
+      }
+    });
     return relationsToJoin;
   }
 
   /**
-   *
-   * @param registry
-   * @param resourceClass
-   * @param attributePath
-   * @return never null
+   * Parses an attribute path starting from the given resourceClass, searching for mappable relationships.
+   * 
+   * This method iterates through each part of the attribute path and checks if the relationship can be found
+   * within the given resourceClass. If a part of the path cannot be found, an empty list is returned.
+   * 
+   * External relationships and relationships that cannot be found will be ignored.
+   * 
+   * @param registry      The DinaMappingRegistry used for mapping information.
+   * @param resourceClass The resourceClass from where to start the search for the attribute.
+   * @param attributePath The attribute path to parse, e.g., ("department", "employees") -> department.employees.
+   * @return A List containing mappable attribute paths in the order they appear in attributePath.
    */
-  private static Set<String> parseMappablePaths(
-          @NonNull DinaMappingRegistry registry,
-          @NonNull Class<?> resourceClass,
-          @NonNull List<String> attributePath) {
-    Set<String> relationPaths = new HashSet<>();
+  private static List<String> parseMappableRelationshipPath(
+      @NonNull DinaMappingRegistry registry,
+      @NonNull Class<?> resourceClass,
+      @NonNull List<String> attributePath) {
+    List<String> fullPath = new ArrayList<>(attributePath.size());
     Class<?> dtoClass = resourceClass;
+
     for (String attr : attributePath) {
       if (hasMappableRelation(registry, dtoClass, attr)) {
-        relationPaths.add(attr);
+        fullPath.add(attr);
         dtoClass = PropertyUtils.getPropertyClass(dtoClass, attr);
       } else {
-        break;
+        // Internal relationship not found. Return an empty path.
+        log.debug(
+          "The attribute path '{}' cannot be found on the '{}' resource. Please ensure that the attribute is present on the resource and it's not pointing to an external relationship. The include will be ignored.",
+          () -> String.join(".", attributePath), resourceClass::getCanonicalName);
+        return List.of();
       }
     }
-    return relationPaths;
+    return fullPath;
   }
 
   /**
-   * Returns true if a given class has a given relation.
+   * Checks if a given class has a specified relation.
    *
-   * @param registry registry to determine results
-   * @param aClass   class to evaluate
-   * @param relation relation to evaluate
-   * @return true if a given class has a given relation.
+   * This method determines whether the provided class has a relation with the specified name.
+   * It uses the DinaMappingRegistry to find mappable relations for the given class and compares the
+   * relation names in a case-insensitive manner with the provided relation name.
+   *
+   * @param registry The DinaMappingRegistry used for finding mappable relations.
+   * @param aClass   The class to be evaluated for the specified relation.
+   * @param relation The name of the relation to be checked in the class.
+   *
+   * @return {@code true} if the class has the specified relation; otherwise, {@code false}.
    */
   private static boolean hasMappableRelation(DinaMappingRegistry registry, Class<?> aClass, String relation) {
     return registry.findMappableRelationsForClass(aClass)
@@ -309,7 +358,17 @@ public class DinaFilterResolver {
     }).collect(Collectors.toList());
   }
 
-  private static void joinAttributePath(Root<?> root, Set<String> attributePath) {
+  /**
+   * Joins multiple attribute paths in a Root object using LEFT JOIN fetches.
+   *
+   * This method is used to join multiple attribute paths in a Root object using LEFT JOIN fetches.
+   * The attribute paths are provided as a List of Strings, and the method performs successive LEFT JOIN
+   * fetches for each attribute path in the list.
+   *
+   * @param root          The Root object to which the attribute paths are to be joined.
+   * @param attributePath A List of Strings representing the attribute paths to be joined.
+   */
+  private static void joinAttributePath(Root<?> root, List<String> attributePath) {
     if (root == null || CollectionUtils.isEmpty(attributePath)) {
       return;
     }

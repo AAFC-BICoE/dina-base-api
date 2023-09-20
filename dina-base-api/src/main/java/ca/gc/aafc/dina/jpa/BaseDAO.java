@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.jpa;
 import io.crnk.core.engine.information.bean.BeanInformation;
 import lombok.NonNull;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.Session;
 import org.hibernate.SimpleNaturalIdLoadAccess;
@@ -82,13 +83,32 @@ public class BaseDAO {
   }
 
   /**
-   * Creates an entityGraph for the provided attribute nodes.
-   * @param entityClass
-   * @return
+   * Creates an EntityGraph for the specified entity class with the given attribute nodes.
+   *
+   * This method constructs an EntityGraph for the provided entity class and populates it
+   * with the specified attribute nodes. The attribute nodes can represent either single-level 
+   * attributes or nested attributes in a dot-separated format. If an attribute node contains a dot, 
+   * it will be treated as a nested attribute, and a subgraph will be created.
+   *
+   * @param entityClass     The class of the entity for which the EntityGraph is constructed.
+   * @param attributeNodes  The attribute nodes to be included in the EntityGraph.
+   *                        The attribute nodes can be either single-level attributes or nested attributes
+   *                        represented in a dot-separated format (e.g., "attributeName" or "nestedEntity.attributeName").
+   * @return An EntityGraph for the specified entity class with the given attribute nodes.
    */
   public <T> EntityGraph<T> createEntityGraph(Class<T> entityClass, String... attributeNodes) {
     EntityGraph<T> graph = entityManager.createEntityGraph(entityClass);
-    graph.addAttributeNodes(attributeNodes);
+    for (String attribute : attributeNodes) {
+      if (attribute.contains(".")) {
+        String[] parts = StringUtils.split(attribute, ".", 2);
+
+        if (parts.length == 2) {
+          graph.addSubgraph(parts[0]).addAttributeNodes(parts[1]);
+        }
+      } else {
+        graph.addAttributeNodes(attribute);
+      }
+    }
     return graph;
   }
 
@@ -97,7 +117,7 @@ public class BaseDAO {
    * @param typeClass class of the result
    * @param sql sql query. Usually a jpql query.
    * @param parameters optional parameters for the query
-   * @return
+   * @return the POJO/Scalar or null if not found
    */
   public <T> T findOneByQuery(Class<T> typeClass, String sql,
                               List<Pair<String, Object>> parameters) {
@@ -107,7 +127,11 @@ public class BaseDAO {
         tq.setParameter(param.getKey(), param.getValue());
       }
     }
-    return tq.getSingleResult();
+    try {
+      return tq.getSingleResult();
+    } catch (NoResultException nrEx) {
+      return null;
+    }
   }
 
   /**

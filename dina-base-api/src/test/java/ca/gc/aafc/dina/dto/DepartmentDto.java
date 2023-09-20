@@ -53,6 +53,9 @@ public class DepartmentDto {
   @IgnoreDinaMapping()
   private PersonDTO departmentHead;
 
+  @JsonApiRelation(mappedBy = "department")
+  private PersonDTO departmentOwner;
+
   @IgnoreDinaMapping(reason = "simply derived from location")
   private String derivedFromLocation;
 

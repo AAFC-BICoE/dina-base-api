@@ -1,8 +1,10 @@
 package ca.gc.aafc.dina.jsonapi;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -76,7 +78,7 @@ public final class JSONApiDocumentStructure {
 
 
   /**
-   * If the value of the map is another map, merge it using dot notation.
+   * If the value of a map entry from the provided map is another map, merge it using dot notation.
    * Currently, limited to 1 level.
    * Given:
    *   "attribute1": "val1",
@@ -106,6 +108,26 @@ public final class JSONApiDocumentStructure {
   }
 
   /**
+   * If the value of a map entry from the provided map is another map, extract it using dot notation.
+   * See {@link #extractNestedMapUsingDotNotation(Map)}
+   * @param theMap
+   * @return result of the extraction as {@link ExtractNestedMapResult}
+   */
+  public static ExtractNestedMapResult extractNestedMapUsingDotNotation(Map<String, Object> theMap) {
+    Set<String> keysUsed = new HashSet<>();
+    Map<String, Object> newMap = new HashMap<>();
+    for (var entry : theMap.entrySet()) {
+      if (entry.getValue() instanceof Map<?, ?> entryAsMap) {
+        keysUsed.add(entry.getKey());
+        for (var b : entryAsMap.entrySet()) {
+          newMap.put(entry.getKey() + "." + b.getKey(), b.getValue());
+        }
+      }
+    }
+    return new ExtractNestedMapResult(newMap, keysUsed);
+  }
+
+  /**
    * Removes the attributes prefix from the current path.
    * "data.attributes.name" -> "name"
    * @param currentPath
@@ -114,6 +136,14 @@ public final class JSONApiDocumentStructure {
   public static String removeAttributesPrefix(String currentPath) {
     return StringUtils.removeStart(
             StringUtils.removeStart(currentPath, DATA_ATTRIBUTES_PATH), ".");
+  }
+
+  /**
+   * Represents the extraction of nested maps.
+   * @param nestedMapsMap the map containing the nested maps where the key is using the dot notation
+   * @param usedKeys keys that were representing a map before getting extracted into nestedMapsMap
+   */
+  public record ExtractNestedMapResult(Map<String, Object> nestedMapsMap, Set<String> usedKeys) {
   }
 
 }
