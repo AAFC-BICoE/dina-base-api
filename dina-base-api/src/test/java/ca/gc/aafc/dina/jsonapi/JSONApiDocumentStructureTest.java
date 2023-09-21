@@ -66,13 +66,18 @@ public class JSONApiDocumentStructureTest {
 
     Map<String, Object> testMap = Map.of(
       "attribute1", "val1",
-      "attribute2", Map.of("nested1", "val nested 1"));
+      "attribute2", Map.of("nested1", "val nested 1"),
+      "attribute3", Map.of("nestedMap",
+        Map.of("nested3_1", "val nested 3_1", "nested3_2", "val nested 3_2", "nested_3_3", Map.of("nested_3_3_1", "val nested 3_3_1"))));
 
     JSONApiDocumentStructure.ExtractNestedMapResult nestedMap =
       JSONApiDocumentStructure.extractNestedMapUsingDotNotation(testMap);
 
-    assertEquals("attribute2", nestedMap.usedKeys().iterator().next());
+    assertTrue(nestedMap.usedKeys().contains("attribute2"));
+    assertTrue(nestedMap.usedKeys().contains("attribute3"));
     assertEquals("val nested 1", nestedMap.nestedMapsMap().get("attribute2.nested1"));
+    assertEquals("val nested 3_2", nestedMap.nestedMapsMap().get("attribute3.nestedMap.nested3_2"));
+    assertEquals("val nested 3_3_1", nestedMap.nestedMapsMap().get("attribute3.nestedMap.nested_3_3.nested_3_3_1"));
 
     // attribute1 should not be extracted since it doesn't point to a map
     assertNull(nestedMap.nestedMapsMap().get("attribute1"));
