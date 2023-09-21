@@ -1,5 +1,8 @@
 package ca.gc.aafc.dina.vocabulary;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
 
 /**
@@ -12,8 +15,12 @@ public interface VocabularyElement {
    * Immutable and stable key representing the vocabulary.
    * Used as stable identifier within the system boundaries.
    *
+   * The key is mandatory and can't contain a dot (.).
+   *
    * @return
    */
+  @NotBlank
+  @Pattern(regexp = "^[^.]+$")
   String getKey();
 
   /**
