@@ -12,9 +12,9 @@ import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 
 /**
- * For delimiter-separated files (e.g. CSV/TSV)
+ * For delimiter-separated files (e.g. CSV/TSV).
  */
-public class DelimiterSeparatedConverter {
+public final class DelimiterSeparatedConverter {
 
   public static final String CSV_MEDIA_TYPE = "text/csv";
   public static final String TSV_MEDIA_TYPE = "text/tab-separated-values";
