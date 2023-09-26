@@ -20,6 +20,10 @@ public class DelimiterSeparatedConverter {
   public static final String TSV_MEDIA_TYPE = "text/tab-separated-values";
   public static final Set<String> SUPPORTED_TYPES = Set.of(CSV_MEDIA_TYPE, TSV_MEDIA_TYPE);
 
+  private DelimiterSeparatedConverter() {
+    // utility class
+  }
+
   public static boolean isSupported(String mediaType) {
     return SUPPORTED_TYPES.contains(mediaType);
   }
