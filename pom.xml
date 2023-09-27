@@ -46,8 +46,7 @@
 
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
-    <keycloak-starter.version>19.0.3</keycloak-starter.version>
-    <bcprov-jdk15on.version>1.68</bcprov-jdk15on.version>
+    <keycloak-starter.version>20.0.5</keycloak-starter.version>
     <snakeyaml.version>1.33</snakeyaml.version>
 
     <spring-security.version>5.7.10</spring-security.version>
@@ -97,14 +96,7 @@
       <artifactId>keycloak-spring-boot-starter</artifactId>
       <version>${keycloak-starter.version}</version>
     </dependency>
-
-     <!-- only required until keycloak uses 1.68 -->
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>
-      <version>${bcprov-jdk15on.version}</version>
-    </dependency>
-
+    
     <!-- Java standard extensions -->
     <dependency>
       <groupId>javax.inject</groupId>
