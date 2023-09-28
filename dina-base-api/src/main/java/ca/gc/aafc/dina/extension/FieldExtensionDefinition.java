@@ -6,9 +6,8 @@ import java.util.Objects;
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
 import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
+import ca.gc.aafc.dina.vocabulary.VocabularyElement;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -86,10 +85,8 @@ public class FieldExtensionDefinition {
 
     /**
      * The key should not contain dot(.) since it is the character used to reference
-     * a key within an extension.
+     * a key within an extension. See {@link VocabularyElement#getKey()}
      */
-    @NotBlank
-    @Pattern(regexp = "^[^.]+$")
     private String key;
 
     private String name;

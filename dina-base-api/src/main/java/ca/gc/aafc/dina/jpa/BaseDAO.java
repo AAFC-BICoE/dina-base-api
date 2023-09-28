@@ -117,7 +117,7 @@ public class BaseDAO {
    * @param typeClass class of the result
    * @param sql sql query. Usually a jpql query.
    * @param parameters optional parameters for the query
-   * @return
+   * @return the POJO/Scalar or null if not found
    */
   public <T> T findOneByQuery(Class<T> typeClass, String sql,
                               List<Pair<String, Object>> parameters) {
@@ -127,7 +127,11 @@ public class BaseDAO {
         tq.setParameter(param.getKey(), param.getValue());
       }
     }
-    return tq.getSingleResult();
+    try {
+      return tq.getSingleResult();
+    } catch (NoResultException nrEx) {
+      return null;
+    }
   }
 
   /**

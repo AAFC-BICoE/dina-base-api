@@ -1,8 +1,5 @@
 package ca.gc.aafc.dina.workbook;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import lombok.Builder;
-import lombok.Getter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -11,13 +8,11 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@SuppressFBWarnings({ "EI_EXPOSE_REP", "EI_EXPOSE_REP2" })
 public final class WorkbookConverter {
 
   private static final String SUPPORTED_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -99,16 +94,4 @@ public final class WorkbookConverter {
     return sheetContent;
   }
 
-  @Builder
-  @Getter
-  public static final class WorkbookRow {
-    private final int rowNumber;
-
-    private final String[] content;
-
-    @Override
-    public String toString() {
-      return rowNumber + ":" + Arrays.toString(content);
-    }
-  }
 }
