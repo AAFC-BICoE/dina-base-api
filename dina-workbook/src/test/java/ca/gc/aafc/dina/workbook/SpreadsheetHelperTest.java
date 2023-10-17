@@ -262,6 +262,15 @@ public class SpreadsheetHelperTest {
     cell = createTestWorkbookCell();
     cell.setCellValue(42);
     assertEquals("42", SpreadsheetHelper.getCellAsString(cell));
+
+    //numeric date
+    java.sql.Date date = java.sql.Date.valueOf(LocalDate.of(2020,2, 4));
+    CellStyle dateStyle = cell.getRow().getSheet().getWorkbook().createCellStyle();
+    // Set data format to mimic a date
+    dateStyle.setDataFormat((short) 14);
+    cell.setCellStyle(dateStyle);
+    cell.setCellValue(date);
+    assertEquals("2020-02-04", SpreadsheetHelper.getCellAsString(cell));
   }
 
   @Test
