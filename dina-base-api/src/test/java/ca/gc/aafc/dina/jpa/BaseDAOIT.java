@@ -356,6 +356,14 @@ public class BaseDAOIT extends BasePostgresItContext {
     assertTrue(baseDAO.isLoaded(depList.get(0), "employees"));
     assertTrue(baseDAO.isLoaded(depList.get(0).getEmployees().get(0), "manager"));
     assertNotNull(depList.get(0).getEmployees().get(0).getManager());
+
+    // detach the entities to force reload
+    baseDAO.detach(depList.get(0));
+
+    // try with findOneByNaturalId
+    Department departmentFromFindOne = baseDAO.findOneByNaturalId(department.getUuid(), Department.class, Map.of(BaseDAO.LOAD_GRAPH_HINT_KEY,
+      baseDAO.createEntityGraph(Department.class, "employees.manager")));
+    assertTrue(baseDAO.isLoaded(departmentFromFindOne, "employees"));
   }
 
   @Test
