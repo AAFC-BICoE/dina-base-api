@@ -208,16 +208,16 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
       (criteriaBuilder, root, em) -> predicateSupplier.apply(criteriaBuilder, root));
   }
 
-  /**
-   * Find an entity by its NaturalId. The method assumes that the naturalId is unique.
-   *
-   * @param naturalId   - natural id of entity
-   * @param entityClass - class of entity
-   * @return the matched entity
-   */
+
   @Override
   public <T> T findOne(Object naturalId, Class<T> entityClass) {
     return baseDAO.findOneByNaturalId(naturalId, entityClass);
+  }
+
+  @Override
+  public <T> T findOne(Object naturalId, Class<T> entityClass, Set<String> relationships) {
+    Map<String, Object> hints = relationships.isEmpty() ? null : relationshipPathToLoadHints(entityClass, relationships);
+    return baseDAO.findOneByNaturalId(naturalId, entityClass, hints);
   }
 
   /**
