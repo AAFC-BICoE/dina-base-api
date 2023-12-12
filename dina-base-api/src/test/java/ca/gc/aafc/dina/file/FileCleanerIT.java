@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TempFileCleanerIT {
+public class FileCleanerIT {
 
   @Test
   public void tempFileCleaner_onAlwaysTruePredicate_fileRemoved() throws IOException {
@@ -24,16 +24,16 @@ public class TempFileCleanerIT {
     Path p = testFolder.resolve(testFilename);
     Files.writeString(p, testText);
 
-    TempFileCleaner ttc = TempFileCleaner.newInstance(testFolder, (path) -> true);
+    FileCleaner ttc = FileCleaner.newInstance(testFolder, (path) -> true);
     ttc.clean();
     assertFalse(p.toFile().exists());
 
     Path innerFolder = testFolder.resolve("folder1");
-    innerFolder.toFile().mkdir();
+    assertTrue(innerFolder.toFile().mkdir());
     Path p2 = innerFolder.resolve(testFilename2);
     Files.writeString(p2, testText);
 
-    ttc = TempFileCleaner.newInstance(testFolder, (path) -> true);
+    ttc = FileCleaner.newInstance(testFolder, (path) -> true);
     ttc.clean();
     assertFalse(p2.toFile().exists());
 

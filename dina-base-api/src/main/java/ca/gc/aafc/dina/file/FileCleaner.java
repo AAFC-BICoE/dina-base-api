@@ -16,11 +16,11 @@ import lombok.SneakyThrows;
 
 /**
  * Deletes file, recursively, from a root path if the provided predicate returns true.
- * By default, only files will be checked (no folders and no symlinks).
+ * By default, only files will be checked (no folders/no symlinks).
  *
  * Some checks are also included to avoid file system root or non-existing folder.
  */
-public class TempFileCleaner {
+public final class FileCleaner {
 
   private final Path rootPath;
   private final Predicate<Path> predicate;
@@ -28,41 +28,48 @@ public class TempFileCleaner {
   /**
    * Creates a default instance where the provided predicate will be combined with the buildFileOnlyPredicate.
    * Folders and symlinks will be ignored.
-   * @param _rootPath
+   * @param rootPath
    * @param predicate
    * @return
    */
-  public static TempFileCleaner newInstance(Path _rootPath, Predicate<Path> predicate) {
-    return new TempFileCleaner(_rootPath, buildFileOnlyPredicate().and(predicate));
+  public static FileCleaner newInstance(Path rootPath, Predicate<Path> predicate) {
+    return new FileCleaner(rootPath, buildFileOnlyPredicate().and(predicate));
   }
 
   /**
    * Private constructor to avoid misuse of always true predicate.
-   * @param _rootPath
+   * @param rootPath
    * @param predicate
    */
-  private TempFileCleaner(Path _rootPath, Predicate<Path> predicate) {
+  private FileCleaner(Path rootPath, Predicate<Path> predicate) {
     // sanity checks
-    Objects.requireNonNull(_rootPath);
+    Objects.requireNonNull(rootPath);
     Objects.requireNonNull(predicate);
-    Path rootPath = _rootPath.normalize();
 
-    if (StreamSupport.stream(rootPath.getFileSystem().getRootDirectories().spliterator(), false)
-      .anyMatch(p -> p.equals(rootPath))) {
-      throw new IllegalArgumentException("can't initialize TempFileCleaner on a root directory");
+    Path normalizedRootPath = rootPath.normalize();
+
+    if (StreamSupport.stream(normalizedRootPath.getFileSystem().getRootDirectories().spliterator(), false)
+      .anyMatch(p -> p.equals(normalizedRootPath))) {
+      throw new IllegalArgumentException("can't initialize FileCleaner on a root directory");
     }
 
-    if (!rootPath.toFile().exists()) {
+    if (!normalizedRootPath.toFile().isDirectory() || !normalizedRootPath.toFile().exists()) {
       throw new IllegalArgumentException(
-        "can't initialize TempFileCleaner on a non-existing directory");
+        "FileCleaner can only be initialized on an existing directory");
     }
 
-    this.rootPath = rootPath;
+    this.rootPath = normalizedRootPath;
     this.predicate = predicate;
   }
 
+  /**
+   * Build a predicate that is checking for the maximum age of a file based on its lastModifiedTime.
+   * @param unit
+   * @param maxAge
+   * @return
+   */
   public static Predicate<Path> buildMaxAgePredicate(TemporalUnit unit, long maxAge) {
-    return (path) -> {
+    return path -> {
       Duration interval = Duration.between(getLastModifiedTime(path).toInstant(), Instant.now());
       return interval.get(unit) > maxAge;
     };
@@ -73,13 +80,17 @@ public class TempFileCleaner {
    * @return
    */
   public static Predicate<Path> buildFileOnlyPredicate() {
-    return (path) -> Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS);
+    return path -> Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS);
   }
 
+  /**
+   * Clean folder recursively by deleting all files that are matching the predicate.
+   * @throws IOException
+   */
   public void clean() throws IOException {
     try (Stream<Path> p = Files.walk(rootPath)) {
       p.filter(predicate)
-        .forEach(TempFileCleaner::delete);
+        .forEach(FileCleaner::delete);
     }
   }
 
