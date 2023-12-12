@@ -8,6 +8,7 @@ import java.nio.file.attribute.FileTime;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.TemporalUnit;
+import java.util.EnumSet;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -22,6 +23,10 @@ import lombok.SneakyThrows;
  */
 public final class FileCleaner {
 
+  public enum Options { ALLOW_NON_TMP }
+
+  private static final String TMP_DIR_PROPERTY = "java.io.tmpdir";
+
   private final Path rootPath;
   private final Predicate<Path> predicate;
 
@@ -33,7 +38,21 @@ public final class FileCleaner {
    * @return
    */
   public static FileCleaner newInstance(Path rootPath, Predicate<Path> predicate) {
-    return new FileCleaner(rootPath, buildFileOnlyPredicate().and(predicate));
+    return new FileCleaner(rootPath, buildFileOnlyPredicate().and(predicate), null);
+  }
+
+  /**
+   * Creates an instance with specific options.
+   * Use carefully, options gives more flexibility but requires the caller to do more checks to avoid
+   * unwanted destructive (file delete) operations.
+   * @param rootPath
+   * @param predicate
+   * @param options
+   * @return
+   */
+  public static FileCleaner newInstance(Path rootPath, Predicate<Path> predicate, EnumSet<Options> options) {
+    Objects.requireNonNull(options);
+    return new FileCleaner(rootPath, buildFileOnlyPredicate().and(predicate), options);
   }
 
   /**
@@ -41,21 +60,29 @@ public final class FileCleaner {
    * @param rootPath
    * @param predicate
    */
-  private FileCleaner(Path rootPath, Predicate<Path> predicate) {
+  private FileCleaner(Path rootPath, Predicate<Path> predicate, EnumSet<Options> options) {
     // sanity checks
     Objects.requireNonNull(rootPath);
     Objects.requireNonNull(predicate);
 
     Path normalizedRootPath = rootPath.normalize();
+    if (!normalizedRootPath.toFile().isDirectory() || !normalizedRootPath.toFile().exists()) {
+      throw new IllegalArgumentException(
+        "FileCleaner can only be initialized on an existing directory");
+    }
+
+    // by default (no options provided) we restrict to tmp directory
+    boolean restrictToTmpDirectory = options == null || !options.contains(Options.ALLOW_NON_TMP);
+
+    if (restrictToTmpDirectory && !normalizedRootPath.startsWith(System.getProperty(TMP_DIR_PROPERTY))) {
+      throw new IllegalArgumentException(
+        "FileCleaner can only be initialized on a directory under " +
+          System.getProperty(TMP_DIR_PROPERTY));
+    }
 
     if (StreamSupport.stream(normalizedRootPath.getFileSystem().getRootDirectories().spliterator(), false)
       .anyMatch(p -> p.equals(normalizedRootPath))) {
       throw new IllegalArgumentException("can't initialize FileCleaner on a root directory");
-    }
-
-    if (!normalizedRootPath.toFile().isDirectory() || !normalizedRootPath.toFile().exists()) {
-      throw new IllegalArgumentException(
-        "FileCleaner can only be initialized on an existing directory");
     }
 
     this.rootPath = normalizedRootPath;

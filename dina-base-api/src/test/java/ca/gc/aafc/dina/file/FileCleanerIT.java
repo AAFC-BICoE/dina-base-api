@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class FileCleanerIT {
 
   @Test
-  public void tempFileCleaner_onAlwaysTruePredicate_fileRemoved() throws IOException {
+  public void fileCleaner_onAlwaysTruePredicate_fileRemoved() throws IOException {
 
     Path testFolder = Files.createTempDirectory("dina-test");
 
