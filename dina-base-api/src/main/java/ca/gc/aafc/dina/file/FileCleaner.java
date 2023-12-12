@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import lombok.SneakyThrows;
 
@@ -108,15 +109,18 @@ public final class FileCleaner {
   /**
    * Build a predicate for checking for a specific file extension of a file.
    * 
-   * The check for the extension is case-sensitive. 
+   * The check for the extension is case-insensitive. 
    * 
-   * @param extension the extension without the leading "." (eg. "txt", "md"), null will return
-   *    true for the predicate if the extension is empty for the file.
+   * @param extension the extension without the leading "." (eg. "txt", "md").
    * @return predicate checking the extension based on the file extension
    *         provided.
    */
   public static Predicate<Path> buildFileExtensionPredicate(String extension) {
-    return path -> FilenameUtils.isExtension(path.getFileName().toString(), extension);
+    if (StringUtils.isBlank(extension)) {
+      throw new IllegalArgumentException("Extension must not be null or empty.");
+    }
+
+    return path -> FilenameUtils.isExtension(path.getFileName().toString().toLowerCase(), extension.toLowerCase());
   }
 
   /**

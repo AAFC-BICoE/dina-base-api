@@ -61,7 +61,7 @@ public class FileCleanerIT {
     Files.writeString(txtNoDotFile, testText);
 
     FileCleaner ttc = FileCleaner.newInstance(testFolder,
-        FileCleaner.buildFileExtensionPredicate(EXTENSION_TXT));
+        FileCleaner.buildFileExtensionPredicate(EXTENSION_TXT.toUpperCase()));
     ttc.clean();
 
     // ".txt" file should be deleted. ".md" should exist. "txt" without the dot should not be deleted.
