@@ -103,6 +103,21 @@ public final class FileCleaner {
   }
 
   /**
+   * Build a predicate for checking for a specific file extension of a file.
+   * 
+   * The check for the extension is not case-sensitive. 
+   * 
+   * @param fileExtension the extension to check for, with or without the
+   *                      beginning dot. e.g: ".txt" or "txt" are accepted.
+   * @return predicate checking the extension based on the file extension
+   *         provided.
+   */
+  public static Predicate<Path> buildFileExtensionPredicate(String fileExtension) {
+    return path -> path.getFileName().toString().toLowerCase()
+        .endsWith(fileExtension.startsWith(".") ? fileExtension.toLowerCase() : "." + fileExtension.toLowerCase());
+  }
+
+  /**
    * Excludes folder and symlinks
    * @return
    */
