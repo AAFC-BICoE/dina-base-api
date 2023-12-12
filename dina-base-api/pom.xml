@@ -29,6 +29,7 @@
     <hypersistence-utils-hibernate-55.version>3.6.1</hypersistence-utils-hibernate-55.version>
     <postgresql.version>42.4.3</postgresql.version>
     <jsoup.version>1.15.3</jsoup.version>
+    <commons-io.version>2.15.1</commons-io.version>
   </properties>
 
   <dependencies>
@@ -136,6 +137,12 @@
       <groupId>com.querydsl</groupId>
       <artifactId>querydsl-core</artifactId>
     </dependency>
+    <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons-io.version}</version>
+    </dependency>
+
     <!-- Spring mybatis -->
     <dependency>
       <groupId>org.mybatis.spring.boot</groupId>
