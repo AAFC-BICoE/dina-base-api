@@ -13,6 +13,9 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import org.apache.commons.io.FilenameUtils;
+
 import lombok.SneakyThrows;
 
 /**
@@ -105,16 +108,15 @@ public final class FileCleaner {
   /**
    * Build a predicate for checking for a specific file extension of a file.
    * 
-   * The check for the extension is not case-sensitive. 
+   * The check for the extension is case-sensitive. 
    * 
-   * @param fileExtension the extension to check for, with or without the
-   *                      beginning dot. e.g: ".txt" or "txt" are accepted.
+   * @param extension the extension without the leading "." (eg. "txt", "md"), null will return
+   *    true for the predicate if the extension is empty for the file.
    * @return predicate checking the extension based on the file extension
    *         provided.
    */
-  public static Predicate<Path> buildFileExtensionPredicate(String fileExtension) {
-    return path -> path.getFileName().toString().toLowerCase()
-        .endsWith(fileExtension.startsWith(".") ? fileExtension.toLowerCase() : "." + fileExtension.toLowerCase());
+  public static Predicate<Path> buildFileExtensionPredicate(String extension) {
+    return path -> FilenameUtils.isExtension(path.getFileName().toString(), extension);
   }
 
   /**
