@@ -129,7 +129,7 @@ public final class SpreadsheetHelper {
       if (cell.getCellType() == CellType.STRING) {
         return LocalDate.parse(cellAsString);
       } else if (DateUtil.isCellDateFormatted(cell)) {
-        return cell.getLocalDateTimeCellValue().toLocalDate();
+        return extractLocalDateFromNumeric(cell);
       } else {
         throw new IllegalArgumentException(
             "'" + cellAsString + "' can not be parsed as yyyy-mm-dd");
@@ -202,10 +202,11 @@ public final class SpreadsheetHelper {
 
   }
 
-
   /**
    * Returns a string representing the content of the cell. Trims the value before returning it.
-   * If the cell type is FORMULA, get the result type of the equation. Else, get the type of the cell.
+   * If the cell type is FORMULA, get the result type of the equation.
+   * If the cell type is NUMERIC but the content is a date, get the date in ISO format.
+   *
    * If the type of the cell is no STRING, BLANK, BOOLEAN or NUMERIC, null is returned.
    * @param cell
    *          a cell from spreadsheet
@@ -231,12 +232,7 @@ public final class SpreadsheetHelper {
         value = String.valueOf(cell.getBooleanCellValue());
         break;
       case NUMERIC:
-        double n = cell.getNumericCellValue();
-        if (Math.ceil(n) == Math.floor(n)) {
-          value = String.valueOf(Math.round(n));
-        } else {
-          value = String.valueOf(n);
-        }
+        value = handleNumericCellAsString(cell);
         break;
       default:
         break; //noop, continue
@@ -310,6 +306,49 @@ public final class SpreadsheetHelper {
       }
     }
     return Optional.empty();
+  }
+
+  /**
+   * Handle the conversion from a numeric cell to String.
+   * Dates will be returned in ISO format.
+   *
+   * @param cell
+   * @return the numeric value as string
+   */
+  private static String handleNumericCellAsString(Cell cell) {
+
+    if (DateUtil.isCellDateFormatted(cell)) {
+      return extractLocalDateFromNumeric(cell).toString();
+    }
+
+    double n = cell.getNumericCellValue();
+    String value;
+    if (Math.ceil(n) == Math.floor(n)) {
+      value = String.valueOf(Math.round(n));
+    } else {
+      value = String.valueOf(n);
+    }
+    return value;
+  }
+
+  /**
+   * Try to extract a local date from a numeric cell.
+   * Throws a {@link IllegalArgumentException} if the content can't be extracted.
+   * @param cell
+   * @return the value as LocalDate
+   */
+  private static LocalDate extractLocalDateFromNumeric(Cell cell) {
+    try {
+      if (cell.getCellType() == CellType.NUMERIC) {
+        return cell.getLocalDateTimeCellValue().toLocalDate();
+      } else {
+        throw new IllegalArgumentException(
+          "'" + cell.getStringCellValue() + "' can not be parsed as yyyy-mm-dd");
+      }
+    } catch (NumberFormatException ex) {
+      throw new IllegalArgumentException(
+        "'" + cell.getStringCellValue() + "' can not be parsed as yyyy-mm-dd", ex);
+    }
   }
 
 }

@@ -1,6 +1,6 @@
 package ca.gc.aafc.dina.entity;
 
-import com.vladmihalcea.hibernate.type.array.StringArrayType;
+import io.hypersistence.utils.hibernate.type.array.StringArrayType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

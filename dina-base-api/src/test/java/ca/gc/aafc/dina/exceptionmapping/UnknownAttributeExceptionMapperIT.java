@@ -23,10 +23,8 @@ import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.queryspec.SortSpec;
-import lombok.extern.log4j.Log4j2;
 
 @Transactional
-@Log4j2
 public class UnknownAttributeExceptionMapperIT extends BasePostgresItContext {
 
   @Inject
