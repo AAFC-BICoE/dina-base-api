@@ -15,11 +15,11 @@ public class MessagingConfigurationCondition extends AnyNestedCondition {
     super(ConfigurationPhase.PARSE_CONFIGURATION);
   }
 
-  @ConditionalOnProperty(prefix = "messaging", name = "isConsumer", havingValue = "true")
+  @ConditionalOnProperty(prefix = "dina.messaging", name = "isConsumer", havingValue = "true")
   static class Value1Condition {
   }
 
-  @ConditionalOnProperty(prefix = "messaging", name = "isProducer", havingValue = "true")
+  @ConditionalOnProperty(prefix = "dina.messaging", name = "isProducer", havingValue = "true")
   static class Value2Condition {
   }
 }
