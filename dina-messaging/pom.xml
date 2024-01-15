@@ -11,24 +11,22 @@
     <version>0.113</version>
   </parent>
 
-  <artifactId>dina-workbook</artifactId>
-  <name>dina-workbook</name>
-  <description>Base DINA API workbook related package based on Apache POI</description>
+  <artifactId>dina-messaging</artifactId>
+  <name>dina-messaging</name>
+  <description>Base DINA messaging classes based on RabbitMQ</description>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
-  <properties>
-    <poi-ooxml.version>5.2.3</poi-ooxml.version>
-  </properties>
 
   <dependencies>
     <dependency>
-      <groupId>com.fasterxml.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-csv</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.poi</groupId>
-      <artifactId>poi-ooxml</artifactId>
-      <version>${poi-ooxml.version}</version>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-amqp</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
