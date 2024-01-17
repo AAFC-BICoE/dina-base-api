@@ -3,4 +3,7 @@ rabbitmq:
   username: guest
   password: guest
   port: 15672
-  queue: testqueue
+  queue1:
+    queue: testqueue1
+  queue2:
+    queue: testqueue2

@@ -4,9 +4,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * Test properties for testqueue1
+ * Test properties for testqueue2
  */
-@ConfigurationProperties(prefix = "rabbitmq.queue1")
+@ConfigurationProperties(prefix = "rabbitmq.queue2")
 @Component
-public class TestQueueProperties extends RabbitMQQueueProperties {
+public class TestSecondQueueProperties extends RabbitMQQueueProperties {
 }

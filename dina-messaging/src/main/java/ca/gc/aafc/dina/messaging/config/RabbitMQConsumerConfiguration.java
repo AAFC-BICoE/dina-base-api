@@ -7,12 +7,13 @@ import org.springframework.context.annotation.Bean;
 
 /**
  *
- * Creates a bean representing the queue (using the name of the queue as the name of the bean).
+ * Creates a bean representing the queue.
  * A Dead Letter Queue (DLQ) is also created to store messages that can't be processed (mostly due to unhandled exceptions).
  *
  * All queues (including DLQ) are using the default exchange ("", empty string) and default routing key (name of the queue).
  *
  * This class is not declared as Configuration by default since the number of queues is unknown.
+ * If more than 1 queue is required, override the create methods to set a name ont he beans otherwise only 1 will be created.
  *
  * Create a concrete class and add the 2 following annotations:
  * Configuration
@@ -30,10 +31,9 @@ public class RabbitMQConsumerConfiguration {
 
   /**
    * Creates a Queue with a Dead Letter Exchange.
-   *
    * @return
    */
-  @Bean("#{queueName}")
+  @Bean
   public Queue createQueue() {
     return QueueBuilder.durable(queueName)
       .deadLetterExchange("")
@@ -41,7 +41,7 @@ public class RabbitMQConsumerConfiguration {
       .build();
   }
 
-  @Bean("#{deadLetterQueueName}")
+  @Bean
   public Queue createDeadLetterQueue() {
     return QueueBuilder.durable(deadLetterQueueName).build();
   }
