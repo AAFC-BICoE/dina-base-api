@@ -10,5 +10,5 @@ import ca.gc.aafc.dina.messaging.DinaMessage;
  *
  */
 public interface RabbitMQMessageConsumer<M extends DinaMessage> {
-  void receiveMessage(final M message);
+  void receiveMessage(M message);
 }
