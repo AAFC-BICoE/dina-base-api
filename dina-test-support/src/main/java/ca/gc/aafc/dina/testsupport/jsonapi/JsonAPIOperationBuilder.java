@@ -1,11 +1,11 @@
 package ca.gc.aafc.dina.testsupport.jsonapi;
 
-import io.crnk.core.engine.http.HttpMethod;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.http.HttpMethod;
 
 /**
  * Helper builder to create CRNK Operation map.

@@ -1,9 +1,9 @@
 package ca.gc.aafc.dina.testsupport.jsonapi;
 
 import ca.gc.aafc.dina.testsupport.entity.ComplexObject;
-import io.crnk.core.engine.http.HttpMethod;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
 
 import java.util.List;
 import java.util.Map;
