@@ -6,11 +6,11 @@ import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPIOperationBuilder;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
-import io.crnk.core.engine.http.HttpMethod;
 import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpMethod;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;

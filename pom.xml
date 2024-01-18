@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.113</version>
+  <version>0.114</version>
 
   <packaging>pom</packaging>
 
@@ -23,6 +23,7 @@
   <modules>
     <module>dina-base-api</module>
     <module>dina-messaging</module>
+    <module>dina-search</module>
     <module>dina-workbook</module>
     <module>dina-test-support</module>
   </modules>
@@ -80,15 +81,7 @@
 	<dependency>
 	    <groupId>org.springframework.boot</groupId>
 	    <artifactId>spring-boot-starter-log4j2</artifactId>
-	</dependency>    
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-jpa</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-validation</artifactId>
-    </dependency>
+	</dependency>
     <!-- keycloak identity oauth2 -->
     <dependency>
       <groupId>org.keycloak</groupId>
@@ -106,12 +99,7 @@
       <groupId>javax.persistence</groupId>
       <artifactId>javax.persistence-api</artifactId>
     </dependency>
-    <!-- crnk -->
-    <dependency>
-      <groupId>io.crnk</groupId>
-      <artifactId>crnk-setup-spring-boot2</artifactId>
-      <version>${crnk.version}</version>
-    </dependency>
+
     <!--Util -->
     <dependency>
       <groupId>org.apache.commons</groupId>

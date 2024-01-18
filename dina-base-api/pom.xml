@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.113</version>
+    <version>0.114</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -17,6 +17,7 @@
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <properties>
+
     <jcip-annotations.version>1.0</jcip-annotations.version>
     <local-javax-jaxb.version>2.3.0.1</local-javax-jaxb.version>
     <javax.activation.version>1.2.0</javax.activation.version>
@@ -51,6 +52,14 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-aop</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
 
     <!-- Used by Spotbug annotation -->
     <dependency>
@@ -76,6 +85,11 @@
       <version>${javax.activation.version}</version>
     </dependency>
     <!-- crnk -->
+    <dependency>
+      <groupId>io.crnk</groupId>
+      <artifactId>crnk-setup-spring-boot2</artifactId>
+      <version>${crnk.version}</version>
+    </dependency>
     <dependency>
       <groupId>io.crnk</groupId>
       <artifactId>crnk-data-jpa</artifactId>
@@ -130,7 +144,7 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.113</version>
+      <version>0.114</version>
       <scope>test</scope>
     </dependency>
     <dependency>
