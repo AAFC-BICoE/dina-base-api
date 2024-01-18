@@ -98,12 +98,7 @@
       <groupId>javax.persistence</groupId>
       <artifactId>javax.persistence-api</artifactId>
     </dependency>
-    <!-- crnk -->
-    <dependency>
-      <groupId>io.crnk</groupId>
-      <artifactId>crnk-setup-spring-boot2</artifactId>
-      <version>${crnk.version}</version>
-    </dependency>
+
     <!--Util -->
     <dependency>
       <groupId>org.apache.commons</groupId>

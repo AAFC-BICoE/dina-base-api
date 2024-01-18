@@ -17,6 +17,7 @@
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <properties>
+
     <jcip-annotations.version>1.0</jcip-annotations.version>
     <local-javax-jaxb.version>2.3.0.1</local-javax-jaxb.version>
     <javax.activation.version>1.2.0</javax.activation.version>
@@ -84,6 +85,11 @@
       <version>${javax.activation.version}</version>
     </dependency>
     <!-- crnk -->
+    <dependency>
+      <groupId>io.crnk</groupId>
+      <artifactId>crnk-setup-spring-boot2</artifactId>
+      <version>${crnk.version}</version>
+    </dependency>
     <dependency>
       <groupId>io.crnk</groupId>
       <artifactId>crnk-data-jpa</artifactId>
