@@ -45,13 +45,23 @@ public interface DinaService<E extends DinaEntity> {
   void delete(E entity);
 
   /**
-   * Find an entity by it's NaturalId. The method assumes that the naturalId is unique.
+   * Find an entity by its NaturalId. The method assumes that the naturalId is unique.
    *
    * @param naturalId   - id of entity
    * @param entityClass - class of entity
-   * @return the matched entity
+   * @return the matched entity or null if not found
    */
   <T> T findOne(Object naturalId, Class<T> entityClass);
+
+  /**
+   * Find an entity by its NaturalId. The method assumes that the naturalId is unique.
+   * The relationships set can be used to force lazy loaded relationships to be loaded.
+   * @param naturalId
+   * @param entityClass
+   * @param relationships relationships to load or an empty set, not null.
+   * @return the matched entity or null if not found
+   */
+  <T> T findOne(Object naturalId, Class<T> entityClass, Set<String> relationships);
 
   /**
    * Returns a reference to an entity that should exist without actually loading it. Useful to set

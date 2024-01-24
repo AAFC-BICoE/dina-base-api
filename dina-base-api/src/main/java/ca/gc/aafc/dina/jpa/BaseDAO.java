@@ -40,7 +40,7 @@ public class BaseDAO {
   public static final String LOAD_GRAPH_HINT_KEY = "javax.persistence.loadgraph";
 
   public static final int DEFAULT_LIMIT = 100;
-
+  
   @PersistenceContext
   private EntityManager entityManager;
 
@@ -156,6 +156,36 @@ public class BaseDAO {
   public <T> T findOneByNaturalId(Object id, Class<T> entityClass) {
     Session session = entityManager.unwrap(Session.class);
     return session.bySimpleNaturalId(entityClass).load(id);
+  }
+
+  /**
+   * Find an entity by its {@link NaturalId}. The method assumes that the
+   * naturalId is unique.
+   *
+   * @param id
+   * @param entityClass
+   * @param hints
+   * @return
+   */
+  public <T> T findOneByNaturalId(Object id, Class<T> entityClass, Map<String, Object> hints) {
+
+    // Hibernate 5 doesn't support hint on natural id, so we are creating a real query
+    CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
+    Root<T> root = criteria.from(entityClass);
+
+    criteria.where(criteriaBuilder.equal(root.get(getNaturalIdFieldName(entityClass)), id));
+    criteria.select(root);
+
+    TypedQuery<T> query = entityManager.createQuery(criteria);
+    if (hints != null) {
+      hints.forEach(query::setHint);
+    }
+    try {
+      return query.getSingleResult();
+    } catch (NoResultException nrEx) {
+      return null;
+    }
   }
 
   /**

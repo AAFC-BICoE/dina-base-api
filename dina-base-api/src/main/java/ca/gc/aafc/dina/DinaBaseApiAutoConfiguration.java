@@ -8,6 +8,11 @@ import io.crnk.spring.jpa.SpringTransactionRunner;
 
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.MeterRegistry;
+
+import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
+import org.springframework.boot.autoconfigure.web.servlet.error.ErrorViewResolver;
+import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,10 +25,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import java.util.Locale;
+
+import ca.gc.aafc.dina.crkn.PatchedCrnkErrorController;
 
 @Configuration
 // Must explicitly depend on "querySpecUrlMapper" so Spring can inject it into this class'
@@ -48,6 +56,14 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
     module.addFilter(new TransactionOperationFilter());
     module.setIncludeChangedRelationships(false);
     module.setResumeOnError(true);
+  }
+
+  /**
+   * override Crnk provided ErrorController so it can work with SpringBoot >= 2.5
+   */
+  @Bean
+  public BasicErrorController jsonapiErrorController(ErrorAttributes errorAttributes, ServerProperties serverProperties, List<ErrorViewResolver> errorViewResolvers) {
+    return new PatchedCrnkErrorController(errorAttributes, serverProperties.getError(), errorViewResolvers);
   }
 
   @Bean

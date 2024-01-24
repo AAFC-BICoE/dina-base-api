@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.111-SNAPSHOT</version>
+    <version>0.115-SNAPSHOT</version>
   </parent>
 
   <artifactId>dina-workbook</artifactId>
@@ -21,6 +21,10 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-csv</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>poi-ooxml</artifactId>
