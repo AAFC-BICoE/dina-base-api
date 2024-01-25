@@ -45,14 +45,11 @@ import java.util.concurrent.CountDownLatch;
 
 @SpringBootTest(classes = {TestDinaBaseApp.class, MessageProducingServiceTest.TestConfig.class},
   properties = {
-    "messaging.isProducer=true",
+    "dina.messaging.isProducer=true",
     "rabbitmq.queue=que",
-    "rabbitmq.exchange=exchange",
-    "rabbitmq.routingkey=routingkey",
     "rabbitmq.username=guest",
     "rabbitmq.password=guest",
-    "rabbitmq.host=localhost",
-    "rabbitmq.port=49198"
+    "rabbitmq.host=localhost"
   })
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 @DirtiesContext //it's an expensive test and we won't reuse the context
@@ -197,11 +194,10 @@ class MessageProducingServiceTest {
 
       @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "que"),
-        exchange = @Exchange(value = "exchange", ignoreDeclarationExceptions = "true"),
-        key = "routingkey"),
+        exchange = @Exchange(value = "que", ignoreDeclarationExceptions = "true")),
         containerFactory = "rabbitListenerContainerFactory"
       )
-      public void processOrder(String data) {
+      public void processMessage(String data) {
         messages.clear();
         messages.add(data);
         latch.countDown();
