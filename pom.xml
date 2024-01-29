@@ -25,6 +25,7 @@
     <module>dina-messaging</module>
     <module>dina-search</module>
     <module>dina-workbook</module>
+    <module>dina-client</module>
     <module>dina-test-support</module>
   </modules>
   
