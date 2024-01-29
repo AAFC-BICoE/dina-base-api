@@ -6,7 +6,7 @@ import ca.gc.aafc.dina.client.config.OpenIdConnectConfig;
 
 public final class AccessTokenRequest {
 
-  private enum GrantType {PASSWORD, REFRESH_TOKEN}
+  private enum GrantType { PASSWORD, REFRESH_TOKEN }
 
   private final String clientId;
   private final GrantType grantType;
