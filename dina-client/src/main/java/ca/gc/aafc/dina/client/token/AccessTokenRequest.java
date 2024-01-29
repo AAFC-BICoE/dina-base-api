@@ -4,7 +4,7 @@ import java.util.Map;
 
 import ca.gc.aafc.dina.client.config.OpenIdConnectConfig;
 
-public class AccessTokenRequest {
+public final class AccessTokenRequest {
 
   private enum GrantType {PASSWORD, REFRESH_TOKEN}
 
