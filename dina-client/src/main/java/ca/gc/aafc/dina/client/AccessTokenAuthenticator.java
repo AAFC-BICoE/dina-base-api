@@ -15,6 +15,7 @@ import ca.gc.aafc.dina.client.token.AccessTokenManager;
  *     OkHttpClient client = new OkHttpClient.Builder()
  *       .authenticator(new AccessTokenAuthenticator(new AccessTokenManager(openIdConfig)))
  *       .build();
+ *
  */
 public class AccessTokenAuthenticator implements Authenticator {
 
@@ -36,7 +37,7 @@ public class AccessTokenAuthenticator implements Authenticator {
       return null;
     }
 
-    return newRequestWithAccessToken(response.request(), accessToken);
+    return newRequestWithBearerToken(response.request(), accessToken);
   }
 
   private boolean isRequestWithAccessToken(Response response) {
@@ -44,7 +45,7 @@ public class AccessTokenAuthenticator implements Authenticator {
     return header != null && header.startsWith("Bearer");
   }
 
-  private Request newRequestWithAccessToken(Request request, String accessToken) {
+  private Request newRequestWithBearerToken(Request request, String accessToken) {
     return request.newBuilder()
       .header("Authorization", "Bearer " + accessToken)
       .build();

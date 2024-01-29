@@ -21,8 +21,6 @@ public class AccessTokenManager {
   private final AccessTokenApiCall accessTokenApiCall;
   private final OpenIdConnectConfig config;
 
-  private final Object refreshSync = new Object();
-
   private String accessToken;
   // in seconds
   private int expiresIn;
@@ -59,17 +57,23 @@ public class AccessTokenManager {
     return accessToken;
   }
 
-  private void acquireAccessToken() throws IOException {
+  private boolean acquireAccessToken() throws IOException {
     log.debug("Acquire token");
     Call<AccessToken> accessTokenCall = accessTokenApiCall.callAccessTokenEndpoint(
       AccessTokenRequest.newPasswordBased(config).toFieldMap());
     Response<AccessToken> accessTokenResponse = accessTokenCall.execute();
+
+    if(!accessTokenResponse.isSuccessful()) {
+      accessToken = null;
+      return false;
+    }
 
     AccessToken token = accessTokenResponse.body();
     accessToken = token.getAccessToken();
     expiresIn = token.getExpiresIn();
     refreshToken = token.getRefreshToken();
     tokenInstant = Instant.now();
+    return true;
   }
 
   private boolean refreshAccessToken() throws IOException {
