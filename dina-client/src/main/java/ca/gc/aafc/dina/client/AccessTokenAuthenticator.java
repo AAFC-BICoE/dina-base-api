@@ -33,16 +33,12 @@ public class AccessTokenAuthenticator implements Authenticator {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    if (!isRequestWithAccessToken(response) || accessToken == null) {
+
+    if (accessToken == null) {
       return null;
     }
 
     return newRequestWithBearerToken(response.request(), accessToken);
-  }
-
-  private boolean isRequestWithAccessToken(Response response) {
-    String header = response.request().header("Authorization");
-    return header != null && header.startsWith("Bearer");
   }
 
   private Request newRequestWithBearerToken(Request request, String accessToken) {
