@@ -11,24 +11,32 @@
     <version>0.116</version>
   </parent>
 
-  <artifactId>dina-workbook</artifactId>
-  <name>dina-workbook</name>
-  <description>Base DINA API workbook related package based on Apache POI</description>
+  <artifactId>dina-client</artifactId>
+  <name>dina-client</name>
+  <description>DINA client</description>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <properties>
-    <poi-ooxml.version>5.2.3</poi-ooxml.version>
+    <okhttp.version>4.9.0</okhttp.version>
+    <retrofit.version>2.9.0</retrofit.version>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>com.fasterxml.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-csv</artifactId>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>${okhttp.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.squareup.retrofit2</groupId>
+      <artifactId>retrofit</artifactId>
+      <version>${retrofit.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.poi</groupId>
-      <artifactId>poi-ooxml</artifactId>
-      <version>${poi-ooxml.version}</version>
+      <groupId>com.squareup.retrofit2</groupId>
+      <artifactId>converter-jackson</artifactId>
+      <version>${retrofit.version}</version>
     </dependency>
   </dependencies>
 

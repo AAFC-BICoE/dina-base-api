@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.115</version>
+  <version>0.116</version>
 
   <packaging>pom</packaging>
 
@@ -25,6 +25,7 @@
     <module>dina-messaging</module>
     <module>dina-search</module>
     <module>dina-workbook</module>
+    <module>dina-client</module>
     <module>dina-test-support</module>
   </modules>
   
