@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.aafc-bicoe</groupId>
+    <artifactId>dina-base-parent</artifactId>
+    <version>0.116-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>dina-client</artifactId>
+  <name>dina-client</name>
+  <description>DINA client</description>
+  <url>https://github.com/AAFC-BICoE/dina-base-api</url>
+
+  <properties>
+    <okhttp.version>4.9.0</okhttp.version>
+    <retrofit.version>2.9.0</retrofit.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>${okhttp.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.squareup.retrofit2</groupId>
+      <artifactId>retrofit</artifactId>
+      <version>${retrofit.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.retrofit2</groupId>
+      <artifactId>converter-jackson</artifactId>
+      <version>${retrofit.version}</version>
+    </dependency>
+  </dependencies>
+
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/mit-license</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+</project>
