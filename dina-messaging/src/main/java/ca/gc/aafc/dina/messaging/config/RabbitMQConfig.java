@@ -59,7 +59,7 @@ public class RabbitMQConfig {
     final RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
     rabbitTemplate.setMessageConverter(createMessageConverter());
 
-    // tell RabbitMQ that messages needs to be delivered
+    // tell RabbitMQ that messages need to be delivered
     rabbitTemplate.setMandatory(true);
 
     if( returnCallback != null) {
