@@ -35,6 +35,12 @@
       <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>io.github.aafc-bicoe</groupId>
+      <artifactId>dina-test-support</artifactId>
+      <version>0.117-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
 
   </dependencies>
 
