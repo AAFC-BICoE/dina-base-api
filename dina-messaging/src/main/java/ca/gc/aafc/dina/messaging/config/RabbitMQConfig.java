@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.messaging.config;
 
-import org.springframework.amqp.core.ReturnedMessage;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -13,8 +12,6 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Optional;
 import javax.inject.Inject;
 import lombok.extern.log4j.Log4j2;
-
-import com.rabbitmq.client.ReturnCallback;
 
 /**
  * Configuration of RabbitMQ related beans
@@ -62,10 +59,11 @@ public class RabbitMQConfig {
     // tell RabbitMQ that messages need to be delivered
     rabbitTemplate.setMandatory(true);
 
-    if( returnCallback != null) {
+    if (returnCallback != null) {
       rabbitTemplate.setReturnsCallback(returnCallback);
-    } else{
-      rabbitTemplate.setReturnsCallback( returned -> log.error("Can't deliver message {}", returned.getMessage()));
+    } else {
+      rabbitTemplate.setReturnsCallback(
+        returned -> log.error("Can't deliver message {}", returned.getMessage()));
     }
 
     return rabbitTemplate;
