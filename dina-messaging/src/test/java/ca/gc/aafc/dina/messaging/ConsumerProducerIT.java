@@ -6,8 +6,6 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -31,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     "dina.messaging.isConsumer=true"
   }
 )
-@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 public class ConsumerProducerIT {
 
   public static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.8.20-management-alpine");
