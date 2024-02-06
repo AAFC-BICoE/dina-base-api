@@ -4,11 +4,13 @@ import java.util.concurrent.CountDownLatch;
 import lombok.Getter;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import ca.gc.aafc.dina.messaging.DinaTestMessage;
 
 @Component
+@ConditionalOnProperty(prefix = "dina.messaging", name = "isConsumer", havingValue = "true")
 public class RabbitMQTestConsumer implements RabbitMQMessageConsumer<DinaTestMessage> {
 
   @Getter
