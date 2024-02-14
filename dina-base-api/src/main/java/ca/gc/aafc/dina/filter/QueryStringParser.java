@@ -11,7 +11,7 @@ import ca.gc.aafc.dina.filter.simple.SimpleSearchFilterParser;
 /**
  * Responsible to parse a query string into a {@link QueryComponent}.
  */
-public class QueryStringParser {
+public final class QueryStringParser {
 
   private QueryStringParser() {
     // utility class
