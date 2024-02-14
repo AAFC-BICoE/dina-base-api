@@ -31,6 +31,7 @@
     <postgresql.version>42.4.3</postgresql.version>
     <jsoup.version>1.15.3</jsoup.version>
     <commons-io.version>2.15.1</commons-io.version>
+    <java-uuid-generator.version>4.3.0</java-uuid-generator.version>
   </properties>
 
   <dependencies>
@@ -152,9 +153,14 @@
       <artifactId>querydsl-core</artifactId>
     </dependency>
     <dependency>
-        <groupId>commons-io</groupId>
-        <artifactId>commons-io</artifactId>
-        <version>${commons-io.version}</version>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>${commons-io.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.uuid</groupId>
+      <artifactId>java-uuid-generator</artifactId>
+      <version>${java-uuid-generator.version}</version>
     </dependency>
 
     <!-- Spring mybatis -->
