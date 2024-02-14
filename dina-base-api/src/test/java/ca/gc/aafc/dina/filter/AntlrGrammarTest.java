@@ -28,7 +28,7 @@ public class AntlrGrammarTest {
     ParseTree tree = parser.simpleFilter();
 
     ParseTreeWalker walker = new ParseTreeWalker();
-    AntlBasedSimpleSearchFilterListener listener= new AntlBasedSimpleSearchFilterListener();
+    AntlrBasedSimpleSearchFilterListener listener= new AntlrBasedSimpleSearchFilterListener();
     walker.walk(listener, tree);
 
 
@@ -38,6 +38,9 @@ public class AntlrGrammarTest {
     assertEquals("position", listener.getSort().get(0));
     assertEquals("-name", listener.getSort().get(1));
     assertEquals("author.name", listener.getInclude().get(0));
+
+    assertEquals(5, listener.getPageOffset());
+    assertEquals(1, listener.getPageLimit());
   }
 
 }

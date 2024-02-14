@@ -8,7 +8,7 @@ filter: 'filter' '[' propertyName ']'( '[' comparison ']' )? '=' attributeValue 
 
 sort: 'sort' '=' sortPropertyName ( ',' sortPropertyName )*;
 
-page: 'page' '[' ( 'limit' | 'offset' ) ']' '=' INT;
+page: 'page' '[' ( 'limit' | 'offset' ) ']' '=' pageValue;
 
 include: 'include' '=' propertyName ( ',' propertyName )*;
 
@@ -27,6 +27,8 @@ attributeValue: (
   | UNDERSCORE
   | DASH
   | SYMBOLS)+;
+
+pageValue: INT;
 
 // lexer rules in order
 INT: [0-9]+;

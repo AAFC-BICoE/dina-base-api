@@ -8,11 +8,14 @@ import com.querydsl.core.types.Ops;
 import ca.gc.aafc.dina.filter.simple.SimpleSearchFilterBaseListener;
 import ca.gc.aafc.dina.filter.simple.SimpleSearchFilterParser;
 
-public class AntlBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListener {
+public class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListener {
 
   private final List<FilterComponent> components = new ArrayList<>();
   private final List<String> includes = new ArrayList<>();
   private final List<String> sortAttributes = new ArrayList<>();
+
+  private Integer pageOffset;
+  private Integer pageLimit;
 
   @Override
   public void exitFilter(SimpleSearchFilterParser.FilterContext ctx) {
@@ -32,6 +35,7 @@ public class AntlBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseL
     }
   }
 
+  @Override
   public void exitInclude(SimpleSearchFilterParser.IncludeContext ctx) {
     for(var attribute :  ctx.propertyName()) {
       includes.add(attribute.getText());
@@ -42,6 +46,15 @@ public class AntlBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseL
   public void exitSort(SimpleSearchFilterParser.SortContext ctx) {
     for(var attribute :  ctx.sortPropertyName()) {
       sortAttributes.add(attribute.getText());
+    }
+  }
+
+  @Override
+  public void exitPage(SimpleSearchFilterParser.PageContext ctx) {
+    if (ctx.getText().contains("offset")) {
+      pageOffset = Integer.valueOf(ctx.pageValue().getText());
+    } else if (ctx.getText().contains("limit")) {
+      pageLimit = Integer.valueOf(ctx.pageValue().getText());
     }
   }
 
@@ -66,6 +79,14 @@ public class AntlBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseL
 
   public List<String> getSort() {
     return sortAttributes;
+  }
+
+  public Integer getPageOffset() {
+    return pageOffset;
+  }
+
+  public Integer getPageLimit() {
+    return pageLimit;
   }
 
   public Ops translateOperator(String op) {
