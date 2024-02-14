@@ -3,18 +3,25 @@ package ca.gc.aafc.dina.util;
 import java.util.UUID;
 
 import com.fasterxml.uuid.Generators;
+import com.fasterxml.uuid.impl.TimeBasedEpochGenerator;
 
 /**
  * Helper class to handle UUID version 7.
  */
 public final class UUIDHelper {
 
+  private static final TimeBasedEpochGenerator GENERATOR = Generators.timeBasedEpochGenerator();
+
   private UUIDHelper() {
     // utility class
   }
 
+  /**
+   * thread-safe per TimeBasedEpochGenerator implementation.
+   * @return
+   */
   public static UUID generateUUIDv7() {
-   return Generators.timeBasedEpochGenerator().generate();
+   return GENERATOR.generate();
   }
 
   /**
