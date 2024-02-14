@@ -8,7 +8,12 @@ import com.querydsl.core.types.Ops;
 import ca.gc.aafc.dina.filter.simple.SimpleSearchFilterBaseListener;
 import ca.gc.aafc.dina.filter.simple.SimpleSearchFilterParser;
 
-public class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListener {
+/**
+ * Antlr-based listener to build specific components.
+ *
+ * Package-protected, implementation details. {@link QueryStringParser} should be used.
+ */
+class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListener {
 
   private final List<FilterComponent> components = new ArrayList<>();
   private final List<String> includes = new ArrayList<>();
