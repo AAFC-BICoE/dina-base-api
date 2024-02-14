@@ -21,7 +21,7 @@ public final class UUIDHelper {
    * @return
    */
   public static UUID generateUUIDv7() {
-   return GENERATOR.generate();
+    return GENERATOR.generate();
   }
 
   /**
