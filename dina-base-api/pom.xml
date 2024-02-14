@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.115-SNAPSHOT</version>
+    <version>0.118-SNAPSHOT</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -25,7 +25,7 @@
     <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
     <javers.version>6.13.0</javers.version>
     <mybatis.version>2.2.2</mybatis.version>
-    <aafc.search.messaging.version>0.20</aafc.search.messaging.version>
+    <aafc.search.messaging.version>0.29</aafc.search.messaging.version>
     <hypersistence-utils-hibernate-55.version>3.6.1</hypersistence-utils-hibernate-55.version>
     <postgresql.version>42.4.3</postgresql.version>
     <jsoup.version>1.15.3</jsoup.version>
@@ -148,7 +148,7 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.115-SNAPSHOT</version>
+      <version>0.118-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>

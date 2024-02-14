@@ -21,6 +21,9 @@ public class ElasticSearchProperties {
   @NotBlank
   private String host;
 
+  /**
+   * If not provided the value will be 0
+   */
   private int port;
 
 }

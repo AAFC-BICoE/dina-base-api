@@ -13,10 +13,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ElasticSearchConfig {
 
+  public static final int DEFAULT_PORT = 9200;
+
   @Bean
   public ElasticsearchClient provideClient(ElasticSearchProperties esProps) {
+    int port = esProps.getPort() <= 0 ? DEFAULT_PORT : esProps.getPort();
     RestClient restClient = RestClient.builder(
-      new HttpHost(esProps.getHost(), esProps.getPort())
+      new HttpHost(esProps.getHost(), port)
     ).build();
 
     // Create the elastic search transport using Jackson and the low level rest client.
