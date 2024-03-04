@@ -14,6 +14,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  */
 public final class WorkbookGenerator {
 
+  private WorkbookGenerator() {
+    //utility class
+  }
+
   /**
    * Generate a workbook from a list of column names.
    * Use in a try-with-resource.
