@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.117</version>
+    <version>0.118</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -28,9 +28,14 @@
     <mybatis.version>2.2.2</mybatis.version>
     <aafc.search.messaging.version>0.29</aafc.search.messaging.version>
     <hypersistence-utils-hibernate-55.version>3.6.1</hypersistence-utils-hibernate-55.version>
-    <postgresql.version>42.4.3</postgresql.version>
+
     <jsoup.version>1.15.3</jsoup.version>
     <commons-io.version>2.15.1</commons-io.version>
+    <java-uuid-generator.version>4.3.0</java-uuid-generator.version>
+
+    <!-- Versions override-->
+    <postgresql.version>42.4.4</postgresql.version>
+
   </properties>
 
   <dependencies>
@@ -144,7 +149,7 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.117</version>
+      <version>0.118</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -152,9 +157,14 @@
       <artifactId>querydsl-core</artifactId>
     </dependency>
     <dependency>
-        <groupId>commons-io</groupId>
-        <artifactId>commons-io</artifactId>
-        <version>${commons-io.version}</version>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>${commons-io.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.uuid</groupId>
+      <artifactId>java-uuid-generator</artifactId>
+      <version>${java-uuid-generator.version}</version>
     </dependency>
 
     <!-- Spring mybatis -->

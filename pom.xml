@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.117</version>
+  <version>0.118</version>
 
   <packaging>pom</packaging>
 
@@ -50,6 +50,9 @@
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
     <keycloak-starter.version>20.0.5</keycloak-starter.version>
+
+    <!-- Versions override-->
+    <org.springframework.version>5.3.32</org.springframework.version>
     <snakeyaml.version>1.33</snakeyaml.version>
 
     <testcontainers.version>1.17.3</testcontainers.version>
