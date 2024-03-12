@@ -98,6 +98,8 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
     return switch (op) {
       case "EQ" -> Ops.EQ;
       case "NEQ" -> Ops.NE;
+      case "LT" -> Ops.LT;
+      case "GT" -> Ops.GT;
       default -> null;
     };
   }
