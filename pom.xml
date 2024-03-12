@@ -25,6 +25,7 @@
     <module>dina-messaging</module>
     <module>dina-search</module>
     <module>dina-workbook</module>
+    <module>dina-filter</module>
     <module>dina-client</module>
     <module>dina-test-support</module>
   </modules>
@@ -54,6 +55,7 @@
     <!-- Versions override-->
     <org.springframework.version>5.3.32</org.springframework.version>
     <snakeyaml.version>1.33</snakeyaml.version>
+    <antlr4.version>4.13.0</antlr4.version>
 
     <testcontainers.version>1.17.3</testcontainers.version>
   </properties>

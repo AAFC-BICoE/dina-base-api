@@ -17,7 +17,6 @@
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <properties>
-
     <jcip-annotations.version>1.0</jcip-annotations.version>
     <local-javax-jaxb.version>2.3.0.1</local-javax-jaxb.version>
     <javax.activation.version>1.2.0</javax.activation.version>
@@ -148,6 +147,11 @@
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
+      <artifactId>dina-filter</artifactId>
+      <version>0.119-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
       <version>0.119-SNAPSHOT</version>
       <scope>test</scope>
@@ -156,6 +160,13 @@
       <groupId>com.querydsl</groupId>
       <artifactId>querydsl-core</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
+      <version>${antlr4.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
