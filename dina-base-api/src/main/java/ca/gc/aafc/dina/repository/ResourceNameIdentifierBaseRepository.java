@@ -56,7 +56,7 @@ public class ResourceNameIdentifierBaseRepository {
       case "type" -> builder.type(fex.value());
       case "name" -> builder.name(fex.value());
       case "group" -> builder.group(fex.value());
-      default -> {} //no-op
+      default -> { } //no-op
     }
   }
 
