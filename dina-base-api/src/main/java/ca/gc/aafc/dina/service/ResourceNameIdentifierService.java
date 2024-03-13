@@ -24,9 +24,17 @@ public class ResourceNameIdentifierService {
     this.baseDAO = baseDAO;
   }
 
-  public UUID findByName(Class<? extends DinaEntity> table, String name, String group) {
-    String sql = "SELECT t.uuid FROM " + table.getName() + " t WHERE group=:group AND name=:name";
-    return baseDAO.findOneByQuery(UUID.class, sql, List.of(Pair.of("name", name),
+  /**
+   * Find the UUID identifier by name (textual name given by the user).
+   * Uniqueness of the name within the group is assumed.
+   * @param entityClass
+   * @param name textual name given by the user to the entity
+   * @param group group where the uniqueness of the name is assumed
+   * @return
+   */
+  public UUID findByName(Class<? extends DinaEntity> entityClass, String name, String group) {
+    String query = "SELECT t.uuid FROM " + entityClass.getName() + " t WHERE group=:group AND name=:name";
+    return baseDAO.findOneByQuery(UUID.class, query, List.of(Pair.of("name", name),
       Pair.of("group", group)));
   }
 

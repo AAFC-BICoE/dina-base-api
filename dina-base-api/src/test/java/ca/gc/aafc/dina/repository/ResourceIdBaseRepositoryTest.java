@@ -36,7 +36,7 @@ public class ResourceIdBaseRepositoryTest {
       .build();
     UUID uuid = personService.createAndFlush(person).getUuid();
 
-    ResourceIdBaseRepository repo = new ResourceIdBaseRepository(resourceNameIdentifierService,
+    ResourceNameIdentifierBaseRepository repo = new ResourceNameIdentifierBaseRepository(resourceNameIdentifierService,
       Map.of("person", Person.class));
     UUID foundUUID = repo.findOne("filter[type][EQ]=person&filter[name][EQ]=xyz abc&filter[group][EQ]=g1");
 
