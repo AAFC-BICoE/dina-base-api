@@ -21,6 +21,9 @@ public class ObjectExportNotification implements DinaMessage {
 
   private String username;
 
+  // name of the export (user provided)
+  private String name;
+
   // temporary object access
   private String toa;
   
