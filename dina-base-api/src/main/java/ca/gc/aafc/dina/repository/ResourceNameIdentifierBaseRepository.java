@@ -8,7 +8,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.querydsl.core.types.Ops;
 
 import ca.gc.aafc.dina.dto.ResourceNameIdentifierDto;
-import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.DinaEntityIdentifiableByName;
 import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.FilterExpression;
