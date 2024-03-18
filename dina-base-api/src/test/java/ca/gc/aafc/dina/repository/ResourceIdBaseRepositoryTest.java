@@ -11,6 +11,7 @@ import ca.gc.aafc.dina.service.ResourceNameIdentifierService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Map;
 import java.util.UUID;
@@ -50,6 +51,6 @@ public class ResourceIdBaseRepositoryTest {
     ResourceNameIdentifierBaseRepository repo = new ResourceNameIdentifierBaseRepository(resourceNameIdentifierService,
       Map.of("person", Person.class));
 
-    repo.findOne("filter");
+    assertThrows(IllegalArgumentException.class, () -> repo.findOne("filter"));
   }
 }
