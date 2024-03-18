@@ -7,6 +7,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.entity.IdentifiableByName;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 
 /**
@@ -32,7 +33,7 @@ public class ResourceNameIdentifierService {
    * @param group group where the uniqueness of the name is assumed
    * @return uuid or null if not found
    */
-  public UUID findByName(Class<? extends DinaEntity> entityClass, String name, String group) {
+  public <T extends DinaEntity & IdentifiableByName> UUID findByName(Class<T> entityClass, String name, String group) {
     String query = "SELECT t.uuid FROM " + entityClass.getName() + " t WHERE group=:group AND name=:name";
     return baseDAO.findOneByQuery(UUID.class, query, List.of(Pair.of("name", name),
       Pair.of("group", group)));

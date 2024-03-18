@@ -9,6 +9,7 @@ import com.querydsl.core.types.Ops;
 
 import ca.gc.aafc.dina.dto.ResourceNameIdentifierDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.entity.DinaEntityIdentifiableByName;
 import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.FilterExpression;
 import ca.gc.aafc.dina.filter.FilterGroup;
@@ -22,10 +23,10 @@ import ca.gc.aafc.dina.service.ResourceNameIdentifierService;
 public class ResourceNameIdentifierBaseRepository {
 
   private final ResourceNameIdentifierService resourceNameIdentifierService;
-  private final Map<String, Class< ? extends DinaEntity>> typeToEntity;
+  private final Map<String, Class< ? extends DinaEntityIdentifiableByName>> typeToEntity;
 
   public ResourceNameIdentifierBaseRepository(ResourceNameIdentifierService resourceNameIdentifierService,
-                                              Map<String, Class<? extends DinaEntity>> typeToEntity) {
+                                              Map<String, Class<? extends DinaEntityIdentifiableByName>> typeToEntity) {
 
     this.resourceNameIdentifierService = resourceNameIdentifierService;
     this.typeToEntity = typeToEntity;

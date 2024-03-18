@@ -27,7 +27,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @TypeDef(name = "string-array", typeClass = StringArrayType.class)
-public class Person implements DinaEntity {
+public class Person implements DinaEntityIdentifiableByName {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
