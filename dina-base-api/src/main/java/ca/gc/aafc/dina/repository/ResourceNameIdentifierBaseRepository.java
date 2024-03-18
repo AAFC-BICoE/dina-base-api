@@ -3,6 +3,8 @@ package ca.gc.aafc.dina.repository;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.querydsl.core.types.Ops;
 
 import ca.gc.aafc.dina.dto.ResourceNameIdentifierDto;
@@ -29,11 +31,16 @@ public class ResourceNameIdentifierBaseRepository {
     this.typeToEntity = typeToEntity;
   }
 
-  public UUID findOne(String queryString) {
+  /**
+   * Find an Identifier (UUID) based on the name.
+   * @param queryString
+   * @return the pair name/uuid.
+   */
+  public Pair<String, UUID> findOne(String queryString) throws IllegalArgumentException {
 
     QueryComponent queryComponents = QueryStringParser.parse(queryString);
 
-    FilterGroup fg = queryComponents.getFilterGroup().orElseThrow();
+    FilterGroup fg = queryComponents.getFilterGroup().orElseThrow(IllegalArgumentException::new);
     ResourceNameIdentifierDto.ResourceNameIdentifierDtoBuilder builder = ResourceNameIdentifierDto.builder();
     for (FilterComponent fc : fg.getComponents()) {
       if (fc instanceof FilterExpression fex) {
@@ -42,10 +49,9 @@ public class ResourceNameIdentifierBaseRepository {
     }
 
     ResourceNameIdentifierDto resourceNameIdentifierDto = builder.build();
-    return resourceNameIdentifierService
-      .findByName(typeToEntity.get(resourceNameIdentifierDto.getType()), resourceNameIdentifierDto.getName(), resourceNameIdentifierDto.getGroup());
+    return Pair.of(resourceNameIdentifierDto.getName(), resourceNameIdentifierService
+      .findByName(typeToEntity.get(resourceNameIdentifierDto.getType()), resourceNameIdentifierDto.getName(), resourceNameIdentifierDto.getGroup()));
   }
-
 
   private void buildResourceNameIdentifierDto(FilterExpression fex, ResourceNameIdentifierDto.ResourceNameIdentifierDtoBuilder builder) {
     if (fex.operator() != Ops.EQ ) {

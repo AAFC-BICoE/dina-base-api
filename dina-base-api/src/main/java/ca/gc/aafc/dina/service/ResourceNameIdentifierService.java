@@ -30,7 +30,7 @@ public class ResourceNameIdentifierService {
    * @param entityClass
    * @param name textual name given by the user to the entity
    * @param group group where the uniqueness of the name is assumed
-   * @return
+   * @return uuid or null if not found
    */
   public UUID findByName(Class<? extends DinaEntity> entityClass, String name, String group) {
     String query = "SELECT t.uuid FROM " + entityClass.getName() + " t WHERE group=:group AND name=:name";
