@@ -12,7 +12,7 @@ public class AntlrGrammarTest {
     String content =
       "filter[name][EQ]=2&filter[position][NEQ]=manager,supervisor&sort=position,-name&page[offset]=5&page[limit]=1&include=author.name";
 
-    String content2 = "filter[createdBy.name][EQ]=John_Doe&filter[createdBy.age][GT]=30&"+
+    String content2 = "filter[createdBy.name][EQ]=John Doe&filter[createdBy.age][GT]=30&"+
       "filter[updatedBy.name][NEQ]=Jane&filter[position][LT]=5&sort=position,-name&"+
       "page[limit]=10&page[offset]=20&include=author._name,author.age";
 
@@ -31,6 +31,8 @@ public class AntlrGrammarTest {
 
     assertNotNull(queryComponent2.getFilters());
 
+    FilterGroup fg1 = queryComponent2.getFilterGroup().orElseThrow();
+    assertEquals("John Doe", ((FilterExpression)fg1.getComponents().get(0)).value());
     assertEquals("position", queryComponent2.getSorts().get(0));
     assertEquals("-name", queryComponent2.getSorts().get(1));
     assertEquals("author._name", queryComponent2.getIncludes().get(0));
