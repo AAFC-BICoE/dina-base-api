@@ -11,26 +11,35 @@
     <version>0.119</version>
   </parent>
 
-  <artifactId>dina-workbook</artifactId>
-  <name>dina-workbook</name>
-  <description>Base DINA API workbook related package based on Apache POI</description>
+  <artifactId>dina-filter</artifactId>
+  <name>dina-filter</name>
+  <description>Base DINA Filter grammars</description>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
-
-  <properties>
-    <poi-ooxml.version>5.2.3</poi-ooxml.version>
-  </properties>
 
   <dependencies>
     <dependency>
-      <groupId>com.fasterxml.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-csv</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.poi</groupId>
-      <artifactId>poi-ooxml</artifactId>
-      <version>${poi-ooxml.version}</version>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
+      <version>${antlr4.version}</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <version>${antlr4.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
   <licenses>
     <license>

@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.118</version>
+    <version>0.119</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -17,7 +17,6 @@
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <properties>
-
     <jcip-annotations.version>1.0</jcip-annotations.version>
     <local-javax-jaxb.version>2.3.0.1</local-javax-jaxb.version>
     <javax.activation.version>1.2.0</javax.activation.version>
@@ -35,7 +34,6 @@
 
     <!-- Versions override-->
     <postgresql.version>42.4.4</postgresql.version>
-
   </properties>
 
   <dependencies>
@@ -148,14 +146,26 @@
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
+      <artifactId>dina-filter</artifactId>
+      <version>0.119</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.118</version>
+      <version>0.119</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.querydsl</groupId>
       <artifactId>querydsl-core</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
+      <version>${antlr4.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>

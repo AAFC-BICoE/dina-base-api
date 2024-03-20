@@ -18,6 +18,7 @@ import org.springframework.validation.SmartValidator;
 import ca.gc.aafc.dina.DinaUserConfig.DepartmentDinaService;
 import ca.gc.aafc.dina.DinaUserConfig.EmployeeDinaService;
 import ca.gc.aafc.dina.DinaUserConfig.VocabularyDinaService;
+import ca.gc.aafc.dina.config.ResourceNameIdentifierConfig;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
@@ -48,6 +49,11 @@ public class TestDinaBaseApp {
 
   @Inject
   private GroupAuthorizationService groupAuthService;
+
+  @Bean
+  public ResourceNameIdentifierConfig provideResourceNameIdentifierConfig() {
+    return ResourceNameIdentifierConfig.builder().build();
+  }
 
   @Bean
   public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO,
