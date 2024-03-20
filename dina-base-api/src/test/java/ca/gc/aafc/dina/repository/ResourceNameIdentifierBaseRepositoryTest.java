@@ -21,7 +21,7 @@ import javax.transaction.Transactional;
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class)
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
-public class ResourceIdBaseRepositoryTest {
+public class ResourceNameIdentifierBaseRepositoryTest {
 
   @Inject
   private DinaRepositoryIT.DinaPersonService personService;
