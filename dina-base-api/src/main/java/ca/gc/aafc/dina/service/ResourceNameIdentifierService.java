@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
+import ca.gc.aafc.dina.config.ResourceNameIdentifierConfig;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.entity.IdentifiableByName;
 import ca.gc.aafc.dina.jpa.BaseDAO;
@@ -20,9 +21,11 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 public class ResourceNameIdentifierService {
 
   private final BaseDAO baseDAO;
+  private final ResourceNameIdentifierConfig config;
 
-  public ResourceNameIdentifierService(BaseDAO baseDAO) {
+  public ResourceNameIdentifierService(BaseDAO baseDAO, ResourceNameIdentifierConfig config) {
     this.baseDAO = baseDAO;
+    this.config = config;
   }
 
   /**
@@ -34,8 +37,20 @@ public class ResourceNameIdentifierService {
    * @return uuid or null if not found
    */
   public <T extends DinaEntity & IdentifiableByName> UUID findByName(Class<T> entityClass, String name, String group) {
-    String query = "SELECT t.uuid FROM " + entityClass.getName() + " t WHERE group=:group AND name=:name";
-    return baseDAO.findOneByQuery(UUID.class, query, List.of(Pair.of("name", name),
+
+    ResourceNameIdentifierConfig.ResourceNameConfig
+      resourceNameConfig = config.getResourceNameConfig(entityClass).orElse(ResourceNameIdentifierConfig.DEFAULT_CONFIG);
+
+    StringBuilder sb = new StringBuilder("SELECT t.uuid FROM " );
+    sb.append(entityClass.getName());
+    sb.append(" t WHERE ");
+    sb.append(resourceNameConfig.groupColumn());
+    sb.append("=:group");
+    sb.append(" AND ");
+    sb.append(resourceNameConfig.nameColumn());
+    sb.append("=:name");
+
+    return baseDAO.findOneByQuery(UUID.class, sb.toString(), List.of(Pair.of("name", name),
       Pair.of("group", group)));
   }
 
