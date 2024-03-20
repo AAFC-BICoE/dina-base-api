@@ -13,9 +13,7 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 
 /**
  * Service that get an identifier (UUID) by name (text given to an entity). The name is assigned by the user.
- * This class assumes the following:
- *  - the DinaEntity has variables name and group
- *  - the DinaEntity has unique name per group
+ * This class assumes the DinaEntity has unique name per group.
  */
 @Service
 public class ResourceNameIdentifierService {

@@ -5,6 +5,10 @@ import java.util.Optional;
 import lombok.Builder;
 import lombok.Singular;
 
+/**
+ * This class allows to configure the fields name for classes that may be used for
+ * ResourceNameIdentifier service.
+ */
 @Builder
 public class ResourceNameIdentifierConfig {
 
