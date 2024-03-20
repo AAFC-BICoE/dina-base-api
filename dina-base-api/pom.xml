@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.119-SNAPSHOT</version>
+    <version>0.119</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -34,7 +34,6 @@
 
     <!-- Versions override-->
     <postgresql.version>42.4.4</postgresql.version>
-
   </properties>
 
   <dependencies>
@@ -148,12 +147,12 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-filter</artifactId>
-      <version>0.119-SNAPSHOT</version>
+      <version>0.119</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.119-SNAPSHOT</version>
+      <version>0.119</version>
       <scope>test</scope>
     </dependency>
     <dependency>
