@@ -2,7 +2,6 @@ package ca.gc.aafc.dina;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import javax.inject.Inject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +17,6 @@ import org.springframework.validation.SmartValidator;
 import ca.gc.aafc.dina.DinaUserConfig.DepartmentDinaService;
 import ca.gc.aafc.dina.DinaUserConfig.EmployeeDinaService;
 import ca.gc.aafc.dina.DinaUserConfig.VocabularyDinaService;
-import ca.gc.aafc.dina.config.ResourceNameIdentifierConfig;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
@@ -48,12 +46,10 @@ import ca.gc.aafc.dina.service.DefaultDinaServiceTest.DinaServiceTestImplementat
 public class TestDinaBaseApp {
 
   @Inject
-  private GroupAuthorizationService groupAuthService;
+  private BuildProperties dinaTestBuildProperties;
 
-  @Bean
-  public ResourceNameIdentifierConfig provideResourceNameIdentifierConfig() {
-    return ResourceNameIdentifierConfig.builder().build();
-  }
+  @Inject
+  private GroupAuthorizationService groupAuthService;
 
   @Bean
   public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO,
@@ -69,7 +65,7 @@ public class TestDinaBaseApp {
       Department.class,
       null,
       null,
-      buildProperties(), objMapper);
+      dinaTestBuildProperties, objMapper);
   }
 
   @Bean
@@ -84,7 +80,7 @@ public class TestDinaBaseApp {
       Employee.class,
       null,
       null,
-      buildProperties(), objMapper);
+      dinaTestBuildProperties, objMapper);
   }
 
   @Bean
@@ -113,7 +109,7 @@ public class TestDinaBaseApp {
       Person.class,
       new DinaFilterResolver(new PersonRsqlAdapter()),
       null,
-      buildProperties(), objMapper);
+      dinaTestBuildProperties, objMapper);
   }
 
   @Bean
@@ -125,15 +121,9 @@ public class TestDinaBaseApp {
       VocabularyDto.class,
       Vocabulary.class,
       null,
-      buildProperties());
+      dinaTestBuildProperties);
   }
 
-  @Bean
-  public BuildProperties buildProperties() {
-    Properties props = new Properties();
-    props.setProperty("version", "test-api-version");
-    return new BuildProperties(props);
-  }
 
   /**
    * Mocks a given token to return a agent identifier and list of given groups.
