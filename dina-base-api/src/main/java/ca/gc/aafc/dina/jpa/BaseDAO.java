@@ -135,6 +135,28 @@ public class BaseDAO {
   }
 
   /**
+   * Find a list of POJO/scalar(class that is not necessary an entity) Projection from a query.
+   * @param typeClass class of the result
+   * @param sql sql query. Usually a jpql query.
+   * @param parameters optional parameters for the query
+   * @return the list of POJO/Scalar or null if not found
+   */
+  public <T> List<T> findAllByQuery(Class<T> typeClass, String sql,
+                              List<Pair<String, Object>> parameters) {
+    TypedQuery<T> tq = entityManager.createQuery(sql, typeClass);
+    if (parameters != null) {
+      for (Pair<String, Object> param : parameters) {
+        tq.setParameter(param.getKey(), param.getValue());
+      }
+    }
+    try {
+      return tq.getResultList();
+    } catch (NoResultException nrEx) {
+      return null;
+    }
+  }
+
+  /**
    * Find an entity by its primary key.
    *
    * @param id
