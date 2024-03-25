@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.stereotype.Service;
 
 import ca.gc.aafc.dina.config.ResourceNameIdentifierConfig;
 import ca.gc.aafc.dina.entity.DinaEntity;
@@ -15,9 +13,9 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 /**
  * Service that get an identifier (UUID) by name (text given to an entity). The name is assigned by the user.
  * This class assumes the DinaEntity has unique name per group.
+ *
+ * Conditional bean created by ResourceNameIdentifierAutoConfiguration
  */
-@Service
-@ConditionalOnBean(ResourceNameIdentifierConfig.class)
 public class ResourceNameIdentifierService {
 
   private final BaseDAO baseDAO;
