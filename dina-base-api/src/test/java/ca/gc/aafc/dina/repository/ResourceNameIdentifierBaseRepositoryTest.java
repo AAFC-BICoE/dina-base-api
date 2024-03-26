@@ -1,18 +1,19 @@
 package ca.gc.aafc.dina.repository;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.service.NameUUIDPair;
 import ca.gc.aafc.dina.service.ResourceNameIdentifierService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.inject.Inject;
@@ -33,17 +34,36 @@ public class ResourceNameIdentifierBaseRepositoryTest {
   public void findOne_onValidQuery_identifierReturned() {
 
     Person person = Person.builder()
-      .name("xyz abc")
+      .name("xyz cba")
       .group("g1")
       .build();
-    UUID uuid = personService.createAndFlush(person).getUuid();
+    UUID uuid1 = personService.createAndFlush(person).getUuid();
 
     ResourceNameIdentifierBaseRepository repo = new ResourceNameIdentifierBaseRepository(resourceNameIdentifierService,
       Map.of("person", Person.class));
-    Pair<String, UUID> foundIdentifier = repo.findOne("filter[type][EQ]=person&filter[name][EQ]=xyz abc&filter[group][EQ]=g1");
+    NameUUIDPair result = repo.findOne("filter[type][EQ]=person&filter[name][EQ]=xyz cba&filter[group][EQ]=g1");
+    assertEquals("xyz cba", result.name());
+    assertEquals(uuid1, result.uuid());
+  }
 
-    assertEquals("xyz abc", foundIdentifier.getKey());
-    assertEquals(uuid, foundIdentifier.getValue());
+  @Test
+  public void findAll_onValidQuery_identifierReturned() {
+
+    Person person = Person.builder()
+      .name("xyz abc")
+      .group("g1")
+      .build();
+    UUID uuid1 = personService.createAndFlush(person).getUuid();
+    Person person2 = Person.builder()
+      .name("fdas 423")
+      .group("g1")
+      .build();
+    UUID uuid2 = personService.createAndFlush(person2).getUuid();
+
+    ResourceNameIdentifierBaseRepository repo = new ResourceNameIdentifierBaseRepository(resourceNameIdentifierService,
+      Map.of("person", Person.class));
+    List<NameUUIDPair> result = repo.findAll("filter[type][EQ]=person&filter[name][EQ]=xyz abc,fdas 423&filter[group][EQ]=g1");
+    assertEquals(2, result.size());
   }
 
   @Test
