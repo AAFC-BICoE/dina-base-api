@@ -54,4 +54,25 @@ public class ResourceNameIdentifierService {
       Pair.of("group", group)));
   }
 
+  public <T extends DinaEntity & IdentifiableByName> List<NameUUIDPair> findAllByNames(Class<T> entityClass, List<String> names, String group) {
+
+    ResourceNameIdentifierConfig.ResourceNameConfig
+      resourceNameConfig = config.getResourceNameConfig(entityClass).orElse(ResourceNameIdentifierConfig.DEFAULT_CONFIG);
+
+    StringBuilder sb = new StringBuilder("SELECT new ");
+    sb.append(NameUUIDPair.class.getCanonicalName());
+    sb.append(" (t.");
+    sb.append(resourceNameConfig.nameColumn());
+    sb.append(", t.uuid) FROM " );
+    sb.append(entityClass.getName());
+    sb.append(" t WHERE ");
+    sb.append(resourceNameConfig.groupColumn());
+    sb.append("=:group");
+    sb.append(" AND ");
+    sb.append(resourceNameConfig.nameColumn());
+    sb.append(" IN (:names)");
+
+    return baseDAO.findAllByQuery(NameUUIDPair.class, sb.toString(), List.of(Pair.of("names", names),
+      Pair.of("group", group)));
+  }
 }
