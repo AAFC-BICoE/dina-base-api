@@ -7,7 +7,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import ca.gc.aafc.dina.config.ResourceNameIdentifierConfig;
 import ca.gc.aafc.dina.entity.DinaEntity;
-import ca.gc.aafc.dina.entity.IdentifiableByName;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 
 /**
@@ -34,7 +33,7 @@ public class ResourceNameIdentifierService {
    * @param group group where the uniqueness of the name is assumed
    * @return uuid or null if not found
    */
-  public <T extends DinaEntity & IdentifiableByName> UUID findByName(Class<T> entityClass, String name, String group) {
+  public <T extends DinaEntity> UUID findByName(Class<T> entityClass, String name, String group) {
 
     ResourceNameIdentifierConfig.ResourceNameConfig
       resourceNameConfig = config.getResourceNameConfig(entityClass).orElse(ResourceNameIdentifierConfig.DEFAULT_CONFIG);
@@ -52,7 +51,7 @@ public class ResourceNameIdentifierService {
       Pair.of("group", group)));
   }
 
-  public <T extends DinaEntity & IdentifiableByName> List<NameUUIDPair> findAllByNames(Class<T> entityClass, List<String> names, String group) {
+  public <T extends DinaEntity> List<NameUUIDPair> findAllByNames(Class<T> entityClass, List<String> names, String group) {
 
     ResourceNameIdentifierConfig.ResourceNameConfig
       resourceNameConfig = config.getResourceNameConfig(entityClass).orElse(ResourceNameIdentifierConfig.DEFAULT_CONFIG);

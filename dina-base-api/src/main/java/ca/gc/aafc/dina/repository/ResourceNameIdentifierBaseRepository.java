@@ -1,20 +1,21 @@
 package ca.gc.aafc.dina.repository;
 
+import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-
-import org.apache.commons.lang3.tuple.Pair;
 
 import com.querydsl.core.types.Ops;
 
-import ca.gc.aafc.dina.dto.ResourceNameIdentifierDto;
-import ca.gc.aafc.dina.entity.DinaEntityIdentifiableByName;
+import ca.gc.aafc.dina.dto.ResourceNameIdentifierRequestDto;
+import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.FilterExpression;
 import ca.gc.aafc.dina.filter.FilterGroup;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
+import ca.gc.aafc.dina.service.NameUUIDPair;
 import ca.gc.aafc.dina.service.ResourceNameIdentifierService;
+
+import static java.util.stream.Collectors.groupingBy;
 
 /**
  * Base repository that can be subclassed to support find-by-name using a query string.
@@ -22,10 +23,10 @@ import ca.gc.aafc.dina.service.ResourceNameIdentifierService;
 public class ResourceNameIdentifierBaseRepository {
 
   private final ResourceNameIdentifierService resourceNameIdentifierService;
-  private final Map<String, Class< ? extends DinaEntityIdentifiableByName>> typeToEntity;
+  private final Map<String, Class< ? extends DinaEntity>> typeToEntity;
 
   public ResourceNameIdentifierBaseRepository(ResourceNameIdentifierService resourceNameIdentifierService,
-                                              Map<String, Class<? extends DinaEntityIdentifiableByName>> typeToEntity) {
+                                              Map<String, Class<? extends DinaEntity>> typeToEntity) {
 
     this.resourceNameIdentifierService = resourceNameIdentifierService;
     this.typeToEntity = typeToEntity;
@@ -33,28 +34,98 @@ public class ResourceNameIdentifierBaseRepository {
 
   /**
    * Find an Identifier (UUID) based on the name.
+   * This class assumes there can be only 1 or 0 records matching.
+   *
    * @param queryString
    * @return the pair name/uuid.
    */
-  public Pair<String, UUID> findOne(String queryString) throws IllegalArgumentException {
+  public NameUUIDPair findOne(String queryString) throws IllegalArgumentException {
 
     QueryComponent queryComponents = QueryStringParser.parse(queryString);
 
     FilterGroup fg = queryComponents.getFilterGroup().orElseThrow(IllegalArgumentException::new);
-    ResourceNameIdentifierDto.ResourceNameIdentifierDtoBuilder builder = ResourceNameIdentifierDto.builder();
+    ResourceNameIdentifierRequestDto.ResourceNameIdentifierRequestDtoBuilder builder = ResourceNameIdentifierRequestDto.builder();
     for (FilterComponent fc : fg.getComponents()) {
       if (fc instanceof FilterExpression fex) {
         buildResourceNameIdentifierDto(fex, builder);
       }
     }
 
-    ResourceNameIdentifierDto resourceNameIdentifierDto = builder.build();
-    return Pair.of(resourceNameIdentifierDto.getName(), resourceNameIdentifierService
-      .findByName(typeToEntity.get(resourceNameIdentifierDto.getType()), resourceNameIdentifierDto.getName(), resourceNameIdentifierDto.getGroup()));
+    ResourceNameIdentifierRequestDto resourceNameIdentifierDto = builder.build();
+    return NameUUIDPair.builder().name(resourceNameIdentifierDto.getSingleName()).uuid(resourceNameIdentifierService
+      .findByName(typeToEntity.get(resourceNameIdentifierDto.getType()), resourceNameIdentifierDto.getSingleName(), resourceNameIdentifierDto.getGroup()))
+      .build();
   }
 
-  private void buildResourceNameIdentifierDto(FilterExpression fex, ResourceNameIdentifierDto.ResourceNameIdentifierDtoBuilder builder) {
-    if (fex.operator() != Ops.EQ ) {
+  /**
+   * Find all identifiers for all the provided names.
+   * @param queryString
+   * @return list of pair name/uuid
+   */
+  public List<NameUUIDPair> findAll(String queryString) throws IllegalArgumentException {
+
+    QueryComponent queryComponents = QueryStringParser.parse(queryString);
+
+    FilterGroup fg = queryComponents.getFilterGroup().orElseThrow(IllegalArgumentException::new);
+    ResourceNameIdentifierRequestDto.ResourceNameIdentifierRequestDtoBuilder builder = ResourceNameIdentifierRequestDto.builder();
+
+
+    for (FilterComponent fc : fg.getComponents()) {
+      if (fc instanceof FilterExpression fex) {
+        buildResourceNameIdentifierDto(fex, builder);
+      } else if( fc instanceof FilterGroup fgrp) {
+        // multiple values can be submitted with en EQUALS to create an OR.
+        // if it's the case, we change it to an IN internally
+        if(fgrp.getConjunction() == FilterGroup.Conjunction.OR ) {
+          extractExpressionForInClause(fgrp.getComponents(), builder);
+        }
+      }
+    }
+
+    ResourceNameIdentifierRequestDto resourceNameIdentifierDto = builder.build();
+    return resourceNameIdentifierService
+      .findAllByNames(typeToEntity.get(resourceNameIdentifierDto.getType()),
+        resourceNameIdentifierDto.getNames(), resourceNameIdentifierDto.getGroup());
+  }
+
+  /**
+   * From a component list, try to create an IN based on multiple expressions using OR on the same attribute.
+   *
+   * @param components
+   * @param builder
+   */
+  private void extractExpressionForInClause(List<FilterComponent> components,
+                                                    ResourceNameIdentifierRequestDto.ResourceNameIdentifierRequestDtoBuilder builder) {
+    // sanity checks
+    // make sure the components are all FilerExpression instances.
+    List<FilterExpression> expressions =
+      components.stream()
+        .filter(c -> c instanceof FilterExpression)
+        .map(c -> (FilterExpression) c)
+        .filter(f -> f.operator() == Ops.EQ).toList();
+    if (components.size() != expressions.size()) {
+      return;
+    }
+
+    // group them by attribute
+    Map<String, List<FilterExpression>> byAttribute = expressions.stream()
+      .collect(groupingBy(FilterExpression::attribute));
+
+    // make sure only 1 attribute is used
+    if(byAttribute.keySet().size() != 1) {
+      return;
+    }
+
+    List<String> allValues =
+      byAttribute.values().stream().flatMap(fe -> fe.stream().map(FilterExpression::value)).toList();
+
+    for(String v : allValues) {
+      builder.name(v);
+    }
+  }
+
+  private void buildResourceNameIdentifierDto(FilterExpression fex, ResourceNameIdentifierRequestDto.ResourceNameIdentifierRequestDtoBuilder builder) {
+    if (fex.operator() != Ops.EQ) {
       return;
     }
 
