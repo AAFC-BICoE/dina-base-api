@@ -6,14 +6,18 @@ To initiate the process:
 
 . From dev branch
 .. Change the version by running `mvn versions:set -DnewVersion=X.X` from the root where `X.X` is the current version minus the `-SNAPSHOT`
-.. Update the `README.md` Artifact section
 .. Add and Push to dev with message like "Prepare version x.x release"
+.. Wait for CI to complete
 . From master
 .. Merge dev into master (do NOT use Pull Request)
-.. Push to master (it will trigger the deployment of the artifacts to https://bintray.com/aafc-bice/BICoE/dina-base-api[BinTray] )
+.. Push to master (it will trigger the deployment to the staging repository of Maven Central)
 . Create a new https://github.com/AAFC-BICoE/dina-base-api/releases[GitHub release]
 .. Add a Summary of the changes (looks at the previous versions for an example)
 .. Publish the Release
 . From dev branch
 .. Change the version by running `mvn versions:set -DnewVersion=X.X-SNAPSHOT` from the root where X.X is the next increment in the version number
 .. Add and Push to dev with message like "Prepare next development version"
+. Release the artifact to Maven Central
+.. Login to https://oss.sonatype.org/
+.. Close the release from staging repository
+.. Release the artifact
