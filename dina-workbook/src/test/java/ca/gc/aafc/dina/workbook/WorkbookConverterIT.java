@@ -48,6 +48,17 @@ public class WorkbookConverterIT {
   @Test
   public void workbookConverter_onValidFileWithEmptyLine_ExpectedContentConverted() throws IOException {
     try (InputStream is = WorkbookConverterIT.class.getClassLoader()
+      .getResourceAsStream("empty_second_row.xlsx")) {
+      Map<Integer, List<WorkbookRow>> workbook = WorkbookConverter.convertWorkbook(is);
+
+      assertEquals(1, workbook.size());
+      assertEquals(1, workbook.get(0).size());
+    }
+  }
+
+  @Test
+  public void workbookConverter_onValidFileWithEmptyFirstLine_ExpectedContentConverted() throws IOException {
+    try (InputStream is = WorkbookConverterIT.class.getClassLoader()
         .getResourceAsStream("empty_first_row.xlsx")) {
       List<WorkbookRow> content = WorkbookConverter.convertSheet(is, 0);
       assertEquals(3, content.size());
