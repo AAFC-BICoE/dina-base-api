@@ -72,7 +72,8 @@ public class WorkbookConverterIT {
     try (InputStream is = WorkbookConverterIT.class.getClassLoader()
         .getResourceAsStream("styled_spreadsheet.xlsx")) {
       List<WorkbookRow> content = WorkbookConverter.convertSheet(is, 0);
-      assertEquals(49, content.size());
+      assertEquals(1, content.size());
+      assertEquals("green cell", content.get(0).content()[9]);
     }
   }
 }
