@@ -1,5 +1,5 @@
 name: Prepare dina-base-api release
-
+  
 on: workflow_dispatch
 
 jobs:
@@ -21,8 +21,9 @@ jobs:
       - name: Push to dev 
         run: |
           VERSION=$(cat version.txt)
+          rm version.txt
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
           git commit -m "Prepare $VERSION release"
-      #     git push
+          git push origin dev
