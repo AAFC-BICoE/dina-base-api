@@ -22,7 +22,9 @@ jobs:
         run: |
           mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion} versions:commit
           mvn help:evaluate -Dexpression=project.version -q -DforceStdout > version.txt
-      - name: Push to dev 
+      - name: Push to dev
+        env:
+          GH_TOKEN: ${{ secrets.BICE_PAT }}
         run: |
           VERSION=$(cat version.txt)
           rm version.txt
@@ -31,3 +33,4 @@ jobs:
           git add .
           git commit -m "Prepare $VERSION release"
           git push origin dev
+          git push https://AAFC-BICE:${GH_TOKEN}@github.com/AAFC-BICoE/dina-base-api.git dev
