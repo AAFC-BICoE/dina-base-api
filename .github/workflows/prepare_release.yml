@@ -23,8 +23,6 @@ jobs:
           mvn -q build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion} versions:commit
           mvn -q help:evaluate -Dexpression=project.version -q -DforceStdout > version.txt
       - name: Push to dev
-        env:
-          GITHUB_TOKEN: ${{ secrets.BICE_PAT }}
         run: |
           VERSION=$(cat version.txt)
           rm version.txt
@@ -32,6 +30,7 @@ jobs:
           git config user.email "AAFC-BICE@users.noreply.github.com"
           git add .
           git commit -m "Prepare $VERSION release"
+          git status
           git push origin dev
           # git push https://AAFC-BICE:${GITHUB_TOKEN}@github.com/AAFC-BICoE/dina-base-api.git dev
           
