@@ -3,7 +3,7 @@ name: Prepare dina-base-api release
 on: workflow_dispatch
 
 permissions:
-  write-all
+  contents: write
 
 jobs:
   build:
