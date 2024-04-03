@@ -27,7 +27,7 @@ jobs:
           VERSION=$(cat version.txt)
           rm version.txt
           git config user.name github-actions
-          git config user.email github-actions@github.com
+          git config user.email "AAFC-BICE@users.noreply.github.com"
           git add .
           git commit -m "Prepare $VERSION release"
           git push origin dev
