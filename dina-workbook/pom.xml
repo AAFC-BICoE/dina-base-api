@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.121-SNAPSHOT</version>
+    <version>0.121</version>
   </parent>
 
   <artifactId>dina-workbook</artifactId>
