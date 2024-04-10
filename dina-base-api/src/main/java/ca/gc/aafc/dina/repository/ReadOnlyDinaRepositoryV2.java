@@ -9,18 +9,21 @@ import ca.gc.aafc.dina.filter.FilterGroup;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
 import ca.gc.aafc.dina.filter.SimpleObjectFilterHandlerV2;
-import ca.gc.aafc.dina.service.ReadOnlyDinaService;
+import ca.gc.aafc.dina.service.PredicateBasedReadOnlyDinaService;
 
 /**
  * Based repository for accessing read-only data.
- * @param <D>
  */
-public class ReadOnlyDinaRepositoryV2<D> {
+public class ReadOnlyDinaRepositoryV2<K,D> {
 
-  private final ReadOnlyDinaService<D> service;
+  private final PredicateBasedReadOnlyDinaService<K,D> service;
 
-  public ReadOnlyDinaRepositoryV2(ReadOnlyDinaService<D> service) {
+  public ReadOnlyDinaRepositoryV2(PredicateBasedReadOnlyDinaService<K,D> service) {
     this.service = service;
+  }
+
+  public D findOne(K key) {
+    return service.findOne(key);
   }
 
   public List<D> findAll(String queryString) {

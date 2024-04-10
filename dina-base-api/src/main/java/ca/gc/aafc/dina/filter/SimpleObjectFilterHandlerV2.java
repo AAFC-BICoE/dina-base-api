@@ -56,12 +56,14 @@ public final class SimpleObjectFilterHandlerV2 {
    * @param filterExpression  The Filter Expression to generate the predicate from.
    * @return the predicate
    */
-  public static <T> Predicate<T> buildPredicate(FilterExpression filterExpression){
+  public static <T> Predicate<T> buildPredicate(FilterExpression filterExpression) {
     Object filterValue = filterExpression.value();
     if (filterValue == null) {
-      return generateNullComparisonPredicate(filterExpression.attribute(), filterExpression.operator());
+      return generateNullComparisonPredicate(filterExpression.attribute(),
+        filterExpression.operator());
     } else {
-      return generatePredicate(filterExpression.attribute(), filterExpression.operator(), filterValue.toString());
+      return generatePredicate(filterExpression.attribute(), filterExpression.operator(),
+        filterValue.toString());
     }
   }
 
