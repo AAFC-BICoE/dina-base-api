@@ -55,7 +55,7 @@ public class ReadOnlyDinaRepositoryV2<K,D> {
     for (FilterComponent fc : orList) {
       if (fc instanceof FilterExpression fex) {
         predicate = or(predicate, SimpleObjectFilterHandlerV2.buildPredicate(fex));
-      } else if (fc instanceof FilterGroup fg){
+      } else if (fc instanceof FilterGroup fg) {
         predicate = or(predicate, handlePredicate(fg));
       }
     }
@@ -67,7 +67,7 @@ public class ReadOnlyDinaRepositoryV2<K,D> {
     for (FilterComponent fc : andList) {
       if (fc instanceof FilterExpression fex) {
         predicate = and(predicate, SimpleObjectFilterHandlerV2.buildPredicate(fex));
-      } else if (fc instanceof FilterGroup fg){
+      } else if (fc instanceof FilterGroup fg) {
         predicate = and(predicate, handlePredicate(fg));
       }
     }
