@@ -8,6 +8,9 @@ import ca.gc.aafc.dina.config.ResourceNameIdentifierConfig;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.service.ResourceNameIdentifierService;
 
+/**
+ * This class is outside the ComponentScan that is using DinaBaseApiAutoConfiguration base package.
+ */
 @Configuration
 public class ResourceNameIdentifierAutoConfiguration {
 
