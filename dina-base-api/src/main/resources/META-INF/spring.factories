@@ -1,2 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-ca.gc.aafc.auto.ResourceNameIdentifierAutoConfiguration
