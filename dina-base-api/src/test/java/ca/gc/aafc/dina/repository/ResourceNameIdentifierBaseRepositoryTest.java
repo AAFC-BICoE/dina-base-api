@@ -9,6 +9,7 @@ import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.service.NameUUIDPair;
 import ca.gc.aafc.dina.service.ResourceNameIdentifierService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -63,6 +64,26 @@ public class ResourceNameIdentifierBaseRepositoryTest {
     ResourceNameIdentifierBaseRepository repo = new ResourceNameIdentifierBaseRepository(resourceNameIdentifierService,
       Map.of("person", Person.class));
     List<NameUUIDPair> result = repo.findAll("filter[type][EQ]=person&filter[name][EQ]=xyz abc,fdas 423&filter[group][EQ]=g1");
+    assertEquals(2, result.size());
+  }
+
+  @Test
+  public void listAll_onValidQuery_identifierReturned() {
+
+    Person person = Person.builder()
+      .name(TestableEntityFactory.generateRandomNameLettersOnly(8))
+      .group("g1")
+      .build();
+    UUID uuid1 = personService.createAndFlush(person).getUuid();
+    Person person2 = Person.builder()
+      .name(TestableEntityFactory.generateRandomNameLettersOnly(8))
+      .group("g1")
+      .build();
+    UUID uuid2 = personService.createAndFlush(person2).getUuid();
+
+    ResourceNameIdentifierBaseRepository repo = new ResourceNameIdentifierBaseRepository(resourceNameIdentifierService,
+      Map.of("person", Person.class));
+    List<NameUUIDPair> result = repo.findAll("filter[type][EQ]=person&filter[group][EQ]=g1");
     assertEquals(2, result.size());
   }
 
