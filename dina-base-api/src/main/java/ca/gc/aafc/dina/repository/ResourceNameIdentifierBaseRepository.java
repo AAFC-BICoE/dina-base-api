@@ -3,6 +3,8 @@ package ca.gc.aafc.dina.repository;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 import com.querydsl.core.types.Ops;
 
 import ca.gc.aafc.dina.dto.ResourceNameIdentifierRequestDto;
@@ -83,9 +85,21 @@ public class ResourceNameIdentifierBaseRepository {
     }
 
     ResourceNameIdentifierRequestDto resourceNameIdentifierDto = builder.build();
+
+    // if a list of names is provided
+    if (resourceNameIdentifierDto.getNames() != null && !resourceNameIdentifierDto.getNames().isEmpty()) {
+      return resourceNameIdentifierService
+        .findAllByNames(typeToEntity.get(resourceNameIdentifierDto.getType()),
+          resourceNameIdentifierDto.getNames(), resourceNameIdentifierDto.getGroup());
+    }
+
+
+    // else list all of them
     return resourceNameIdentifierService
-      .findAllByNames(typeToEntity.get(resourceNameIdentifierDto.getType()),
-        resourceNameIdentifierDto.getNames(), resourceNameIdentifierDto.getGroup());
+      .listNameUUIDPair(typeToEntity.get(resourceNameIdentifierDto.getType()),
+        resourceNameIdentifierDto.getGroup(),
+        ObjectUtils.defaultIfNull(queryComponents.getPageOffset(), -1),
+        ObjectUtils.defaultIfNull(queryComponents.getPageLimit(), -1));
   }
 
   /**

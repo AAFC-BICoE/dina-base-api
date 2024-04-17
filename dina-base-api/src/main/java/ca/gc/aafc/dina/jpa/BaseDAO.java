@@ -143,12 +143,36 @@ public class BaseDAO {
    */
   public <T> List<T> findAllByQuery(Class<T> typeClass, String sql,
                               List<Pair<String, Object>> parameters) {
+    return findAllByQuery(typeClass, sql, parameters, -1, -1);
+  }
+
+  /**
+   * Find a list of POJO/scalar(class that is not necessary an entity) Projection from a query.
+   * @param typeClass class of the result
+   * @param sql sql query. Usually a jpql query.
+   * @param parameters optional parameters for the query
+   * @param limit optional parameters to limit the page size.
+   * @param offset optional parameters to set the page offset. If used make sure the query includes an ORDER by.
+   * @return the list of POJO/Scalar or null if nothing found
+   */
+  public <T> List<T> findAllByQuery(Class<T> typeClass, String sql,
+                                    List<Pair<String, Object>> parameters, int limit, int offset) {
     TypedQuery<T> tq = entityManager.createQuery(sql, typeClass);
     if (parameters != null) {
       for (Pair<String, Object> param : parameters) {
         tq.setParameter(param.getKey(), param.getValue());
       }
     }
+
+    // greater than 10 000 is stream should be used
+    if (limit > 0 && limit < 10_000) {
+      tq.setMaxResults(limit);
+    }
+
+    if (offset > 0) {
+      tq.setFirstResult(offset);
+    }
+
     try {
       return tq.getResultList();
     } catch (NoResultException nrEx) {

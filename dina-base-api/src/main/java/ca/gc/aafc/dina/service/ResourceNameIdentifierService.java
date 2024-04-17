@@ -17,6 +17,9 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
  */
 public class ResourceNameIdentifierService {
 
+  private static final int DEFAULT_PAGE_SIZE = 20;
+  private static final int MAX_PAGE_SIZE = 1000;
+
   private final BaseDAO baseDAO;
   private final ResourceNameIdentifierConfig config;
 
@@ -71,5 +74,38 @@ public class ResourceNameIdentifierService {
 
     return baseDAO.findAllByQuery(NameUUIDPair.class, sb.toString(), List.of(Pair.of("names", names),
       Pair.of("group", group)));
+  }
+
+  /**
+   * List all nameUUIDPair for a specific type and group.
+   *
+   * @param entityClass
+   * @param group
+   * @param pageNumber
+   * @param pageSize
+   * @return
+   */
+  public <T extends DinaEntity> List<NameUUIDPair> listNameUUIDPair(Class<T> entityClass, String group, int pageNumber, int pageSize) {
+
+    ResourceNameIdentifierConfig.ResourceNameConfig
+      resourceNameConfig = config.getResourceNameConfig(entityClass).orElse(ResourceNameIdentifierConfig.DEFAULT_CONFIG);
+
+    int limit = pageSize > 0 ? Math.min(pageSize, MAX_PAGE_SIZE) : DEFAULT_PAGE_SIZE;
+    int offset = Math.max(pageNumber, 0);
+
+    StringBuilder sb = new StringBuilder("SELECT new ");
+    sb.append(NameUUIDPair.class.getCanonicalName());
+    sb.append(" (t.");
+    sb.append(resourceNameConfig.nameColumn());
+    sb.append(", t.uuid) FROM " );
+    sb.append(entityClass.getName());
+    sb.append(" t WHERE ");
+    sb.append(resourceNameConfig.groupColumn());
+    sb.append("=:group");
+    // since it's a DinaEntity we assume createdOne is a valid column
+    sb.append(" ORDER BY createdOn");
+
+    return baseDAO.findAllByQuery(NameUUIDPair.class, sb.toString(),
+      List.of(Pair.of("group", group)), limit, offset);
   }
 }
