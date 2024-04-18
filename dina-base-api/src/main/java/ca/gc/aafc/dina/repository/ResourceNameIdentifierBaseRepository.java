@@ -100,6 +100,12 @@ public class ResourceNameIdentifierBaseRepository {
 
     ResourceNameIdentifierRequestDto resourceNameIdentifierDto = builder.build();
 
+    // Make sure the group is specified
+    if(StringUtils.isBlank(resourceNameIdentifierDto.getGroup())) {
+      throw new IllegalArgumentException("group should be provided");
+    }
+    authorizationService.authorizeRead(GroupAuth.of(resourceNameIdentifierDto.getGroup()));
+
     // if a list of names is provided
     if (resourceNameIdentifierDto.getNames() != null && !resourceNameIdentifierDto.getNames().isEmpty()) {
       return resourceNameIdentifierService
