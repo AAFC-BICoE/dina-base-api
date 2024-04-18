@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.querydsl.core.types.Ops;
 
@@ -14,6 +15,8 @@ import ca.gc.aafc.dina.filter.FilterExpression;
 import ca.gc.aafc.dina.filter.FilterGroup;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
+import ca.gc.aafc.dina.security.auth.GroupAuth;
+import ca.gc.aafc.dina.security.auth.GroupWithReadAuthorizationService;
 import ca.gc.aafc.dina.service.NameUUIDPair;
 import ca.gc.aafc.dina.service.ResourceNameIdentifierService;
 
@@ -25,12 +28,15 @@ import static java.util.stream.Collectors.groupingBy;
 public class ResourceNameIdentifierBaseRepository {
 
   private final ResourceNameIdentifierService resourceNameIdentifierService;
+  private final GroupWithReadAuthorizationService authorizationService;
   private final Map<String, Class< ? extends DinaEntity>> typeToEntity;
 
   public ResourceNameIdentifierBaseRepository(ResourceNameIdentifierService resourceNameIdentifierService,
+                                              GroupWithReadAuthorizationService authorizationService,
                                               Map<String, Class<? extends DinaEntity>> typeToEntity) {
 
     this.resourceNameIdentifierService = resourceNameIdentifierService;
+    this.authorizationService = authorizationService;
     this.typeToEntity = typeToEntity;
   }
 
@@ -54,6 +60,14 @@ public class ResourceNameIdentifierBaseRepository {
     }
 
     ResourceNameIdentifierRequestDto resourceNameIdentifierDto = builder.build();
+
+    // Make sure the group is specified
+    if(StringUtils.isBlank(resourceNameIdentifierDto.getGroup())) {
+      throw new IllegalArgumentException("group should be provided");
+    }
+
+    authorizationService.authorizeRead(GroupAuth.of(resourceNameIdentifierDto.getGroup()));
+
     return NameUUIDPair.builder().name(resourceNameIdentifierDto.getSingleName()).uuid(resourceNameIdentifierService
       .findByName(typeToEntity.get(resourceNameIdentifierDto.getType()), resourceNameIdentifierDto.getSingleName(), resourceNameIdentifierDto.getGroup()))
       .build();
