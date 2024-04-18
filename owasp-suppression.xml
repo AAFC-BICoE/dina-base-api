@@ -21,6 +21,10 @@
         <cve>CVE-2024-22243</cve>
     </suppress>
     <suppress>
+        <notes>no UriComponentsBuilder</notes>
+        <cve>CVE-2024-22262</cve>
+    </suppress>
+    <suppress>
         <notes>CVE about Keycloak server</notes>
         <cve>CVE-2022-1245</cve>
     </suppress>
