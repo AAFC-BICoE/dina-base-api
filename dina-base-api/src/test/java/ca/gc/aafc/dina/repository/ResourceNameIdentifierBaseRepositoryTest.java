@@ -6,6 +6,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.security.auth.GroupWithReadAuthorizationService;
 import ca.gc.aafc.dina.service.NameUUIDPair;
 import ca.gc.aafc.dina.service.ResourceNameIdentifierService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
@@ -29,6 +30,9 @@ public class ResourceNameIdentifierBaseRepositoryTest {
   private DinaRepositoryIT.DinaPersonService personService;
 
   @Inject
+  private GroupWithReadAuthorizationService authorizationService;
+
+  @Inject
   private ResourceNameIdentifierService resourceNameIdentifierService;
 
   @Test
@@ -41,7 +45,7 @@ public class ResourceNameIdentifierBaseRepositoryTest {
     UUID uuid1 = personService.createAndFlush(person).getUuid();
 
     ResourceNameIdentifierBaseRepository repo = new ResourceNameIdentifierBaseRepository(resourceNameIdentifierService,
-      Map.of("person", Person.class));
+      authorizationService, Map.of("person", Person.class));
     NameUUIDPair result = repo.findOne("filter[type][EQ]=person&filter[name][EQ]=xyz cba&filter[group][EQ]=g1");
     assertEquals("xyz cba", result.name());
     assertEquals(uuid1, result.uuid());
@@ -62,7 +66,7 @@ public class ResourceNameIdentifierBaseRepositoryTest {
     UUID uuid2 = personService.createAndFlush(person2).getUuid();
 
     ResourceNameIdentifierBaseRepository repo = new ResourceNameIdentifierBaseRepository(resourceNameIdentifierService,
-      Map.of("person", Person.class));
+      authorizationService, Map.of("person", Person.class));
     List<NameUUIDPair> result = repo.findAll("filter[type][EQ]=person&filter[name][EQ]=xyz abc,fdas 423&filter[group][EQ]=g1");
     assertEquals(2, result.size());
   }
@@ -82,7 +86,7 @@ public class ResourceNameIdentifierBaseRepositoryTest {
     UUID uuid2 = personService.createAndFlush(person2).getUuid();
 
     ResourceNameIdentifierBaseRepository repo = new ResourceNameIdentifierBaseRepository(resourceNameIdentifierService,
-      Map.of("person", Person.class));
+      authorizationService, Map.of("person", Person.class));
     List<NameUUIDPair> result = repo.findAll("filter[type][EQ]=person&filter[group][EQ]=g1");
     assertEquals(2, result.size());
   }
@@ -90,7 +94,7 @@ public class ResourceNameIdentifierBaseRepositoryTest {
   @Test
   public void findOne_onInvalidQuery_exceptionThrown() {
     ResourceNameIdentifierBaseRepository repo = new ResourceNameIdentifierBaseRepository(resourceNameIdentifierService,
-      Map.of("person", Person.class));
+      authorizationService, Map.of("person", Person.class));
 
     assertThrows(IllegalArgumentException.class, () -> repo.findOne("filter"));
   }
