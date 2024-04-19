@@ -10,6 +10,8 @@ import org.testcontainers.utility.DockerImageName;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -27,7 +29,7 @@ public class PostgresTestContainerInitializer
 
   private static final String DUMP_SCHEMA_CMD = "pg_dump";
 
-  private static final String DUMP_SCHEMA_OPTION = "embedded.postgresql.dump_schema";
+  private static final String DUMP_SCHEMA_PATH_OPTION = "embedded.postgresql.dump_schema_path";
   private static final String MAX_CONNECTION_OPTION = "embedded.postgresql.max_connection";
 
   private static PostgreSQLContainer<?> sqlContainer = null;
@@ -56,12 +58,8 @@ public class PostgresTestContainerInitializer
         Optional.ofNullable(env.getProperty(MAX_CONNECTION_OPTION))
           .ifPresent(max -> sqlContainer.setCommand("postgres", "-c", "max_connections=" + max));
 
-        Optional.ofNullable(env.getProperty(DUMP_SCHEMA_OPTION))
-          .ifPresent(value -> {
-            if ("true".equalsIgnoreCase(value)) {
-              dumpSchemaOnContextClosedEvent(ctx);
-            }
-          });
+        Optional.ofNullable(env.getProperty(DUMP_SCHEMA_PATH_OPTION))
+          .ifPresent(value -> dumpSchemaOnContextClosedEvent(ctx, value));
 
         sqlContainer.withInitScript(env.getProperty("embedded.postgresql.init-script-file"));
 
@@ -75,7 +73,7 @@ public class PostgresTestContainerInitializer
     }
   }
 
-  private void dumpSchemaOnContextClosedEvent(ConfigurableApplicationContext ctx) {
+  private void dumpSchemaOnContextClosedEvent(ConfigurableApplicationContext ctx, String dumpLocation) {
     ctx.addApplicationListener(event -> {
       if (event instanceof ContextClosedEvent) {
         try {
@@ -84,8 +82,12 @@ public class PostgresTestContainerInitializer
             "-U", sqlContainer.getUsername(),
             "--schema-only", sqlContainer.getDatabaseName());
 
-          System.out.println(containerCmdResult.getStdout());
-          System.out.println(containerCmdResult.getStderr());
+          Path p = Path.of(dumpLocation);
+          Files.writeString(p, containerCmdResult.getStdout());
+
+          if(containerCmdResult.getExitCode() != 0) {
+            System.out.print(containerCmdResult.getStderr());
+          }
         } catch (IOException | InterruptedException e) {
           throw new RuntimeException(e);
         }
