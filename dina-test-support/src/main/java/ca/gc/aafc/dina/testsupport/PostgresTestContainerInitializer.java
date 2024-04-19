@@ -1,16 +1,17 @@
 package ca.gc.aafc.dina.testsupport;
 
-import java.util.Objects;
-import java.util.Optional;
-
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.IOException;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Initializes the Postgres TestContainer if the "embedded.postgresql.enabled" property is true.
@@ -23,6 +24,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 @SuppressFBWarnings({"LI_LAZY_INIT_UPDATE_STATIC", "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"})
 public class PostgresTestContainerInitializer
   implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+  private static final String DUMP_SCHEMA_CMD = "pg_dump";
+
+  private static final String DUMP_SCHEMA_OPTION = "embedded.postgresql.dump_schema";
+  private static final String MAX_CONNECTION_OPTION = "embedded.postgresql.max_connection";
 
   private static PostgreSQLContainer<?> sqlContainer = null;
 
@@ -47,10 +53,18 @@ public class PostgresTestContainerInitializer
           .withUsername("sa")
           .withPassword("sa");
 
-        Optional.ofNullable(env.getProperty("embedded.postgresql.max_connection"))
-                .ifPresent( max -> sqlContainer.setCommand("postgres", "-c", "max_connections=" + max));
+        Optional.ofNullable(env.getProperty(MAX_CONNECTION_OPTION))
+          .ifPresent(max -> sqlContainer.setCommand("postgres", "-c", "max_connections=" + max));
+
+        Optional.ofNullable(env.getProperty(DUMP_SCHEMA_OPTION))
+          .ifPresent(value -> {
+            if ("true".equalsIgnoreCase(value)) {
+              dumpSchemaOnContextClosedEvent(ctx);
+            }
+          });
 
         sqlContainer.withInitScript(env.getProperty("embedded.postgresql.init-script-file"));
+
         sqlContainer.start();
       }
 
@@ -59,7 +73,24 @@ public class PostgresTestContainerInitializer
       ).applyTo(env);
 
     }
+  }
 
+  private void dumpSchemaOnContextClosedEvent(ConfigurableApplicationContext ctx) {
+    ctx.addApplicationListener(event -> {
+      if (event instanceof ContextClosedEvent) {
+        try {
+          var containerCmdResult = sqlContainer.execInContainer(
+            DUMP_SCHEMA_CMD,
+            "-U", sqlContainer.getUsername(),
+            "--schema-only", sqlContainer.getDatabaseName());
+
+          System.out.println(containerCmdResult.getStdout());
+          System.out.println(containerCmdResult.getStderr());
+        } catch (IOException | InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
   }
 
 }
