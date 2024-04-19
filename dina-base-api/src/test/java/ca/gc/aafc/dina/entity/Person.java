@@ -1,6 +1,6 @@
 package ca.gc.aafc.dina.entity;
 
-import com.vladmihalcea.hibernate.type.array.StringArrayType;
+import io.hypersistence.utils.hibernate.type.array.StringArrayType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,7 +27,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @TypeDef(name = "string-array", typeClass = StringArrayType.class)
-public class Person implements DinaEntity {
+public class Person implements DinaEntityIdentifiableByName {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
