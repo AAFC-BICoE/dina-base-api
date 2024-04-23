@@ -1,0 +1,28 @@
+= Lazy Logging
+
+We can avoid the calculation of log messages for log levels that are not enabled through the use of lazy logging.
+
+To do so we use lambda expressions inside the logging statements available in https://logging.apache.org/log4j/2.x/[Log4j 2].
+
+
+.Normal statement
+[source,java]
+----
+logger.trace("Output: {}", getExpensiveOperation());
+----
+
+.Lazy Logging statement
+[source,java]
+----
+log.trace("Output: {}", () -> getExpensiveOperation());
+----
+
+.Lazy Logging statement with multiple lambdas
+[source,java]
+----
+log.trace("Name is {} and age is {}", () -> getName(), () -> getRandomNumber());
+----
+
+The lambda expression is only evaluated if the corresponding log level is enabled.
+
+See https://www.baeldung.com/log4j-2-lazy-logging[ This Guide] for more information.
