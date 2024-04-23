@@ -29,6 +29,8 @@ include::validationEndpoint.adoc[]
 
 include::auditing.adoc[]
 
+include::lazy_logging.adoc[]
+
 include::externalTypes.adoc[]
 
 include::release.adoc[]
