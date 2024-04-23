@@ -1,30 +1,35 @@
-= Setting up your Dina Repo for auditing
+= Auditing
 
- Note: Dina base does not manage the database schema and that responisiblity belongs to the specific module.
+https://javers.org/[JaVers] is used to save snapshots of DTOs on create, update and delete events. 
+
+== Setting up your Dina Repo for auditing
+
+dina-base does not manage the database schema for auditing. The responsibility belongs to the specific module.
 
 == Prepare your DTO
 
 Your DTO must be prepared with specific annotations specifically @TypeName, @Id, @PropertyName.
 
-With these annotations, javers can properly identify the type name and id for a specific DTO.
+1. Add the Javers annotations to the DTO:
 
-The following code snip shows an example of a DTO with the needed annotations.
+* @TypeName should be added to the class for JaVers to know the type.
 
-[source,java]
-----
-@TypeName(PersonDTO.TYPE_NAME)
-public class PersonDTO {
+* @Id and @PropertyName("id") should be added to the ID field, which JaVers uses to track multiple versions of
+the same entity.
 
-  public static final String TYPE_NAME = "person";
+* @ShallowReference should be added to relation fields (along with Crnk's @JsonApiRelation).
+This prevents a problem where the referenced resource is re-audited with all fields null.
 
-  @Id
-  @PropertyName("id")
-  private UUID uuid;
+* @Value should be added to embedded objects, like other DTOs that are considered values of a parent DTO.
+e.g. "AddressDto" is an embedded Value in "PersonDto", not a standalone entity.
 
-}
-----
+** When a child value
+is changed, the parent object should also be updated (via timestamp update). This can be done using
+@PrePersist, @PreUpdate and @PreDelete annotations on the JPA Entity.
 
-This would tell the underlying frame work, snap shots persisted with this DTO will have type `person`, and the `UUID` will be used to identify the record for this type.
+** Child values should not be audited separately, regardless of database structure.
+
+* @DiffIgnore should be added to any fields not needed in the snapshots, like derived DTO fields.
 
 Check out the supported annotations https://javers.org/documentation/domain-configuration/#supported-annotations[HERE] for more details on how you can configure your domain.
 
