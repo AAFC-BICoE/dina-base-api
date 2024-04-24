@@ -26,4 +26,6 @@ public final class TaskDTO {
   @PropertyName("id")
   private UUID uuid;
   private int powerLevel;
+
+  private Integer power;
 }
