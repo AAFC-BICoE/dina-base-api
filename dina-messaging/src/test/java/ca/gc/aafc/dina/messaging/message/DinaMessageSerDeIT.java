@@ -5,11 +5,13 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 
 import ca.gc.aafc.dina.messaging.DinaMessage;
 import ca.gc.aafc.dina.testsupport.TestResourceHelper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Testing serialization/deserialization of DinaMessage with polymorphism.
@@ -37,5 +39,7 @@ public class DinaMessageSerDeIT {
 
     DinaMessage rtunAsMessage = TestResourceHelper.OBJECT_MAPPER.readValue(rtunAsJson, DinaMessage.class);
     assertEquals(ReportTemplateUploadNotification.class, rtunAsMessage.getClass());
+
+    assertThrows(InvalidTypeIdException.class, () -> TestResourceHelper.OBJECT_MAPPER.readValue(rtunAsJson, ObjectExportNotification.class));
   }
 }
