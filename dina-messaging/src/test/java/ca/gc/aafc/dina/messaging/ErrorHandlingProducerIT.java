@@ -1,7 +1,5 @@
 package ca.gc.aafc.dina.messaging;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
@@ -59,7 +57,7 @@ public class ErrorHandlingProducerIT {
 
   @Test
   public void sendMessageToNonExistentQueue_receiverReceives() throws InterruptedException {
-    DinaTestMessage myMessage = new DinaTestMessage("test-message Queue non-existing");
+    DinaTestMessage myMessage = DinaTestMessage.builder().name("test-message Queue non-existing").build();
     rabbitTemplate.convertAndSend("non-existing", myMessage);
 
     assertTrue(rabbitTemplateTestConfig.getLatch().await(1000, TimeUnit.MILLISECONDS));

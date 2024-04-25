@@ -1,17 +1,24 @@
 package ca.gc.aafc.dina.messaging;
 
-
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Builder
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class DinaTestMessage implements DinaMessage {
+public class DinaTestMessage extends DinaMessage {
+
+  public static final String TYPE =  "DinaTestMessage";
+
   private String name;
+
+  public DinaTestMessage() {
+    super(TYPE);
+  }
+
+  public DinaTestMessage(String name) {
+    super(TYPE);
+    this.name = name;
+  }
 }
