@@ -7,7 +7,7 @@ import ca.gc.aafc.dina.messaging.config.RabbitMQQueueProperties;
 import ca.gc.aafc.dina.messaging.message.DocumentOperationNotification;
 import ca.gc.aafc.dina.messaging.message.DocumentOperationType;
 import ca.gc.aafc.dina.messaging.producer.DocumentOperationNotificationMessageProducer;
-import ca.gc.aafc.dina.messaging.producer.MessageProducer;
+import ca.gc.aafc.dina.messaging.producer.DinaMessageProducer;
 import ca.gc.aafc.dina.messaging.producer.RabbitMQMessageProducer;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.TransactionTestingHelper;
@@ -206,7 +206,7 @@ class MessageProducingServiceTest {
     @Service
     @ConditionalOnProperty(prefix = "dina.messaging", name = "isProducer", havingValue = "true")
     public static class SearchRabbitMQMessageProducer extends RabbitMQMessageProducer
-      implements MessageProducer, DocumentOperationNotificationMessageProducer {
+      implements DinaMessageProducer, DocumentOperationNotificationMessageProducer {
 
       @Autowired
       public SearchRabbitMQMessageProducer(RabbitTemplate rabbitTemplate, @Named("searchQueueProperties")

@@ -6,14 +6,14 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import ca.gc.aafc.dina.messaging.message.DocumentOperationNotification;
 import ca.gc.aafc.dina.messaging.producer.DocumentOperationNotificationMessageProducer;
-import ca.gc.aafc.dina.messaging.producer.MessageProducer;
+import ca.gc.aafc.dina.messaging.producer.DinaMessageProducer;
 
 import lombok.extern.log4j.Log4j2;
 
 /**
  * This class will listen for {@link EntityChanged} event. The event will be processed AFTER
  * the commit of the transaction.
- * Then, it will emit a message using the provided {@link MessageProducer}.
+ * Then, it will emit a message using the provided {@link DinaMessageProducer}.
  */
 @Log4j2
 public class MessageQueueNotifier {

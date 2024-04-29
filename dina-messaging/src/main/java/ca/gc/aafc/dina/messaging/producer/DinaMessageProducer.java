@@ -2,7 +2,10 @@ package ca.gc.aafc.dina.messaging.producer;
 
 import ca.gc.aafc.dina.messaging.DinaMessage;
 
-public interface MessageProducer {
+/**
+ * Generic {@link DinaMessage} producer.
+ */
+public interface DinaMessageProducer {
 
   /**
    * Send a DinaMessage.
