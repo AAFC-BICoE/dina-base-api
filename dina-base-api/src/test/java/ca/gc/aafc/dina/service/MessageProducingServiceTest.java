@@ -3,10 +3,15 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.Item;
 import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.messaging.config.RabbitMQQueueProperties;
 import ca.gc.aafc.dina.messaging.message.DocumentOperationNotification;
 import ca.gc.aafc.dina.messaging.message.DocumentOperationType;
+import ca.gc.aafc.dina.messaging.producer.MessageProducer;
+import ca.gc.aafc.dina.messaging.producer.RabbitMQMessageProducer;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.TransactionTestingHelper;
+
+import javax.inject.Named;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -24,7 +29,10 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationEventPublisher;
@@ -183,6 +191,27 @@ class MessageProducingServiceTest {
       factory.setConcurrentConsumers(3);
       factory.setMaxConcurrentConsumers(10);
       return factory;
+    }
+
+    @ConfigurationProperties(prefix = "rabbitmq")
+    @Component
+    @Named("searchQueueProperties")
+    public static class SearchQueueProperties extends RabbitMQQueueProperties {
+    }
+
+    /**
+     * RabbitMQ based message producer
+     */
+    @Service
+    @ConditionalOnProperty(prefix = "dina.messaging", name = "isProducer", havingValue = "true")
+    public static class SearchRabbitMQMessageProducer extends RabbitMQMessageProducer
+      implements MessageProducer {
+
+      @Autowired
+      public SearchRabbitMQMessageProducer(RabbitTemplate rabbitTemplate, @Named("searchQueueProperties")
+      RabbitMQQueueProperties queueProperties) {
+        super(rabbitTemplate, queueProperties);
+      }
     }
 
     @Component
