@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import ca.gc.aafc.dina.messaging.MessageQueueNotifier;
-import ca.gc.aafc.dina.messaging.producer.MessageProducer;
+import ca.gc.aafc.dina.messaging.producer.DocumentOperationNotificationMessageProducer;
 
 /**
  * This class is outside the ComponentScan that is using DinaBaseApiAutoConfiguration base package.
@@ -13,9 +13,10 @@ import ca.gc.aafc.dina.messaging.producer.MessageProducer;
 @Configuration
 public class MessageQueueNotifierAutoConfiguration {
 
-  @ConditionalOnBean(MessageProducer.class)
+  @ConditionalOnBean(DocumentOperationNotificationMessageProducer.class)
   @Bean
-  public MessageQueueNotifier messageQueueNotifier(MessageProducer messageProducer) {
+  public MessageQueueNotifier messageQueueNotifier(
+    DocumentOperationNotificationMessageProducer messageProducer) {
     return new MessageQueueNotifier(messageProducer);
   }
 

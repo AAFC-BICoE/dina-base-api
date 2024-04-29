@@ -5,6 +5,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import ca.gc.aafc.dina.messaging.message.DocumentOperationNotification;
+import ca.gc.aafc.dina.messaging.producer.DocumentOperationNotificationMessageProducer;
 import ca.gc.aafc.dina.messaging.producer.MessageProducer;
 
 import lombok.extern.log4j.Log4j2;
@@ -17,9 +18,9 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class MessageQueueNotifier {
 
-  private final MessageProducer messageProducer;
+  private final DocumentOperationNotificationMessageProducer messageProducer;
 
-  public MessageQueueNotifier(MessageProducer messageProducer) {
+  public MessageQueueNotifier(DocumentOperationNotificationMessageProducer messageProducer) {
     this.messageProducer = messageProducer;
   }
 
