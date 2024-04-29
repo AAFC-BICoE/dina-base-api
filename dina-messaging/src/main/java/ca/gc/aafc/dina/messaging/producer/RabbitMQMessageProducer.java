@@ -8,7 +8,7 @@ import ca.gc.aafc.dina.messaging.config.RabbitMQQueueProperties;
 /**
  * Generic class to send DinaMessage using default routing key (queue name).
  */
-public class RabbitMQMessageProducer {
+public class RabbitMQMessageProducer implements MessageProducer {
 
   private final RabbitTemplate rabbitTemplate;
   private final String queueName;
