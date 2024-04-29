@@ -1,12 +1,15 @@
 package ca.gc.aafc.dina.jsonapi;
 
 import ca.gc.aafc.dina.ExternalResourceProviderImplementation;
+import ca.gc.aafc.auto.ResourceNameIdentifierAutoConfiguration;
 import ca.gc.aafc.dina.dto.ChainDto;
 import ca.gc.aafc.dina.dto.ChainTemplateDto;
 import ca.gc.aafc.dina.entity.Chain;
 import ca.gc.aafc.dina.entity.ChainTemplate;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.messaging.producer.LogBasedMessageProducer;
+import ca.gc.aafc.dina.messaging.producer.DinaMessageProducer;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
@@ -22,6 +25,7 @@ import io.crnk.core.queryspec.QuerySpec;
 import lombok.NonNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -159,9 +163,18 @@ public class DinaRepoEagerLoadingIT extends BaseRestAssuredTest {
   @TestConfiguration
   @Import(ExternalResourceProviderImplementation.class)
   public static class TestConfig {
+
+    /**
+     * Provides a fallback MessageProducer when messaging.isProducer is false.
+     */
+    @Bean
+    @ConditionalOnProperty(name = "dina.messaging.isProducer", havingValue = "false")
+    public DinaMessageProducer messageProducer() {
+      return new LogBasedMessageProducer();
+    }
+
     @Bean
     public DinaRepository<ChainDto, Chain> chainRepo(
-      BaseDAO baseDAO,
       ChainDinaService chainDinaService,
       ExternalResourceProvider externalResourceProvider,
       ObjectMapper objMapper

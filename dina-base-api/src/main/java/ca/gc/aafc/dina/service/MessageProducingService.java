@@ -4,7 +4,7 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.messaging.EntityChanged;
 import ca.gc.aafc.dina.messaging.MessageQueueNotifier;
-import ca.gc.aafc.dina.search.messaging.types.DocumentOperationType;
+import ca.gc.aafc.dina.messaging.message.DocumentOperationType;
 
 import java.util.EnumSet;
 import lombok.extern.log4j.Log4j2;

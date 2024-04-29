@@ -1,29 +1,26 @@
 package ca.gc.aafc.dina.messaging;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import ca.gc.aafc.dina.search.messaging.producer.MessageProducer;
-import ca.gc.aafc.dina.search.messaging.types.DocumentOperationNotification;
+import ca.gc.aafc.dina.messaging.message.DocumentOperationNotification;
+import ca.gc.aafc.dina.messaging.producer.DocumentOperationNotificationMessageProducer;
+import ca.gc.aafc.dina.messaging.producer.DinaMessageProducer;
 
 import lombok.extern.log4j.Log4j2;
 
 /**
  * This class will listen for {@link EntityChanged} event. The event will be processed AFTER
  * the commit of the transaction.
- * Then, it will emit a message using the provided {@link MessageProducer}.
+ * Then, it will emit a message using the provided {@link DinaMessageProducer}.
  */
-@ConditionalOnBean(MessageProducer.class)
-@Component
 @Log4j2
 public class MessageQueueNotifier {
 
-  private final MessageProducer messageProducer;
+  private final DocumentOperationNotificationMessageProducer messageProducer;
 
-  public MessageQueueNotifier(MessageProducer messageProducer) {
+  public MessageQueueNotifier(DocumentOperationNotificationMessageProducer messageProducer) {
     this.messageProducer = messageProducer;
   }
 
