@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.messaging;
 
-import ca.gc.aafc.dina.search.messaging.types.DocumentOperationType;
+import ca.gc.aafc.dina.messaging.message.DocumentOperationType;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
