@@ -505,37 +505,39 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_using_the_endpoint">11.3. Using the Endpoint</a></li>
 </ul>
 </li>
-<li><a href="#_setting_up_your_dina_repo_for_auditing">12. Setting up your Dina Repo for auditing</a>
+<li><a href="#_auditing">12. Auditing</a>
 <ul class="sectlevel2">
-<li><a href="#_prepare_your_dto">12.1. Prepare your DTO</a></li>
-<li><a href="#_pass_the_auditing_service_bean_to_your_dina_repo">12.2. Pass the Auditing service bean to your Dina repo</a></li>
-<li><a href="#_accessing_the_auditing_endpoint">12.3. Accessing the Auditing Endpoint</a></li>
+<li><a href="#_setting_up_your_dina_repo_for_auditing">12.1. Setting up your Dina Repo for auditing</a></li>
+<li><a href="#_prepare_your_dto">12.2. Prepare your DTO</a></li>
+<li><a href="#_pass_the_auditing_service_bean_to_your_dina_repo">12.3. Pass the Auditing service bean to your Dina repo</a></li>
+<li><a href="#_accessing_the_auditing_endpoint">12.4. Accessing the Auditing Endpoint</a></li>
 </ul>
 </li>
-<li><a href="#_external_types_guide">13. External Types Guide</a>
+<li><a href="#_lazy_logging">13. Lazy Logging</a></li>
+<li><a href="#_external_types_guide">14. External Types Guide</a>
 <ul class="sectlevel2">
-<li><a href="#_set_up_your_entity">13.1. Set up your entity</a></li>
-<li><a href="#_set_up_your_dto">13.2. Set up your DTO</a></li>
-<li><a href="#_set_up_your_external_resource_provider_component">13.3. Set up your External Resource Provider Component</a></li>
+<li><a href="#_set_up_your_entity">14.1. Set up your entity</a></li>
+<li><a href="#_set_up_your_dto">14.2. Set up your DTO</a></li>
+<li><a href="#_set_up_your_external_resource_provider_component">14.3. Set up your External Resource Provider Component</a></li>
 </ul>
 </li>
-<li><a href="#_releasing_dina_base_api">14. Releasing dina-base-api</a></li>
-<li><a href="#_field_adapters">15. Field adapters</a>
+<li><a href="#_releasing_dina_base_api">15. Releasing dina-base-api</a></li>
+<li><a href="#_field_adapters">16. Field adapters</a>
 <ul class="sectlevel2">
-<li><a href="#_implement_a_dina_field_adapter_for_the_field">15.1. Implement a Dina Field Adapter for the field.</a></li>
-<li><a href="#_annotate_your_field_with_ignoredinamapping">15.2. Annotate your field with IgnoreDinaMapping</a></li>
-<li><a href="#_annotate_your_class_with_customfieldadapter">15.3. Annotate your class with CustomFieldAdapter</a></li>
+<li><a href="#_implement_a_dina_field_adapter_for_the_field">16.1. Implement a Dina Field Adapter for the field.</a></li>
+<li><a href="#_annotate_your_field_with_ignoredinamapping">16.2. Annotate your field with IgnoreDinaMapping</a></li>
+<li><a href="#_annotate_your_class_with_customfieldadapter">16.3. Annotate your class with CustomFieldAdapter</a></li>
 </ul>
 </li>
-<li><a href="#_custom_rsql_filtering">16. Custom Rsql Filtering</a>
+<li><a href="#_custom_rsql_filtering">17. Custom Rsql Filtering</a>
 <ul class="sectlevel2">
-<li><a href="#_current_specs">16.1. Current Specs</a></li>
+<li><a href="#_current_specs">17.1. Current Specs</a></li>
 </ul>
 </li>
-<li><a href="#_one_to_many_associations">17. One to Many Associations</a>
+<li><a href="#_one_to_many_associations">18. One to Many Associations</a>
 <ul class="sectlevel2">
-<li><a href="#_using_the_onetomanydinaservice">17.1. Using the OneToManyDinaService</a></li>
-<li><a href="#_using_onetomanyfieldhandler_directly">17.2. Using OneToManyFieldHandler directly</a></li>
+<li><a href="#_using_the_onetomanydinaservice">18.1. Using the OneToManyDinaService</a></li>
+<li><a href="#_using_onetomanyfieldhandler_directly">18.2. Using OneToManyFieldHandler directly</a></li>
 </ul>
 </li>
 </ul>
@@ -1490,47 +1492,69 @@ Connection: keep-alive</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_setting_up_your_dina_repo_for_auditing">12. Setting up your Dina Repo for auditing</h2>
+<h2 id="_auditing">12. Auditing</h2>
 <div class="sectionbody">
-<div class="literalblock">
-<div class="content">
-<pre>Note: Dina base does not manage the database schema and that responisiblity belongs to the specific module.</pre>
+<div class="paragraph">
+<p><a href="https://javers.org/">JaVers</a> is used to save snapshots of DTOs on create, update and delete events.</p>
+</div>
+<div class="sect2">
+<h3 id="_setting_up_your_dina_repo_for_auditing">12.1. Setting up your Dina Repo for auditing</h3>
+<div class="paragraph">
+<p>dina-base does not manage the database schema for auditing. The responsibility belongs to the specific module.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_prepare_your_dto">12.1. Prepare your DTO</h3>
+<h3 id="_prepare_your_dto">12.2. Prepare your DTO</h3>
 <div class="paragraph">
 <p>Your DTO must be prepared with specific annotations specifically @TypeName, @Id, @PropertyName.</p>
 </div>
-<div class="paragraph">
-<p>With these annotations, javers can properly identify the type name and id for a specific DTO.</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Add the Javers annotations to the DTO:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>@TypeName should be added to the class for JaVers to know the type.</p>
+</li>
+<li>
+<p>@Id and @PropertyName("id") should be added to the ID field, which JaVers uses to track multiple versions of
+the same entity.</p>
+</li>
+<li>
+<p>@ShallowReference should be added to relation fields (along with Crnk&#8217;s @JsonApiRelation).
+This prevents a problem where the referenced resource is re-audited with all fields null.</p>
+</li>
+<li>
+<p>@Value should be added to embedded objects, like other DTOs that are considered values of a parent DTO.
+e.g. "AddressDto" is an embedded Value in "PersonDto", not a standalone entity.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>When a child value
+is changed, the parent object should also be updated (via timestamp update). This can be done using
+@PrePersist, @PreUpdate and @PreDelete annotations on the JPA Entity.</p>
+</li>
+<li>
+<p>Child values should not be audited separately, regardless of database structure.</p>
+</li>
+</ul>
 </div>
-<div class="paragraph">
-<p>The following code snip shows an example of a DTO with the needed annotations.</p>
+</li>
+<li>
+<p>@DiffIgnore should be added to any fields not needed in the snapshots, like derived DTO fields.</p>
+</li>
+</ul>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-java" data-lang="java">@TypeName(PersonDTO.TYPE_NAME)
-public class PersonDTO {
-
-  public static final String TYPE_NAME = "person";
-
-  @Id
-  @PropertyName("id")
-  private UUID uuid;
-
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>This would tell the underlying frame work, snap shots persisted with this DTO will have type <code>person</code>, and the <code>UUID</code> will be used to identify the record for this type.</p>
+</li>
+</ol>
 </div>
 <div class="paragraph">
 <p>Check out the supported annotations <a href="https://javers.org/documentation/domain-configuration/#supported-annotations">HERE</a> for more details on how you can configure your domain.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_pass_the_auditing_service_bean_to_your_dina_repo">12.2. Pass the Auditing service bean to your Dina repo</h3>
+<h3 id="_pass_the_auditing_service_bean_to_your_dina_repo">12.3. Pass the Auditing service bean to your Dina repo</h3>
 <div class="paragraph">
 <p>When the application runs with the property <code>dina.auditing.enabled = true</code>, an AuditService bean is available in the application context.</p>
 </div>
@@ -1539,7 +1563,7 @@ public class PersonDTO {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_accessing_the_auditing_endpoint">12.3. Accessing the Auditing Endpoint</h3>
+<h3 id="_accessing_the_auditing_endpoint">12.4. Accessing the Auditing Endpoint</h3>
 <div class="paragraph">
 <p>When the application runs with the property <code>dina.auditing.enabled = true</code>, the audit endpoint automatically starts.</p>
 </div>
@@ -1570,10 +1594,45 @@ public class PersonDTO {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_external_types_guide">13. External Types Guide</h2>
+<h2 id="_lazy_logging">13. Lazy Logging</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We can avoid the calculation of log messages for log levels that are not enabled through the use of lazy logging.</p>
+</div>
+<div class="paragraph">
+<p>To do so we use lambda expressions inside the logging statements available in <a href="https://logging.apache.org/log4j/2.x/">Log4j 2</a>.</p>
+</div>
+<div class="listingblock">
+<div class="title">Normal statement</div>
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">logger.trace("Output: {}", getExpensiveOperation());</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Lazy Logging statement</div>
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">log.trace("Output: {}", () -&gt; getExpensiveOperation());</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Lazy Logging statement with multiple lambdas</div>
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">log.trace("Name is {} and age is {}", () -&gt; getName(), () -&gt; getRandomNumber());</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The lambda expression is only evaluated if the corresponding log level is enabled.</p>
+</div>
+<div class="paragraph">
+<p>See <a href="https://www.baeldung.com/log4j-2-lazy-logging"> This Guide</a> for more information.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_external_types_guide">14. External Types Guide</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_set_up_your_entity">13.1. Set up your entity</h3>
+<h3 id="_set_up_your_entity">14.1. Set up your entity</h3>
 <div class="paragraph">
 <p>Your entity needs to hold the identifier of the resource in a field.</p>
 </div>
@@ -1584,7 +1643,7 @@ public class PersonDTO {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_set_up_your_dto">13.2. Set up your DTO</h3>
+<h3 id="_set_up_your_dto">14.2. Set up your DTO</h3>
 <div class="paragraph">
 <p>Your Dto needs to declare the type of the field as a <code>ExternalRelationDto</code> and provide the needed annotations. The <code>JsonApiExternalRelation</code> type is the name of the resource type.</p>
 </div>
@@ -1597,7 +1656,7 @@ public class PersonDTO {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_set_up_your_external_resource_provider_component">13.3. Set up your External Resource Provider Component</h3>
+<h3 id="_set_up_your_external_resource_provider_component">14.3. Set up your External Resource Provider Component</h3>
 <div class="paragraph">
 <p>You need to create a component implementing an <code>ExternalResourceProvider</code>. A simple example would look like the following.</p>
 </div>
@@ -1641,7 +1700,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releasing_dina_base_api">14. Releasing dina-base-api</h2>
+<h2 id="_releasing_dina_base_api">15. Releasing dina-base-api</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The process of releasing dina-base-api is partially automated.</p>
@@ -1727,7 +1786,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect1">
-<h2 id="_field_adapters">15. Field adapters</h2>
+<h2 id="_field_adapters">16. Field adapters</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Field adapters allow you to provide custom mappings between fields.</p>
@@ -1739,7 +1798,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 <p>We will need to provide a custom mapping.</p>
 </div>
 <div class="sect2">
-<h3 id="_implement_a_dina_field_adapter_for_the_field">15.1. Implement a Dina Field Adapter for the field.</h3>
+<h3 id="_implement_a_dina_field_adapter_for_the_field">16.1. Implement a Dina Field Adapter for the field.</h3>
 <div class="paragraph">
 <p>Example Implementation:</p>
 </div>
@@ -1778,7 +1837,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect2">
-<h3 id="_annotate_your_field_with_ignoredinamapping">15.2. Annotate your field with IgnoreDinaMapping</h3>
+<h3 id="_annotate_your_field_with_ignoredinamapping">16.2. Annotate your field with IgnoreDinaMapping</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -1794,7 +1853,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect2">
-<h3 id="_annotate_your_class_with_customfieldadapter">15.3. Annotate your class with CustomFieldAdapter</h3>
+<h3 id="_annotate_your_class_with_customfieldadapter">16.3. Annotate your class with CustomFieldAdapter</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -1812,15 +1871,15 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect1">
-<h2 id="_custom_rsql_filtering">16. Custom Rsql Filtering</h2>
+<h2 id="_custom_rsql_filtering">17. Custom Rsql Filtering</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_current_specs">16.1. Current Specs</h3>
+<h3 id="_current_specs">17.1. Current Specs</h3>
 <div class="paragraph">
 <p>You can add custom rsql filtering for your resource in order to manipulate how Rsql filters will be processed.</p>
 </div>
 <div class="sect3">
-<h4 id="_step_1_create_a_rsqlfilteradapter_for_your_class">16.1.1. Step 1: Create a RsqlFilterAdapter for your class.</h4>
+<h4 id="_step_1_create_a_rsqlfilteradapter_for_your_class">17.1.1. Step 1: Create a RsqlFilterAdapter for your class.</h4>
 <div class="paragraph">
 <p>This is a simple Functional interface which will provide the entry point to run your business logic to process the Rsql filters.</p>
 </div>
@@ -1834,7 +1893,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect3">
-<h4 id="_step_2_pass_your_filter_adapter_to_the_dina_filter_resolver">16.1.2. Step 2: Pass your filter adapter to the Dina filter resolver.</h4>
+<h4 id="_step_2_pass_your_filter_adapter_to_the_dina_filter_resolver">17.1.2. Step 2: Pass your filter adapter to the Dina filter resolver.</h4>
 <div class="paragraph">
 <p>The DinaFilterResolver will allow you to pass your adapter to the resolver in the constructor.</p>
 </div>
@@ -1852,7 +1911,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect1">
-<h2 id="_one_to_many_associations">17. One to Many Associations</h2>
+<h2 id="_one_to_many_associations">18. One to Many Associations</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>There is some common functionality the currently needs to be run to resolve associations between child and parent resources.</p>
@@ -1864,7 +1923,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 <p>Basic information around Hibernates requirements for Bi directional associations : <a href="https://vladmihalcea.com/the-best-way-to-map-a-onetomany-association-with-jpa-and-hibernate/">Article</a></p>
 </div>
 <div class="sect2">
-<h3 id="_using_the_onetomanydinaservice">17.1. Using the OneToManyDinaService</h3>
+<h3 id="_using_the_onetomanydinaservice">18.1. Using the OneToManyDinaService</h3>
 <div class="paragraph">
 <p>The simplest way would be to extend the OneToManyDinaService. After extending a OneToManyDinaService, the constructor will require you to supply a list of OneToManyFieldHandler as shown in the example service below.</p>
 </div>
@@ -1897,7 +1956,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 <div class="sect2">
-<h3 id="_using_onetomanyfieldhandler_directly">17.2. Using OneToManyFieldHandler directly</h3>
+<h3 id="_using_onetomanyfieldhandler_directly">18.2. Using OneToManyFieldHandler directly</h3>
 <div class="paragraph">
 <p>OneToManyFieldHandlers can handle parent/child associations for a single field.</p>
 </div>
@@ -1922,7 +1981,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-04-18 17:59:29 UTC
+Last updated 2024-04-30 18:26:12 UTC
 </div>
 </div>
 </body>
