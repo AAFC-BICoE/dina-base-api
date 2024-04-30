@@ -1,0 +1,60 @@
+= Messaging
+
+== Message procucer
+
+Declare a `RabbitMQQueueProperties` and `RabbitMQMessageProducer` based beans.
+
+[source,java]
+----
+@ConfigurationProperties(prefix = "dina.messaging.export")
+@Component
+@Named("theQueueProperties")
+public class TheQueueProperties extends RabbitMQQueueProperties {
+}
+----
+
+[source,java]
+----
+@Log4j2
+@Service
+@ConditionalOnProperty(prefix = "dina.messaging", name = "isProducer", havingValue = "true")
+public class MyDinaMessageProducer extends RabbitMQMessageProducer implements DinaMessageProducer {
+
+  public RabbitMQDinaMessageProducer(RabbitTemplate rabbitTemplate, TheQueueProperties queueProperties) {
+    super(rabbitTemplate, queueProperties);
+    log.info( "Using RabbitMQ queue {}", queueProperties::getQueue);
+  }
+}
+----
+
+
+== Message consumer
+
+Declare a `RabbitMQQueueProperties` and `RabbitMQConsumerConfiguration` based beans.
+
+[source,java]
+----
+@Configuration
+@ConditionalOnProperty(prefix = "dina.messaging", name = "isConsumer", havingValue = "true")
+public class TheQueueConsumerConfiguration extends RabbitMQConsumerConfiguration {
+
+  public ObjectExportQueueConsumerConfiguration(@Named("exportQueueProperties")
+                                                TheQueueProperties queueProperties) {
+    super(queueProperties);
+  }
+
+  @Bean("theQueue")
+  @Override
+  public Queue createQueue() {
+    return super.createQueue();
+  }
+
+  @Bean("theDeadLetterQueue")
+  @Override
+  public Queue createDeadLetterQueue() {
+    return super.createDeadLetterQueue();
+  }
+}
+----
+
+Then on the consumer class you can use `@RabbitListener(queues = "#{theQueueProperties.getQueue()}")`.
