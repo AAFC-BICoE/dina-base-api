@@ -27,6 +27,7 @@ public class MyDinaMessageProducer extends RabbitMQMessageProducer implements Di
 }
 ----
 
+For search related messaging, implement `DocumentOperationNotificationMessageProducer` instead of the more generic `DinaMessageProducer`.
 
 == Message consumer
 
