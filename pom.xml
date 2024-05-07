@@ -58,6 +58,8 @@
     <org.springframework.security.version>5.7.12</org.springframework.security.version>
     <snakeyaml.version>1.33</snakeyaml.version>
 
+    <xmlunit2.version>2.10.0</xmlunit2.version>
+
     <testcontainers.version>1.17.3</testcontainers.version>
   </properties>
   
@@ -89,6 +91,7 @@
 	    <groupId>org.springframework.boot</groupId>
 	    <artifactId>spring-boot-starter-log4j2</artifactId>
 	</dependency>
+    
     <!-- keycloak identity oauth2 -->
     <dependency>
       <groupId>org.keycloak</groupId>
