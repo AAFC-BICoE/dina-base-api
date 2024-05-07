@@ -23,6 +23,8 @@ include::filtering.adoc[]
 
 include::actuators.adoc[]
 
+include::messaging.adoc[]
+
 include::validation.adoc[]
 
 include::validationEndpoint.adoc[]
