@@ -367,7 +367,7 @@ public class BaseDAOIT extends BasePostgresItContext {
   }
 
   @Test
-  public void resultListFromQuery_onValidQuery_expectedResultsReturned() {
+  public void findAllByQuery_onValidQuery_expectedResultsReturned() {
     Person p1 = Person.builder().name("abc").uuid(UUID.randomUUID()).build();
     Person p2 = Person.builder().name("bcd").uuid(UUID.randomUUID()).build();
     baseDAO.create(p1, true);
@@ -376,7 +376,8 @@ public class BaseDAOIT extends BasePostgresItContext {
     String sql = "SELECT new " + DinaObjectSummary.class.getCanonicalName() +
       "(t.uuid, t.group, t.createdBy) FROM Person t WHERE name LIKE CONCAT('%',:name,'%') ORDER BY id";
 
-    List<DinaObjectSummary> objList = baseDAO.resultListFromQuery(DinaObjectSummary.class, sql, 0, 10, List.of(Pair.of("name", "bc")));
+    List<DinaObjectSummary> objList =
+      baseDAO.findAllByQuery(DinaObjectSummary.class, sql, List.of(Pair.of("name", "bc")), 0, 10);
     assertEquals(2, objList.size());
   }
   
