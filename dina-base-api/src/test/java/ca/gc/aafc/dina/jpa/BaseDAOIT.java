@@ -377,7 +377,7 @@ public class BaseDAOIT extends BasePostgresItContext {
       "(t.uuid, t.group, t.createdBy) FROM Person t WHERE name LIKE CONCAT('%',:name,'%') ORDER BY id";
 
     List<DinaObjectSummary> objList =
-      baseDAO.findAllByQuery(DinaObjectSummary.class, sql, List.of(Pair.of("name", "bc")), 0, 10);
+      baseDAO.findAllByQuery(DinaObjectSummary.class, sql, List.of(Pair.of("name", "bc")), 10, 0);
     assertEquals(2, objList.size());
   }
   
