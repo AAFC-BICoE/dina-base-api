@@ -1,6 +1,9 @@
 package ca.gc.aafc.dina.security;
 
+import java.util.Objects;
 import lombok.extern.log4j.Log4j2;
+
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
@@ -33,6 +36,7 @@ import java.util.Set;
 public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
 
   private static final String AGENT_IDENTIFIER_CLAIM_KEY = "agent-identifier";
+  private static final String IS_SERVICE_ACCOUNT_CLAIM_KEY = "is-service-account";
   private static final String GROUPS_CLAIM_KEY = "groups";
 
   @Value("${actuator.allowedIp:}")
@@ -97,9 +101,13 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
     AccessToken accessToken = token.getAccount()
       .getKeycloakSecurityContext()
       .getToken();
-    Map<String, Object> otherClaims = accessToken.getOtherClaims();
 
+    Map<String, Object> otherClaims = accessToken.getOtherClaims();
     String agentId = (String) otherClaims.get(AGENT_IDENTIFIER_CLAIM_KEY);
+
+    boolean isServiceAccount = BooleanUtils.toBoolean(
+      Objects.toString(otherClaims.get(IS_SERVICE_ACCOUNT_CLAIM_KEY)));
+
     String internalID = accessToken.getSubject();
 
     Map<String, Set<DinaRole>> rolesPerGroup = null;
@@ -111,6 +119,7 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
 
     return DinaAuthenticatedUser.builder()
       .agentIdentifier(agentId)
+      .isServiceAccount(isServiceAccount)
       .internalIdentifier(internalID)
       .username(username)
       .rolesPerGroup(rolesPerGroup)
