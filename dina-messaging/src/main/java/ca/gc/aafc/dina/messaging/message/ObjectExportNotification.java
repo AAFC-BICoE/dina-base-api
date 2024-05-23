@@ -34,6 +34,8 @@ public class ObjectExportNotification extends DinaMessage {
   // name of the export (user provided)
   private String name;
 
+  private String query;
+
   // temporary object access
   private String toa;
 
