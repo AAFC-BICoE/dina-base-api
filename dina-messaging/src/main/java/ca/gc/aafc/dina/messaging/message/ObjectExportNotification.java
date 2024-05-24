@@ -18,11 +18,12 @@ public class ObjectExportNotification extends DinaMessage {
     super(TYPE);
   }
 
-  public ObjectExportNotification(UUID uuid, String username, String name, String toa) {
+  public ObjectExportNotification(UUID uuid, String username, String name, String query, String toa) {
     super(TYPE);
     this.uuid = uuid;
     this.username = username;
     this.name = name;
+    this.query = query;
     this.toa = toa;
   }
 
@@ -33,6 +34,8 @@ public class ObjectExportNotification extends DinaMessage {
 
   // name of the export (user provided)
   private String name;
+
+  private String query;
 
   // temporary object access
   private String toa;
