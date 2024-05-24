@@ -43,7 +43,7 @@ public final class KeycloakClaimParser {
       if (claimParts.length == 2) {
         rolesPerGroup.putIfAbsent(claimParts[0], new LinkedHashSet<>());
 
-        log.info(() -> claimParts[0] + ":" + DinaRole.fromString(claimParts[1]));
+        log.debug(() -> claimParts[0] + ":" + DinaRole.fromString(claimParts[1]));
 
         // unknown roles will be ignored
         DinaRole.fromString(claimParts[1]).ifPresent(rolesPerGroup.get(claimParts[0])::add);
