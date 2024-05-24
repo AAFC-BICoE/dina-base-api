@@ -10,7 +10,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
-public abstract class AbstractLocationValidator implements Validator {
+public abstract class AbstractStorageLocationValidator implements Validator {
 
   public static final String VALID_NULL_WELL_COL = "location.nullWellCol";
   public static final String VALID_NULL_WELL_ROW = "location.nullWellRow";
@@ -24,7 +24,7 @@ public abstract class AbstractLocationValidator implements Validator {
   protected static final String WELL_ROW_FIELD_NAME = "wellRow";
   protected static final String WELL_COLUMN_FIELD_NAME = "wellColumn";
 
-  protected AbstractLocationValidator(@Named("validationMessageSource") MessageSource messageSource) {
+  protected AbstractStorageLocationValidator(@Named("validationMessageSource") MessageSource messageSource) {
     this.messageSource = messageSource;
   }
 
@@ -65,4 +65,5 @@ public abstract class AbstractLocationValidator implements Validator {
   private String getMessage(String key, Object... objects) {
     return messageSource.getMessage(key, objects, LocaleContextHolder.getLocale());
   }
+
 }
