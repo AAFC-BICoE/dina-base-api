@@ -68,8 +68,8 @@ public class ConsumerProducerIT {
 
   @Test
   public void producer_onMessageSent_receiverReceives() throws InterruptedException {
-    DinaTestMessage myMessage = new DinaTestMessage("test-message Queue 1");
-    DinaTestMessage myMessageQueue2 = new DinaTestMessage("test-message Queue 2");
+    DinaTestMessage myMessage = DinaTestMessage.builder().name("test-message Queue 1").build();
+    DinaTestMessage myMessageQueue2 = DinaTestMessage.builder().name("test-message Queue 2").build();
 
     rabbitMQTestProducer.send(myMessage);
     rabbitMQTestProducerQueue2.send(myMessageQueue2);

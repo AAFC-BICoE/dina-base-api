@@ -539,30 +539,6 @@ public class BaseDAO {
   }
 
   /**
-   * Find records (the class doesn't need to be an entity) from a query.
-   * If paging is used (start != 0) make sure to have an order by clause.
-   * @param typeClass
-   * @param sql
-   * @param start
-   * @param maxResult
-   * @param parameters
-   * @return
-   */
-  public <T> List<T> resultListFromQuery(Class<T> typeClass, String sql,
-                                         int start, int maxResult, List<Pair<String, Object>> parameters) {
-    TypedQuery<T> tq = entityManager.createQuery(sql, typeClass);
-    if (parameters != null) {
-      for (Pair<String, Object> param : parameters) {
-        tq.setParameter(param.getKey(), param.getValue());
-      }
-    }
-    return tq
-      .setFirstResult(start)
-      .setMaxResults(maxResult)
-      .getResultList();
-  }
-
-  /**
    * Returns the resource count from a given predicate supplier.
    *
    * @param <E>               entity type

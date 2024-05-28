@@ -7,32 +7,31 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 
+/**
+ * Indicates that a report-template is uploaded and can be retrieved using the toa.
+ */
 @Builder
 @Data
 @Getter
-public class ObjectExportNotification extends DinaMessage {
+public class ReportTemplateUploadNotification extends DinaMessage {
 
-  public static final String TYPE = "ObjectExportNotification";
+  public static final String TYPE = "ReportTemplateUploadNotification";
 
-  public ObjectExportNotification() {
+  public ReportTemplateUploadNotification() {
     super(TYPE);
   }
 
-  public ObjectExportNotification(UUID uuid, String username, String name, String toa) {
+  public ReportTemplateUploadNotification(UUID uuid, String username, String toa) {
     super(TYPE);
     this.uuid = uuid;
     this.username = username;
-    this.name = name;
     this.toa = toa;
   }
 
-  // uuid generated for the export
+  // uuid generated for the report-template
   private UUID uuid;
 
   private String username;
-
-  // name of the export (user provided)
-  private String name;
 
   // temporary object access
   private String toa;
