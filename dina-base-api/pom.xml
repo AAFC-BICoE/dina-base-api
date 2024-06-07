@@ -22,7 +22,7 @@
     <javax.activation.version>1.2.0</javax.activation.version>
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
-    <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
+    <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
     <javers.version>6.13.0</javers.version>
     <mybatis.version>2.2.2</mybatis.version>
     <hypersistence-utils-hibernate-55.version>3.6.1</hypersistence-utils-hibernate-55.version>
