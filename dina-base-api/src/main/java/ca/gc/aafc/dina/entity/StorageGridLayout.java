@@ -55,7 +55,7 @@ public class StorageGridLayout {
      * @return Optional FillDirection object
      */
     public static Optional<FillDirection> fromString(String text) {
-      if(ROW_REGEX.matcher(text.toLowerCase()).matches()) {
+      if (ROW_REGEX.matcher(text.toLowerCase()).matches()) {
         return Optional.of(BY_ROW);
       } else if (COLUMN_REGEX.matcher(text.toLowerCase()).matches()) {
         return Optional.of(BY_COLUMN);

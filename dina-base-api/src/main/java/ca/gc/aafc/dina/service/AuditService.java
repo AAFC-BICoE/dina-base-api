@@ -1,6 +1,8 @@
 package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -166,6 +168,7 @@ public class AuditService {
     return dataService.getResourceCount(id, type, author);
   }
 
+  @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
   @Builder
   @Data
   public static final class AuditInstance {

@@ -46,10 +46,10 @@ public class AccessTokenManager {
     }
 
     boolean isAlmostExpired = Instant.now().isAfter(tokenInstant.plusSeconds(expiresIn - BUFFER_IN_SEC));
-    if(!isAlmostExpired) {
+    if (!isAlmostExpired) {
       return accessToken;
     } else {
-      if(!refreshAccessToken()) {
+      if (!refreshAccessToken()) {
         acquireAccessToken();
       }
     }
@@ -63,7 +63,7 @@ public class AccessTokenManager {
       AccessTokenRequest.newPasswordBased(config).toFieldMap());
     Response<AccessToken> accessTokenResponse = accessTokenCall.execute();
 
-    if(!accessTokenResponse.isSuccessful()) {
+    if (!accessTokenResponse.isSuccessful()) {
       accessToken = null;
       return false;
     }
@@ -86,7 +86,7 @@ public class AccessTokenManager {
     Response<AccessToken> accessTokenResponse = accessTokenCall.execute();
     log.debug("Refreshing token successful: {}", accessTokenResponse::isSuccessful);
 
-    if(!accessTokenResponse.isSuccessful()) {
+    if (!accessTokenResponse.isSuccessful()) {
       return false;
     }
 

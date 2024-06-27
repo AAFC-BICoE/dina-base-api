@@ -42,14 +42,14 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
 
   @Override
   public void exitInclude(SimpleSearchFilterParser.IncludeContext ctx) {
-    for(var attribute :  ctx.propertyName()) {
+    for (var attribute :  ctx.propertyName()) {
       includes.add(attribute.getText());
     }
   }
 
   @Override
   public void exitSort(SimpleSearchFilterParser.SortContext ctx) {
-    for(var attribute :  ctx.sortPropertyName()) {
+    for (var attribute :  ctx.sortPropertyName()) {
       sortAttributes.add(attribute.getText());
     }
   }
@@ -68,7 +68,7 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
    * @return
    */
   public FilterComponent buildFilterComponent() {
-    if(components.size() == 1) {
+    if (components.size() == 1) {
       return components.get(0);
     } else if (components.size() > 1) {
       return
