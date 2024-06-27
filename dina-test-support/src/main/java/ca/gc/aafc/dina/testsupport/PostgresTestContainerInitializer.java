@@ -85,7 +85,7 @@ public class PostgresTestContainerInitializer
           Path p = Path.of(dumpLocation);
           Files.writeString(p, containerCmdResult.getStdout());
 
-          if(containerCmdResult.getExitCode() != 0) {
+          if (containerCmdResult.getExitCode() != 0) {
             System.out.print(containerCmdResult.getStderr());
           }
         } catch (IOException | InterruptedException e) {
