@@ -39,7 +39,7 @@ public class ReadOnlyDinaRepositoryV2<K,D> {
     Predicate<D> predicate = null;
     if (fc instanceof FilterExpression fex) {
       predicate = and(predicate, SimpleObjectFilterHandlerV2.buildPredicate(fex));
-    } else if( fc instanceof FilterGroup fgrp) {
+    } else if (fc instanceof FilterGroup fgrp) {
       // multiple values can be submitted with en EQUALS to create an OR.
       if (fgrp.getConjunction() == FilterGroup.Conjunction.OR) {
         predicate = handleOr(fgrp.getComponents());
@@ -75,14 +75,14 @@ public class ReadOnlyDinaRepositoryV2<K,D> {
   }
 
   private Predicate<D> and(Predicate<D> current, Predicate<D> toAdd) {
-    if( current == null) {
+    if (current == null) {
       return toAdd;
     }
     return current.and(toAdd);
   }
 
   private Predicate<D> or(Predicate<D> current, Predicate<D> toAdd) {
-    if( current == null) {
+    if (current == null) {
       return toAdd;
     }
     return current.or(toAdd);

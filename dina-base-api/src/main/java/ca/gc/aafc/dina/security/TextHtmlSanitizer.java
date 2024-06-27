@@ -69,12 +69,12 @@ public final class TextHtmlSanitizer {
       return true;
     }
 
-    if(Jsoup.isValid(txt, safelist)) {
+    if (Jsoup.isValid(txt, safelist)) {
       return true;
     }
 
     // make sure that the unescaped entities are not part of an unsafe html so, we sanitize the input first.
-    if(allowUnescapedEntities) {
+    if (allowUnescapedEntities) {
       return StringUtils.normalizeSpace(txt).equals(Parser.unescapeEntities(TextHtmlSanitizer.sanitizeText(txt), false));
     }
     return false;
@@ -96,12 +96,12 @@ public final class TextHtmlSanitizer {
     Document d = p.parseInput(txt, "");
 
     // if a single element is added it should be rejected
-    if(d.getAllElements().size() != HTML_SHELL_SIZE) {
+    if (d.getAllElements().size() != HTML_SHELL_SIZE) {
       return false;
     }
 
     // if we reached the maximum number of errors it should be rejected
-    if(p.getErrors().size() == MAX_ERROR_TRACKED) {
+    if (p.getErrors().size() == MAX_ERROR_TRACKED) {
       return false;
     }
 
