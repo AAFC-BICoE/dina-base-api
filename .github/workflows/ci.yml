@@ -51,7 +51,7 @@ jobs:
         run: mvn -DsignArtifacts=true --batch-mode javadoc:jar deploy
         if: ${{ github.ref == 'refs/heads/master' }}
         env:
-          MAVEN_USERNAME: aafcbicoe
+          MAVEN_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PW: ${{ secrets.MAVEN_CENTRAL_PW }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
