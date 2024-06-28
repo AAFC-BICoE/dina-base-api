@@ -17,6 +17,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+// CHECKSTYLE:OFF NoFinalizer
+// CHECKSTYLE:OFF SuperFinalize
 @Repository
 @ConditionalOnProperty(value = "dina.validationEndpoint.enabled", havingValue = "true")
 public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, String> {
@@ -86,4 +88,8 @@ public class ValidationRepository extends ResourceRepositoryBase<ValidationDto, 
     throw new MethodNotAllowedException("GET");
   }
 
+  // Avoid CT_CONSTRUCTOR_THROW
+  protected final void finalize() {
+    // no-op
+  }
 }

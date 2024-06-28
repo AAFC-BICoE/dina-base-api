@@ -33,15 +33,17 @@
   <properties>
     <!-- Compile properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <java.version>17</java.version>
+    <java.version>21</java.version>
 
     <crnk.version>3.2.20200419165537</crnk.version>
 
     <!-- Build plugin properties -->
-    <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
-    <checkstyle.version>9.3</checkstyle.version>
-    <spotbugs.version>4.7.3</spotbugs.version>
-    <maven-spotbugs.version>4.7.3.0</maven-spotbugs.version>
+    <maven-checkstyle-plugin.version>3.4.0</maven-checkstyle-plugin.version>
+    <checkstyle.version>10.17.0</checkstyle.version>
+    
+    <spotbugs-maven-plugin.version>4.8.5.0</spotbugs-maven-plugin.version>
+    <spotbugs.version>4.8.5</spotbugs.version>
+
     <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.1.0</asciidoctorj.diagram.version>
     <dependency.check.version>8.4.3</dependency.check.version>
@@ -194,7 +196,7 @@
       <plugin>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>${maven-spotbugs.version}</version>
+        <version>${spotbugs-maven-plugin.version}</version>
         <configuration>
           <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
         </configuration>

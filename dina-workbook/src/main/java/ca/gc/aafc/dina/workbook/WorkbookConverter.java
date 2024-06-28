@@ -94,7 +94,7 @@ public final class WorkbookConverter {
         rowHasData = rowHasData || !"".equals(content[i]);
       }
 
-      if(rowHasData) {
+      if (rowHasData) {
         WorkbookRow currWorkbookRow = WorkbookRow.builder()
           .rowNumber(row.getRowNum())
           .content(content)

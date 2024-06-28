@@ -39,7 +39,7 @@ public class RabbitMQConfig {
     // allow to get messages that can't be delivered back
     cachingConnectionFactory.setPublisherReturns(true);
 
-    if(rmqProps.getPort() > 0) {
+    if (rmqProps.getPort() > 0) {
       cachingConnectionFactory.setPort(rmqProps.getPort());
     }
 

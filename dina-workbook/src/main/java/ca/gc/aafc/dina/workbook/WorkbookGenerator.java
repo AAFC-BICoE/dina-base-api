@@ -37,7 +37,7 @@ public final class WorkbookGenerator {
     Row row = sheet1.createRow(0);
 
     int cellIdx = 0;
-    for(String columnName: columns) {
+    for (String columnName: columns) {
       row.createCell(cellIdx).setCellValue(columnName);
       cellIdx++;
     }

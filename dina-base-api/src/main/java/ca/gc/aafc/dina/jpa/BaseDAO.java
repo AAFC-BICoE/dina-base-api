@@ -398,7 +398,7 @@ public class BaseDAO {
    */
   public void create(Object entity, boolean flush) {
     entityManager.persist(entity);
-    if(flush) {
+    if (flush) {
       entityManager.flush();
     }
   }

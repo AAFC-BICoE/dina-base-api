@@ -18,6 +18,8 @@ import java.util.Set;
 import javax.inject.Named;
 import lombok.NonNull;
 
+// CHECKSTYLE:OFF NoFinalizer
+// CHECKSTYLE:OFF SuperFinalize
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
 
   private static final String MANAGED_ATTRIBUTE_INVALID_VALUE = "managedAttribute.value.invalid";
@@ -131,7 +133,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     attributesPerKey.forEach((key, ma) -> {
       String assignedValue = attributesAndValues.get(key);
 
-      if(preValidateValue(ma, assignedValue, errors, validationContext)) {
+      if (preValidateValue(ma, assignedValue, errors, validationContext)) {
 
         if (!TypedVocabularyElementValidator.isValidElement(ma, assignedValue)) {
           rejectInvalidValue(errors, key, assignedValue);
@@ -179,4 +181,8 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
     return messageSource.getMessage(key, objects, LocaleContextHolder.getLocale());
   }
 
+  // Avoid CT_CONSTRUCTOR_THROW
+  protected final void finalize() {
+    // no-op
+  }
 }

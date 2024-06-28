@@ -60,7 +60,7 @@ public final class TypedVocabularyElementValidator {
         }
         break;
       case DECIMAL:
-        if(!NumberUtils.isParsable(assignedValue)) {
+        if (!NumberUtils.isParsable(assignedValue)) {
           return false;
         }
         break;

@@ -35,7 +35,7 @@ public final class SimpleObjectFilterHandlerV2 {
       // Only FilterExpression are supported for simple filters.
       if (component instanceof FilterExpression expression) {
         try {
-          if(newPredicate == null) {
+          if (newPredicate == null) {
             newPredicate = buildPredicate(expression);
           } else {
             newPredicate = newPredicate.and(buildPredicate(expression));

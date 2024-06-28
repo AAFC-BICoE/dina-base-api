@@ -165,7 +165,7 @@ public class DinaFilterResolver {
    */
   public static Set<String> extractIncludesSet(@NonNull QuerySpec querySpec) {
     // getIncludedRelations never returns null
-    if( querySpec.getIncludedRelations().isEmpty() ) {
+    if (querySpec.getIncludedRelations().isEmpty() ) {
       return Set.of();
     }
 
