@@ -67,14 +67,14 @@ public class ReadOnlyDinaRepositoryV2Test {
 
       Stream<DepartmentDto> stream = list.stream();
 
-      if(predicate != null) {
+      if (predicate != null) {
         stream = stream.filter(predicate);
       }
 
-      if(pageOffset != null) {
+      if (pageOffset != null) {
         stream = stream.skip(pageOffset);
       }
-      if(pageLimit != null) {
+      if (pageLimit != null) {
         stream = stream.limit(pageLimit);
       }
       return stream.collect(Collectors.toList());

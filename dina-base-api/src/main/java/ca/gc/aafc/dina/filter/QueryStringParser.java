@@ -26,7 +26,7 @@ public final class QueryStringParser {
    */
   public static QueryComponent parse(String queryString) {
 
-    if(StringUtils.isBlank(queryString)) {
+    if (StringUtils.isBlank(queryString)) {
       return QueryComponent.EMPTY;
     }
 
