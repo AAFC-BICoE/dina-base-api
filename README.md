@@ -1,11 +1,11 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.aafc-bicoe/dina-base-api.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.aafc-bicoe/dina-base-api/)
 # DINA Base API
 
-Base [DINA](https://www.dina-project.net) API package for Java built on [SpringBoot](https://spring.io/projects/spring-boot) and [Crnk](https://github.com/crnk-project/crnk-framework).
+Base [DINA](https://www.dina-project.net) API package for Java built on [SpringBoot](https://spring.io/projects/spring-boot).
 
 ## Required
 
-* Java 17
+* Java 21
 * Maven 3.8 (tested)
 
 ## Documentation
