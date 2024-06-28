@@ -49,6 +49,9 @@ public class ReadOnlyDinaRepositoryV2Test {
     assertEquals(1, results.size());
 
     assertNotNull(repo.findOne(dep.getUuid()));
+
+    results = repo.findAll("");
+    assertEquals(3, results.size());
   }
 
   private static class TestService implements PredicateBasedReadOnlyDinaService<UUID, DepartmentDto> {
@@ -61,7 +64,12 @@ public class ReadOnlyDinaRepositoryV2Test {
     @Override
     public List<DepartmentDto> findAll(Predicate<DepartmentDto> predicate, Integer pageOffset,
                                        Integer pageLimit) {
-      Stream<DepartmentDto> stream = list.stream().filter(predicate);
+
+      Stream<DepartmentDto> stream = list.stream();
+
+      if(predicate != null) {
+        stream = stream.filter(predicate);
+      }
 
       if(pageOffset != null) {
         stream = stream.skip(pageOffset);

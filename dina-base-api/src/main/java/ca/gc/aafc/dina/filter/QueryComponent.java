@@ -20,6 +20,9 @@ public class QueryComponent {
   private final Integer pageOffset;
   private final Integer pageLimit;
 
+  // Represents an empty query component
+  public static final QueryComponent EMPTY = QueryComponent.builder().build();
+
   /**
    * Tries to get the filters as {@link FilterGroup} if possible.
    * @return
