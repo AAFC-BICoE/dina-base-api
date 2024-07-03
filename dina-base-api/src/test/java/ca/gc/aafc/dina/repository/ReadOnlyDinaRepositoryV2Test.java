@@ -46,6 +46,9 @@ public class ReadOnlyDinaRepositoryV2Test {
     assertEquals(1, results.size());
 
     assertNotNull(repo.findOne(dep.getUuid()));
+
+    results = repo.findAll("");
+    assertEquals(3, results.size());
   }
 
   private static class TestService extends CollectionBackedReadOnlyDinaService<UUID, DepartmentDto> {

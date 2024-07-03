@@ -33,7 +33,11 @@ public abstract class CollectionBackedReadOnlyDinaService<K, R> implements Predi
 
   @Override
   public List<R> findAll(Predicate<R> predicate, Integer pageOffset, Integer pageLimit) {
-    Stream<R> stream = collection.stream().filter(predicate);
+
+    Stream<R> stream = collection.stream();
+    if (predicate != null) {
+      stream = stream.filter(predicate);
+    }
 
     if (pageOffset != null) {
       stream = stream.skip(pageOffset);
