@@ -1293,7 +1293,7 @@ the allowed origins embedded in the token. If there is no match, then the reques
 <div class="sectionbody">
 <div class="imageblock">
 <div class="content">
-<img src="./images/FilterSpec_Diagram.png" alt="FilterSpec Diagram">
+<img src="./images/dina_base_api.drawio.png" alt="dina base api.drawio">
 </div>
 </div>
 <div class="paragraph">
@@ -1792,10 +1792,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>Change the version by running <code>mvn versions:set -DnewVersion=X.X</code> from the root where <code>X.X</code> is the current version minus the <code>-SNAPSHOT</code></p>
-</li>
-<li>
-<p>Add and Push to dev with message like "Prepare version x.x release"</p>
+<p>Run the GitHub Action <code>Prepare dina-base-api release</code></p>
 </li>
 <li>
 <p>Wait for CI to complete</p>
@@ -1804,9 +1801,12 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </li>
 <li>
-<p>From master</p>
+<p>From master locally</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
+<li>
+<p>Pull the master branch</p>
+</li>
 <li>
 <p>Merge dev into master (do NOT use Pull Request)</p>
 </li>
@@ -2058,7 +2058,7 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-06-28 14:14:34 UTC
+Last updated 2024-07-05 13:48:40 UTC
 </div>
 </div>
 </body>
