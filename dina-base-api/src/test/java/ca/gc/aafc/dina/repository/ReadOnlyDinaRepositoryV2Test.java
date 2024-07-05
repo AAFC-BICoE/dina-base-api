@@ -1,20 +1,17 @@
 package ca.gc.aafc.dina.repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.junit.jupiter.api.Test;
 
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.entity.Department;
-import ca.gc.aafc.dina.service.PredicateBasedReadOnlyDinaService;
+import ca.gc.aafc.dina.service.CollectionBackedReadOnlyDinaService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class ReadOnlyDinaRepositoryV2Test {
 
@@ -54,35 +51,10 @@ public class ReadOnlyDinaRepositoryV2Test {
     assertEquals(3, results.size());
   }
 
-  private static class TestService implements PredicateBasedReadOnlyDinaService<UUID, DepartmentDto> {
+  private static class TestService extends CollectionBackedReadOnlyDinaService<UUID, DepartmentDto> {
 
-    private final List<DepartmentDto> list;
     public TestService(List<DepartmentDto> list) {
-      this.list = list;
-    }
-
-    @Override
-    public List<DepartmentDto> findAll(Predicate<DepartmentDto> predicate, Integer pageOffset,
-                                       Integer pageLimit) {
-
-      Stream<DepartmentDto> stream = list.stream();
-
-      if (predicate != null) {
-        stream = stream.filter(predicate);
-      }
-
-      if (pageOffset != null) {
-        stream = stream.skip(pageOffset);
-      }
-      if (pageLimit != null) {
-        stream = stream.limit(pageLimit);
-      }
-      return stream.collect(Collectors.toList());
-    }
-
-    @Override
-    public DepartmentDto findOne(UUID key) {
-      return list.stream().filter( d -> key.equals(d.getUuid())).findFirst().orElse(null);
+      super(list, DepartmentDto::getUuid);
     }
   }
 }
