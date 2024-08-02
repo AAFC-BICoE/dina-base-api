@@ -1,10 +1,12 @@
 package ca.gc.aafc.dina.filter;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.querydsl.core.types.Ops;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -88,6 +90,59 @@ public final class SimpleObjectFilterHandlerV2 {
       case EQ, LIKE -> isNullPredicate;
       default -> o -> false;
     };
+  }
+
+  /**
+   * Generates a null- (null last) comparator for ordering based on a path.
+   * Reverse order is identified by a dash (-) prefix.
+   * @param sortPath
+   * @return a comparator
+   */
+  public static <T> Comparator<T> generateComparator(String sortPath) {
+    Objects.requireNonNull(sortPath);
+
+    final boolean isReverse = sortPath.startsWith("-");
+    final String path = isReverse ? StringUtils.removeStart(sortPath, "-") : sortPath;
+
+    Comparator<T> comparator = (o1, o2) -> {
+      Comparable<Object> property1 = propertyAsComparable(o1, path);
+      Object property2 = getPropertyByPath(o2, path);
+
+      if(property1 == null) {
+        return 1;
+      }
+      if(property2 == null) {
+        return 0;
+      }
+      return property1.compareTo(property2);
+    };
+
+    if(isReverse) {
+      return comparator.reversed();
+    }
+    return comparator;
+  }
+
+  private static Object getPropertyByPath(Object obj, String propertyPath) {
+    try {
+      return PropertyUtils.getNestedProperty(obj, propertyPath);
+    } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Extract the property defined by path as a Comparable.
+   * @param o the object from which we want to extract the property
+   * @param path the path of the property
+   * @return
+   */
+  private static Comparable<Object> propertyAsComparable(Object o, String path) {
+    Object obj = getPropertyByPath(o, path);
+    if(obj instanceof Comparable<?> comp) {
+      return (Comparable<Object>) comp;
+    }
+    return null;
   }
 
   private static <T> Predicate<T> generatePredicate(String path, Ops operator, String value) {

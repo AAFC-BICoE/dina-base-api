@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.service;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -33,10 +34,17 @@ public abstract class CollectionBackedReadOnlyDinaService<K, R> implements Predi
 
   @Override
   public List<R> findAll(Predicate<R> predicate, Integer pageOffset, Integer pageLimit) {
+    return findAll(predicate, null, pageOffset, pageLimit);
+  }
 
+  public List<R> findAll(Predicate<R> predicate, Comparator<R> sortComparator, Integer pageOffset, Integer pageLimit) {
     Stream<R> stream = collection.stream();
     if (predicate != null) {
       stream = stream.filter(predicate);
+    }
+
+    if(sortComparator != null) {
+      stream = stream.sorted(sortComparator);
     }
 
     if (pageOffset != null) {
