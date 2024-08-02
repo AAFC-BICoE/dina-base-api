@@ -12,7 +12,7 @@ import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 
 /**
- * Generates {@link Predicate} based on one or more {@link FilterComponent}.
+ * Generates java.util {@link Predicate} based on one or more {@link FilterComponent}.
  *
  */
 @Log4j2
@@ -22,33 +22,32 @@ public final class SimpleObjectFilterHandlerV2 {
   }
 
   /**
-   * Build a predicate from a List of {@link FilterComponent}.
-   * @param predicate can be null otherwise the generated predicate will be added using AND.
-   * @param filters  Must be a list of FilterExpression.
-   * @return the predicate
+   * Main function to create {@link Predicate} from {@link FilterComponent}.
+   * @param fc
+   * @return the {@link Predicate} or null if the provided {@link FilterComponent} was null
    */
-  public static <T> Predicate<T> buildPredicate(Predicate<T> predicate,
-                                                List<FilterComponent> filters) {
+  public static <T> Predicate<T> createPredicate(FilterComponent fc) {
 
-    Predicate<T> newPredicate = predicate;
-    for (FilterComponent component : filters) {
-      // Only FilterExpression are supported for simple filters.
-      if (component instanceof FilterExpression expression) {
-        try {
-          if (newPredicate == null) {
-            newPredicate = buildPredicate(expression);
-          } else {
-            newPredicate = newPredicate.and(buildPredicate(expression));
-          }
-        } catch (IllegalArgumentException e) {
-          throw new IllegalArgumentException("Invalid Json filter value", e);
-        }
-      } else {
-        log.info("Ignoring FilterComponent that is not an instance of FilterExpression");
-      }
+    if (fc == null) {
+      return null;
     }
 
-    return newPredicate;
+    Predicate<T> predicate;
+    switch (fc) {
+      case FilterGroup fgrp -> {
+        // multiple values can be submitted with en EQUALS to create an OR.
+        if (fgrp.getConjunction() == FilterGroup.Conjunction.OR) {
+          predicate = handleOr(fgrp.getComponents());
+        } else {
+          predicate = handleAnd(fgrp.getComponents());
+        }
+      }
+      case FilterExpression fEx ->
+        predicate = buildPredicate(fEx);
+      default -> throw new IllegalStateException("Unexpected value: " + fc);
+    }
+
+    return predicate;
   }
 
   /**
@@ -56,7 +55,7 @@ public final class SimpleObjectFilterHandlerV2 {
    * @param filterExpression  The Filter Expression to generate the predicate from.
    * @return the predicate
    */
-  public static <T> Predicate<T> buildPredicate(FilterExpression filterExpression) {
+  private static <T> Predicate<T> buildPredicate(FilterExpression filterExpression) {
     Object filterValue = filterExpression.value();
     if (filterValue == null) {
       return generateNullComparisonPredicate(filterExpression.attribute(),
@@ -105,6 +104,56 @@ public final class SimpleObjectFilterHandlerV2 {
       case EQ -> isEqualPredicate;
       default -> o -> false;
     };
+  }
+
+  private static <T> Predicate<T> handleOr(List<FilterComponent> orList) {
+    Predicate<T> predicate = null;
+    for (FilterComponent fc : orList) {
+      switch(fc) {
+        case FilterGroup fg -> predicate = or(predicate, createPredicate(fg));
+        case FilterExpression fex -> predicate = or(predicate, buildPredicate(fex));
+        default -> throw new IllegalStateException("Unexpected value: " + fc);
+      }
+    }
+    return predicate;
+  }
+
+  private static <T> Predicate<T> handleAnd(List<FilterComponent> andList) {
+    Predicate<T> predicate = null;
+    for (FilterComponent fc : andList) {
+      switch (fc) {
+        case FilterGroup fg -> predicate = and(predicate, createPredicate(fg));
+        case FilterExpression fex -> predicate = and(predicate, buildPredicate(fex));
+        default -> throw new IllegalStateException("Unexpected value: " + fc);
+      }
+    }
+    return predicate;
+  }
+
+  /**
+   * null-safe AND predicate handling
+   * @param current
+   * @param toAdd
+   * @return
+   */
+  private static <T> Predicate<T> and(Predicate<T> current, Predicate<T> toAdd) {
+    if (current == null) {
+      return toAdd;
+    }
+    return current.and(toAdd);
+  }
+
+  /**
+   * null-safe OR predicate handling
+   * @param current
+   * @param toAdd
+   * @return
+   */
+  private static <T> Predicate<T> or(Predicate<T> current, Predicate<T> toAdd) {
+    if (current == null) {
+      return toAdd;
+    }
+    return current.or(toAdd);
   }
 
 }

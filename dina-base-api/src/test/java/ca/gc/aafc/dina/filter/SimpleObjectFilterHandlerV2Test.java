@@ -22,7 +22,7 @@ public class SimpleObjectFilterHandlerV2Test {
     FilterGroup fg = queryComponent.getFilterGroup().get();
     assertEquals(2, fg.getComponents().size());
 
-    Predicate<DepartmentDto> p = SimpleObjectFilterHandlerV2.buildPredicate(null, fg.getComponents());
+    Predicate<DepartmentDto> p = SimpleObjectFilterHandlerV2.createPredicate(fg);
 
     DepartmentDto dep = new DepartmentDto();
     dep.setName("Jim");
