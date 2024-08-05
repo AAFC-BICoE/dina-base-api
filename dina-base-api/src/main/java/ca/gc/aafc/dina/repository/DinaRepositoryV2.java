@@ -81,12 +81,12 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
   }
 
-  public List<D> getAll(String queryString) {
+  public PagedResource<D> getAll(String queryString) {
     QueryComponent queryComponents = QueryStringParser.parse(queryString);
     return getAll(queryComponents);
   }
 
-  public List<D> getAll(QueryComponent queryComponents) {
+  public PagedResource<D> getAll(QueryComponent queryComponents) {
 
     FilterComponent fc = queryComponents.getFilters();
 
@@ -112,7 +112,12 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       dtos.add(dinaMapper.toDto(e, registry.getAttributesPerClass(), includes));
     }
 
-    return dtos;
+    Long resourceCount = dinaService.getResourceCount( entityClass,
+      (criteriaBuilder, root, em) -> {
+        Predicate restriction = SimpleFilterHandlerV2.getRestriction(root, criteriaBuilder, rsqlArgumentParser::parse, em.getMetamodel(), fc != null ? List.of(fc) : List.of());
+        return new Predicate[]{restriction};
+      });
+    return new PagedResource<>(resourceCount.intValue(), dtos);
   }
 
   private static int toSafePageOffset(Integer pageOffset) {
@@ -132,4 +137,6 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     }
     return pageLimit;
   }
+
+  public record PagedResource<D> (int resourceCount, List<D> resourceList) {}
 }

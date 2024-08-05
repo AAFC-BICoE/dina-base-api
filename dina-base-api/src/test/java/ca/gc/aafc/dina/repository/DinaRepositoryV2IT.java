@@ -68,9 +68,9 @@ public class DinaRepositoryV2IT {
       .build();
 
     //ASC, case insensitive by default
-    List<PersonDTO> resultList = repositoryV2.getAll(qc);
+    DinaRepositoryV2.PagedResource<PersonDTO> resultList = repositoryV2.getAll(qc);
     for (int i = 0; i < namesCaseInsensitive.size(); i++) {
-      assertEquals(namesCaseInsensitive.get(i), resultList.get(i).getName());
+      assertEquals(namesCaseInsensitive.get(i), resultList.resourceList().get(i).getName());
     }
 
     //test DESC
@@ -79,18 +79,18 @@ public class DinaRepositoryV2IT {
       .build();
     resultList = repositoryV2.getAll(qc);
     for (int i = 0; i < reversed.size(); i++) {
-      assertEquals(reversed.get(i), resultList.get(i).getName());
+      assertEquals(reversed.get(i), resultList.resourceList().get(i).getName());
     }
 
     // sorting on non text field
     qc = QueryComponent.builder()
       .sorts(List.of("room"))
+      .pageLimit(1)
       .build();
 
     resultList = repositoryV2.getAll(qc);
-    for (int i = 0; i < namesCaseSensitive.size(); i++) {
-      assertEquals(byRoom.get(i), resultList.get(i).getName());
-    }
+    assertEquals(byRoom.getFirst(), resultList.resourceList().getFirst().getName());
+    assertEquals(byRoom.size(), resultList.resourceCount());
   }
 
   @TestConfiguration
