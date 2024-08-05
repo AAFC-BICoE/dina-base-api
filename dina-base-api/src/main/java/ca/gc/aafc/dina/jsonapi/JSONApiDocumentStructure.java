@@ -47,7 +47,7 @@ public final class JSONApiDocumentStructure {
    * @return
    */
   public static boolean isRelationshipsPath(String currentPath) {
-    if(StringUtils.isBlank(currentPath)) {
+    if (StringUtils.isBlank(currentPath)) {
       return false;
     }
     return currentPath.startsWith(DATA_RELATIONSHIPS_PATH);
@@ -59,7 +59,7 @@ public final class JSONApiDocumentStructure {
    * @return
    */
   public static boolean isAttributesPath(String currentPath) {
-    if(StringUtils.isBlank(currentPath)) {
+    if (StringUtils.isBlank(currentPath)) {
       return false;
     }
     return currentPath.startsWith(DATA_ATTRIBUTES_PATH);
@@ -95,7 +95,7 @@ public final class JSONApiDocumentStructure {
   public static Map<String, Object> mergeNestedMapUsingDotNotation(Map<String, Object> theMap) {
     Map<String, Object> newMap = new HashMap<>();
     for (var entry : theMap.entrySet()) {
-      if(entry.getValue() instanceof Map<?,?> entryAsMap) {
+      if (entry.getValue() instanceof Map<?,?> entryAsMap) {
         for (var b : entryAsMap.entrySet()) {
           newMap.put(entry.getKey() + "." + b.getKey(), b.getValue());
         }
@@ -127,12 +127,12 @@ public final class JSONApiDocumentStructure {
 
         // add elements under the new computed key except if the value is another map
         for (var initialMapElement : entryAsMapInitialLevel.entrySet()) {
-          if(!nextLevelResult.isUsedKey(initialMapElement.getKey().toString())) {
+          if (!nextLevelResult.isUsedKey(initialMapElement.getKey().toString())) {
             addToMapWithContext(entry.getKey(), initialMapElement.getKey().toString(), initialMapElement.getValue(), newMap);
           }
         }
         // add the elements of the next (deeper) map (if there are some)
-        for(var nextLevelMapElement : nextLevelResult.nestedMapsMap().entrySet()) {
+        for (var nextLevelMapElement : nextLevelResult.nestedMapsMap().entrySet()) {
           addToMapWithContext(entry.getKey(),
             nextLevelMapElement.getKey(), nextLevelMapElement.getValue(), newMap);
         }

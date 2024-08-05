@@ -12,4 +12,12 @@ See https://spotbugs.readthedocs.io/en/latest/filter.html
     <Bug pattern="EI_EXPOSE_REP2"/>
   </Match>
 
+  <!--  ignore auto-generated classes-->
+  <Match>
+    <Class name="ca.gc.aafc.dina.filter.simple.SimpleSearchFilterLexer" />
+  </Match>
+  <Match>
+    <Class name="ca.gc.aafc.dina.filter.simple.SimpleSearchFilterParser" />
+  </Match>
+
 </FindBugsFilter>

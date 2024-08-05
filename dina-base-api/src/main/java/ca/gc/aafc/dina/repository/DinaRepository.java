@@ -54,6 +54,8 @@ import java.util.function.Predicate;
  * @param <D> - Dto type
  * @param <E> - Entity type
  */
+// CHECKSTYLE:OFF NoFinalizer
+// CHECKSTYLE:OFF SuperFinalize
 public class DinaRepository<D, E extends DinaEntity>
   implements ResourceRepository<D, Serializable>, MetaRepository<D>, HttpRequestContextAware {
 
@@ -425,7 +427,7 @@ public class DinaRepository<D, E extends DinaEntity>
       convertedObj.keySet().removeIf(k -> !attributesForClass.contains(k));
     }
 
-    if(!JsonDocumentInspector.testPredicateOnValues(convertedObj, supplyCheckSubmittedDataPredicate())) {
+    if (!JsonDocumentInspector.testPredicateOnValues(convertedObj, supplyCheckSubmittedDataPredicate())) {
       throw new IllegalArgumentException("Unaccepted value detected in attributes");
     }
   }
@@ -436,6 +438,11 @@ public class DinaRepository<D, E extends DinaEntity>
    */
   protected Predicate<String> supplyCheckSubmittedDataPredicate() {
     return TextHtmlSanitizer::isSafeText;
+  }
+
+  // Avoid CT_CONSTRUCTOR_THROW
+  protected final void finalize() {
+    // no-op
   }
 
 }

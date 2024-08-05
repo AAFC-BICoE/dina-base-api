@@ -70,5 +70,4 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     return null;
 
   }
-
 }

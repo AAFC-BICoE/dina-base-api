@@ -25,9 +25,14 @@ public class DevSettings {
   private Map<String, Set<String>> groupRole;
 
   public Map<String, Set<DinaRole>> getRolesPerGroup() {
+
+    if (groupRole == null || groupRole.isEmpty()) {
+      return Map.of();
+    }
+
     Map<String, Set<DinaRole>> groupDinaRole = new HashMap<>(groupRole.size());
 
-    for(var entry : groupRole.entrySet()) {
+    for (var entry : groupRole.entrySet()) {
       groupDinaRole.put(entry.getKey(), entry.getValue().stream()
         .map(DinaRole::fromString)
         .map(Optional::orElseThrow).collect(

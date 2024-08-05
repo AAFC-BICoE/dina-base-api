@@ -40,7 +40,7 @@ public class BaseDAO {
   public static final String LOAD_GRAPH_HINT_KEY = "javax.persistence.loadgraph";
 
   public static final int DEFAULT_LIMIT = 100;
-
+  
   @PersistenceContext
   private EntityManager entityManager;
 
@@ -135,6 +135,52 @@ public class BaseDAO {
   }
 
   /**
+   * Find a list of POJO/scalar(class that is not necessary an entity) Projection from a query.
+   * @param typeClass class of the result
+   * @param sql sql query. Usually a jpql query.
+   * @param parameters optional parameters for the query
+   * @return the list of POJO/Scalar or null if not found
+   */
+  public <T> List<T> findAllByQuery(Class<T> typeClass, String sql,
+                              List<Pair<String, Object>> parameters) {
+    return findAllByQuery(typeClass, sql, parameters, -1, -1);
+  }
+
+  /**
+   * Find a list of POJO/scalar(class that is not necessary an entity) Projection from a query.
+   * @param typeClass class of the result
+   * @param sql sql query. Usually a jpql query.
+   * @param parameters optional parameters for the query
+   * @param limit optional parameters to limit the page size.
+   * @param offset optional parameters to set the page offset. If used make sure the query includes an ORDER by.
+   * @return the list of POJO/Scalar or null if nothing found
+   */
+  public <T> List<T> findAllByQuery(Class<T> typeClass, String sql,
+                                    List<Pair<String, Object>> parameters, int limit, int offset) {
+    TypedQuery<T> tq = entityManager.createQuery(sql, typeClass);
+    if (parameters != null) {
+      for (Pair<String, Object> param : parameters) {
+        tq.setParameter(param.getKey(), param.getValue());
+      }
+    }
+
+    // greater than 10 000 is stream should be used
+    if (limit > 0 && limit < 10_000) {
+      tq.setMaxResults(limit);
+    }
+
+    if (offset > 0) {
+      tq.setFirstResult(offset);
+    }
+
+    try {
+      return tq.getResultList();
+    } catch (NoResultException nrEx) {
+      return null;
+    }
+  }
+
+  /**
    * Find an entity by its primary key.
    *
    * @param id
@@ -156,6 +202,36 @@ public class BaseDAO {
   public <T> T findOneByNaturalId(Object id, Class<T> entityClass) {
     Session session = entityManager.unwrap(Session.class);
     return session.bySimpleNaturalId(entityClass).load(id);
+  }
+
+  /**
+   * Find an entity by its {@link NaturalId}. The method assumes that the
+   * naturalId is unique.
+   *
+   * @param id
+   * @param entityClass
+   * @param hints
+   * @return
+   */
+  public <T> T findOneByNaturalId(Object id, Class<T> entityClass, Map<String, Object> hints) {
+
+    // Hibernate 5 doesn't support hint on natural id, so we are creating a real query
+    CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
+    Root<T> root = criteria.from(entityClass);
+
+    criteria.where(criteriaBuilder.equal(root.get(getNaturalIdFieldName(entityClass)), id));
+    criteria.select(root);
+
+    TypedQuery<T> query = entityManager.createQuery(criteria);
+    if (hints != null) {
+      hints.forEach(query::setHint);
+    }
+    try {
+      return query.getSingleResult();
+    } catch (NoResultException nrEx) {
+      return null;
+    }
   }
 
   /**
@@ -322,7 +398,7 @@ public class BaseDAO {
    */
   public void create(Object entity, boolean flush) {
     entityManager.persist(entity);
-    if(flush) {
+    if (flush) {
       entityManager.flush();
     }
   }
@@ -460,30 +536,6 @@ public class BaseDAO {
             .setFirstResult(start)
             .setMaxResults(maxResult)
             .getResultList();
-  }
-
-  /**
-   * Find records (the class doesn't need to be an entity) from a query.
-   * If paging is used (start != 0) make sure to have an order by clause.
-   * @param typeClass
-   * @param sql
-   * @param start
-   * @param maxResult
-   * @param parameters
-   * @return
-   */
-  public <T> List<T> resultListFromQuery(Class<T> typeClass, String sql,
-                                         int start, int maxResult, List<Pair<String, Object>> parameters) {
-    TypedQuery<T> tq = entityManager.createQuery(sql, typeClass);
-    if (parameters != null) {
-      for (Pair<String, Object> param : parameters) {
-        tq.setParameter(param.getKey(), param.getValue());
-      }
-    }
-    return tq
-      .setFirstResult(start)
-      .setMaxResults(maxResult)
-      .getResultList();
   }
 
   /**

@@ -41,7 +41,7 @@ public abstract class JacksonBasedTypeHandler<T> extends BaseTypeHandler<T> {
 
   @Override
   public T getNullableResult(ResultSet rs, String columnName) throws SQLException {
-    if( rs.getString(columnName) == null) {
+    if (rs.getString(columnName) == null) {
       return null;
     }
     try {
@@ -53,7 +53,7 @@ public abstract class JacksonBasedTypeHandler<T> extends BaseTypeHandler<T> {
 
   @Override
   public T getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-    if( rs.getString(columnIndex) == null) {
+    if (rs.getString(columnIndex) == null) {
       return null;
     }
     try {
@@ -65,7 +65,7 @@ public abstract class JacksonBasedTypeHandler<T> extends BaseTypeHandler<T> {
 
   @Override
   public T getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-    if( cs.getString(columnIndex) == null) {
+    if (cs.getString(columnIndex) == null) {
       return null;
     }
     try {

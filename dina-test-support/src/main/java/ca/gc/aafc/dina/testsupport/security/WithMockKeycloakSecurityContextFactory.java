@@ -68,8 +68,8 @@ public class WithMockKeycloakSecurityContextFactory
    */
   private static String convertToKeycloakNotation(String groupRole, boolean failOnInvalidNotation) {
     String[] groupRoleParts = StringUtils.split(groupRole, ":");
-    if(groupRoleParts.length != 2) {
-      if(failOnInvalidNotation) {
+    if (groupRoleParts.length != 2) {
+      if (failOnInvalidNotation) {
         throw new IllegalArgumentException("Invalid groupRole notation. Excepted group:role.");
       }
       return "";

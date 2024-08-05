@@ -3,10 +3,16 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.Item;
 import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.search.messaging.types.DocumentOperationNotification;
-import ca.gc.aafc.dina.search.messaging.types.DocumentOperationType;
+import ca.gc.aafc.dina.messaging.config.RabbitMQQueueProperties;
+import ca.gc.aafc.dina.messaging.message.DocumentOperationNotification;
+import ca.gc.aafc.dina.messaging.message.DocumentOperationType;
+import ca.gc.aafc.dina.messaging.producer.DocumentOperationNotificationMessageProducer;
+import ca.gc.aafc.dina.messaging.producer.DinaMessageProducer;
+import ca.gc.aafc.dina.messaging.producer.RabbitMQMessageProducer;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.TransactionTestingHelper;
+
+import javax.inject.Named;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -24,7 +30,10 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationEventPublisher;
@@ -45,14 +54,11 @@ import java.util.concurrent.CountDownLatch;
 
 @SpringBootTest(classes = {TestDinaBaseApp.class, MessageProducingServiceTest.TestConfig.class},
   properties = {
-    "messaging.isProducer=true",
+    "dina.messaging.isProducer=true",
     "rabbitmq.queue=que",
-    "rabbitmq.exchange=exchange",
-    "rabbitmq.routingkey=routingkey",
     "rabbitmq.username=guest",
     "rabbitmq.password=guest",
-    "rabbitmq.host=localhost",
-    "rabbitmq.port=49198"
+    "rabbitmq.host=localhost"
   })
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 @DirtiesContext //it's an expensive test and we won't reuse the context
@@ -188,6 +194,32 @@ class MessageProducingServiceTest {
       return factory;
     }
 
+    @ConfigurationProperties(prefix = "rabbitmq")
+    @Component
+    @Named("searchQueueProperties")
+    public static class SearchQueueProperties extends RabbitMQQueueProperties {
+    }
+
+    /**
+     * RabbitMQ based message producer
+     */
+    @Service
+    @ConditionalOnProperty(prefix = "dina.messaging", name = "isProducer", havingValue = "true")
+    public static class SearchRabbitMQMessageProducer extends RabbitMQMessageProducer
+      implements DinaMessageProducer, DocumentOperationNotificationMessageProducer {
+
+      @Autowired
+      public SearchRabbitMQMessageProducer(RabbitTemplate rabbitTemplate, @Named("searchQueueProperties")
+      RabbitMQQueueProperties queueProperties) {
+        super(rabbitTemplate, queueProperties);
+      }
+
+      @Override
+      public void send(DocumentOperationNotification message) {
+        super.send(message);
+      }
+    }
+
     @Component
     @Getter
     public static class Listener {
@@ -197,11 +229,10 @@ class MessageProducingServiceTest {
 
       @RabbitListener(bindings = @QueueBinding(
         value = @Queue(value = "que"),
-        exchange = @Exchange(value = "exchange", ignoreDeclarationExceptions = "true"),
-        key = "routingkey"),
+        exchange = @Exchange(value = "que", ignoreDeclarationExceptions = "true")),
         containerFactory = "rabbitListenerContainerFactory"
       )
-      public void processOrder(String data) {
+      public void processMessage(String data) {
         messages.clear();
         messages.add(data);
         latch.countDown();

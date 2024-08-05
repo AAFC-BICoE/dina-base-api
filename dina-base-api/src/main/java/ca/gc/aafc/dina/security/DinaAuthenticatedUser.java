@@ -21,19 +21,22 @@ public class DinaAuthenticatedUser {
   private final String username;
   private final Set<String> groups;
   private final Map<String, Set<DinaRole>> rolesPerGroup;
+  private final boolean isServiceAccount;
 
   @Builder
   public DinaAuthenticatedUser(
     String username,
     String agentIdentifier,
     String internalIdentifier,
-    Map<String, Set<DinaRole>> rolesPerGroup
+    Map<String, Set<DinaRole>> rolesPerGroup,
+    boolean isServiceAccount
   ) {
     this.internalIdentifier = internalIdentifier;
     this.username = username;
     this.agentIdentifier = agentIdentifier;
     this.rolesPerGroup = rolesPerGroup == null ? Collections.emptyMap() : rolesPerGroup;
     this.groups = this.rolesPerGroup.keySet();
+    this.isServiceAccount = isServiceAccount;
   }
 
   /**

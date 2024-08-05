@@ -79,5 +79,4 @@ public final class ElasticSearchTestUtils {
     );
     client.index(indexRequest);
   }
-
 }

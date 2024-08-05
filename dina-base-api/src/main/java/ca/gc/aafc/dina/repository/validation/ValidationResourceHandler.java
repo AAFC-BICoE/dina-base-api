@@ -20,6 +20,8 @@ import java.util.Set;
  *
  * @param <D> resource type
  */
+// CHECKSTYLE:OFF NoFinalizer
+// CHECKSTYLE:OFF SuperFinalize
 public class ValidationResourceHandler<D> {
   private final DinaMappingRegistry mappingRegistry;
   private final Class<D> resourceClass;
@@ -109,5 +111,10 @@ public class ValidationResourceHandler<D> {
     }
     return relations.stream().filter(ir -> ir.getName().equalsIgnoreCase(relationFieldName))
       .findFirst();
+  }
+
+  // Avoid CT_CONSTRUCTOR_THROW
+  protected final void finalize() {
+    // no-op
   }
 }

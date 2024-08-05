@@ -16,6 +16,8 @@ import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualDescription.MultilingualPair;
 import lombok.NonNull;
 
+// CHECKSTYLE:OFF NoFinalizer
+// CHECKSTYLE:OFF SuperFinalize
 @Component
 public class MultilingualDescriptionValidator implements Validator {
 
@@ -53,7 +55,11 @@ public class MultilingualDescriptionValidator implements Validator {
     if (!supports(target.getClass())) {
       throw new IllegalArgumentException("this validator can only validate the type: " + Map.class.getSimpleName());
     }
+  }
 
+  // Avoid CT_CONSTRUCTOR_THROW
+  protected final void finalize() {
+    // no-op
   }
 
 }

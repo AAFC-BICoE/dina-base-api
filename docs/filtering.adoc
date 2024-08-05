@@ -1,6 +1,6 @@
 = Filtering
 
-image::FilterSpec_Diagram.png[]
+image::dina_base_api.drawio.png[]
 
 The main component used to represent a filter expression is the `FilterExpression` class. It consists of an `attribute`, `operator`, and `value` to define the filter condition.
 

@@ -356,10 +356,18 @@ public class BaseDAOIT extends BasePostgresItContext {
     assertTrue(baseDAO.isLoaded(depList.get(0), "employees"));
     assertTrue(baseDAO.isLoaded(depList.get(0).getEmployees().get(0), "manager"));
     assertNotNull(depList.get(0).getEmployees().get(0).getManager());
+
+    // detach the entities to force reload
+    baseDAO.detach(depList.get(0));
+
+    // try with findOneByNaturalId
+    Department departmentFromFindOne = baseDAO.findOneByNaturalId(department.getUuid(), Department.class, Map.of(BaseDAO.LOAD_GRAPH_HINT_KEY,
+      baseDAO.createEntityGraph(Department.class, "employees.manager")));
+    assertTrue(baseDAO.isLoaded(departmentFromFindOne, "employees"));
   }
 
   @Test
-  public void resultListFromQuery_onValidQuery_expectedResultsReturned() {
+  public void findAllByQuery_onValidQuery_expectedResultsReturned() {
     Person p1 = Person.builder().name("abc").uuid(UUID.randomUUID()).build();
     Person p2 = Person.builder().name("bcd").uuid(UUID.randomUUID()).build();
     baseDAO.create(p1, true);
@@ -368,7 +376,8 @@ public class BaseDAOIT extends BasePostgresItContext {
     String sql = "SELECT new " + DinaObjectSummary.class.getCanonicalName() +
       "(t.uuid, t.group, t.createdBy) FROM Person t WHERE name LIKE CONCAT('%',:name,'%') ORDER BY id";
 
-    List<DinaObjectSummary> objList = baseDAO.resultListFromQuery(DinaObjectSummary.class, sql, 0, 10, List.of(Pair.of("name", "bc")));
+    List<DinaObjectSummary> objList =
+      baseDAO.findAllByQuery(DinaObjectSummary.class, sql, List.of(Pair.of("name", "bc")), 10, 0);
     assertEquals(2, objList.size());
   }
   
