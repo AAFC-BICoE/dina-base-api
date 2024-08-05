@@ -127,6 +127,23 @@ public class DinaMappingRegistry {
   }
 
   /**
+   * Return the class (dto class) of the internal relation represented by
+   * the attribute.
+   * @param cls (dto class)
+   * @param attribute
+   * @return
+   */
+  public Class<?> getInternalRelationClass(Class<?> cls, String attribute) {
+    checkClassTracked(cls);
+
+    return resourceGraph.get(cls).getInternalRelations().stream()
+      .filter( i -> i.name.equalsIgnoreCase(attribute))
+      .map(InternalRelation::getDtoType)
+      .findAny()
+      .orElse(null);
+  }
+
+  /**
    * Returns the set of external relation field names tracked by the registry.
    *
    * @return set of external relation field names.
