@@ -24,7 +24,7 @@ jobs:
           mvn install:install-file -Dfile=legacy-libs/crnk/crnk-data-jpa/crnk-data-jpa-3.2.20200419165537.jar -DgroupId=io.crnk -DartifactId=crnk-data-jpa -Dversion=3.2.20200419165537 -Dpackaging=jar
           mvn install:install-file -Dfile=legacy-libs/crnk/crnk-operations/crnk-operations-3.2.20200419165537.jar -DgroupId=io.crnk -DartifactId=crnk-operations -Dversion=3.2.20200419165537 -Dpackaging=jar
           mvn install:install-file -Dfile=legacy-libs/crnk/crnk-setup-spring-boot/crnk-setup-spring-boot2-3.2.20200419165537.jar -DgroupId=io.crnk -DartifactId=crnk-setup-spring-boot2 -Dversion=3.2.20200419165537 -Dpackaging=jar
-          mvn install:install-file -Dfile=legacy-libs/crnk/crnk-core/crnk-core-3.2.20200419165537.jar -DgroupId=io.crnk -DartifactId=ccrnk-core -Dversion=3.2.20200419165537 -Dpackaging=jar
+          mvn install:install-file -Dfile=legacy-libs/crnk/crnk-core/crnk-core-3.2.20200419165537.jar -DgroupId=io.crnk -DartifactId=crnk-core -Dversion=3.2.20200419165537 -Dpackaging=jar
         
       - name: Build with Maven
         run: mvn -B -q install
