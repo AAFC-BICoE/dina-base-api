@@ -18,6 +18,13 @@ jobs:
       - name: Setup Graphviz
         uses: ts-graphviz/setup-graphviz@v1
 
+      - name: Setup legacy dependencies
+        run: |
+          mvn install:install-file -Dfile=legacy-libs/crnk/crnk-client/crnk-client-3.2.20200419165537.jar -DgroupId=io.crnk -DartifactId=crnk-client -Dversion=3.2.20200419165537 -Dpackaging=jar
+          mvn install:install-file -Dfile=legacy-libs/crnk/crnk-data-jpa/crnk-data-jpa-3.2.20200419165537.jar -DgroupId=io.crnk -DartifactId=crnk-data-jpa -Dversion=3.2.20200419165537 -Dpackaging=jar
+          mvn install:install-file -Dfile=legacy-libs/crnk/crnk-operations/crnk-operations-3.2.20200419165537.jar -DgroupId=io.crnk -DartifactId=crnk-operations -Dversion=3.2.20200419165537 -Dpackaging=jar
+          mvn install:install-file -Dfile=legacy-libs/crnk/crnk-setup-spring-boot2/crnk-setup-spring-boot2-3.2.20200419165537.jar -DgroupId=io.crnk -DartifactId=crnk-setup-spring-boot2 -Dversion=3.2.20200419165537 -Dpackaging=jar
+        
       - name: Build with Maven
         run: mvn -B -q install
 
