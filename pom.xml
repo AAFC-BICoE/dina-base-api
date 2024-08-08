@@ -64,17 +64,6 @@
 
     <testcontainers.version>1.17.3</testcontainers.version>
   </properties>
-  
-  <repositories>
-    <repository>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>jcenter central</id>
-      <name>bintray</name>
-      <url>https://jcenter.bintray.com</url>
-    </repository>
-  </repositories>
 
   <!-- Common sub module dependencies -->
   <dependencies>
