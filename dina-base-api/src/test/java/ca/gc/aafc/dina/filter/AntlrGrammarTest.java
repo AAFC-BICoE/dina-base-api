@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AntlrGrammarTest {
 
@@ -32,7 +33,7 @@ public class AntlrGrammarTest {
 
     assertEquals("position", queryComponent.getSorts().get(0));
     assertEquals("-name", queryComponent.getSorts().get(1));
-    assertEquals("author.name", queryComponent.getIncludes().get(0));
+    assertTrue(queryComponent.getIncludes().contains("author.name"));
 
     assertEquals(5, queryComponent.getPageOffset());
     assertEquals(1, queryComponent.getPageLimit());
@@ -45,8 +46,8 @@ public class AntlrGrammarTest {
     assertEquals("John Doe", ((FilterExpression)fg1.getComponents().get(0)).value());
     assertEquals("position", queryComponent2.getSorts().get(0));
     assertEquals("-name", queryComponent2.getSorts().get(1));
-    assertEquals("author._name", queryComponent2.getIncludes().get(0));
-    assertEquals("author.age", queryComponent2.getIncludes().get(1));
+    assertTrue(queryComponent2.getIncludes().contains("author._name"));
+    assertTrue(queryComponent2.getIncludes().contains("author.age"));
 
     assertEquals(20, queryComponent2.getPageOffset());
     assertEquals(10, queryComponent2.getPageLimit());
@@ -60,7 +61,7 @@ public class AntlrGrammarTest {
 
     assertEquals("position", queryComponent.getSorts().get(0));
     assertEquals("-name", queryComponent.getSorts().get(1));
-    assertEquals("author.name", queryComponent.getIncludes().get(0));
+    assertTrue(queryComponent.getIncludes().contains("author.name"));
 
     assertEquals(5, queryComponent.getPageOffset());
     assertEquals(1, queryComponent.getPageLimit());

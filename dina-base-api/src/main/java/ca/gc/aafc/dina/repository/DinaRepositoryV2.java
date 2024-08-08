@@ -75,10 +75,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
     authorizationService.authorizeRead(entity);
 
-    // map to dto and return
-
-    return null;
-
+    return dinaMapper.toDto(entity, registry.getAttributesPerClass(), queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of());
   }
 
   public PagedResource<D> getAll(String queryString) {
