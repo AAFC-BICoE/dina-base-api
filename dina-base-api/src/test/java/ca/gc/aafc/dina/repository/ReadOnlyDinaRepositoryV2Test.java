@@ -51,6 +51,62 @@ public class ReadOnlyDinaRepositoryV2Test {
     assertEquals(3, results.size());
   }
 
+  @Test
+  public void readOnlyDinaRepository_onFindAll_expectedResultsSorted() {
+    List<DepartmentDto> departmentDtoList = new ArrayList<>();
+
+    DepartmentDto dep = new DepartmentDto();
+    dep.setUuid(UUID.randomUUID());
+    dep.setName("Alice");
+    dep.setLocation("Ottawa");
+
+    DepartmentDto dep2 = new DepartmentDto();
+    dep2.setUuid(UUID.randomUUID());
+    dep2.setName("Bob");
+    dep2.setLocation("Toronto");
+
+    DepartmentDto dep3 = new DepartmentDto();
+    dep3.setUuid(UUID.randomUUID());
+    dep3.setName("Charlie");
+    dep3.setLocation("Montreal");
+
+    DepartmentDto dep4 = new DepartmentDto();
+    dep4.setUuid(UUID.randomUUID());
+    dep4.setName("Bob");
+    dep4.setLocation("Vancouver");
+
+    departmentDtoList.add(dep3);
+    departmentDtoList.add(dep2);
+    departmentDtoList.add(dep);
+    departmentDtoList.add(dep4);
+    ReadOnlyDinaRepositoryV2<UUID, DepartmentDto> repo = new ReadOnlyDinaRepositoryV2<>(new TestService(departmentDtoList));
+
+    // Sort on name only
+    List<DepartmentDto> results = repo.findAll("sort=name");
+    assertEquals(4, results.size());
+    assertEquals("Alice", results.get(0).getName());
+    assertEquals("Bob", results.get(1).getName());
+    assertEquals("Bob", results.get(2).getName());
+    assertEquals("Charlie", results.get(3).getName());
+
+    // Reverse sort on name
+    results = repo.findAll("sort=-name");
+    assertEquals(4, results.size());
+    assertEquals("Charlie", results.get(0).getName());
+    assertEquals("Bob", results.get(1).getName());
+    assertEquals("Bob", results.get(2).getName());
+    assertEquals("Alice", results.get(3).getName());
+
+    // Multi sort using name and location
+    results = repo.findAll("sort=-name,location");
+    assertEquals("Charlie", results.get(0).getName());
+    assertEquals("Bob", results.get(1).getName());
+    assertEquals("Toronto", results.get(1).getLocation());
+    assertEquals("Bob", results.get(2).getName());
+    assertEquals("Vancouver", results.get(2).getLocation());
+    assertEquals("Alice", results.get(3).getName());
+  }
+
   private static class TestService extends CollectionBackedReadOnlyDinaService<UUID, DepartmentDto> {
 
     public TestService(List<DepartmentDto> list) {
