@@ -107,16 +107,16 @@ public final class SimpleObjectFilterHandlerV2 {
       Comparable<Object> property1 = propertyAsComparable(o1, path);
       Object property2 = getPropertyByPath(o2, path);
 
-      if(property1 == null) {
+      if (property1 == null) {
         return 1;
       }
-      if(property2 == null) {
+      if (property2 == null) {
         return 0;
       }
       return property1.compareTo(property2);
     };
 
-    if(isReverse) {
+    if (isReverse) {
       return comparator.reversed();
     }
     return comparator;
