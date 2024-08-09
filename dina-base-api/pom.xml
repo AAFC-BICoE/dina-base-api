@@ -114,12 +114,6 @@
       <artifactId>crnk-operations</artifactId>
       <version>${crnk.version}</version>
     </dependency>
-    <dependency>
-      <groupId>io.crnk</groupId>
-      <artifactId>crnk-client</artifactId>
-      <version>${crnk.version}</version>
-      <scope>test</scope>
-    </dependency>
 
     <!-- RSQL -->
     <dependency>
@@ -227,7 +221,6 @@
   </dependencies>
   <build>
     <plugins>
-
       <plugin>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok-maven-plugin</artifactId>
@@ -249,6 +242,26 @@
             <goals>
               <goal>delombok</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <artifactSet>
+                <includes>
+                  <include>io.crnk:*</include>
+                </includes>
+              </artifactSet>
+            </configuration>
           </execution>
         </executions>
       </plugin>
