@@ -138,7 +138,7 @@ public final class SimpleObjectFilterHandlerV2 {
    */
   private static Comparable<Object> propertyAsComparable(Object o, String path) {
     Object obj = getPropertyByPath(o, path);
-    if(obj instanceof Comparable<?> comp) {
+    if (obj instanceof Comparable<?> comp) {
       return (Comparable<Object>) comp;
     }
     return null;

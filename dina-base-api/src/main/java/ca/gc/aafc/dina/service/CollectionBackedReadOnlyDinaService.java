@@ -39,7 +39,7 @@ public abstract class CollectionBackedReadOnlyDinaService<K, R> implements Predi
       stream = stream.filter(predicate);
     }
 
-    if(sortComparator != null) {
+    if (sortComparator != null) {
       stream = stream.sorted(sortComparator);
     }
 
