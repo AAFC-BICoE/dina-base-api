@@ -97,7 +97,8 @@
       <artifactId>javax.activation-api</artifactId>
       <version>${javax.activation.version}</version>
     </dependency>
-    <!-- crnk -->
+
+    <!-- crnk (Must be installed locally, see legacy-libs/README) -->
     <dependency>
       <groupId>io.crnk</groupId>
       <artifactId>crnk-setup-spring-boot2</artifactId>
@@ -119,6 +120,7 @@
       <version>${crnk.version}</version>
       <scope>test</scope>
     </dependency>
+
     <!-- RSQL -->
     <dependency>
       <groupId>com.github.tennaito</groupId>
