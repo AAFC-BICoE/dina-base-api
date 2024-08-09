@@ -1,7 +1,10 @@
 package ca.gc.aafc.dina.repository;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.QueryComponent;
@@ -30,6 +33,19 @@ public class ReadOnlyDinaRepositoryV2<K,D> {
     FilterComponent fc = queryComponents.getFilters();
 
     Predicate<D> predicate = SimpleObjectFilterHandlerV2.createPredicate(fc);
-    return service.findAll(predicate, queryComponents.getPageOffset(), queryComponents.getPageLimit());
+
+    Comparator<D> comparator = null;
+    if (CollectionUtils.isNotEmpty(queryComponents.getSorts())) {
+      for (String sort : queryComponents.getSorts()) {
+        if (comparator == null) {
+          comparator = SimpleObjectFilterHandlerV2.generateComparator(sort);
+        } else {
+          comparator =
+            comparator.thenComparing(SimpleObjectFilterHandlerV2.generateComparator(sort));
+        }
+      }
+    }
+
+    return service.findAll(predicate, comparator, queryComponents.getPageOffset(), queryComponents.getPageLimit());
   }
 }
