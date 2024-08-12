@@ -16,12 +16,21 @@
   <description>Base DINA search classes based on ElasticSearch</description>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
+  <properties>
+    <eclipse-parsson.version>1.0.5</eclipse-parsson.version>
+  </properties>
+
   <dependencies>
 
     <dependency>
       <groupId>co.elastic.clients</groupId>
       <artifactId>elasticsearch-java</artifactId>
       <version>${elasticsearch.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.parsson</groupId>
+      <artifactId>parsson</artifactId>
+      <version>${eclipse-parsson.version}</version>
     </dependency>
 
     <dependency>
