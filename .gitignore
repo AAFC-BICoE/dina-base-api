@@ -11,4 +11,4 @@
 /.vscode
 /.idea
 *logs/
-
+dependency-reduced-pom.xml
