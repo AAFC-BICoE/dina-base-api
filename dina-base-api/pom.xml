@@ -261,6 +261,7 @@
                   <include>io.crnk:*</include>
                 </includes>
               </artifactSet>
+              <useDependencyReducedPomInJar>true</useDependencyReducedPomInJar>
             </configuration>
           </execution>
         </executions>
