@@ -16,10 +16,6 @@
   <description>Base DINA search classes based on ElasticSearch</description>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
-  <properties>
-    <eclipse-parsson.version>1.0.5</eclipse-parsson.version>
-  </properties>
-
   <dependencies>
 
     <dependency>
