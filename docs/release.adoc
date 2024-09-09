@@ -5,10 +5,10 @@ The process of releasing dina-base-api is partially automated.
 To initiate the process:
 
 . From dev branch
-.. Change the version by running `mvn versions:set -DnewVersion=X.X` from the root where `X.X` is the current version minus the `-SNAPSHOT`
-.. Add and Push to dev with message like "Prepare version x.x release"
+.. Run the GitHub Action `Prepare dina-base-api release`
 .. Wait for CI to complete
-. From master
+. From master locally
+.. Pull the master branch
 .. Merge dev into master (do NOT use Pull Request)
 .. Push to master (it will trigger the deployment to the staging repository of Maven Central)
 . Create a new https://github.com/AAFC-BICoE/dina-base-api/releases[GitHub release]

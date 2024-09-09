@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.126-SNAPSHOT</version>
+  <version>0.128</version>
 
   <packaging>pom</packaging>
 
@@ -33,15 +33,17 @@
   <properties>
     <!-- Compile properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <java.version>17</java.version>
+    <java.version>21</java.version>
 
     <crnk.version>3.2.20200419165537</crnk.version>
 
     <!-- Build plugin properties -->
-    <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
-    <checkstyle.version>9.3</checkstyle.version>
-    <spotbugs.version>4.7.3</spotbugs.version>
-    <maven-spotbugs.version>4.7.3.0</maven-spotbugs.version>
+    <maven-checkstyle-plugin.version>3.4.0</maven-checkstyle-plugin.version>
+    <checkstyle.version>10.17.0</checkstyle.version>
+    
+    <spotbugs-maven-plugin.version>4.8.5.0</spotbugs-maven-plugin.version>
+    <spotbugs.version>4.8.5</spotbugs.version>
+
     <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.1.0</asciidoctorj.diagram.version>
     <dependency.check.version>8.4.3</dependency.check.version>
@@ -50,29 +52,18 @@
 
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
-    <keycloak-starter.version>20.0.5</keycloak-starter.version>
+    <keycloak-starter.version>21.1.0</keycloak-starter.version>
     <antlr4.version>4.13.0</antlr4.version>
 
     <!-- Versions override-->
     <org.springframework.version>5.3.32</org.springframework.version>
     <org.springframework.security.version>5.7.12</org.springframework.security.version>
     <snakeyaml.version>1.33</snakeyaml.version>
-
-    <xmlunit2.version>2.10.0</xmlunit2.version>
+    <eclipse-parsson.version>1.0.5</eclipse-parsson.version>
+    <xml-unit.version>2.10.0</xml-unit.version>
 
     <testcontainers.version>1.17.3</testcontainers.version>
   </properties>
-  
-  <repositories>
-    <repository>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>jcenter central</id>
-      <name>bintray</name>
-      <url>https://jcenter.bintray.com</url>
-    </repository>
-  </repositories>
 
   <!-- Common sub module dependencies -->
   <dependencies>
@@ -130,6 +121,12 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xmlunit</groupId>
+      <artifactId>xmlunit-core</artifactId>
+      <version>${xml-unit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -194,7 +191,7 @@
       <plugin>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>${maven-spotbugs.version}</version>
+        <version>${spotbugs-maven-plugin.version}</version>
         <configuration>
           <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
         </configuration>

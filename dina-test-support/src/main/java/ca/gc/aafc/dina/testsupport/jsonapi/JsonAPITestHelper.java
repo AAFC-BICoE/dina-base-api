@@ -179,7 +179,7 @@ public final class JsonAPITestHelper {
    */
   public static Map<String, ?> toRelationshipMapByName(List<JsonAPIRelationship> relationships) {
     Map<String, Pair<String, List<Map<String, Object>>>> relationshipByName = new HashMap<>();
-    for(JsonAPIRelationship currRel : relationships) {
+    for (JsonAPIRelationship currRel : relationships) {
       Pair<String, List<Map<String, Object>>> p = relationshipByName.computeIfAbsent(currRel.getName(), k -> Pair.of("data", new ArrayList<>()));
       p.getRight().add(Map.of(
               "type", currRel.getType(),

@@ -37,6 +37,8 @@ import java.util.function.BiFunction;
  *
  * @param <E> - Type of {@link DinaEntity}
  */
+// CHECKSTYLE:OFF NoFinalizer
+// CHECKSTYLE:OFF SuperFinalize
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> {
@@ -374,7 +376,7 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   }
 
   private <T> Map<String, Object> relationshipPathToLoadHints(Class<T> clazz, Set<String> rel) {
-    if( rel.isEmpty() ) {
+    if (rel.isEmpty() ) {
       return Map.of();
     }
     return Map.of(BaseDAO.LOAD_GRAPH_HINT_KEY, baseDAO.createEntityGraph(clazz, rel.toArray(new String[0])));
@@ -389,13 +391,18 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
 
     if (errors.hasErrors()) {
       Set<ConstraintViolation<E>> violations = new HashSet<>();
-      for(ObjectError o : errors.getAllErrors()) {
+      for (ObjectError o : errors.getAllErrors()) {
         if (o.contains(ConstraintViolation.class)) { 
           violations.add((ConstraintViolation<E>) o.unwrap(ConstraintViolation.class));
         }
       }
       throw new ConstraintViolationException(violations);
     }
+  }
+
+  // Avoid CT_CONSTRUCTOR_THROW
+  protected final void finalize() {
+    // no-op
   }
 
 }

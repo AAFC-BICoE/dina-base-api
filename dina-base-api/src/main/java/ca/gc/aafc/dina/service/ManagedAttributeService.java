@@ -62,7 +62,7 @@ public abstract class ManagedAttributeService<T extends ManagedAttribute>
           CriteriaBuilder.In<String> in = criteriaBuilder.in(eRoot.get(KEY));
           keySet.forEach(in::value);
 
-          if(andClause == null) {
+          if (andClause == null) {
             return new Predicate[]{in};
           }
 

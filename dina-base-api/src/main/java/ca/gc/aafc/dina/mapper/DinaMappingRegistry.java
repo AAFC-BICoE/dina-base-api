@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
  * Registry to track information regarding a given resource class. Useful to obtain certain meta information
  * regarding the domain of resource.
  */
+// CHECKSTYLE:OFF NoFinalizer
+// CHECKSTYLE:OFF SuperFinalize
 public class DinaMappingRegistry {
 
   @Getter
@@ -380,6 +382,11 @@ public class DinaMappingRegistry {
    */
   private static boolean isCollection(Class<?> clazz) {
     return Collection.class.isAssignableFrom(clazz);
+  }
+
+  // Avoid CT_CONSTRUCTOR_THROW
+  protected final void finalize() {
+    // no-op
   }
 
   /**

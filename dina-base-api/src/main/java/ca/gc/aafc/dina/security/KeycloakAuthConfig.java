@@ -72,7 +72,7 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
         http.csrf().disable().authorizeRequests();
 
     // For Actuators endpoints
-    if(StringUtils.isNotBlank(actuatorAllowedIp)) {
+    if (StringUtils.isNotBlank(actuatorAllowedIp)) {
       configurer = configurer.requestMatchers(EndpointRequest.toAnyEndpoint()).hasIpAddress(actuatorAllowedIp);
       log.info("Actuator endpoints available for {}", actuatorAllowedIp);
     }

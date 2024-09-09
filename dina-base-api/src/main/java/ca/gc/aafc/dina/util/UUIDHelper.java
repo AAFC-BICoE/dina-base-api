@@ -30,7 +30,7 @@ public final class UUIDHelper {
    * @return is provided UUID version 7. If uuid is null false is returned.
    */
   public static boolean isUUIDv7(UUID uuid) {
-    if(uuid == null) {
+    if (uuid == null) {
       return false;
     }
     return uuid.version() == 7;

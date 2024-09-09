@@ -62,7 +62,7 @@ public class ResourceNameIdentifierBaseRepository {
     ResourceNameIdentifierRequestDto resourceNameIdentifierDto = builder.build();
 
     // Make sure the group is specified
-    if(StringUtils.isBlank(resourceNameIdentifierDto.getGroup())) {
+    if (StringUtils.isBlank(resourceNameIdentifierDto.getGroup())) {
       throw new IllegalArgumentException("group should be provided");
     }
 
@@ -89,10 +89,10 @@ public class ResourceNameIdentifierBaseRepository {
     for (FilterComponent fc : fg.getComponents()) {
       if (fc instanceof FilterExpression fex) {
         buildResourceNameIdentifierDto(fex, builder);
-      } else if( fc instanceof FilterGroup fgrp) {
+      } else if (fc instanceof FilterGroup fgrp) {
         // multiple values can be submitted with en EQUALS to create an OR.
         // if it's the case, we change it to an IN internally
-        if(fgrp.getConjunction() == FilterGroup.Conjunction.OR ) {
+        if (fgrp.getConjunction() == FilterGroup.Conjunction.OR) {
           extractExpressionForInClause(fgrp.getComponents(), builder);
         }
       }
@@ -101,7 +101,7 @@ public class ResourceNameIdentifierBaseRepository {
     ResourceNameIdentifierRequestDto resourceNameIdentifierDto = builder.build();
 
     // Make sure the group is specified
-    if(StringUtils.isBlank(resourceNameIdentifierDto.getGroup())) {
+    if (StringUtils.isBlank(resourceNameIdentifierDto.getGroup())) {
       throw new IllegalArgumentException("group should be provided");
     }
     authorizationService.authorizeRead(GroupAuth.of(resourceNameIdentifierDto.getGroup()));
@@ -146,14 +146,14 @@ public class ResourceNameIdentifierBaseRepository {
       .collect(groupingBy(FilterExpression::attribute));
 
     // make sure only 1 attribute is used
-    if(byAttribute.keySet().size() != 1) {
+    if (byAttribute.keySet().size() != 1) {
       return;
     }
 
     List<String> allValues =
       byAttribute.values().stream().flatMap(fe -> fe.stream().map(FilterExpression::value)).toList();
 
-    for(String v : allValues) {
+    for (String v : allValues) {
       builder.name(v);
     }
   }

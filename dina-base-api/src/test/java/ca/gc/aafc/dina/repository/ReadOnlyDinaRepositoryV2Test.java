@@ -1,20 +1,17 @@
 package ca.gc.aafc.dina.repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.junit.jupiter.api.Test;
 
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.entity.Department;
-import ca.gc.aafc.dina.service.PredicateBasedReadOnlyDinaService;
+import ca.gc.aafc.dina.service.CollectionBackedReadOnlyDinaService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class ReadOnlyDinaRepositoryV2Test {
 
@@ -49,32 +46,71 @@ public class ReadOnlyDinaRepositoryV2Test {
     assertEquals(1, results.size());
 
     assertNotNull(repo.findOne(dep.getUuid()));
+
+    results = repo.findAll("");
+    assertEquals(3, results.size());
   }
 
-  private static class TestService implements PredicateBasedReadOnlyDinaService<UUID, DepartmentDto> {
+  @Test
+  public void readOnlyDinaRepository_onFindAll_expectedResultsSorted() {
+    List<DepartmentDto> departmentDtoList = new ArrayList<>();
 
-    private final List<DepartmentDto> list;
+    DepartmentDto dep = new DepartmentDto();
+    dep.setUuid(UUID.randomUUID());
+    dep.setName("Alice");
+    dep.setLocation("Ottawa");
+
+    DepartmentDto dep2 = new DepartmentDto();
+    dep2.setUuid(UUID.randomUUID());
+    dep2.setName("Bob");
+    dep2.setLocation("Toronto");
+
+    DepartmentDto dep3 = new DepartmentDto();
+    dep3.setUuid(UUID.randomUUID());
+    dep3.setName("Charlie");
+    dep3.setLocation("Montreal");
+
+    DepartmentDto dep4 = new DepartmentDto();
+    dep4.setUuid(UUID.randomUUID());
+    dep4.setName("Bob");
+    dep4.setLocation("Vancouver");
+
+    departmentDtoList.add(dep3);
+    departmentDtoList.add(dep2);
+    departmentDtoList.add(dep);
+    departmentDtoList.add(dep4);
+    ReadOnlyDinaRepositoryV2<UUID, DepartmentDto> repo = new ReadOnlyDinaRepositoryV2<>(new TestService(departmentDtoList));
+
+    // Sort on name only
+    List<DepartmentDto> results = repo.findAll("sort=name");
+    assertEquals(4, results.size());
+    assertEquals("Alice", results.get(0).getName());
+    assertEquals("Bob", results.get(1).getName());
+    assertEquals("Bob", results.get(2).getName());
+    assertEquals("Charlie", results.get(3).getName());
+
+    // Reverse sort on name
+    results = repo.findAll("sort=-name");
+    assertEquals(4, results.size());
+    assertEquals("Charlie", results.get(0).getName());
+    assertEquals("Bob", results.get(1).getName());
+    assertEquals("Bob", results.get(2).getName());
+    assertEquals("Alice", results.get(3).getName());
+
+    // Multi sort using name and location
+    results = repo.findAll("sort=-name,location");
+    assertEquals("Charlie", results.get(0).getName());
+    assertEquals("Bob", results.get(1).getName());
+    assertEquals("Toronto", results.get(1).getLocation());
+    assertEquals("Bob", results.get(2).getName());
+    assertEquals("Vancouver", results.get(2).getLocation());
+    assertEquals("Alice", results.get(3).getName());
+  }
+
+  private static class TestService extends CollectionBackedReadOnlyDinaService<UUID, DepartmentDto> {
+
     public TestService(List<DepartmentDto> list) {
-      this.list = list;
-    }
-
-    @Override
-    public List<DepartmentDto> findAll(Predicate<DepartmentDto> predicate, Integer pageOffset,
-                                       Integer pageLimit) {
-      Stream<DepartmentDto> stream = list.stream().filter(predicate);
-
-      if(pageOffset != null) {
-        stream = stream.skip(pageOffset);
-      }
-      if(pageLimit != null) {
-        stream = stream.limit(pageLimit);
-      }
-      return stream.collect(Collectors.toList());
-    }
-
-    @Override
-    public DepartmentDto findOne(UUID key) {
-      return list.stream().filter( d -> key.equals(d.getUuid())).findFirst().orElse(null);
+      super(list, DepartmentDto::getUuid);
     }
   }
 }

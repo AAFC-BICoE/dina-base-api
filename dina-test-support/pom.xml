@@ -9,7 +9,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.126-SNAPSHOT</version>
+    <version>0.128</version>
   </parent>
 
   <artifactId>dina-test-support</artifactId>
@@ -23,6 +23,11 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>org.eclipse.parsson</groupId>
+      <artifactId>parsson</artifactId>
+      <version>${eclipse-parsson.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
@@ -46,6 +51,7 @@
       <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
 
+    <!-- crnk (Must be installed locally, see legacy-libs/README) -->
     <dependency>
       <groupId>io.crnk</groupId>
       <artifactId>crnk-setup-spring-boot2</artifactId>
@@ -105,6 +111,32 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <artifactSet>
+                <includes>
+                  <include>io.crnk:*</include>
+                </includes>
+              </artifactSet>
+              <useDependencyReducedPomInJar>true</useDependencyReducedPomInJar>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
   <licenses>
     <license>
       <name>MIT License</name>
