@@ -29,7 +29,7 @@
 
     <jsoup.version>1.15.3</jsoup.version>
 
-    <org.mapstruct.version>1.6.0.Beta2</org.mapstruct.version>
+    <org.mapstruct.version>1.6.0</org.mapstruct.version>
     <commons-io.version>2.15.1</commons-io.version>
     <java-uuid-generator.version>4.3.0</java-uuid-generator.version>
     <spring-hateoas-jsonapi.version>1.6.0</spring-hateoas-jsonapi.version>
