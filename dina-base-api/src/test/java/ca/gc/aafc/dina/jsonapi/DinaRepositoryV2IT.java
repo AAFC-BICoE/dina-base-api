@@ -1,6 +1,8 @@
 package ca.gc.aafc.dina.jsonapi;
 
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import lombok.Getter;
 
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ca.gc.aafc.dina.dto.JsonApiPartialPatchDto;
 import ca.gc.aafc.dina.dto.TaskDTO;
+import ca.gc.aafc.dina.mapper.DtoMapper;
+import ca.gc.aafc.dina.mapper.TaskDtoMapper;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
@@ -45,14 +49,14 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
 
   @Test
   public void sendTask() {
-    TaskDTO task = TaskDTO.builder().powerLevel(RandomUtils.nextInt()).build();
+    TaskDTO task = TaskDTO.builder().power(RandomUtils.nextInt()).build();
     UUID uuid = UUID.randomUUID();
     int returnCode = sendPatch(PATH, uuid.toString(), JsonAPITestHelper.toJsonAPIMap(
       TaskDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(task), null, uuid.toString()))
       .extract().response().getStatusCode();
 
     assertEquals(200, returnCode);
-    assertEquals(task.getPowerLevel(), dynaBeanRepo.getLevel());
+    assertEquals(task.getPower(), dynaBeanRepo.getLevel());
   }
 
   /**
@@ -71,7 +75,11 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
                                                               @PathVariable String id) {
 
       JsonApiPartialPatchDto b = partialPatchDto.getContent();
-      level = (Integer)b.get("powerLevel");
+      Map<String, String> s = b.getMap().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+        e -> e.getValue().toString()));
+      s.put("id", b.getId().toString());
+      TaskDTO t = TaskDtoMapper.INSTANCE.toTaskDto(s);
+      level = t.getPower();
       return null;
     }
   }
