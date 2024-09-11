@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.128-SNAPSHOT</version>
+  <version>0.128</version>
 
   <packaging>pom</packaging>
 
@@ -59,22 +59,11 @@
     <org.springframework.version>5.3.32</org.springframework.version>
     <org.springframework.security.version>5.7.12</org.springframework.security.version>
     <snakeyaml.version>1.33</snakeyaml.version>
-
-    <xmlunit2.version>2.10.0</xmlunit2.version>
+    <eclipse-parsson.version>1.0.5</eclipse-parsson.version>
+    <xml-unit.version>2.10.0</xml-unit.version>
 
     <testcontainers.version>1.17.3</testcontainers.version>
   </properties>
-  
-  <repositories>
-    <repository>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>jcenter central</id>
-      <name>bintray</name>
-      <url>https://jcenter.bintray.com</url>
-    </repository>
-  </repositories>
 
   <!-- Common sub module dependencies -->
   <dependencies>
@@ -132,6 +121,12 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xmlunit</groupId>
+      <artifactId>xmlunit-core</artifactId>
+      <version>${xml-unit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
