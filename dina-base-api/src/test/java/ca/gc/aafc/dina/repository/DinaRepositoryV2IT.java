@@ -14,6 +14,7 @@ import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.mapper.DinaMapper;
+import ca.gc.aafc.dina.mapper.PersonMapper;
 import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
@@ -101,7 +102,7 @@ public class DinaRepositoryV2IT {
                                                                   BuildProperties buildProperties,
                                                                   ObjectMapper objMapper) {
       return new DinaRepositoryV2<>(dinaService, new AllowAllAuthorizationService(),
-        Optional.empty(), new DinaMapper<>(PersonDTO.class), PersonDTO.class, Person.class,
+        Optional.empty(), PersonMapper.INSTANCE, PersonDTO.class, Person.class,
         null, null, buildProperties, objMapper);
     }
 

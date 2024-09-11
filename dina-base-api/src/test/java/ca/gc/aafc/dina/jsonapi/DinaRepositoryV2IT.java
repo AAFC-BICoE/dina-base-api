@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ca.gc.aafc.dina.dto.JsonApiPartialPatchDto;
 import ca.gc.aafc.dina.dto.TaskDTO;
-import ca.gc.aafc.dina.mapper.DtoMapper;
 import ca.gc.aafc.dina.mapper.TaskDtoMapper;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
