@@ -7,7 +7,6 @@ import com.github.tennaito.rsql.misc.ArgumentParser;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterArgumentParser;
-import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.filter.EntityFilterHelper;
 import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.QueryComponent;
@@ -110,7 +109,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
     Set<String> attributes = new HashSet<>(registry.getAttributesPerClass().get(entityClass));
     attributes.addAll(queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of());
-    for(E e : entities) {
+    for (E e : entities) {
       dtos.add(dinaMapper.toDto(e, attributes));
     }
 
@@ -134,11 +133,12 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       return DEFAULT_PAGE_LIMIT;
     }
 
-    if(pageLimit > MAX_PAGE_LIMIT) {
+    if (pageLimit > MAX_PAGE_LIMIT) {
       return DEFAULT_PAGE_LIMIT;
     }
     return pageLimit;
   }
 
-  public record PagedResource<D> (int resourceCount, List<D> resourceList) {}
+  public record PagedResource<D>(int resourceCount, List<D> resourceList) {
+  }
 }

@@ -26,9 +26,13 @@ import lombok.extern.log4j.Log4j2;
  * Rewrite of DinaFilterResolver without dependencies on Crnk
  */
 @Log4j2
-public class EntityFilterHelper {
+public final class EntityFilterHelper {
 
   public static final String REVERSE_ORDER_PREFIX = "-";
+
+  private EntityFilterHelper() {
+    // utility class
+  }
 
   /**
    * Performs LEFT JOIN fetches to join the related entities specified in the sort attributes.
@@ -50,7 +54,7 @@ public class EntityFilterHelper {
     // relationship. Ex. "department.name" would retrieve "department".
     List<List<String>> relationsToJoin = new ArrayList<>();
 
-    for(String sortAttribute : sortAttributes){
+    for (String sortAttribute : sortAttributes) {
       List<String> sortAttributeParts = Arrays.asList(StringUtils.split(sortAttribute, "."));
       relationsToJoin.add(
         parseMappableRelationshipPath(registry, resourceClass, sortAttributeParts.size() <= 1 ? sortAttributeParts
@@ -81,7 +85,7 @@ public class EntityFilterHelper {
     }
 
     Set<String> relationsToJoin = new HashSet<>();
-    for(String i : includes) {
+    for (String i : includes) {
       List<String> attributePath = List.of(StringUtils.split(i, "."));
       List<String> mappablePath = parseMappableRelationshipPath(registry, resourceClass, attributePath);
       if (!mappablePath.isEmpty()) {
@@ -103,20 +107,21 @@ public class EntityFilterHelper {
    * @return a list of {@link Order} from a given {@link CriteriaBuilder} and {@link Path}. Empty list or sortAttributes is empty.
    * @throws UnknownAttributeException if an attribute used in the sortAttributes list is unknown
    */
-  public static <T> List<Order> getOrders(CriteriaBuilder cb, Path<T> root, List<String> sortAttributes, boolean caseSensitive)
-    throws UnknownAttributeException {
+  public static <T> List<Order> getOrders(CriteriaBuilder cb, Path<T> root,
+                                          List<String> sortAttributes, boolean caseSensitive)
+      throws UnknownAttributeException {
 
-    if(CollectionUtils.isEmpty(sortAttributes)) {
+    if (CollectionUtils.isEmpty(sortAttributes)) {
       return List.of();
     }
 
     List<Order> orderByClause = new ArrayList<>(sortAttributes.size());
 
-    for(String sortAttribute : sortAttributes) {
+    for (String sortAttribute : sortAttributes) {
       Expression<?> orderByExpression;
       Path<T> from = root;
       try {
-        for(String path : StringUtils.split(StringUtils.removeStart(sortAttribute, REVERSE_ORDER_PREFIX), ".")) {
+        for (String path : StringUtils.split(StringUtils.removeStart(sortAttribute, REVERSE_ORDER_PREFIX), ".")) {
           from = from.get(path);
         }
       } catch (IllegalArgumentException iaEx) {
@@ -130,7 +135,7 @@ public class EntityFilterHelper {
         orderByExpression = from;
       }
 
-      if(sortAttribute.startsWith(REVERSE_ORDER_PREFIX)) {
+      if (sortAttribute.startsWith(REVERSE_ORDER_PREFIX)) {
         orderByClause.add(cb.desc(orderByExpression));
       } else {
         orderByClause.add(cb.asc(orderByExpression));
