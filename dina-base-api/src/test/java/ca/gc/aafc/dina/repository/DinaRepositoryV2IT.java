@@ -103,7 +103,7 @@ public class DinaRepositoryV2IT {
                                                                   ObjectMapper objMapper) {
       return new DinaRepositoryV2<>(dinaService, new AllowAllAuthorizationService(),
         Optional.empty(), PersonMapper.INSTANCE, PersonDTO.class, Person.class,
-        null, null, buildProperties, objMapper);
+        null, buildProperties, objMapper);
     }
 
   }

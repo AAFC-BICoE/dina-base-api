@@ -13,7 +13,6 @@ import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
 import ca.gc.aafc.dina.filter.SimpleFilterHandlerV2;
-import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.DinaMapperV2;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
@@ -52,7 +51,6 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
                           @NonNull DinaMapperV2<D, E> dinaMapper,
                           @NonNull Class<D> resourceClass,
                           @NonNull Class<E> entityClass,
-                          DinaFilterResolver filterResolver,
                           ExternalResourceProvider externalResourceProvider,
                           @NonNull BuildProperties buildProperties,
                           ObjectMapper objMapper) {

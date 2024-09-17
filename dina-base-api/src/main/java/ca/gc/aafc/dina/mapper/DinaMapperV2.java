@@ -32,6 +32,7 @@ public interface DinaMapperV2<D, E> {
    */
   E toEntity(D dto, @Context Set<String> provided);
 
+
   default UUID externalRelationToUUID(ExternalRelationDto er) {
     if (er == null) {
       return null;
@@ -39,7 +40,12 @@ public interface DinaMapperV2<D, E> {
     return UUID.fromString(er.getId());
   }
 
-  default String[] nullSafeArrayCopy(String[] arr) {
+  /**
+   * Used by MapStruct to map String arrays.
+   * @param arr
+   * @return
+   */
+  default String[] nullSafeStringArrayCopy(String[] arr) {
     if (arr == null) {
       return null;
     }
@@ -52,8 +58,14 @@ public interface DinaMapperV2<D, E> {
     return provided.contains(sourcePropertyName);
   }
 
+  /**
+   * Used to map UUID of type person to {@link ExternalRelationDto}.
+   * Usage: @Mapping(source = "agent", target = "agent", qualifiedByName = "uuidToPersonExternalRelation")
+   * @param personUUID
+   * @return
+   */
   @Named("uuidToPersonExternalRelation")
-  public static ExternalRelationDto uuidToPersonExternalRelation(UUID personUUID) {
+  static ExternalRelationDto uuidToPersonExternalRelation(UUID personUUID) {
     return ExternalRelationDto.builder().id(personUUID.toString()).type("person").build();
   }
 }
