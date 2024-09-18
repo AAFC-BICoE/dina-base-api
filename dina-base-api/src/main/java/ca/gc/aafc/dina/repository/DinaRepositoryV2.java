@@ -1,10 +1,13 @@
 package ca.gc.aafc.dina.repository;
 
+import org.apache.commons.beanutils.PropertyUtils;
 import org.springframework.boot.info.BuildProperties;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tennaito.rsql.misc.ArgumentParser;
 
+import ca.gc.aafc.dina.dto.JsonApiResource;
+import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterArgumentParser;
 import ca.gc.aafc.dina.filter.EntityFilterHelper;
@@ -19,7 +22,9 @@ import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -64,20 +69,53 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     this.registry = new DinaMappingRegistry(resourceClass);
   }
 
-  public D getOne(UUID identifier, String queryString) {
+  /**
+   * TODO return relationships loaded
+   * @param identifier
+   * @param queryString
+   * @return
+   */
+  public JsonApiDto<D> getOne(UUID identifier, String queryString) {
 
     // the only part of QueryComponent that can be used on getOne is "includes"
     QueryComponent queryComponents = QueryStringParser.parse(queryString);
+    Set<String> includes = queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of();
 
-    E entity = dinaService.findOne(identifier, entityClass,
-      queryComponents.getIncludes());
+    E entity = dinaService.findOne(identifier, entityClass, includes);
 
     authorizationService.authorizeRead(entity);
 
     Set<String> attributes = new HashSet<>(registry.getAttributesPerClass().get(entityClass));
-    attributes.addAll(queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of());
+    attributes.addAll(includes);
 
-    return dinaMapper.toDto(entity, attributes);
+    D dto = dinaMapper.toDto(entity, attributes);
+
+    JsonApiDto.JsonApiDtoBuilder<D> jsonApiDtoBuilder = JsonApiDto.builder();
+
+    for (String include : includes) {
+      try {
+        Object rel = PropertyUtils.getProperty(dto, include);
+        if (rel instanceof Collection<?> coll) {
+          coll.forEach(item -> handleRelationship(jsonApiDtoBuilder, item));
+        } else {
+          handleRelationship(jsonApiDtoBuilder, rel);
+        }
+      } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    return jsonApiDtoBuilder.dto(dto).build();
+  }
+
+  private static void handleRelationship(JsonApiDto.JsonApiDtoBuilder<?> builder, Object rel) {
+    if (rel instanceof JsonApiResource ddto) {
+      builder.relationship(
+        JsonApiDto.Relationship.builder()
+          .id(ddto.getJsonApiId())
+          .type(ddto.getJsonApiType())
+          .included(ddto).build());
+    }
   }
 
   public PagedResource<D> getAll(String queryString) {
