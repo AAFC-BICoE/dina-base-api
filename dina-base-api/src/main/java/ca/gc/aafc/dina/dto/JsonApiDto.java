@@ -37,4 +37,18 @@ public class JsonApiDto<D> {
     private List<JsonApiResource> included;
   }
 
+  @AllArgsConstructor
+  @Builder
+  @Getter
+  public static class RelationshipToOneExternal implements RelationshipBase {
+    private JsonApiExternalResource included;
+  }
+
+  @AllArgsConstructor
+  @Builder
+  @Getter
+  public static class RelationshipManyExternal implements RelationshipBase {
+    private List<JsonApiExternalResource> included;
+  }
+
 }

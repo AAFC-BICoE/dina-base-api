@@ -121,7 +121,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       builder.relationship(name,
         JsonApiDto.RelationshipToOne.builder()
           .included(ddto).build());
-    }else {
+    } else {
       log.warn("Not an instance of JsonApiResource, ignoring {}", name);
     }
   }
