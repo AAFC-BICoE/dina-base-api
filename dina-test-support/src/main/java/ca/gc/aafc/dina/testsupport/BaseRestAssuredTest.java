@@ -16,6 +16,7 @@ import io.restassured.http.Header;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
+import java.util.Map;
 
 /**
  * Base class for RestAssured integration tests.
@@ -88,6 +89,19 @@ public class BaseRestAssuredTest {
   protected ValidatableResponse sendGet(String path, String id, int expectedReturnCode) {
     Response response = newRequest()
       .get(StringUtils.appendIfMissing(path, "/") + "{id}", id);
+
+    return response.then()
+      .statusCode(expectedReturnCode);
+  }
+
+  protected ValidatableResponse sendGet(String path, String id, Map<String, Object> queryParams,
+                                        int expectedReturnCode) {
+    var request = newRequest();
+    if (queryParams != null) {
+      request = request.queryParams(queryParams);
+    }
+
+    Response response = request.get(StringUtils.appendIfMissing(path, "/") + "{id}", id);
 
     return response.then()
       .statusCode(expectedReturnCode);

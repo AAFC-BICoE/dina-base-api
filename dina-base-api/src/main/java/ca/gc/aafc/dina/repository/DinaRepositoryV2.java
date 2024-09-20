@@ -2,9 +2,11 @@ package ca.gc.aafc.dina.repository;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.hateoas.RepresentationModel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tennaito.rsql.misc.ArgumentParser;
+import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.dto.JsonApiResource;
 import ca.gc.aafc.dina.dto.JsonApiDto;
@@ -27,12 +29,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import javax.persistence.criteria.Predicate;
 import lombok.NonNull;
+import lombok.extern.log4j.Log4j2;
 
+import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiModel;
+
+@Log4j2
 public class DinaRepositoryV2<D,E extends DinaEntity> {
 
   // default page limit/page size
@@ -96,9 +103,9 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       try {
         Object rel = PropertyUtils.getProperty(dto, include);
         if (rel instanceof Collection<?> coll) {
-          coll.forEach(item -> handleRelationship(jsonApiDtoBuilder, item));
+          handleToManyRelationship(jsonApiDtoBuilder, include, coll);
         } else {
-          handleRelationship(jsonApiDtoBuilder, rel);
+          handleToOneRelationship(jsonApiDtoBuilder, include, rel);
         }
       } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
         throw new RuntimeException(e);
@@ -108,13 +115,67 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     return jsonApiDtoBuilder.dto(dto).build();
   }
 
-  private static void handleRelationship(JsonApiDto.JsonApiDtoBuilder<?> builder, Object rel) {
+  private static void handleToOneRelationship(JsonApiDto.JsonApiDtoBuilder<?> builder, String name,
+                                              Object rel) {
     if (rel instanceof JsonApiResource ddto) {
-      builder.relationship(
-        JsonApiDto.Relationship.builder()
-          .id(ddto.getJsonApiId())
-          .type(ddto.getJsonApiType())
+      builder.relationship(name,
+        JsonApiDto.RelationshipToOne.builder()
           .included(ddto).build());
+    }else {
+      log.warn("Not an instance of JsonApiResource, ignoring {}", name);
+    }
+  }
+
+  private static void handleToManyRelationship(JsonApiDto.JsonApiDtoBuilder<?> builder, String name,
+                                               Collection<?> rel) {
+
+    List<JsonApiResource> castSafeList = new ArrayList<>(rel.size());
+    for (Object element : rel) {
+      if (element instanceof JsonApiResource jar) {
+        castSafeList.add(jar);
+      } else {
+        log.warn("Not an instance of JsonApiResource, ignoring {}", name);
+      }
+    }
+
+    builder.relationship(name,
+      JsonApiDto.RelationshipToMany.builder()
+        .included(castSafeList).build());
+  }
+
+  protected JsonApiModelBuilder createJsonApiModelBuilder(JsonApiDto<D> jsonApiDto) {
+    JsonApiModelBuilder builder = jsonApiModel().model(RepresentationModel.of(jsonApiDto.getDto()));
+
+    Set<UUID> included = new HashSet<>(jsonApiDto.getRelationships().size());
+    for(var a : jsonApiDto.getRelationships().entrySet()) {
+      if (a.getValue() instanceof JsonApiDto.RelationshipToOne toOne) {
+        builder.relationship(a.getKey(), toOne.getIncluded());
+        addUniqueIncluded(builder, toOne.getIncluded(), included);
+      } else if (a.getValue() instanceof JsonApiDto.RelationshipToMany toMany) {
+        builder.relationship(a.getKey(), toMany.getIncluded());
+        for(var includedResource: toMany.getIncluded()){
+          addUniqueIncluded(builder, includedResource, included);
+        }
+      }
+    }
+    return builder;
+  }
+
+  /**
+   * Add an include {@link JsonApiResource} is not already present.
+   * The main goal of this method is to avoid duplicates in the include section.
+   *
+   * @param builder the current builder
+   * @param include the {@link JsonApiResource} to include
+   * @param included writable non-null set containing the already included uuid
+   */
+  private static void addUniqueIncluded(JsonApiModelBuilder builder,
+                                        JsonApiResource include, Set<UUID> included) {
+    Objects.requireNonNull(include);
+
+    if (!included.contains(include.getJsonApiId())) {
+      builder.included(include);
+      included.add(include.getJsonApiId());
     }
   }
 
