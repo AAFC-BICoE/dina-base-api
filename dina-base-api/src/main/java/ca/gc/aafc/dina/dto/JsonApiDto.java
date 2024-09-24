@@ -20,34 +20,34 @@ public class JsonApiDto<D> {
   @Singular
   private final Map<String, RelationshipBase> relationships;
 
-  public interface RelationshipBase {
+  public sealed interface RelationshipBase {
   }
 
   @AllArgsConstructor
   @Builder
   @Getter
-  public static class RelationshipToOne implements RelationshipBase {
+  public static final class RelationshipToOne implements RelationshipBase {
     private JsonApiResource included;
   }
 
   @AllArgsConstructor
   @Builder
   @Getter
-  public static class RelationshipToMany implements RelationshipBase {
+  public static final class RelationshipToMany implements RelationshipBase {
     private List<JsonApiResource> included;
   }
 
   @AllArgsConstructor
   @Builder
   @Getter
-  public static class RelationshipToOneExternal implements RelationshipBase {
+  public static final class RelationshipToOneExternal implements RelationshipBase {
     private JsonApiExternalResource included;
   }
 
   @AllArgsConstructor
   @Builder
   @Getter
-  public static class RelationshipManyExternal implements RelationshipBase {
+  public static final class RelationshipManyExternal implements RelationshipBase {
     private List<JsonApiExternalResource> included;
   }
 
