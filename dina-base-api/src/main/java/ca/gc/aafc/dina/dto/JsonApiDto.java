@@ -20,7 +20,11 @@ public class JsonApiDto<D> {
   @Singular
   private final Map<String, RelationshipBase> relationships;
 
-  public sealed interface RelationshipBase {
+  /**
+   * Sealed interface since there is only 4 expected type of relationships.
+   */
+  public sealed interface RelationshipBase permits
+    RelationshipToOne, RelationshipToMany, RelationshipToOneExternal, RelationshipManyExternal {
   }
 
   @AllArgsConstructor

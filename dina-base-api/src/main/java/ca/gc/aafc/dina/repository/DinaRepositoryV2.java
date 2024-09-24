@@ -148,15 +148,13 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     List<JsonApiExternalResource> castSafeListExternal = new ArrayList<>();
 
     for (Object element : rel) {
-      if (rel instanceof JsonApiExternalResource jaer) {
+      if (element instanceof JsonApiExternalResource jaer) {
         castSafeListExternal.add(jaer);
-      }
-      else if (element instanceof JsonApiResource jar) {
+      } else if (element instanceof JsonApiResource jar) {
         castSafeList.add(jar);
       } else if (element instanceof ExternalRelationDto erd) {
         castSafeListExternal.add(externalRelationDtoToJsonApiExternalResource(erd));
-      }
-      else {
+      } else {
         log.warn("Not an instance of JsonApiResource, ignoring {}", name);
       }
     }
@@ -175,7 +173,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     JsonApiModelBuilder builder = jsonApiModel().model(RepresentationModel.of(jsonApiDto.getDto()));
 
     Set<UUID> included = new HashSet<>(jsonApiDto.getRelationships().size());
-    for(var rel : jsonApiDto.getRelationships().entrySet()) {
+    for (var rel : jsonApiDto.getRelationships().entrySet()) {
       switch (rel.getValue()) {
         case JsonApiDto.RelationshipToOne toOne -> {
           builder.relationship(rel.getKey(), toOne.getIncluded());
@@ -183,14 +181,14 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
         }
         case JsonApiDto.RelationshipToMany toMany -> {
           builder.relationship(rel.getKey(), toMany.getIncluded());
-          for(var includedResource: toMany.getIncluded()){
+          for (var includedResource : toMany.getIncluded()) {
             addUniqueIncluded(builder, includedResource, included);
           }
         }
-        case JsonApiDto.RelationshipToOneExternal toOneExt-> {
+        case JsonApiDto.RelationshipToOneExternal toOneExt -> {
           builder.relationship(rel.getKey(), toOneExt.getIncluded());
         }
-        case JsonApiDto.RelationshipManyExternal  toManyExt ->{
+        case JsonApiDto.RelationshipManyExternal toManyExt -> {
           builder.relationship(rel.getKey(), toManyExt.getIncluded());
         }
         default -> throw new IllegalStateException("Unexpected value: " + rel.getValue());
