@@ -159,7 +159,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       }
     }
 
-    if(!castSafeListExternal.isEmpty()){
+    if (!castSafeListExternal.isEmpty()) {
       builder.relationship(name, JsonApiDto.RelationshipManyExternal.builder()
         .included(castSafeListExternal).build());
     } else {
@@ -169,6 +169,12 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     }
   }
 
+  /**
+   * Responsible to create the {@link JsonApiModelBuilder} for the provided {@link JsonApiDto}.
+   *
+   * @param jsonApiDto
+   * @return
+   */
   protected JsonApiModelBuilder createJsonApiModelBuilder(JsonApiDto<D> jsonApiDto) {
     JsonApiModelBuilder builder = jsonApiModel().model(RepresentationModel.of(jsonApiDto.getDto()));
 
@@ -187,9 +193,11 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
         }
         case JsonApiDto.RelationshipToOneExternal toOneExt -> {
           builder.relationship(rel.getKey(), toOneExt.getIncluded());
+          builder.included(toOneExt.getIncluded());
         }
         case JsonApiDto.RelationshipManyExternal toManyExt -> {
           builder.relationship(rel.getKey(), toManyExt.getIncluded());
+          builder.included(toManyExt.getIncluded());
         }
         default -> throw new IllegalStateException("Unexpected value: " + rel.getValue());
       }

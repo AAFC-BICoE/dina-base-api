@@ -428,5 +428,12 @@ public class DinaMappingRegistry {
     private Set<InternalRelation> internalRelations;
     private Map<String, String> externalNameToTypeMap;
     private DinaFieldAdapterHandler<?> fieldAdapterHandler;
+
+    public InternalRelation getInternalRelationByName(String name) {
+      return internalRelations.stream()
+        .filter(i -> i.name.equalsIgnoreCase(name))
+        .findFirst()
+        .orElse(null);
+    }
   }
 }
