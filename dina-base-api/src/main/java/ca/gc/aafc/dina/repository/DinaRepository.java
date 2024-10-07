@@ -321,8 +321,14 @@ public class DinaRepository<D, E extends DinaEntity>
 
     mappingLayer.mapToEntity(resource, entity);
     dinaService.update(entity);
-    auditService.ifPresent(service -> service.audit(resource));
-    return resource;
+
+    // reload since the data may be changed by the service
+    D dto = findOne(
+      (Serializable) PropertyUtils.getProperty(entity, idFieldName),
+      new QuerySpec(resourceClass));
+
+    auditService.ifPresent(service -> service.audit(dto));
+    return (S) dto;
   }
 
   /**
