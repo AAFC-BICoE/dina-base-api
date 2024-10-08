@@ -41,7 +41,24 @@ public abstract class DinaBaseValidator<E> implements Validator {
     }
   }
 
-  protected String getMessage(String key, Object... objects) {
-    return messageSource.getMessage(key, objects, LocaleContextHolder.getLocale());
+  /**
+   * Get a parametrized message based on the current Locale.
+   *
+   * @param key  key of the message
+   * @param args arguments to format the message
+   * @return the message in the current Locale or the EN version as fallback
+   */
+  protected String getMessage(String key, Object... args) {
+    return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
+  }
+
+  /**
+   * Get a message based on the current Locale.
+   *
+   * @param key  key of the message
+   * @return the message in the current Locale or the EN version as fallback
+   */
+  protected String getMessage(String key) {
+    return getMessage(key, (Object) null);
   }
 }
