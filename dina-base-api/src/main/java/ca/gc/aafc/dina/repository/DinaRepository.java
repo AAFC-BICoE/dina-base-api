@@ -303,6 +303,7 @@ public class DinaRepository<D, E extends DinaEntity>
    */
   @Transactional
   @Override
+  @SuppressWarnings("unchecked")
   public <S extends D> S save(S resource) {
 
     // make sure data is safe to manipulate
@@ -323,9 +324,7 @@ public class DinaRepository<D, E extends DinaEntity>
     dinaService.update(entity);
 
     // reload since the data may be changed by the service
-    D dto = findOne(
-      (Serializable) PropertyUtils.getProperty(entity, idFieldName),
-      new QuerySpec(resourceClass));
+    D dto = findOne((Serializable) id, new QuerySpec(resourceClass));
 
     auditService.ifPresent(service -> service.audit(dto));
     return (S) dto;
