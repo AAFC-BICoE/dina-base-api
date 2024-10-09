@@ -670,7 +670,7 @@ public class DinaRepositoryIT {
     @Override
     protected void preCreate(Person entity) {
       entity.setUuid(UUID.randomUUID());
+      entity.setGroup(standardizeGroupName(entity));
     }
-
   }
 }
