@@ -30,22 +30,6 @@ public final class WorkbookConverter {
   }
 
   /**
-   * @deprecated use convertWorkbook or convertSheet
-   *
-   * Converts the first sheet of a Workbook into a list of WorkbookRow.
-   * The method will use the string value of each cells.
-   * The entire sheet will be loaded in memory.
-   * Only the sheet 0 of the Workbook will be converted.
-   * @param in will not be closed by this method
-   * @return list of all rows or an empty list (never null)
-   * @throws IOException
-   */
-  @Deprecated
-  public static List<WorkbookRow> convert(InputStream in) throws IOException {
-    return convertSheet(in, 0);
-  }
-
-  /**
    * Converts a Workbook and return a Map where the key is the sheet number (starting at 0) and
    * the value a list of WorkbookRow.
    * The method will use the string value of each cells.
@@ -58,7 +42,7 @@ public final class WorkbookConverter {
     Map<Integer, List<WorkbookRow>> workbookContent = new HashMap<>();
     Workbook book = WorkbookFactory.create(in);
     for (int i = 0; i < book.getNumberOfSheets(); i++) {
-      workbookContent.put(i, convertSheet(book.getSheetAt(i)));
+      workbookContent.put(i, convertSheet(book.getSheetAt(i)).rows());
     }
     return workbookContent;
   }
@@ -71,7 +55,7 @@ public final class WorkbookConverter {
    */
   public static List<WorkbookRow> convertSheet(InputStream in, int sheetNumber) throws IOException {
     Workbook book = WorkbookFactory.create(in);
-    return convertSheet(book.getSheetAt(sheetNumber));
+    return convertSheet(book.getSheetAt(sheetNumber)).rows();
   }
 
   /**
@@ -80,9 +64,12 @@ public final class WorkbookConverter {
    * The entire sheet will be loaded in memory.
    * Rows that are completely empty will be skipped.
    * @param sheet the {@link Sheet} to convert
-   * @return list of {@link WorkbookRow} with sheet content or empty list (never null).
+   * @return {@link WorkbookSheet} that contains a list of {@link WorkbookRow}
+   * with sheet content or empty list (never null).
    */
-  private static List<WorkbookRow> convertSheet(Sheet sheet) {
+  private static WorkbookSheet convertSheet(Sheet sheet) {
+    WorkbookSheet.WorkbookSheetBuilder workbookSheetBuilder = WorkbookSheet.builder();
+
     List<WorkbookRow> sheetContent = new ArrayList<>();
     for (Row row : sheet) {
       String[] content = new String[row.getLastCellNum() > 0 ? row.getLastCellNum() : 0];
@@ -102,7 +89,7 @@ public final class WorkbookConverter {
         sheetContent.add(currWorkbookRow);
       }
     }
-    return sheetContent;
+    return workbookSheetBuilder.rows(sheetContent).build();
   }
 
 }
