@@ -20,10 +20,10 @@ public class WorkbookConverterIT {
 
     try (InputStream is = WorkbookConverterIT.class.getClassLoader()
         .getResourceAsStream("specimenImporterTemplateTest.xlsx")) {
-      List<WorkbookRow> sheet = WorkbookConverter.convertSheet(is, 0);
+      WorkbookSheet sheet = WorkbookConverter.convertSheet(is, 0);
 
-      assertEquals(3, sheet.size());
-      assertEquals("Collection Code *", sheet.get(0).content()[0]);
+      assertEquals(3, sheet.rows().size());
+      assertEquals("Collection Code *", sheet.rows().getFirst().content()[0]);
 
       String jsonStr = OBJECT_MAPPER.writeValueAsString(sheet);
 
@@ -34,14 +34,13 @@ public class WorkbookConverterIT {
 
   @Test
   public void workbookConverterWorkbook_onValidFile_ExpectedContentConverted() throws IOException {
-
     try (InputStream is = WorkbookConverterIT.class.getClassLoader()
         .getResourceAsStream("specimenImporterTemplateTest.xlsx")) {
-      Map<Integer, List<WorkbookRow>> workbook = WorkbookConverter.convertWorkbook(is);
-
+      Map<Integer, WorkbookSheet> workbook = WorkbookConverter.convertWorkbook(is);
       assertEquals(2, workbook.size());
-      assertEquals("Collection Code *", workbook.get(0).get(0).content()[0]);
-      assertEquals("sheet", workbook.get(1).get(0).content()[0]);
+      List<WorkbookRow> workbookSheet = workbook.get(0).rows();
+      assertEquals("Collection Code *", workbookSheet.getFirst().content()[0]);
+      assertEquals("sheet", workbookSheet.getFirst().content()[0]);
     }
   }
 
@@ -49,10 +48,10 @@ public class WorkbookConverterIT {
   public void workbookConverter_onValidFileWithEmptyLine_ExpectedContentConverted() throws IOException {
     try (InputStream is = WorkbookConverterIT.class.getClassLoader()
       .getResourceAsStream("empty_second_row.xlsx")) {
-      Map<Integer, List<WorkbookRow>> workbook = WorkbookConverter.convertWorkbook(is);
+      Map<Integer, WorkbookSheet> workbook = WorkbookConverter.convertWorkbook(is);
 
       assertEquals(1, workbook.size());
-      assertEquals(1, workbook.get(0).size());
+      assertEquals(1, workbook.get(0).rows().size());
     }
   }
 
@@ -60,10 +59,11 @@ public class WorkbookConverterIT {
   public void workbookConverter_onValidFileWithEmptyFirstLine_ExpectedContentConverted() throws IOException {
     try (InputStream is = WorkbookConverterIT.class.getClassLoader()
         .getResourceAsStream("empty_first_row.xlsx")) {
-      List<WorkbookRow> content = WorkbookConverter.convertSheet(is, 0);
+      WorkbookSheet workbookSheet = WorkbookConverter.convertSheet(is, 0);
+      List<WorkbookRow> content = workbookSheet.rows();
       assertEquals(3, content.size());
-      assertEquals("test1", content.get(0).content()[0]);
-      assertEquals(1, content.get(0).rowNumber());
+      assertEquals("test1", content.getFirst().content()[0]);
+      assertEquals(1, content.getFirst().rowNumber());
     }
   }
 
@@ -71,9 +71,10 @@ public class WorkbookConverterIT {
   public void workbookConverter_onValidFileWithFormatting_ExpectedContentConverted() throws IOException {
     try (InputStream is = WorkbookConverterIT.class.getClassLoader()
         .getResourceAsStream("styled_spreadsheet.xlsx")) {
-      List<WorkbookRow> content = WorkbookConverter.convertSheet(is, 0);
+      WorkbookSheet workbookSheet = WorkbookConverter.convertSheet(is, 0);
+      List<WorkbookRow> content = workbookSheet.rows();
       assertEquals(1, content.size());
-      assertEquals("green cell", content.get(0).content()[9]);
+      assertEquals("green cell", content.getFirst().content()[9]);
     }
   }
 }

@@ -38,11 +38,11 @@ public final class WorkbookConverter {
    * @return map of sheet and list of all rows or an empty map (never null)
    * @throws IOException
    */
-  public static Map<Integer, List<WorkbookRow>> convertWorkbook(InputStream in) throws IOException {
-    Map<Integer, List<WorkbookRow>> workbookContent = new HashMap<>();
+  public static Map<Integer, WorkbookSheet> convertWorkbook(InputStream in) throws IOException {
+    Map<Integer, WorkbookSheet> workbookContent = new HashMap<>();
     Workbook book = WorkbookFactory.create(in);
     for (int i = 0; i < book.getNumberOfSheets(); i++) {
-      workbookContent.put(i, convertSheet(book.getSheetAt(i)).rows());
+      workbookContent.put(i, convertSheet(book.getSheetAt(i)));
     }
     return workbookContent;
   }
@@ -53,9 +53,9 @@ public final class WorkbookConverter {
    * @param sheetNumber sheet to concert, starts at 0
    * @return list of all rows or an empty list (never null)
    */
-  public static List<WorkbookRow> convertSheet(InputStream in, int sheetNumber) throws IOException {
+  public static WorkbookSheet convertSheet(InputStream in, int sheetNumber) throws IOException {
     Workbook book = WorkbookFactory.create(in);
-    return convertSheet(book.getSheetAt(sheetNumber)).rows();
+    return convertSheet(book.getSheetAt(sheetNumber));
   }
 
   /**
@@ -71,6 +71,7 @@ public final class WorkbookConverter {
     WorkbookSheet.WorkbookSheetBuilder workbookSheetBuilder = WorkbookSheet.builder();
 
     List<WorkbookRow> sheetContent = new ArrayList<>();
+    workbookSheetBuilder.sheetName(sheet.getSheetName());
     for (Row row : sheet) {
       String[] content = new String[row.getLastCellNum() > 0 ? row.getLastCellNum() : 0];
       boolean rowHasData = false;
