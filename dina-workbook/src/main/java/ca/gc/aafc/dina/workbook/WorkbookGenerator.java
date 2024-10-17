@@ -66,7 +66,6 @@ public final class WorkbookGenerator {
       row.createCell(cellIdx).setCellValue(columnName);
       cellIdx++;
     }
-
     return wb;
   }
 }
