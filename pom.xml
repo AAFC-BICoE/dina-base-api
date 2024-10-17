@@ -52,7 +52,7 @@
 
     <!-- Common sub-module dependency properties -->
     <javax.inject.version>1</javax.inject.version>
-    <keycloak-starter.version>21.1.0</keycloak-starter.version>
+    <keycloak-starter.version>22.0.5</keycloak-starter.version>
     <antlr4.version>4.13.0</antlr4.version>
 
     <!-- Versions override-->
