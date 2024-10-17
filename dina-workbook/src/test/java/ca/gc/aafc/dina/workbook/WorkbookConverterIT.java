@@ -10,6 +10,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class WorkbookConverterIT {
 
@@ -72,9 +73,20 @@ public class WorkbookConverterIT {
     try (InputStream is = WorkbookConverterIT.class.getClassLoader()
         .getResourceAsStream("styled_spreadsheet.xlsx")) {
       WorkbookSheet workbookSheet = WorkbookConverter.convertSheet(is, 0);
+      assertEquals("Checklist", workbookSheet.sheetName());
       List<WorkbookRow> content = workbookSheet.rows();
       assertEquals(1, content.size());
       assertEquals("green cell", content.getFirst().content()[9]);
+    }
+  }
+
+  @Test
+  public void workbookConverter_onValidFileWithCustomProperties_ExpectedContentConverted() throws IOException {
+    try (InputStream is = WorkbookConverterIT.class.getClassLoader()
+      .getResourceAsStream("generatedFileWithAliases.xlsx")) {
+      WorkbookSheet workbookSheet = WorkbookConverter.convertSheet(is, 0);
+      assertNotNull(workbookSheet.originalColumns());
+      assertNotNull(workbookSheet.columnAliases());
     }
   }
 }

@@ -8,6 +8,6 @@ import lombok.Builder;
  * @param rows
  */
 @Builder
-public record WorkbookSheet(String sheetName, List<WorkbookRow> rows) {
+public record WorkbookSheet(String sheetName, List<String> originalColumns, List<String> columnAliases, List<WorkbookRow> rows) {
 
 }
