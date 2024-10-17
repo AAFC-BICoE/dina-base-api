@@ -26,7 +26,7 @@ public class WorkbookConverterIT {
       assertEquals(3, sheet.rows().size());
       assertEquals("Collection Code *", sheet.rows().getFirst().content()[0]);
 
-      String jsonStr = OBJECT_MAPPER.writeValueAsString(sheet);
+      String jsonStr = OBJECT_MAPPER.writeValueAsString(sheet.rows());
 
       //null elements should be included as empty string
       assertFalse(jsonStr.contains("null"));
@@ -39,8 +39,12 @@ public class WorkbookConverterIT {
         .getResourceAsStream("specimenImporterTemplateTest.xlsx")) {
       Map<Integer, WorkbookSheet> workbook = WorkbookConverter.convertWorkbook(is);
       assertEquals(2, workbook.size());
+
       List<WorkbookRow> workbookSheet = workbook.get(0).rows();
       assertEquals("Collection Code *", workbookSheet.getFirst().content()[0]);
+
+      // second sheet
+      workbookSheet = workbook.get(1).rows();
       assertEquals("sheet", workbookSheet.getFirst().content()[0]);
     }
   }
