@@ -28,9 +28,9 @@ public final class DelimiterSeparatedConverter {
     return SUPPORTED_TYPES.contains(mediaType);
   }
 
-  public static List<WorkbookRow> convert(InputStream in, String mediaType) throws IOException {
+  public static WorkbookSheet convert(InputStream in, String mediaType) throws IOException {
+    WorkbookSheet.WorkbookSheetBuilder workbookSheetBuilder = WorkbookSheet.builder();
     CsvMapper mapper = new CsvMapper();
-
     CsvSchema.Builder schemaBuilder = mapper.schema().rebuild();
 
     if (TSV_MEDIA_TYPE.equals(mediaType)) {
@@ -49,6 +49,7 @@ public final class DelimiterSeparatedConverter {
         sheetContent.add(new WorkbookRow(rowNumber, it.nextValue()));
       }
     }
-    return sheetContent;
+    workbookSheetBuilder.rows(sheetContent);
+    return workbookSheetBuilder.build();
   }
 }
