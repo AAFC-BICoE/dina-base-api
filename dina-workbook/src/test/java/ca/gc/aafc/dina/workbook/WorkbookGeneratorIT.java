@@ -25,7 +25,7 @@ public class WorkbookGeneratorIT {
     try(FileInputStream fis = new FileInputStream(tmpExport.toFile())) {
       var result = WorkbookConverter.convertWorkbook(fis);
       // check value of the first cell of the first row of the first sheet
-      assertEquals("col 1", result.get(0).getFirst().content()[0]);
+      assertEquals("col 1", result.get(0).rows().getFirst().content()[0]);
     }
   }
 
@@ -41,7 +41,7 @@ public class WorkbookGeneratorIT {
     try (FileInputStream fis = new FileInputStream(tmpExport.toFile())) {
       var result = WorkbookConverter.convertWorkbook(fis);
       // check value of the first cell of the first row of the first sheet
-      assertEquals("alias 1", result.get(0).getFirst().content()[0]);
+      assertEquals("alias 1", result.get(0).rows().getFirst().content()[0]);
     }
   }
 }

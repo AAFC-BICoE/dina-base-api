@@ -1,17 +1,23 @@
 package ca.gc.aafc.dina.workbook;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ooxml.POIXMLProperties;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.openxmlformats.schemas.officeDocument.x2006.customProperties.CTProperty;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static ca.gc.aafc.dina.workbook.WorkbookGenerator.WORKBOOK_CUSTOM_PROPS_ALIASES;
+import static ca.gc.aafc.dina.workbook.WorkbookGenerator.WORKBOOK_CUSTOM_PROPS_COLUMNS;
 
 public final class WorkbookConverter {
 
@@ -38,11 +44,12 @@ public final class WorkbookConverter {
    * @return map of sheet and list of all rows or an empty map (never null)
    * @throws IOException
    */
-  public static Map<Integer, List<WorkbookRow>> convertWorkbook(InputStream in) throws IOException {
-    Map<Integer, List<WorkbookRow>> workbookContent = new HashMap<>();
-    Workbook book = WorkbookFactory.create(in);
+  public static Map<Integer, WorkbookSheet> convertWorkbook(InputStream in) throws IOException {
+    Map<Integer, WorkbookSheet> workbookContent = new HashMap<>();
+
+    XSSFWorkbook book = new XSSFWorkbook(in, false);
     for (int i = 0; i < book.getNumberOfSheets(); i++) {
-      workbookContent.put(i, convertSheet(book.getSheetAt(i)).rows());
+      workbookContent.put(i, convertSheet(book, book.getSheetAt(i)));
     }
     return workbookContent;
   }
@@ -53,9 +60,9 @@ public final class WorkbookConverter {
    * @param sheetNumber sheet to concert, starts at 0
    * @return list of all rows or an empty list (never null)
    */
-  public static List<WorkbookRow> convertSheet(InputStream in, int sheetNumber) throws IOException {
-    Workbook book = WorkbookFactory.create(in);
-    return convertSheet(book.getSheetAt(sheetNumber)).rows();
+  public static WorkbookSheet convertSheet(InputStream in, int sheetNumber) throws IOException {
+    XSSFWorkbook book = new XSSFWorkbook(in, false);
+    return convertSheet(book, book.getSheetAt(sheetNumber));
   }
 
   /**
@@ -67,10 +74,13 @@ public final class WorkbookConverter {
    * @return {@link WorkbookSheet} that contains a list of {@link WorkbookRow}
    * with sheet content or empty list (never null).
    */
-  private static WorkbookSheet convertSheet(Sheet sheet) {
+  private static WorkbookSheet convertSheet(XSSFWorkbook book, Sheet sheet) {
     WorkbookSheet.WorkbookSheetBuilder workbookSheetBuilder = WorkbookSheet.builder();
 
+    extractDinaMetadata(book, workbookSheetBuilder);
+
     List<WorkbookRow> sheetContent = new ArrayList<>();
+    workbookSheetBuilder.sheetName(sheet.getSheetName());
     for (Row row : sheet) {
       String[] content = new String[row.getLastCellNum() > 0 ? row.getLastCellNum() : 0];
       boolean rowHasData = false;
@@ -92,4 +102,27 @@ public final class WorkbookConverter {
     return workbookSheetBuilder.rows(sheetContent).build();
   }
 
+  /**
+   * Extract dina specific metadata from the Workbook that may be present if the Workbook was
+   * created by {@link WorkbookGenerator}.
+   * @param book
+   * @param workbookSheetBuilder
+   */
+  private static void extractDinaMetadata(XSSFWorkbook book,
+                                          WorkbookSheet.WorkbookSheetBuilder workbookSheetBuilder) {
+    POIXMLProperties.CustomProperties customProperties = book.getProperties().getCustomProperties();
+    if (customProperties == null) {
+      return;
+    }
+
+    CTProperty columns = customProperties.getProperty(WORKBOOK_CUSTOM_PROPS_COLUMNS);
+    if (columns != null) {
+      workbookSheetBuilder.originalColumns(Arrays.asList(StringUtils.split(columns.getLpwstr(), ',')));
+    }
+
+    CTProperty aliases = customProperties.getProperty(WORKBOOK_CUSTOM_PROPS_ALIASES);
+    if (aliases != null) {
+      workbookSheetBuilder.columnAliases(Arrays.asList(StringUtils.split(aliases.getLpwstr(), ',')));
+    }
+  }
 }

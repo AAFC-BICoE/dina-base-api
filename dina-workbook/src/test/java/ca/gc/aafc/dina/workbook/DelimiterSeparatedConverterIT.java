@@ -33,12 +33,13 @@ public class DelimiterSeparatedConverterIT {
     }
   }
 
-  private void assertDelimiterSeparated(List<WorkbookRow> content) {
+  private void assertDelimiterSeparated(WorkbookSheet workbookSheet) {
+    List<WorkbookRow> content = workbookSheet.rows();
     // check number of lines
     assertEquals(2, content.size());
     // check number of columns
-    assertEquals(6, content.get(0).content().length);
+    assertEquals(6, content.getFirst().content().length);
     // check value with comma inside
-    assertEquals("4,5", content.get(0).content()[4]);
+    assertEquals("4,5", content.getFirst().content()[4]);
   }
 }
