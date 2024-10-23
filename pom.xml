@@ -56,7 +56,7 @@
     <antlr4.version>4.13.0</antlr4.version>
 
     <!-- Versions override-->
-    <org.springframework.version>5.3.38</org.springframework.version>
+    <spring-framework.version>5.3.39</spring-framework.version>
     <org.springframework.security.version>5.7.12</org.springframework.security.version>
     <snakeyaml.version>1.33</snakeyaml.version>
     <eclipse-parsson.version>1.0.5</eclipse-parsson.version>
