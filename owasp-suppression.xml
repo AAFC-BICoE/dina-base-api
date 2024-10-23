@@ -25,11 +25,11 @@
         <cve>CVE-2024-22262</cve>
     </suppress>
     <suppress>
-        <notes>CVE about Keycloak server</notes>
-        <cve>CVE-2022-1245</cve>
-    </suppress>
-    <suppress>
         <notes>Invalid CVE</notes>
         <cve>CVE-2022-31514</cve>
+    </suppress>
+    <suppress>
+        <notes>Not applicable</notes>
+        <cve>CVE-2024-38816</cve>
     </suppress>
 </suppressions>
