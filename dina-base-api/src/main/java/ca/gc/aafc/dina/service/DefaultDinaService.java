@@ -37,8 +37,6 @@ import java.util.function.BiFunction;
  *
  * @param <E> - Type of {@link DinaEntity}
  */
-// CHECKSTYLE:OFF NoFinalizer
-// CHECKSTYLE:OFF SuperFinalize
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> {
@@ -257,8 +255,6 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     return baseDAO.findOneByProperties(clazz, propertiesAndValue);
   }
 
-
-
   /**
    * Returns a reference to an entity that should exist without actually loading it. Useful to set
    * relationships without loading the entity instead of findOne.
@@ -400,9 +396,17 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     }
   }
 
-  // Avoid CT_CONSTRUCTOR_THROW
-  protected final void finalize() {
-    // no-op
+  /**
+   * Optional group standardization method.
+   *
+   * @param entity
+   * @return standardized group name (lowercase)
+   */
+  public String standardizeGroupName(E entity) {
+    if (entity.getGroup() == null) {
+      return null;
+    }
+    return entity.getGroup().toLowerCase();
   }
 
 }

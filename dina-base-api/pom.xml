@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.128</version>
+    <version>0.131-SNAPSHOT</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -27,12 +27,12 @@
     <mybatis.version>2.2.2</mybatis.version>
     <hypersistence-utils-hibernate-55.version>3.6.1</hypersistence-utils-hibernate-55.version>
 
-    <jsoup.version>1.15.3</jsoup.version>
+    <jsoup.version>1.18.1</jsoup.version>
 
     <org.mapstruct.version>1.6.0</org.mapstruct.version>
     <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 
-    <commons-io.version>2.15.1</commons-io.version>
+    <commons-io.version>2.17.0</commons-io.version>
     <java-uuid-generator.version>4.3.0</java-uuid-generator.version>
     <spring-hateoas-jsonapi.version>1.6.0</spring-hateoas-jsonapi.version>
 
@@ -157,17 +157,17 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-filter</artifactId>
-      <version>0.128</version>
+      <version>0.131-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-messaging</artifactId>
-      <version>0.128</version>
+      <version>0.131-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.128</version>
+      <version>0.131-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
