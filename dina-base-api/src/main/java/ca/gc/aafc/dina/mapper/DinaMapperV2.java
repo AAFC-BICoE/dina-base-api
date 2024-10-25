@@ -19,7 +19,7 @@ public interface DinaMapperV2<D, E> {
   /**
    * Map an entity to a new instance of a dto.
    * @param entity
-   * @param provided
+   * @param provided provided properties so only those will be set
    * @return dto instance
    */
   D toDto(E entity, @Context Set<String> provided);
@@ -27,12 +27,18 @@ public interface DinaMapperV2<D, E> {
   /**
    * Map a dto to a new instance of an entity.
    * @param dto
-   * @param provided
-   * @return
+   * @param provided provided properties so only those will be set
+   * @return entity instance
    */
   E toEntity(D dto, @Context Set<String> provided);
 
 
+  /**
+   * Used to map the uuid of an {@link ExternalRelationDto}.
+   * To support legacy classes.
+   * @param er
+   * @return
+   */
   default UUID externalRelationToUUID(ExternalRelationDto er) {
     if (er == null) {
       return null;
@@ -52,6 +58,12 @@ public interface DinaMapperV2<D, E> {
     return Arrays.copyOf(arr, arr.length);
   }
 
+  /**
+   * Used by MapStruct to control which field to set.
+   * @param sourcePropertyName
+   * @param provided
+   * @return
+   */
   @Condition
   default boolean isPropertyProvided(@SourcePropertyName String sourcePropertyName,
                                      @Context Set<String> provided) {
@@ -59,7 +71,7 @@ public interface DinaMapperV2<D, E> {
   }
 
   /**
-   * Used to map UUID of type person to {@link ExternalRelationDto}.
+   * Used to map UUID of type person to {@link ExternalRelationDto} for all legacy classes.
    * Usage: @Mapping(source = "agent", target = "agent", qualifiedByName = "uuidToPersonExternalRelation")
    * @param personUUID
    * @return

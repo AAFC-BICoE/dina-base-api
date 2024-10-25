@@ -13,7 +13,6 @@ import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.filter.QueryComponent;
-import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.mapper.PersonMapper;
 import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
@@ -103,7 +102,7 @@ public class DinaRepositoryV2IT {
                                                                   ObjectMapper objMapper) {
       return new DinaRepositoryV2<>(dinaService, new AllowAllAuthorizationService(),
         Optional.empty(), PersonMapper.INSTANCE, PersonDTO.class, Person.class,
-        null, buildProperties, objMapper);
+        buildProperties, objMapper);
     }
 
   }

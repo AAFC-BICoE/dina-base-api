@@ -21,7 +21,6 @@ import ca.gc.aafc.dina.filter.QueryStringParser;
 import ca.gc.aafc.dina.filter.SimpleFilterHandlerV2;
 import ca.gc.aafc.dina.mapper.DinaMapperV2;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
-import ca.gc.aafc.dina.repository.external.ExternalResourceProvider;
 import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
@@ -64,7 +63,6 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
                           @NonNull DinaMapperV2<D, E> dinaMapper,
                           @NonNull Class<D> resourceClass,
                           @NonNull Class<E> entityClass,
-                          ExternalResourceProvider externalResourceProvider,
                           @NonNull BuildProperties buildProperties,
                           ObjectMapper objMapper) {
 
@@ -80,6 +78,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
   /**
    * Used to provide mapping between {@link ExternalRelationDto} and new JsonApiExternalResource instances.
+   * By default, this method returns null since the supported types are unknown.
    * @param externalRelationDto
    * @return
    */
