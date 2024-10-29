@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.security;
 
 import java.util.Map;
 import java.util.Set;
+import lombok.Getter;
 
 import org.apache.commons.collections.MapUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -21,8 +22,16 @@ public class DevUserConfig {
 
   private final DevSettings devSettings;
 
+  @Getter
+  private final String username;
+
+  @Getter
+  private final String internalId;
+
   public DevUserConfig(DevSettings devSettings) {
     this.devSettings = devSettings;
+    username = "dev";
+    internalId = "c628fc6f-c9ad-4bb6-a187-81eb7884bdd7";
   }
 
   @Bean
@@ -32,8 +41,8 @@ public class DevUserConfig {
     DinaAuthenticatedUser.DinaAuthenticatedUserBuilder authenticatedUserBuilder =
       DinaAuthenticatedUser.builder()
         .agentIdentifier("c628fc6f-c9ad-4bb6-a187-81eb7884bdd7")
-        .internalIdentifier("c628fc6f-c9ad-4bb6-a187-81eb7884bdd7")
-        .username("dev");
+        .internalIdentifier(internalId)
+        .username(username);
 
     if (MapUtils.isNotEmpty(devSettings.getRolesPerGroup())) {
       authenticatedUserBuilder.rolesPerGroup(devSettings.getRolesPerGroup());
