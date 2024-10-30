@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.security;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.Getter;
@@ -32,6 +34,18 @@ public class DevUserConfig {
     this.devSettings = devSettings;
     username = "dev";
     internalId = "c628fc6f-c9ad-4bb6-a187-81eb7884bdd7";
+  }
+
+  public Map<String, Set<DinaRole>> getRolesPerGroup() {
+    return devSettings.getRolesPerGroup();
+  }
+
+  /**
+   * Get groups, regardless of the role within the group
+   * @return
+   */
+  public List<String> getGroups() {
+    return new ArrayList<>(devSettings.getRolesPerGroup().keySet());
   }
 
   @Bean
