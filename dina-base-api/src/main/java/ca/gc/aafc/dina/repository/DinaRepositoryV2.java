@@ -101,6 +101,8 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     QueryComponent queryComponents = QueryStringParser.parse(queryString);
     Set<String> includes = queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of();
 
+    validateIncludes(includes);
+
     E entity = dinaService.findOne(identifier, entityClass, includes);
 
     authorizationService.authorizeRead(entity);
@@ -253,6 +255,8 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     Set<String> relationshipsPath = EntityFilterHelper.extractRelationships(queryComponents.getIncludes(), resourceClass, registry);
     Set<String> includes = queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of();
 
+    validateIncludes(includes);
+
     List<E> entities = dinaService.findAll(
       entityClass,
       (criteriaBuilder, root, em) -> {
@@ -270,6 +274,8 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
     Set<String> attributes = new HashSet<>(registry.getAttributesPerClass().get(entityClass));
     attributes.addAll(queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of());
+    addNestedAttributesFromIncludes(attributes, includes);
+
     for (E e : entities) {
       dtos.add(dinaMapper.toDto(e, attributes, null));
     }
@@ -280,6 +286,19 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
         return new Predicate[]{restriction};
       });
     return new PagedResource<>(resourceCount.intValue(), dtos);
+  }
+
+  /**
+   * Make sure the include list is valid.
+   * @param includes
+   */
+  private void validateIncludes(Set<String> includes) throws IllegalArgumentException {
+    for (String inc : includes) {
+      if (!registry.isInternalRelationship(entityClass, inc)
+        && !registry.isRelationExternal(entityClass, inc)) {
+        throw new IllegalArgumentException("Invalid include");
+      }
+    }
   }
 
   /**

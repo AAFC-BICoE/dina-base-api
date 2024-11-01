@@ -182,6 +182,11 @@ public class DinaMappingRegistry {
       .anyMatch(relationFieldName::equalsIgnoreCase);
   }
 
+  public boolean isInternalRelationship(Class<?> cls, String relationFieldName) {
+    checkClassTracked(cls);
+    return this.resourceGraph.get(cls).getInternalRelationByName(relationFieldName) != null;
+  }
+
   /**
    * Returns the json id field name of a given class.
    *
