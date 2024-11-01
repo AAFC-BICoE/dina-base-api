@@ -109,17 +109,6 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     attributes.addAll(includes);
     addNestedAttributesFromIncludes(attributes, includes);
 
-    for (String inc : includes) {
-      Class<?> c = registry.getInternalRelationClass(entityClass, inc);
-      Set<String> ca = registry.getAttributesPerClass().get(c);
-      if (ca != null) {
-        for (String cal : ca) {
-          attributes.add(inc + "." + cal);
-        }
-      }
-    }
-
-
     D dto = dinaMapper.toDto(entity, attributes, null);
 
     JsonApiDto.JsonApiDtoBuilder<D> jsonApiDtoBuilder = JsonApiDto.builder();
@@ -297,7 +286,8 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
    * From a list of included relationships, add the nested attributes
    * using the name of the relationship as prefix.
    *
-   * @param includes
+   * @param attributes current attribute set (new attributes to be added to it)
+   * @param includes list of relationship included (could be internal or external)
    */
   private void addNestedAttributesFromIncludes(Set<String> attributes, Set<String> includes) {
     for (String inc : includes) {
