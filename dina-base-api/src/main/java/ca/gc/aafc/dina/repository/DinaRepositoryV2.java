@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.repository;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.RepresentationModel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -113,8 +114,18 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
     D dto = dinaMapper.toDto(entity, attributes, null);
 
-    JsonApiDto.JsonApiDtoBuilder<D> jsonApiDtoBuilder = JsonApiDto.builder();
+    return toJsonApiDto(dto, includes);
+  }
 
+  /**
+   * Build a {@link JsonApiDto} for a given dto and a set of includes.
+   *
+   * @param dto
+   * @param includes
+   * @return
+   */
+  private JsonApiDto<D> toJsonApiDto(D dto, Set<String> includes) {
+    JsonApiDto.JsonApiDtoBuilder<D> jsonApiDtoBuilder = JsonApiDto.builder();
     for (String include : includes) {
       try {
         Object rel = PropertyUtils.getProperty(dto, include);
@@ -127,7 +138,6 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
         throw new RuntimeException(e);
       }
     }
-
     return jsonApiDtoBuilder.dto(dto).build();
   }
 
@@ -211,6 +221,44 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     return builder;
   }
 
+  protected JsonApiModelBuilder createJsonApiModelCollectionBuilder(PagedResource<JsonApiDto<D>> jsonApiDtos) {
+
+    JsonApiModelBuilder mbuilder = jsonApiModel();
+    List<RepresentationModel<?>> repModels = new ArrayList<>();
+
+    for(JsonApiDto<D> currResource : jsonApiDtos.resourceList()) {
+      Set<UUID> included = new HashSet<>(currResource.getRelationships().size());
+      JsonApiModelBuilder builder = jsonApiModel().model(RepresentationModel.of(currResource.getDto()));
+      for (var rel : currResource.getRelationships().entrySet()) {
+        switch (rel.getValue()) {
+          case JsonApiDto.RelationshipToOne toOne -> {
+            builder.relationship(rel.getKey(), toOne.getIncluded());
+            addUniqueIncluded(mbuilder, toOne.getIncluded(), included);
+          }
+          case JsonApiDto.RelationshipToMany toMany -> {
+            builder.relationship(rel.getKey(), toMany.getIncluded());
+            for (var includedResource : toMany.getIncluded()) {
+              addUniqueIncluded(mbuilder, includedResource, included);
+            }
+          }
+          case JsonApiDto.RelationshipToOneExternal toOneExt -> {
+            builder.relationship(rel.getKey(), toOneExt.getIncluded());
+        //    builder.included(toOneExt.getIncluded());
+          }
+          case JsonApiDto.RelationshipManyExternal toManyExt -> {
+            builder.relationship(rel.getKey(), toManyExt.getIncluded());
+        //    builder.included(toManyExt.getIncluded());
+          }
+          default -> throw new IllegalStateException("Unexpected value: " + rel.getValue());
+        }
+      }
+      repModels.add(builder.build());
+    }
+
+    mbuilder.model(CollectionModel.of(repModels));
+    return mbuilder;
+  }
+
   /**
    * Add an include {@link JsonApiResource} is not already present.
    * The main goal of this method is to avoid duplicates in the include section.
@@ -243,12 +291,12 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     return URLDecoder.decode(req.getQueryString(), StandardCharsets.UTF_8);
   }
 
-  public PagedResource<D> getAll(String queryString) {
+  public PagedResource<JsonApiDto<D>> getAll(String queryString) {
     QueryComponent queryComponents = QueryStringParser.parse(queryString);
     return getAll(queryComponents);
   }
 
-  public PagedResource<D> getAll(QueryComponent queryComponents) {
+  public PagedResource<JsonApiDto<D>> getAll(QueryComponent queryComponents) {
 
     FilterComponent fc = queryComponents.getFilters();
 
@@ -270,14 +318,14 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       toSafePageLimit(queryComponents.getPageLimit()),
       includes, relationshipsPath);
 
-    List<D> dtos = new ArrayList<>(entities.size());
+    List<JsonApiDto<D>> dtos = new ArrayList<>(entities.size());
 
     Set<String> attributes = new HashSet<>(registry.getAttributesPerClass().get(entityClass));
     attributes.addAll(queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of());
     addNestedAttributesFromIncludes(attributes, includes);
 
     for (E e : entities) {
-      dtos.add(dinaMapper.toDto(e, attributes, null));
+      dtos.add(toJsonApiDto(dinaMapper.toDto(e, attributes, null), includes));
     }
 
     Long resourceCount = dinaService.getResourceCount( entityClass,

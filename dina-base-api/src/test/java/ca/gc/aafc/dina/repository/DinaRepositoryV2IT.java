@@ -10,6 +10,7 @@ import org.springframework.test.context.ContextConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.filter.QueryComponent;
@@ -68,9 +69,9 @@ public class DinaRepositoryV2IT {
       .build();
 
     //ASC, case insensitive by default
-    DinaRepositoryV2.PagedResource<PersonDTO> resultList = repositoryV2.getAll(qc);
+    DinaRepositoryV2.PagedResource<JsonApiDto<PersonDTO>> resultList = repositoryV2.getAll(qc);
     for (int i = 0; i < namesCaseInsensitive.size(); i++) {
-      assertEquals(namesCaseInsensitive.get(i), resultList.resourceList().get(i).getName());
+      assertEquals(namesCaseInsensitive.get(i), resultList.resourceList().get(i).getDto().getName());
     }
 
     //test DESC
@@ -79,7 +80,7 @@ public class DinaRepositoryV2IT {
       .build();
     resultList = repositoryV2.getAll(qc);
     for (int i = 0; i < reversed.size(); i++) {
-      assertEquals(reversed.get(i), resultList.resourceList().get(i).getName());
+      assertEquals(reversed.get(i), resultList.resourceList().get(i).getDto().getName());
     }
 
     // sorting on non text field
@@ -89,7 +90,7 @@ public class DinaRepositoryV2IT {
       .build();
 
     resultList = repositoryV2.getAll(qc);
-    assertEquals(byRoom.getFirst(), resultList.resourceList().getFirst().getName());
+    assertEquals(byRoom.getFirst(), resultList.resourceList().getFirst().getDto().getName());
     assertEquals(byRoom.size(), resultList.resourceCount());
   }
 
