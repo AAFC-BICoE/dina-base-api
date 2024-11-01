@@ -17,8 +17,8 @@ public interface PersonMapper extends  DinaMapperV2<PersonDTO, Person> {
 
   PersonMapper INSTANCE = Mappers.getMapper(PersonMapper.class);
 
-  PersonDTO toDto(Person entity, @Context Set<String> provided);
-  Person toEntity(PersonDTO dto, @Context Set<String> provided);
+  PersonDTO toDto(Person entity, @Context Set<String> provided, @Context String scope);
+  Person toEntity(PersonDTO dto, @Context Set<String> provided, @Context String scope);
 
   @Mapping(target = "customField", ignore = true)
   EmployeeDto employeeToDto(Employee entity);

@@ -16,6 +16,6 @@ public interface ChainMapper extends DinaMapperV2<ChainDto, Chain> {
   ChainMapper INSTANCE = Mappers.getMapper( ChainMapper.class );
 
   @Mapping(source = "agent", target = "agent", qualifiedByName = "uuidToPersonExternalRelation")
-  ChainDto toDto(Chain entity, @Context Set<String> provided);
+  ChainDto toDto(Chain entity, @Context Set<String> provided, @Context String scope);
 
 }

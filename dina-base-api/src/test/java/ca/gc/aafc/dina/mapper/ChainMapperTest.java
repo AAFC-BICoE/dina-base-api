@@ -22,7 +22,7 @@ public class ChainMapperTest {
     dto.setName("my name");
     dto.setUuid(UUID.randomUUID());
     // set only the properties provided
-    Chain chain = ChainMapper.INSTANCE.toEntity(dto, Set.of("group"));
+    Chain chain = ChainMapper.INSTANCE.toEntity(dto, Set.of("group"), null);
 
     assertEquals("my group", chain.getGroup());
     assertNull(chain.getName());
@@ -32,7 +32,7 @@ public class ChainMapperTest {
     entity.setName("my name");
     entity.setUuid(UUID.randomUUID());
     // set only the properties provided
-    ChainDto chainDto = ChainMapper.INSTANCE.toDto(entity, Set.of("group"));
+    ChainDto chainDto = ChainMapper.INSTANCE.toDto(entity, Set.of("group"), null);
 
     assertEquals("my group", chainDto.getGroup());
     assertNull(chainDto.getName());

@@ -107,8 +107,20 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
     Set<String> attributes = new HashSet<>(registry.getAttributesPerClass().get(entityClass));
     attributes.addAll(includes);
+    addNestedAttributesFromIncludes(attributes, includes);
 
-    D dto = dinaMapper.toDto(entity, attributes);
+    for (String inc : includes) {
+      Class<?> c = registry.getInternalRelationClass(entityClass, inc);
+      Set<String> ca = registry.getAttributesPerClass().get(c);
+      if (ca != null) {
+        for (String cal : ca) {
+          attributes.add(inc + "." + cal);
+        }
+      }
+    }
+
+
+    D dto = dinaMapper.toDto(entity, attributes, null);
 
     JsonApiDto.JsonApiDtoBuilder<D> jsonApiDtoBuilder = JsonApiDto.builder();
 
@@ -270,7 +282,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     Set<String> attributes = new HashSet<>(registry.getAttributesPerClass().get(entityClass));
     attributes.addAll(queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of());
     for (E e : entities) {
-      dtos.add(dinaMapper.toDto(e, attributes));
+      dtos.add(dinaMapper.toDto(e, attributes, null));
     }
 
     Long resourceCount = dinaService.getResourceCount( entityClass,
@@ -279,6 +291,27 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
         return new Predicate[]{restriction};
       });
     return new PagedResource<>(resourceCount.intValue(), dtos);
+  }
+
+  /**
+   * From a list of included relationships, add the nested attributes
+   * using the name of the relationship as prefix.
+   *
+   * @param includes
+   */
+  private void addNestedAttributesFromIncludes(Set<String> attributes, Set<String> includes) {
+    for (String inc : includes) {
+      Class<?> c = registry.getInternalRelationClass(entityClass, inc);
+      // external relationship would return null
+      if (c != null) {
+        Set<String> ca = registry.getAttributesPerClass().get(c);
+        if (ca != null) {
+          for (String cal : ca) {
+            attributes.add(inc + "." + cal);
+          }
+        }
+      }
+    }
   }
 
   private static int toSafePageOffset(Integer pageOffset) {
