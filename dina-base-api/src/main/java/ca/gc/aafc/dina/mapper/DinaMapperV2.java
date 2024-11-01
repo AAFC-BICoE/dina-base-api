@@ -78,6 +78,9 @@ public interface DinaMapperV2<D, E> {
    */
   @Named("uuidToPersonExternalRelation")
   static ExternalRelationDto uuidToPersonExternalRelation(UUID personUUID) {
+    if (personUUID == null) {
+      return null;
+    }
     return ExternalRelationDto.builder().id(personUUID.toString()).type("person").build();
   }
 }
