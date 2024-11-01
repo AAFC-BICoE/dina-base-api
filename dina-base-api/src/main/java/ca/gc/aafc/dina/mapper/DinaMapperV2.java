@@ -71,7 +71,7 @@ public interface DinaMapperV2<D, E> {
   @Condition
   default boolean isPropertyProvided(@SourcePropertyName String sourcePropertyName,
                                      @Context Set<String> provided, @Context String scope) {
-    if(StringUtils.isBlank(scope)) {
+    if (StringUtils.isBlank(scope)) {
       return provided.contains(sourcePropertyName);
     }
     // dealing with nested objects
