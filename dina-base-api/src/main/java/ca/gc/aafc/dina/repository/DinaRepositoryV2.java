@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.repository;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.hateoas.RepresentationModel;
 
@@ -26,6 +27,8 @@ import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -35,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import javax.persistence.criteria.Predicate;
+import javax.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 
@@ -220,6 +224,20 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       builder.included(include);
       included.add(include.getJsonApiId());
     }
+  }
+
+  /**
+   * null-safe query string UTF-8 decode function.
+   * @param req
+   * @return decoded query string or empty string if query string is absent
+   */
+  protected static String decodeQueryString(HttpServletRequest req) {
+    Objects.requireNonNull(req);
+
+    if (StringUtils.isBlank(req.getQueryString())) {
+      return "";
+    }
+    return URLDecoder.decode(req.getQueryString(), StandardCharsets.UTF_8);
   }
 
   public PagedResource<D> getAll(String queryString) {
