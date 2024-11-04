@@ -3,8 +3,6 @@ package ca.gc.aafc.dina.filter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.querydsl.core.types.Ops;
 
 import ca.gc.aafc.dina.filter.simple.SimpleSearchFilterBaseListener;

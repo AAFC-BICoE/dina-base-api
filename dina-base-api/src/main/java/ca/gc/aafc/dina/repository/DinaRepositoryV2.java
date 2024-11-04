@@ -3,7 +3,7 @@ package ca.gc.aafc.dina.repository;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.RepresentationModel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -255,7 +255,13 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       repModels.add(builder.build());
     }
 
-    mbuilder.model(CollectionModel.of(repModels));
+    PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(jsonApiDtos.pageLimit,
+      jsonApiDtos.pageOffset, jsonApiDtos.totalCount);
+
+    PagedModel<? extends RepresentationModel<?>> pagedModel =
+      PagedModel.of(repModels, pageMetadata);
+
+    mbuilder.model(pagedModel);
     return mbuilder;
   }
 
@@ -304,6 +310,8 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     Set<String> includes = queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of();
 
     validateIncludes(includes);
+    int pageOffset = toSafePageOffset(queryComponents.getPageOffset());
+    int pageLimit = toSafePageLimit(queryComponents.getPageLimit());
 
     List<E> entities = dinaService.findAll(
       entityClass,
@@ -314,9 +322,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
         return new Predicate[]{restriction};
       },
       (cb, root) -> EntityFilterHelper.getOrders(cb, root, queryComponents.getSorts(), false),
-      toSafePageOffset(queryComponents.getPageOffset()),
-      toSafePageLimit(queryComponents.getPageLimit()),
-      includes, relationshipsPath);
+      pageOffset, pageLimit, includes, relationshipsPath);
 
     List<JsonApiDto<D>> dtos = new ArrayList<>(entities.size());
 
@@ -333,7 +339,8 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
         Predicate restriction = SimpleFilterHandlerV2.getRestriction(root, criteriaBuilder, rsqlArgumentParser::parse, em.getMetamodel(), fc != null ? List.of(fc) : List.of());
         return new Predicate[]{restriction};
       });
-    return new PagedResource<>(resourceCount.intValue(), dtos);
+
+    return new PagedResource<>(pageOffset, pageLimit, resourceCount.intValue(), dtos);
   }
 
   /**
@@ -389,6 +396,15 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     return pageLimit;
   }
 
-  public record PagedResource<D>(int resourceCount, List<D> resourceList) {
+  /**
+   *
+   * @param pageOffset
+   * @param pageLimit
+   * @param totalCount
+   * @param resourceList
+   * @param <D>
+   */
+  public record PagedResource<D>(int pageOffset, int pageLimit, int totalCount,
+                                 List<D> resourceList) {
   }
 }
