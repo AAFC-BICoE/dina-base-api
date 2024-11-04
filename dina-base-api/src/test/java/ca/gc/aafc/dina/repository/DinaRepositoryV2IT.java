@@ -91,7 +91,7 @@ public class DinaRepositoryV2IT {
 
     resultList = repositoryV2.getAll(qc);
     assertEquals(byRoom.getFirst(), resultList.resourceList().getFirst().getDto().getName());
-    assertEquals(byRoom.size(), resultList.resourceCount());
+    assertEquals(byRoom.size(), resultList.totalCount());
   }
 
   @TestConfiguration
