@@ -13,8 +13,8 @@ import lombok.Builder;
 @AllArgsConstructor
 public final class JsonApiMeta {
 
-  public static String RESOURCE_COUNT = "totalResourceCount";
-  public static String MODULE_VERSION = "moduleVersion";
+  public static final String RESOURCE_COUNT = "totalResourceCount";
+  public static final String MODULE_VERSION = "moduleVersion";
 
   private Integer totalResourceCount = null;
   private String moduleVersion = null;
@@ -22,6 +22,10 @@ public final class JsonApiMeta {
   private JsonApiMeta() {
   }
 
+  /**
+   * Call the provided method to set the metadata per key/value.
+   * @param metaSetter
+   */
   public void populateMeta(BiFunction<String, Object, ?> metaSetter) {
     if (totalResourceCount != null) {
       metaSetter.apply(RESOURCE_COUNT, totalResourceCount);
