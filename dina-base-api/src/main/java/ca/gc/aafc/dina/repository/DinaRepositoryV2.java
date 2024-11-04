@@ -267,11 +267,15 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
         default -> throw new IllegalStateException("Unexpected value: " + rel.getValue());
       }
     }
+    JsonApiMeta.builder()
+      .moduleVersion(buildProperties.getVersion())
+      .build()
+      .populateMeta(builder::meta);
     return builder;
   }
 
   /**
-   * Sa,e as {@link #createJsonApiModelBuilder(JsonApiDto)} but for pages resource.
+   * Same as {@link #createJsonApiModelBuilder(JsonApiDto)} but for pages resource.
    * @param jsonApiDtos
    * @return
    */
