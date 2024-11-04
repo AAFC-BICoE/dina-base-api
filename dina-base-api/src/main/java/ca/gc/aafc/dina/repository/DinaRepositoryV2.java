@@ -117,6 +117,52 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     return toJsonApiDto(dto, includes);
   }
 
+  public PagedResource<JsonApiDto<D>> getAll(String queryString) {
+    QueryComponent queryComponents = QueryStringParser.parse(queryString);
+    return getAll(queryComponents);
+  }
+
+  public PagedResource<JsonApiDto<D>> getAll(QueryComponent queryComponents) {
+
+    FilterComponent fc = queryComponents.getFilters();
+
+    Set<String> relationshipsPath = EntityFilterHelper.extractRelationships(queryComponents.getIncludes(), resourceClass, registry);
+    Set<String> includes = queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of();
+
+    validateIncludes(includes);
+    int pageOffset = toSafePageOffset(queryComponents.getPageOffset());
+    int pageLimit = toSafePageLimit(queryComponents.getPageLimit());
+
+    List<E> entities = dinaService.findAll(
+      entityClass,
+      (criteriaBuilder, root, em) -> {
+        EntityFilterHelper.leftJoinSortRelations(root, queryComponents.getSorts(), resourceClass, registry);
+
+        Predicate restriction = SimpleFilterHandlerV2.getRestriction(root, criteriaBuilder, rsqlArgumentParser::parse, em.getMetamodel(), fc != null ? List.of(fc) : List.of());
+        return new Predicate[]{restriction};
+      },
+      (cb, root) -> EntityFilterHelper.getOrders(cb, root, queryComponents.getSorts(), false),
+      pageOffset, pageLimit, includes, relationshipsPath);
+
+    List<JsonApiDto<D>> dtos = new ArrayList<>(entities.size());
+
+    Set<String> attributes = new HashSet<>(registry.getAttributesPerClass().get(entityClass));
+    attributes.addAll(queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of());
+    addNestedAttributesFromIncludes(attributes, includes);
+
+    for (E e : entities) {
+      dtos.add(toJsonApiDto(dinaMapper.toDto(e, attributes, null), includes));
+    }
+
+    Long resourceCount = dinaService.getResourceCount( entityClass,
+      (criteriaBuilder, root, em) -> {
+        Predicate restriction = SimpleFilterHandlerV2.getRestriction(root, criteriaBuilder, rsqlArgumentParser::parse, em.getMetamodel(), fc != null ? List.of(fc) : List.of());
+        return new Predicate[]{restriction};
+      });
+
+    return new PagedResource<>(pageOffset, pageLimit, resourceCount.intValue(), dtos);
+  }
+
   /**
    * Build a {@link JsonApiDto} for a given dto and a set of includes.
    *
@@ -221,7 +267,12 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     return builder;
   }
 
-  protected JsonApiModelBuilder createJsonApiModelCollectionBuilder(PagedResource<JsonApiDto<D>> jsonApiDtos) {
+  /**
+   * Sa,e as {@link #createJsonApiModelBuilder(JsonApiDto)} but for pages resource.
+   * @param jsonApiDtos
+   * @return
+   */
+  protected JsonApiModelBuilder createJsonApiModelBuilder(PagedResource<JsonApiDto<D>> jsonApiDtos) {
 
     JsonApiModelBuilder mbuilder = jsonApiModel();
     List<RepresentationModel<?>> repModels = new ArrayList<>();
@@ -295,52 +346,6 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       return "";
     }
     return URLDecoder.decode(req.getQueryString(), StandardCharsets.UTF_8);
-  }
-
-  public PagedResource<JsonApiDto<D>> getAll(String queryString) {
-    QueryComponent queryComponents = QueryStringParser.parse(queryString);
-    return getAll(queryComponents);
-  }
-
-  public PagedResource<JsonApiDto<D>> getAll(QueryComponent queryComponents) {
-
-    FilterComponent fc = queryComponents.getFilters();
-
-    Set<String> relationshipsPath = EntityFilterHelper.extractRelationships(queryComponents.getIncludes(), resourceClass, registry);
-    Set<String> includes = queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of();
-
-    validateIncludes(includes);
-    int pageOffset = toSafePageOffset(queryComponents.getPageOffset());
-    int pageLimit = toSafePageLimit(queryComponents.getPageLimit());
-
-    List<E> entities = dinaService.findAll(
-      entityClass,
-      (criteriaBuilder, root, em) -> {
-        EntityFilterHelper.leftJoinSortRelations(root, queryComponents.getSorts(), resourceClass, registry);
-
-        Predicate restriction = SimpleFilterHandlerV2.getRestriction(root, criteriaBuilder, rsqlArgumentParser::parse, em.getMetamodel(), fc != null ? List.of(fc) : List.of());
-        return new Predicate[]{restriction};
-      },
-      (cb, root) -> EntityFilterHelper.getOrders(cb, root, queryComponents.getSorts(), false),
-      pageOffset, pageLimit, includes, relationshipsPath);
-
-    List<JsonApiDto<D>> dtos = new ArrayList<>(entities.size());
-
-    Set<String> attributes = new HashSet<>(registry.getAttributesPerClass().get(entityClass));
-    attributes.addAll(queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of());
-    addNestedAttributesFromIncludes(attributes, includes);
-
-    for (E e : entities) {
-      dtos.add(toJsonApiDto(dinaMapper.toDto(e, attributes, null), includes));
-    }
-
-    Long resourceCount = dinaService.getResourceCount( entityClass,
-      (criteriaBuilder, root, em) -> {
-        Predicate restriction = SimpleFilterHandlerV2.getRestriction(root, criteriaBuilder, rsqlArgumentParser::parse, em.getMetamodel(), fc != null ? List.of(fc) : List.of());
-        return new Predicate[]{restriction};
-      });
-
-    return new PagedResource<>(pageOffset, pageLimit, resourceCount.intValue(), dtos);
   }
 
   /**

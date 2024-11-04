@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.JsonApiDto;
@@ -19,15 +20,17 @@ import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, DinaRepositoryV2IT.RepoV2TestConfig.class})
@@ -41,7 +44,7 @@ public class DinaRepositoryV2IT {
   private DinaRepositoryIT.DinaPersonService personService;
 
   @Test
-  public void a() {
+  public void onGetAll_noError() {
     repositoryV2.getAll("");
   }
 
@@ -86,12 +89,30 @@ public class DinaRepositoryV2IT {
     // sorting on non text field
     qc = QueryComponent.builder()
       .sorts(List.of("room"))
+      .includes(Set.of("department"))
       .pageLimit(1)
       .build();
 
     resultList = repositoryV2.getAll(qc);
     assertEquals(byRoom.getFirst(), resultList.resourceList().getFirst().getDto().getName());
     assertEquals(byRoom.size(), resultList.totalCount());
+  }
+
+  @Test
+  public void onCreateJsonApiModelBuilder_noException() {
+
+    personService.create(Person.builder()
+      .name("abc defg")
+      .room(18)
+      .build());
+
+    QueryComponent qc = QueryComponent.builder()
+      .pageLimit(1)
+      .build();
+
+    JsonApiModelBuilder builder =
+      repositoryV2.createJsonApiModelBuilder(repositoryV2.getAll(qc));
+    assertNotNull(builder.build());
   }
 
   @TestConfiguration
