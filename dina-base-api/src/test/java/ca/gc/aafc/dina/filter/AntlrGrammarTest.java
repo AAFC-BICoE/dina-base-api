@@ -2,6 +2,8 @@ package ca.gc.aafc.dina.filter;
 
 import org.junit.jupiter.api.Test;
 
+import com.querydsl.core.types.Ops;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,7 +17,6 @@ public class AntlrGrammarTest {
 
     QueryComponent queryComponent = QueryStringParser.parse(content);
     queryComponent.getFilterExpression();
-
   }
 
   @Test
@@ -43,7 +44,7 @@ public class AntlrGrammarTest {
     assertNotNull(queryComponent2.getFilters());
 
     FilterGroup fg1 = queryComponent2.getFilterGroup().orElseThrow();
-    assertEquals("John Doe", ((FilterExpression)fg1.getComponents().get(0)).value());
+    assertEquals("John Doe", ((FilterExpression)fg1.getComponents().getFirst()).value());
     assertEquals("position", queryComponent2.getSorts().get(0));
     assertEquals("-name", queryComponent2.getSorts().get(1));
     assertTrue(queryComponent2.getIncludes().contains("author._name"));
@@ -67,5 +68,14 @@ public class AntlrGrammarTest {
     assertEquals(1, queryComponent.getPageLimit());
   }
 
-  
+  @Test
+  public void onNoOperator_EqualOperatorUsed() {
+    String content = "filter[type]=metadata&filter[name]=drawing.png&filter[group][EQ]=test";
+
+    QueryComponent queryComponent = QueryStringParser.parse(content);
+    FilterGroup fg = queryComponent.getFilterGroup().orElseThrow();
+
+    assertEquals("metadata", ((FilterExpression)fg.getComponents().getFirst()).value());
+    assertEquals(Ops.EQ, ((FilterExpression)fg.getComponents().getFirst()).operator());
+  }
 }

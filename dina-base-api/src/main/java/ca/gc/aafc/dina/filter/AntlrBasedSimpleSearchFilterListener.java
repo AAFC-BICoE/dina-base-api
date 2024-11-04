@@ -3,6 +3,8 @@ package ca.gc.aafc.dina.filter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.querydsl.core.types.Ops;
 
 import ca.gc.aafc.dina.filter.simple.SimpleSearchFilterBaseListener;
@@ -14,6 +16,8 @@ import ca.gc.aafc.dina.filter.simple.SimpleSearchFilterParser;
  * Package-protected, implementation details. {@link QueryStringParser} should be used.
  */
 class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListener {
+
+  private static final String DEFAULT_OP = "EQ";
 
   private final List<FilterComponent> components = new ArrayList<>();
   private final List<String> includes = new ArrayList<>();
@@ -31,12 +35,12 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
 
       for (var filterValue : ctx.attributeValue()) {
         fgBuilder.component(new FilterExpression(ctx.propertyName().getText(),
-          translateOperator(ctx.comparison().getText()), filterValue.getText()));
+          translateOperator(extractComparison(ctx)), filterValue.getText()));
       }
       components.add(fgBuilder.build());
     } else if (ctx.attributeValue().size() == 1) {
       components.add(new FilterExpression(ctx.propertyName().getText(),
-        translateOperator(ctx.comparison().getText()), ctx.attributeValue().get(0).getText()));
+        translateOperator(extractComparison(ctx)), ctx.attributeValue().getFirst().getText()));
     }
   }
 
@@ -61,6 +65,20 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
     } else if (ctx.getText().contains("limit")) {
       pageLimit = Integer.valueOf(ctx.pageValue().getText());
     }
+  }
+
+  /**
+   * Comparison operator is optional, this method will return the default operator
+   * if absent.
+   * @param ctx
+   * @return
+   */
+  private static String extractComparison(SimpleSearchFilterParser.FilterContext ctx) {
+    if (ctx.comparison() == null) {
+      return DEFAULT_OP;
+    }
+
+    return ctx.comparison().getText();
   }
 
   /**
