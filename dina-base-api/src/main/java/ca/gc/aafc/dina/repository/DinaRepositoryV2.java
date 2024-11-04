@@ -226,7 +226,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     JsonApiModelBuilder mbuilder = jsonApiModel();
     List<RepresentationModel<?>> repModels = new ArrayList<>();
 
-    for(JsonApiDto<D> currResource : jsonApiDtos.resourceList()) {
+    for (JsonApiDto<D> currResource : jsonApiDtos.resourceList()) {
       Set<UUID> included = new HashSet<>(currResource.getRelationships().size());
       JsonApiModelBuilder builder = jsonApiModel().model(RepresentationModel.of(currResource.getDto()));
       for (var rel : currResource.getRelationships().entrySet()) {
@@ -255,7 +255,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       repModels.add(builder.build());
     }
 
-    PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(jsonApiDtos.pageLimit,
+    PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(repModels.size(),
       jsonApiDtos.pageOffset, jsonApiDtos.totalCount);
 
     PagedModel<? extends RepresentationModel<?>> pagedModel =
