@@ -3,7 +3,7 @@ package ca.gc.aafc.dina.repository;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.RepresentationModel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +12,7 @@ import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.JsonApiExternalResource;
+import ca.gc.aafc.dina.dto.JsonApiMeta;
 import ca.gc.aafc.dina.dto.JsonApiResource;
 import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
@@ -57,6 +58,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
   private final Class<E> entityClass;
   private final Class<D> resourceClass;
   private final DinaMapperV2<D, E> dinaMapper;
+  private final BuildProperties buildProperties;
 
   protected final DinaMappingRegistry registry;
 
@@ -76,6 +78,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     this.entityClass = entityClass;
     this.resourceClass = resourceClass;
     this.dinaMapper = dinaMapper;
+    this.buildProperties = buildProperties;
 
     // build registry instance for resource class (dto)
     this.registry = new DinaMappingRegistry(resourceClass);
@@ -306,13 +309,15 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       repModels.add(builder.build());
     }
 
-    PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(repModels.size(),
-      jsonApiDtos.pageOffset, jsonApiDtos.totalCount);
+    // use custom metadata instead of PagedModel.PageMetadata so we can control
+    // the content and key names
+    JsonApiMeta.builder()
+      .totalResourceCount(jsonApiDtos.totalCount)
+      .moduleVersion(buildProperties.getVersion())
+      .build()
+      .populateMeta(mbuilder::meta);
 
-    PagedModel<? extends RepresentationModel<?>> pagedModel =
-      PagedModel.of(repModels, pageMetadata);
-
-    mbuilder.model(pagedModel);
+    mbuilder.model(CollectionModel.of(repModels));
     return mbuilder;
   }
 
