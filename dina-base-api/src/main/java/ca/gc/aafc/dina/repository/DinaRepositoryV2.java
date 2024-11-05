@@ -270,12 +270,15 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
    */
   protected JsonApiModelBuilder createJsonApiModelBuilder(JsonApiDto<D> jsonApiDto) {
     Set<UUID> included = new HashSet<>(jsonApiDto.getRelationships().size());
-    JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto, null, included);
 
+    JsonApiModelBuilder mainBuilder = jsonApiModel();
+
+    JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto, null, included);
     JsonApiMeta.builder()
       .moduleVersion(buildProperties.getVersion())
       .build()
-      .populateMeta(builder::meta);
+      .populateMeta(mainBuilder::meta);
+    mainBuilder.model(builder.build());
     return builder;
   }
 
