@@ -180,8 +180,10 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
         Object rel = PropertyUtils.getProperty(dto, include);
         if (rel instanceof Collection<?> coll) {
           handleToManyRelationship(jsonApiDtoBuilder, include, coll);
-        } else {
+        } else if (rel != null) {
           handleToOneRelationship(jsonApiDtoBuilder, include, rel);
+        } else {
+          handleNullValueRelationship(jsonApiDtoBuilder, include);
         }
       } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
         throw new RuntimeException(e);
@@ -213,14 +215,12 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     List<JsonApiExternalResource> castSafeListExternal = new ArrayList<>();
 
     for (Object element : rel) {
-      if (element instanceof JsonApiExternalResource jaer) {
-        castSafeListExternal.add(jaer);
-      } else if (element instanceof JsonApiResource jar) {
-        castSafeList.add(jar);
-      } else if (element instanceof ExternalRelationDto erd) {
-        castSafeListExternal.add(externalRelationDtoToJsonApiExternalResource(erd));
-      } else {
-        log.warn("Not an instance of JsonApiResource, ignoring {}", name);
+      switch (element) {
+        case JsonApiExternalResource jaer -> castSafeListExternal.add(jaer);
+        case JsonApiResource jar -> castSafeList.add(jar);
+        case ExternalRelationDto erd ->
+          castSafeListExternal.add(externalRelationDtoToJsonApiExternalResource(erd));
+        case null, default -> log.warn("Not an instance of JsonApiResource, ignoring {}", name);
       }
     }
 
@@ -235,38 +235,43 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
   }
 
   /**
+   * Handle relationships when the assigned value is null.
+   * @param builder
+   * @param relationshipName
+   */
+  private void handleNullValueRelationship(JsonApiDto.JsonApiDtoBuilder<?> builder, String relationshipName) {
+
+    Class<?> internalRelClass = registry.getInternalRelationClass(resourceClass, relationshipName);
+    if( internalRelClass != null) {
+      if( DinaMappingRegistry.isCollection(internalRelClass)  ) {
+        builder.relationship(relationshipName,
+          JsonApiDto.RelationshipToMany.builder().build());
+      } else {
+        builder.relationship(relationshipName,
+          JsonApiDto.RelationshipToOne.builder().build());
+      }
+    } else {
+      Class<?> relClass = registry.getExternalRelationClass(resourceClass, relationshipName);
+      if (DinaMappingRegistry.isCollection(relClass)) {
+        builder.relationship(relationshipName,
+          JsonApiDto.RelationshipManyExternal.builder().build());
+      } else {
+        builder.relationship(relationshipName,
+          JsonApiDto.RelationshipToOneExternal.builder().build());
+      }
+    }
+  }
+
+  /**
    * Responsible to create the {@link JsonApiModelBuilder} for the provided {@link JsonApiDto}.
    *
    * @param jsonApiDto
    * @return
    */
   protected JsonApiModelBuilder createJsonApiModelBuilder(JsonApiDto<D> jsonApiDto) {
-    JsonApiModelBuilder builder = jsonApiModel().model(RepresentationModel.of(jsonApiDto.getDto()));
-
     Set<UUID> included = new HashSet<>(jsonApiDto.getRelationships().size());
-    for (var rel : jsonApiDto.getRelationships().entrySet()) {
-      switch (rel.getValue()) {
-        case JsonApiDto.RelationshipToOne toOne -> {
-          builder.relationship(rel.getKey(), toOne.getIncluded());
-          addUniqueIncluded(builder, toOne.getIncluded(), included);
-        }
-        case JsonApiDto.RelationshipToMany toMany -> {
-          builder.relationship(rel.getKey(), toMany.getIncluded());
-          for (var includedResource : toMany.getIncluded()) {
-            addUniqueIncluded(builder, includedResource, included);
-          }
-        }
-        case JsonApiDto.RelationshipToOneExternal toOneExt -> {
-          builder.relationship(rel.getKey(), toOneExt.getIncluded());
-          builder.included(toOneExt.getIncluded());
-        }
-        case JsonApiDto.RelationshipManyExternal toManyExt -> {
-          builder.relationship(rel.getKey(), toManyExt.getIncluded());
-          builder.included(toManyExt.getIncluded());
-        }
-        default -> throw new IllegalStateException("Unexpected value: " + rel.getValue());
-      }
-    }
+    JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto, null, included);
+
     JsonApiMeta.builder()
       .moduleVersion(buildProperties.getVersion())
       .build()
@@ -281,35 +286,11 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
    */
   protected JsonApiModelBuilder createJsonApiModelBuilder(PagedResource<JsonApiDto<D>> jsonApiDtos) {
 
-    JsonApiModelBuilder mbuilder = jsonApiModel();
+    JsonApiModelBuilder mainBuilder = jsonApiModel();
     List<RepresentationModel<?>> repModels = new ArrayList<>();
-
+    Set<UUID> included = new HashSet<>();
     for (JsonApiDto<D> currResource : jsonApiDtos.resourceList()) {
-      Set<UUID> included = new HashSet<>(currResource.getRelationships().size());
-      JsonApiModelBuilder builder = jsonApiModel().model(RepresentationModel.of(currResource.getDto()));
-      for (var rel : currResource.getRelationships().entrySet()) {
-        switch (rel.getValue()) {
-          case JsonApiDto.RelationshipToOne toOne -> {
-            builder.relationship(rel.getKey(), toOne.getIncluded());
-            addUniqueIncluded(mbuilder, toOne.getIncluded(), included);
-          }
-          case JsonApiDto.RelationshipToMany toMany -> {
-            builder.relationship(rel.getKey(), toMany.getIncluded());
-            for (var includedResource : toMany.getIncluded()) {
-              addUniqueIncluded(mbuilder, includedResource, included);
-            }
-          }
-          case JsonApiDto.RelationshipToOneExternal toOneExt -> {
-            builder.relationship(rel.getKey(), toOneExt.getIncluded());
-        //    builder.included(toOneExt.getIncluded());
-          }
-          case JsonApiDto.RelationshipManyExternal toManyExt -> {
-            builder.relationship(rel.getKey(), toManyExt.getIncluded());
-        //    builder.included(toManyExt.getIncluded());
-          }
-          default -> throw new IllegalStateException("Unexpected value: " + rel.getValue());
-        }
-      }
+      JsonApiModelBuilder builder = createJsonApiModelBuilder(currResource, mainBuilder, included);
       repModels.add(builder.build());
     }
 
@@ -319,10 +300,100 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       .totalResourceCount(jsonApiDtos.totalCount)
       .moduleVersion(buildProperties.getVersion())
       .build()
-      .populateMeta(mbuilder::meta);
+      .populateMeta(mainBuilder::meta);
 
-    mbuilder.model(CollectionModel.of(repModels));
-    return mbuilder;
+    mainBuilder.model(CollectionModel.of(repModels));
+    return mainBuilder;
+  }
+
+  /**
+   * Internal method to create {@link JsonApiModelBuilder}.
+   * @param jsonApiDto
+   * @param includeBuilder builder to use to add "included" documents. if null, the builder
+   *                       created for that document will be used.
+   * @param included set of already included uuid
+   * @return
+   */
+  private JsonApiModelBuilder createJsonApiModelBuilder(JsonApiDto<D> jsonApiDto,
+                                                        JsonApiModelBuilder includeBuilder,
+                                                        Set<UUID> included) {
+    JsonApiModelBuilder builder = jsonApiModel().model(RepresentationModel.of(jsonApiDto.getDto()));
+
+    for (var rel : jsonApiDto.getRelationships().entrySet()) {
+      switch (rel.getValue()) {
+        case JsonApiDto.RelationshipToOne toOne ->
+          setToOneOnJsonApiModelBuilder(builder, rel.getKey(), toOne, includeBuilder, included);
+        case JsonApiDto.RelationshipToMany toMany ->
+          setToManyOnJsonApiModelBuilder(builder, rel.getKey(), toMany, includeBuilder, included);
+        case JsonApiDto.RelationshipToOneExternal toOneExt ->
+          setToOneExtOnJsonApiModelBuilder(builder, rel.getKey(), toOneExt);
+        case JsonApiDto.RelationshipManyExternal toManyExt ->
+          setToManyExtOnJsonApiModelBuilder(builder, rel.getKey(), toManyExt);
+        default -> throw new IllegalStateException("Unexpected value: " + rel.getValue());
+      }
+    }
+    return builder;
+  }
+
+  /**
+   *
+   * @param builder
+   * @param relationshipName
+   * @param toOne
+   * @param includeBuilder if null, builder will be used
+   * @param included
+   */
+  private static void setToOneOnJsonApiModelBuilder(JsonApiModelBuilder builder, String relationshipName,
+                                                    JsonApiDto.RelationshipToOne toOne,
+                                                    JsonApiModelBuilder includeBuilder,
+                                                    Set<UUID> included) {
+
+    if (toOne.getIncluded() != null) {
+      builder.relationship(relationshipName, toOne.getIncluded());
+      addUniqueIncluded(includeBuilder != null ? includeBuilder : builder, toOne.getIncluded(), included);
+    } else {
+      //requires spring-hateoas-jsonapi 2.x
+      // builder.relationship(relationshipName, (Object) null);
+      log.warn("Ignoring null value for toOne internal relationship {}", relationshipName);
+    }
+  }
+
+  private static void setToManyOnJsonApiModelBuilder(JsonApiModelBuilder builder, String relationshipName,
+                                JsonApiDto.RelationshipToMany toMany, JsonApiModelBuilder includeBuilder,Set<UUID> included) {
+
+    if (toMany.getIncluded() != null) {
+      builder.relationship(relationshipName, toMany.getIncluded());
+      for (var includedResource : toMany.getIncluded()) {
+        addUniqueIncluded(includeBuilder != null ? includeBuilder : builder, includedResource, included);
+      }
+    } else {
+      //requires spring-hateoas-jsonapi 2.x
+      // builder.relationship(relationshipName, (Object) null);
+      log.warn("Ignoring null value for toMany internal relationship {}", relationshipName);
+    }
+  }
+
+  private static void setToOneExtOnJsonApiModelBuilder(JsonApiModelBuilder builder, String relationshipName,
+                                                    JsonApiDto.RelationshipToOneExternal toOneExt) {
+
+    if (toOneExt.getIncluded() != null) {
+      builder.relationship(relationshipName, toOneExt.getIncluded());
+     // addUniqueIncluded(builder, toOneExt.getIncluded(), included);
+    } else {
+      //requires spring-hateoas-jsonapi 2.x
+     // builder.relationship(relationshipName, (Object) null);
+      log.warn("Ignoring null value for toOne external relationship {}", relationshipName);
+    }
+  }
+
+  private static void setToManyExtOnJsonApiModelBuilder(JsonApiModelBuilder builder, String relationshipName,
+                                                        JsonApiDto.RelationshipManyExternal toManyExt) {
+    if (toManyExt.getIncluded() != null) {
+      builder.relationship(relationshipName, toManyExt.getIncluded());
+    } else {
+      //requires spring-hateoas-jsonapi 2.x
+      log.warn("Ignoring null value for toMany external relationship {}", relationshipName);
+    }
   }
 
   /**

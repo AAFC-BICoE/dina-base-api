@@ -127,7 +127,7 @@ public class DinaMappingRegistry {
   }
 
   /**
-   * Return the class (dto class) of the internal relation represented by
+   * Return the class (dto class) of the internal relationship represented by
    * the attribute.
    * @param cls (dto class)
    * @param attribute
@@ -144,6 +144,22 @@ public class DinaMappingRegistry {
   }
 
   /**
+   * Return the class of the external relationship represented by the attribute.
+   * @param cls
+   * @param attribute
+   * @return
+   */
+  public Class<?> getExternalRelationClass(Class<?> cls, String attribute) {
+    checkClassTracked(cls);
+
+    // make sure it's an external relationships
+    if (isRelationExternal(cls, attribute)) {
+      return FieldUtils.getField(cls, attribute, true).getType();
+    }
+    return null;
+  }
+
+  /**
    * Returns the set of external relation field names tracked by the registry.
    *
    * @return set of external relation field names.
@@ -152,6 +168,7 @@ public class DinaMappingRegistry {
     checkClassTracked(cls);
     return this.resourceGraph.get(cls).getExternalNameToTypeMap().keySet();
   }
+
 
   /**
    * Returns the {@link JsonApiExternalRelation} type of the given external relation field name if tracked by
@@ -402,7 +419,7 @@ public class DinaMappingRegistry {
    * @param clazz - class to check
    * @return true if the given class is a collection
    */
-  private static boolean isCollection(Class<?> clazz) {
+  public static boolean isCollection(Class<?> clazz) {
     return Collection.class.isAssignableFrom(clazz);
   }
 
