@@ -273,13 +273,13 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
     JsonApiModelBuilder mainBuilder = jsonApiModel();
 
-    JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto, null, included);
+    JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto, mainBuilder, included);
     JsonApiMeta.builder()
       .moduleVersion(buildProperties.getVersion())
       .build()
       .populateMeta(mainBuilder::meta);
     mainBuilder.model(builder.build());
-    return builder;
+    return mainBuilder;
   }
 
   /**
