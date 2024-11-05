@@ -242,8 +242,8 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
   private void handleNullValueRelationship(JsonApiDto.JsonApiDtoBuilder<?> builder, String relationshipName) {
 
     Class<?> internalRelClass = registry.getInternalRelationClass(resourceClass, relationshipName);
-    if( internalRelClass != null) {
-      if( DinaMappingRegistry.isCollection(internalRelClass)  ) {
+    if (internalRelClass != null) {
+      if (DinaMappingRegistry.isCollection(internalRelClass)) {
         builder.relationship(relationshipName,
           JsonApiDto.RelationshipToMany.builder().build());
       } else {
@@ -336,12 +336,12 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
   }
 
   /**
-   *
-   * @param builder
+   * Internal method to set {@link JsonApiDto.RelationshipToOne} to a {@link JsonApiModelBuilder}.
+   * @param builder current builder
    * @param relationshipName
    * @param toOne
    * @param includeBuilder if null, builder will be used
-   * @param included
+   * @param included set of already included uuid
    */
   private static void setToOneOnJsonApiModelBuilder(JsonApiModelBuilder builder, String relationshipName,
                                                     JsonApiDto.RelationshipToOne toOne,
@@ -352,12 +352,20 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       builder.relationship(relationshipName, toOne.getIncluded());
       addUniqueIncluded(includeBuilder != null ? includeBuilder : builder, toOne.getIncluded(), included);
     } else {
-      //requires spring-hateoas-jsonapi 2.x
+      // requires spring-hateoas-jsonapi 2.x
       // builder.relationship(relationshipName, (Object) null);
       log.warn("Ignoring null value for toOne internal relationship {}", relationshipName);
     }
   }
 
+  /**
+   * Internal method to set {@link JsonApiDto.RelationshipToMany} to a {@link JsonApiModelBuilder}.
+   * @param builder current builder
+   * @param relationshipName
+   * @param toMany
+   * @param includeBuilder if null, builder will be used
+   * @param included set of already included uuid
+   */
   private static void setToManyOnJsonApiModelBuilder(JsonApiModelBuilder builder, String relationshipName,
                                 JsonApiDto.RelationshipToMany toMany, JsonApiModelBuilder includeBuilder,Set<UUID> included) {
 
@@ -367,7 +375,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
         addUniqueIncluded(includeBuilder != null ? includeBuilder : builder, includedResource, included);
       }
     } else {
-      //requires spring-hateoas-jsonapi 2.x
+      // requires spring-hateoas-jsonapi 2.x
       // builder.relationship(relationshipName, (Object) null);
       log.warn("Ignoring null value for toMany internal relationship {}", relationshipName);
     }
