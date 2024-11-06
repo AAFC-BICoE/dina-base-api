@@ -127,6 +127,39 @@ public class DinaMappingRegistry {
   }
 
   /**
+   * Return the class (dto class) of the internal relationship represented by
+   * the attribute.
+   * @param cls (dto class)
+   * @param attribute
+   * @return
+   */
+  public Class<?> getInternalRelationClass(Class<?> cls, String attribute) {
+    checkClassTracked(cls);
+
+    return resourceGraph.get(cls).getInternalRelations().stream()
+      .filter( i -> i.name.equalsIgnoreCase(attribute))
+      .map(InternalRelation::getDtoType)
+      .findAny()
+      .orElse(null);
+  }
+
+  /**
+   * Return the class of the external relationship represented by the attribute.
+   * @param cls
+   * @param attribute
+   * @return
+   */
+  public Class<?> getExternalRelationClass(Class<?> cls, String attribute) {
+    checkClassTracked(cls);
+
+    // make sure it's an external relationships
+    if (isRelationExternal(cls, attribute)) {
+      return FieldUtils.getField(cls, attribute, true).getType();
+    }
+    return null;
+  }
+
+  /**
    * Returns the set of external relation field names tracked by the registry.
    *
    * @return set of external relation field names.
@@ -135,6 +168,7 @@ public class DinaMappingRegistry {
     checkClassTracked(cls);
     return this.resourceGraph.get(cls).getExternalNameToTypeMap().keySet();
   }
+
 
   /**
    * Returns the {@link JsonApiExternalRelation} type of the given external relation field name if tracked by
@@ -163,6 +197,11 @@ public class DinaMappingRegistry {
     checkClassTracked(cls);
     return this.resourceGraph.get(cls).getExternalNameToTypeMap().keySet().stream()
       .anyMatch(relationFieldName::equalsIgnoreCase);
+  }
+
+  public boolean isInternalRelationship(Class<?> cls, String relationFieldName) {
+    checkClassTracked(cls);
+    return this.resourceGraph.get(cls).getInternalRelationByName(relationFieldName) != null;
   }
 
   /**
@@ -380,7 +419,7 @@ public class DinaMappingRegistry {
    * @param clazz - class to check
    * @return true if the given class is a collection
    */
-  private static boolean isCollection(Class<?> clazz) {
+  public static boolean isCollection(Class<?> clazz) {
     return Collection.class.isAssignableFrom(clazz);
   }
 
@@ -411,5 +450,12 @@ public class DinaMappingRegistry {
     private Set<InternalRelation> internalRelations;
     private Map<String, String> externalNameToTypeMap;
     private DinaFieldAdapterHandler<?> fieldAdapterHandler;
+
+    public InternalRelation getInternalRelationByName(String name) {
+      return internalRelations.stream()
+        .filter(i -> i.name.equalsIgnoreCase(name))
+        .findFirst()
+        .orElse(null);
+    }
   }
 }

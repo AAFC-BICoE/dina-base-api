@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.filter;
 
+import java.util.Set;
+
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -44,7 +46,7 @@ public final class QueryStringParser {
 
     return QueryComponent.builder()
       .filters(listener.buildFilterComponent())
-      .includes(listener.getInclude())
+      .includes(listener.getInclude() != null ? Set.copyOf(listener.getInclude()) : null)
       .sorts(listener.getSort())
       .pageLimit(listener.getPageLimit())
       .pageOffset(listener.getPageOffset())
