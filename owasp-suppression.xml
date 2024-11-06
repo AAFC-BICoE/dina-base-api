@@ -25,6 +25,10 @@
         <cve>CVE-2024-22262</cve>
     </suppress>
     <suppress>
+        <notes>No WebFlux</notes>
+        <cve>CVE-2024-38821</cve>
+    </suppress>
+    <suppress>
         <notes>Invalid CVE</notes>
         <cve>CVE-2022-31514</cve>
     </suppress>
