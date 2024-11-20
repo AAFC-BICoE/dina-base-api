@@ -66,11 +66,13 @@ public final class JSONApiDocumentStructure {
   }
 
   /**
+   * Deprecated: use JsonHelper
    * Returns a document's part represented by the JsonPointer or Optional.empty if not found.
    * @param document
    * @param ptr
    * @return
    */
+  @Deprecated(forRemoval = true)
   public static Optional<JsonNode> atJsonPtr(JsonNode document, JsonPointer ptr) {
     JsonNode node = document.at(ptr);
     return node.isMissingNode() ? Optional.empty() : Optional.of(node);
