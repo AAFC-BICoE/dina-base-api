@@ -66,7 +66,7 @@ public final class JSONApiDocumentStructure {
   }
 
   /**
-   * Deprecated: use JsonHelper
+   * @deprecated use JsonHelper
    * Returns a document's part represented by the JsonPointer or Optional.empty if not found.
    * @param document
    * @param ptr
@@ -77,8 +77,7 @@ public final class JSONApiDocumentStructure {
     JsonNode node = document.at(ptr);
     return node.isMissingNode() ? Optional.empty() : Optional.of(node);
   }
-
-
+  
   /**
    * If the value of a map entry from the provided map is another map, merge it using dot notation.
    * Currently, limited to 1 level.
