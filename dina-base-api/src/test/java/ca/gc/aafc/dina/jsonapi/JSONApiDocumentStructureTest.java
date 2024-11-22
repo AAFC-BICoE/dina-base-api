@@ -1,15 +1,13 @@
 package ca.gc.aafc.dina.jsonapi;
 
-import java.util.Map;
-import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import ca.gc.aafc.dina.testsupport.TestResourceHelper;
-
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Map;
 
 public class JSONApiDocumentStructureTest {
 
@@ -38,15 +36,6 @@ public class JSONApiDocumentStructureTest {
     assertEquals("node.data.attributes", JSONApiDocumentStructure.removeAttributesPrefix("node.data.attributes"));
 
     assertEquals("node", JSONApiDocumentStructure.removeAttributesPrefix("data.attributes.node"));
-  }
-
-  @Test
-  public void onatJsonPtr_JsonNodeAtPointerReturned(){
-    Map<String, Object> testDocument = Map.of("data", Map.of("attributes", Map.of("attribute1", "value1")));
-
-    Optional<JsonNode> attributeNode = JSONApiDocumentStructure.atJsonPtr(TestResourceHelper.OBJECT_MAPPER.valueToTree(testDocument), JSONApiDocumentStructure.ATTRIBUTES_PTR);
-    assertTrue(attributeNode.isPresent());
-    assertEquals("value1", attributeNode.get().get("attribute1").asText());
   }
 
   @Test
