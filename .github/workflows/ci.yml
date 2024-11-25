@@ -41,7 +41,7 @@ jobs:
         run: mvn -pl dina-base-api jacoco:check
 
       - name: Run OWASP dependency-check (only on dev)
-        run: mvn org.owasp:dependency-check-maven:check
+        run: mvn -q org.owasp:dependency-check-maven:check
         if: ${{ github.ref == 'refs/heads/dev' }}
 
       - name: Set up for Maven Central deploy (master branch only)
