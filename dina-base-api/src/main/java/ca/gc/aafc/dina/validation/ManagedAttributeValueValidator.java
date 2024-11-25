@@ -177,7 +177,7 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
         getMessageForKey(MANAGED_ATTRIBUTE_INVALID_VALUE, assignedValue, key));
   }
 
-  private String getMessageForKey(String key, Object... objects) {
+  protected String getMessageForKey(String key, Object... objects) {
     return messageSource.getMessage(key, objects, LocaleContextHolder.getLocale());
   }
 
