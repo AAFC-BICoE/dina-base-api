@@ -27,6 +27,7 @@
     <module>dina-workbook</module>
     <module>dina-filter</module>
     <module>dina-client</module>
+    <module>dina-json</module>
     <module>dina-test-support</module>
   </modules>
   

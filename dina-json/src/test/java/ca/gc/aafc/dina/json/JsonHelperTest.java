@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import ca.gc.aafc.dina.jsonapi.JSONApiDocumentStructure;
-import ca.gc.aafc.dina.testsupport.TestResourceHelper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -25,7 +24,7 @@ public class JsonHelperTest {
         "attribute2", Map.of("attribute2_1", "value2_1"),
         "attribute3", List.of("value3_1", "value3_2"))));
 
-    Optional<JsonNode> attributeNode = JsonHelper.atJsonPtr(TestResourceHelper.OBJECT_MAPPER.valueToTree(testDocument), JSONApiDocumentStructure.ATTRIBUTES_PTR);
+    Optional<JsonNode> attributeNode = JsonHelper.atJsonPtr(TestConstants.OBJECT_MAPPER.valueToTree(testDocument), JSONApiDocumentStructure.ATTRIBUTES_PTR);
     assertTrue(attributeNode.isPresent());
     assertEquals("value1", attributeNode.get().get("attribute1").asText());
 

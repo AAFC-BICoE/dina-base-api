@@ -34,6 +34,6 @@ public class JsonPathHelperTest {
     List<Map<String, Object>> result = JsonPathHelper.extractById(dc, "B", typeRef);
     assertNotNull(result);
     assertEquals(1, result.size());
-    assertEquals("val2", ((Map<?,?>)result.get(0)).get("attribute1"));
+    assertEquals("val2", ((Map<?,?>)result.getFirst()).get("attribute1"));
   }
 }

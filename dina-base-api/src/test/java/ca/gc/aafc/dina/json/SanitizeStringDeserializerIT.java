@@ -1,14 +1,23 @@
 package ca.gc.aafc.dina.json;
 
 import ca.gc.aafc.dina.BasePostgresItContext;
+import ca.gc.aafc.dina.i18n.MultilingualDescription;
+import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.List;
 import lombok.Data;
+
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * Tested as integration test since we need to make sure the deserializer is used by the Spring
@@ -41,5 +50,20 @@ public class SanitizeStringDeserializerIT extends BasePostgresItContext {
     SanitizeStringDeserializerIT.StringWrapper stringWrapper = objectMapper.readValue(jsonValue,
         SanitizeStringDeserializerIT.StringWrapper.class);
     assertEquals("this is  a  value", stringWrapper.getValue());
+  }
+
+  @Test
+  public void testPredicateOnValues_onPredicateReturnsFalse_inspectorReturnsFalse()
+      throws JsonProcessingException {
+    MultilingualDescription multilingualDescription = MultilingualDescription.builder()
+            .descriptions(List.of(
+                    MultilingualDescription.MultilingualPair.of("en", "en"),
+                    MultilingualDescription.MultilingualPair.of("fr", "")))
+            .build();
+
+    System.out.println(objectMapper.writeValueAsString(JsonAPITestHelper.toAttributeMap(multilingualDescription)));
+
+    assertFalse(JsonDocumentInspector.testPredicateOnValues(
+            JsonAPITestHelper.toAttributeMap(multilingualDescription), StringUtils::isNotBlank));
   }
 }
