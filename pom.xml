@@ -249,6 +249,7 @@
           <suppressionFiles>
             <suppressionFile>owasp-suppression.xml</suppressionFile> <!-- Required due to bug in plugin https://github.com/jeremylong/DependencyCheck/issues/1827 -->
           </suppressionFiles>
+          <nvdApiServerId>nvd</nvdApiServerId>
         </configuration>
       </plugin>
     </plugins>
