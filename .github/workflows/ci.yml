@@ -13,6 +13,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+          server-id: 'nvd'
+          server-password: NVD_API_KEY
           cache: 'maven'
 
       - name: Setup Graphviz
