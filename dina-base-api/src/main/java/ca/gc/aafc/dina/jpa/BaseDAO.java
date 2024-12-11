@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.jpa;
 
 import io.crnk.core.engine.information.bean.BeanInformation;
+import java.util.stream.Stream;
 import lombok.NonNull;
 
 import org.apache.commons.lang3.StringUtils;
@@ -8,6 +9,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.Session;
 import org.hibernate.SimpleNaturalIdLoadAccess;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.jpa.QueryHints;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityGraph;
@@ -177,6 +179,29 @@ public class BaseDAO {
       return tq.getResultList();
     } catch (NoResultException nrEx) {
       return null;
+    }
+  }
+
+  /**
+   * Stream of POJO/scalar(class that is not necessary an entity) Projection from a query.
+   * @param typeClass class of the result
+   * @param sql sql query. Usually a jpql query.
+   * @param parameters optional parameters for the query
+   * @return the Stream of POJO/Scalar or empty stream if not found (never null)
+   */
+  public <T> Stream<T> streamAllByQuery(Class<T> typeClass, String sql,
+                                        List<Pair<String, Object>> parameters) {
+    TypedQuery<T> tq = entityManager.createQuery(sql, typeClass);
+    if (parameters != null) {
+      for (Pair<String, Object> param : parameters) {
+        tq.setParameter(param.getKey(), param.getValue());
+      }
+    }
+    tq.setHint(QueryHints.HINT_FETCH_SIZE, 500);
+    try {
+      return tq.getResultStream();
+    } catch (NoResultException nrEx) {
+      return Stream.empty();
     }
   }
 
