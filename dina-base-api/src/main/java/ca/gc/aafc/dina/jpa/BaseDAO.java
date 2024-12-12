@@ -40,6 +40,7 @@ import java.util.function.Function;
 public class BaseDAO {
 
   public static final String LOAD_GRAPH_HINT_KEY = "javax.persistence.loadgraph";
+  public static final int DEFAULT_STREAM_FETCH_SIZE = 100;
 
   public static final int DEFAULT_LIMIT = 100;
   
@@ -191,13 +192,14 @@ public class BaseDAO {
    */
   public <T> Stream<T> streamAllByQuery(Class<T> typeClass, String sql,
                                         List<Pair<String, Object>> parameters) {
+
     TypedQuery<T> tq = entityManager.createQuery(sql, typeClass);
     if (parameters != null) {
       for (Pair<String, Object> param : parameters) {
         tq.setParameter(param.getKey(), param.getValue());
       }
     }
-    tq.setHint(QueryHints.HINT_FETCH_SIZE, 500);
+    tq.setHint(QueryHints.HINT_FETCH_SIZE, DEFAULT_STREAM_FETCH_SIZE);
     try {
       return tq.getResultStream();
     } catch (NoResultException nrEx) {
