@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -370,6 +371,7 @@ public class BaseDAOIT extends BasePostgresItContext {
   public void findAllByQuery_onValidQuery_expectedResultsReturned() {
     Person p1 = Person.builder().name("abc").uuid(UUID.randomUUID()).build();
     Person p2 = Person.builder().name("bcd").uuid(UUID.randomUUID()).build();
+
     baseDAO.create(p1, true);
     baseDAO.create(p2, true);
 
@@ -380,5 +382,18 @@ public class BaseDAOIT extends BasePostgresItContext {
       baseDAO.findAllByQuery(DinaObjectSummary.class, sql, List.of(Pair.of("name", "bc")), 10, 0);
     assertEquals(2, objList.size());
   }
-  
+
+  @Test
+  public void streamAllByQuery_onValidQuery_expectedResultsReturned() {
+    for (int i = 0; i < 1000; i++) {
+      Person p1 = Person.builder().name(RandomStringUtils.randomAlphabetic(8)).uuid(UUID.randomUUID()).build();
+      baseDAO.create(p1, true);
+      baseDAO.detach(p1);
+    }
+    String sql = "SELECT new " + DinaObjectSummary.class.getCanonicalName() +
+      "(t.uuid, t.group, t.createdBy) FROM Person t ORDER BY id";
+    Stream<DinaObjectSummary> objStream =
+      baseDAO.streamAllByQuery(DinaObjectSummary.class, sql, null);
+    assertEquals(1000, objStream.count());
+  }
 }
