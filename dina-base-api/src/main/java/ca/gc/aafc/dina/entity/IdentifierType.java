@@ -1,39 +1,26 @@
 package ca.gc.aafc.dina.entity;
 
-import ca.gc.aafc.dina.i18n.MultilingualTitle;
+import java.util.List;
+
 import ca.gc.aafc.dina.vocabulary.VocabularyElement;
 
-import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.SuperBuilder;
-
-@SuperBuilder
-@Getter
-public abstract class IdentifierType implements VocabularyElement, DinaEntity {
+public interface IdentifierType extends VocabularyElement, DinaEntity {
 
   /**
    * The key should not contain dot(.) See {@link VocabularyElement#getKey()}
+   * @param key
    */
-  @Setter
-  private String key;
-
-  private String name;
-
-  // usually a URI
-  private String term;
-
-  private MultilingualTitle multilingualTitle;
+  void setKey(String key);
 
   /**
    * The component (material-sample, project) where this identifier type is expected to be used.
    */
-  private List<String> dinaComponents;
+  List<String> getDinaComponents();
 
   /**
    * Like wikidata. A URI template where "$1" can be automatically replaced with the value
    * assigned to the identifier.
    */
-  private String uriTemplate;
+  String getUriTemplate();
 
 }

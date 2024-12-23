@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.service;
 
+import org.hibernate.annotations.Type;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,6 +12,7 @@ import org.springframework.validation.SmartValidator;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.IdentifierType;
+import ca.gc.aafc.dina.i18n.MultilingualTitle;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.validation.IdentifierTypeValidator;
@@ -74,11 +76,23 @@ public class IdentifierTypeServiceIT {
   @Setter
   @SuperBuilder
   @Entity
-  static class TestIdentifierType extends IdentifierType {
+  static class TestIdentifierType implements IdentifierType {
 
     @Id
     private Integer id;
     private UUID uuid;
+    private String key;
+
+    private String name;
+    private String term;
+
+    @Type(type = "jsonb")
+    private MultilingualTitle multilingualTitle;
+
+    @Type(type = "list-array")
+    private List<String> dinaComponents;
+
+    private String uriTemplate;
     private String createdBy;
     private OffsetDateTime createdOn;
   }
