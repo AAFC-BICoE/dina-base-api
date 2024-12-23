@@ -4,13 +4,17 @@ import ca.gc.aafc.dina.i18n.MultilingualTitle;
 import ca.gc.aafc.dina.vocabulary.VocabularyElement;
 
 import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
+@SuperBuilder
 @Getter
-public class IdentifierType implements VocabularyElement {
+public abstract class IdentifierType implements VocabularyElement, DinaEntity {
 
   /**
    * The key should not contain dot(.) See {@link VocabularyElement#getKey()}
    */
+  @Setter
   private String key;
 
   private String name;
@@ -25,9 +29,5 @@ public class IdentifierType implements VocabularyElement {
    * assigned to the identifier.
    */
   private String uriTemplate;
-
-  public void setKey(String key) {
-    
-  }
 
 }
