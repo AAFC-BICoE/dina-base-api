@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.entity;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
 import ca.gc.aafc.dina.vocabulary.VocabularyElement;
 
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
@@ -27,7 +28,7 @@ public abstract class IdentifierType implements VocabularyElement, DinaEntity {
   /**
    * The component (material-sample, project) where this identifier type is expected to be used.
    */
-  private String dinaComponent;
+  private List<String> dinaComponents;
 
   /**
    * Like wikidata. A URI template where "$1" can be automatically replaced with the value

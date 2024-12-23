@@ -18,6 +18,7 @@ import ca.gc.aafc.dina.validation.IdentifierTypeValidator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -44,6 +45,7 @@ public class IdentifierTypeServiceIT {
         .id(11)
         .uuid(UUID.randomUUID())
         .uriTemplate("https://abc.abc/$1")
+        .dinaComponents(List.of("project", "person"))
         .name("dina specialIdentifier #11").build());
 
     assertEquals("dina_special_identifier_11", identifierType.getKey());
