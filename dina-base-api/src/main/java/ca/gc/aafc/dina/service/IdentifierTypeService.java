@@ -27,8 +27,15 @@ public class IdentifierTypeService<T extends IdentifierType> extends DefaultDina
 
   @Override
   protected void preCreate(T entity) {
-    if (StringUtils.isNotBlank(entity.getName())) {
-      entity.setKey(VocabularyKeyHelper.generateKeyFromName(entity.getName()));
+    // Do we need to generate a key ?
+    if (StringUtils.isBlank(entity.getKey())) {
+      if (StringUtils.isNotBlank(entity.getName())) {
+        entity.setKey(VocabularyKeyHelper.generateKeyFromName(entity.getName()));
+      }
+    } else {
+      if (!VocabularyKeyHelper.isKeyValid(entity.getKey())) {
+        throw new IllegalArgumentException("Invalid key");
+      }
     }
   }
 

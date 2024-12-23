@@ -40,4 +40,12 @@ public final class VocabularyKeyHelper {
     return RegExUtils.removeAll(name.toLowerCase(), NON_ALPHANUMERICAL);
   }
 
+  public static boolean isKeyValid(String key) {
+    if (StringUtils.isBlank(key)) {
+      return false;
+    }
+    // use the key as the name and check if we get the same result
+    return key.equals(generateKeyFromName(key));
+  }
+
 }
