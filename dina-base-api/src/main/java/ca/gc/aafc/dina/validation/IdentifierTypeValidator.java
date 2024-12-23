@@ -19,8 +19,8 @@ public class IdentifierTypeValidator extends DinaBaseValidator<IdentifierType> {
   @Override
   public void validateTarget(IdentifierType target, Errors errors) {
 
-    if(StringUtils.isNotBlank(target.getUriTemplate())) {
-      if(!target.getUriTemplate().contains("$1")) {
+    if (StringUtils.isNotBlank(target.getUriTemplate())) {
+      if (!target.getUriTemplate().contains("$1")) {
         errors.reject(MISSING_PLACEHOLDER_KEY, getMessage(MISSING_PLACEHOLDER_KEY));
       }
     }

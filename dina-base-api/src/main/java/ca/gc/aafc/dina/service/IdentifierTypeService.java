@@ -36,5 +36,4 @@ public class IdentifierTypeService<T extends IdentifierType> extends DefaultDina
   public void validateBusinessRules(T identifierType) {
     applyBusinessRule(identifierType, identifierTypeValidator);
   }
-
 }
