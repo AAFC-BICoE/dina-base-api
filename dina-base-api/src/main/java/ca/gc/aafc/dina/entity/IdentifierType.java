@@ -25,6 +25,11 @@ public abstract class IdentifierType implements VocabularyElement, DinaEntity {
   private MultilingualTitle multilingualTitle;
 
   /**
+   * The component (material-sample, project) where this identifier type is expected to be used.
+   */
+  private String dinaComponent;
+
+  /**
    * Like wikidata. A URI template where "$1" can be automatically replaced with the value
    * assigned to the identifier.
    */
