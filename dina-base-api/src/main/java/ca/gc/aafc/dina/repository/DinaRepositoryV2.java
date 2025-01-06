@@ -1,22 +1,22 @@
 package ca.gc.aafc.dina.repository;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.RepresentationModel;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tennaito.rsql.misc.ArgumentParser;
 import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
+import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.JsonApiExternalResource;
 import ca.gc.aafc.dina.dto.JsonApiMeta;
 import ca.gc.aafc.dina.dto.JsonApiPartialPatchDto;
 import ca.gc.aafc.dina.dto.JsonApiResource;
-import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterArgumentParser;
 import ca.gc.aafc.dina.filter.EntityFilterHelper;
@@ -30,6 +30,8 @@ import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
 
+import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiModel;
+
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -37,18 +39,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.persistence.criteria.Predicate;
 import javax.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
-
-import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiModel;
 
 @Log4j2
 public class DinaRepositoryV2<D,E extends DinaEntity> {
@@ -66,6 +64,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
   protected final DinaMappingRegistry registry;
 
+  protected ObjectMapper objMapper;
   private final ArgumentParser rsqlArgumentParser = new DinaFilterArgumentParser();
 
   public DinaRepositoryV2(@NonNull DinaService<E> dinaService,
@@ -86,6 +85,10 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
     // build registry instance for resource class (dto)
     this.registry = new DinaMappingRegistry(resourceClass);
+
+    // copy the object mapper and set it to fail on unknown properties
+    this.objMapper = objMapper.copy()
+      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
   }
 
   /**
@@ -497,41 +500,31 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
   }
 
   /**
-   * WORK-IN-PROGRESS
+   * Update the resource defined by the id in {@link JsonApiPartialPatchDto} with the provided
+   * attributes.
    * @param patchDto
    */
   public void update(JsonApiPartialPatchDto patchDto) {
 
-    // we need to use reflection for now here since MapStruct doesn't support Map<String, Object> yet
-    try {
-      D dto = resourceClass.getConstructor().newInstance();
+    // We need to use Jackson for now here since MapStruct doesn't support setting
+    // values from Map<String, Object> yet.
+    // Reflection can't really be used since we won't know the type of the source
+    // and how to convert it.
+    D dto = objMapper.convertValue(patchDto.getMap(), resourceClass);
 
-      // validation of first level properties name
-      Set<String> receivedPropsName = patchDto.getPropertiesName();
-      Set<String> declaredPropsName = BeanUtils.describe(dto).keySet();
-
-      if(!declaredPropsName.containsAll(receivedPropsName)) {
-        throw new IllegalArgumentException("Property not found");
-      }
-
-      // Currently not working: Populate Dto to make sure data types are matching
-      BeanUtils.populate(dto, patchDto.getMap());
-
-      // load entity
-      E entity = dinaService.findOne(patchDto.getId(), entityClass);
-      if(entity == null) {
-        throw new IllegalArgumentException("not found");
-      }
-
-      // apply DTO on entity using the keys from patchDto
-      dinaMapper.patchEntity(dto, receivedPropsName, entity, null);
-
-      dinaService.update(entity);
-
-    } catch (InstantiationException | InvocationTargetException | IllegalAccessException |
-             NoSuchMethodException e) {
-      throw new RuntimeException(e);
+    // load entity
+    E entity = dinaService.findOne(patchDto.getId(), entityClass);
+    if (entity == null) {
+      throw new IllegalArgumentException("not found");
     }
+
+    // Check for authorization on the entity
+    authorizationService.authorizeUpdate(entity);
+
+    // apply DTO on entity using the keys from patchDto
+    dinaMapper.patchEntity(entity, dto, patchDto.getPropertiesName(), null);
+
+    dinaService.update(entity);
   }
 
   /**

@@ -20,6 +20,6 @@ public interface ChainMapper extends DinaMapperV2<ChainDto, Chain> {
   ChainDto toDto(Chain entity, @Context Set<String> provided, @Context String scope);
 
   @Mapping(target = "chainTemplate", ignore = true)
-  void patchEntity(ChainDto dto, @Context Set<String> provided, @MappingTarget Chain entity, @Context String scope);
+  void patchEntity(@MappingTarget Chain entity, ChainDto dto, @Context Set<String> provided, @Context String scope);
 
 }

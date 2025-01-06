@@ -40,12 +40,12 @@ public interface DinaMapperV2<D, E> {
    * Patch an existing entity from a DTO and a set of provided fields.
    * Always set @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
    * on the interface extending that one. Otherwise, non-provided values will be set to null.
+   * @param entity entity instance to be patched
    * @param dto
    * @param provided provided properties so only those will be set
-   * @param entity entity instance to be patched
    * @param scope used to check provided properties within nested properties
    */
-  void patchEntity(D dto, @Context Set<String> provided, @MappingTarget E entity, @Context String scope);
+  void patchEntity(@MappingTarget E entity, D dto, @Context Set<String> provided, @Context String scope);
 
   /**
    * Used to map the uuid of an {@link ExternalRelationDto}.

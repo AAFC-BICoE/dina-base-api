@@ -24,6 +24,7 @@ import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -126,7 +127,10 @@ public class DinaRepositoryV2IT {
     JsonApiPartialPatchDto dto = new JsonApiPartialPatchDto();
     dto.setId(person.getUuid());
     dto.set("name", "abc");
-    dto.set("room", "a");
+    dto.set("room", 21);
+    // convert to string to mimic how we would get it with JsonApiPartialPatchDto
+    dto.set("createdOn", OffsetDateTime.now().toString());
+
     repositoryV2.update(dto);
   }
 

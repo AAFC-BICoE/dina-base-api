@@ -5,7 +5,6 @@ import java.util.Set;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
-import org.mapstruct.MapperConfig;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -26,7 +25,7 @@ public interface PersonMapper extends DinaMapperV2<PersonDTO, Person> {
 
   @Mapping(target = "department", ignore = true)
   @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-  void patchEntity(PersonDTO dto, @Context Set<String> provided, @MappingTarget Person entity, @Context String scope);
+  void patchEntity(@MappingTarget Person entity, PersonDTO dto, @Context Set<String> provided, @Context String scope);
 
   @Mapping(target = "customField", ignore = true)
   EmployeeDto employeeToDto(Employee entity);
