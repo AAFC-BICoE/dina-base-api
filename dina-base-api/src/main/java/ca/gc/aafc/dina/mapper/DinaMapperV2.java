@@ -1,16 +1,17 @@
 package ca.gc.aafc.dina.mapper;
 
-import java.util.Arrays;
-import java.util.Set;
-import java.util.UUID;
-
 import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Condition;
 import org.mapstruct.Context;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.SourcePropertyName;
 
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
+
+import java.util.Arrays;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * MapStruct based mapper that supports provided property to prevent lazy-loading to be triggered.
@@ -35,6 +36,16 @@ public interface DinaMapperV2<D, E> {
    */
   E toEntity(D dto, @Context Set<String> provided, @Context String scope);
 
+  /**
+   * Patch an existing entity from a DTO and a set of provided fields.
+   * Always set @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+   * on the interface extending that one. Otherwise, non-provided values will be set to null.
+   * @param dto
+   * @param provided provided properties so only those will be set
+   * @param entity entity instance to be patched
+   * @param scope used to check provided properties within nested properties
+   */
+  void patchEntity(D dto, @Context Set<String> provided, @MappingTarget E entity, @Context String scope);
 
   /**
    * Used to map the uuid of an {@link ExternalRelationDto}.

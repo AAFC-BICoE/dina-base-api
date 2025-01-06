@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.repository;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.info.BuildProperties;
@@ -13,6 +14,7 @@ import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.JsonApiExternalResource;
 import ca.gc.aafc.dina.dto.JsonApiMeta;
+import ca.gc.aafc.dina.dto.JsonApiPartialPatchDto;
 import ca.gc.aafc.dina.dto.JsonApiResource;
 import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
@@ -35,10 +37,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.persistence.criteria.Predicate;
 import javax.servlet.http.HttpServletRequest;
 import lombok.NonNull;
@@ -490,6 +494,44 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       return DEFAULT_PAGE_LIMIT;
     }
     return pageLimit;
+  }
+
+  /**
+   * WORK-IN-PROGRESS
+   * @param patchDto
+   */
+  public void update(JsonApiPartialPatchDto patchDto) {
+
+    // we need to use reflection for now here since MapStruct doesn't support Map<String, Object> yet
+    try {
+      D dto = resourceClass.getConstructor().newInstance();
+
+      // validation of first level properties name
+      Set<String> receivedPropsName = patchDto.getPropertiesName();
+      Set<String> declaredPropsName = BeanUtils.describe(dto).keySet();
+
+      if(!declaredPropsName.containsAll(receivedPropsName)) {
+        throw new IllegalArgumentException("Property not found");
+      }
+
+      // Currently not working: Populate Dto to make sure data types are matching
+      BeanUtils.populate(dto, patchDto.getMap());
+
+      // load entity
+      E entity = dinaService.findOne(patchDto.getId(), entityClass);
+      if(entity == null) {
+        throw new IllegalArgumentException("not found");
+      }
+
+      // apply DTO on entity using the keys from patchDto
+      dinaMapper.patchEntity(dto, receivedPropsName, entity, null);
+
+      dinaService.update(entity);
+
+    } catch (InstantiationException | InvocationTargetException | IllegalAccessException |
+             NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**

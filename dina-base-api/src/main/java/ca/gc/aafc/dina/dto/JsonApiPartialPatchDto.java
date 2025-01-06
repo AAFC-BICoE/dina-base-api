@@ -1,7 +1,9 @@
 package ca.gc.aafc.dina.dto;
 
+import java.util.Set;
 import java.util.UUID;
 import lombok.Getter;
+import lombok.Setter;
 
 import org.apache.commons.beanutils.LazyDynaBean;
 
@@ -17,12 +19,17 @@ public class JsonApiPartialPatchDto extends LazyDynaBean {
 
   @JsonApiId
   @Getter
+  @Setter
   private UUID id;
 
   @Override
   @JsonAnySetter
   public void set(String name, Object value) {
     super.set(name, value);
+  }
+
+  public Set<String> getPropertiesName() {
+    return getMap().keySet();
   }
 
 }

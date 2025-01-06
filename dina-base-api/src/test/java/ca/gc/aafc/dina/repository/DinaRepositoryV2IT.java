@@ -12,6 +12,7 @@ import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.JsonApiDto;
+import ca.gc.aafc.dina.dto.JsonApiPartialPatchDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.filter.QueryComponent;
@@ -113,6 +114,20 @@ public class DinaRepositoryV2IT {
     JsonApiModelBuilder builder =
       repositoryV2.createJsonApiModelBuilder(repositoryV2.getAll(qc));
     assertNotNull(builder.build());
+  }
+
+  @Test
+  public void onUpdate() {
+
+    Person person = personService.create(Person.builder()
+      .name("Bob")
+      .build());
+
+    JsonApiPartialPatchDto dto = new JsonApiPartialPatchDto();
+    dto.setId(person.getUuid());
+    dto.set("name", "abc");
+    dto.set("room", "a");
+    repositoryV2.update(dto);
   }
 
   @TestConfiguration
