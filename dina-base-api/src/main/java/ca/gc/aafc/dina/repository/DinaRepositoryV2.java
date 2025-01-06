@@ -500,8 +500,25 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
   }
 
   /**
+   * Create a new resource.
+   * Relationships are not supported at the moment.
+   * @param dto
+   * @return the uuid assigned or used
+   */
+  public UUID create(D dto) {
+    E entity = dinaMapper.toEntity(dto,
+      registry.getAttributesPerClass().get(resourceClass),
+      null);
+
+    authorizationService.authorizeCreate(entity);
+    E created = dinaService.create(entity);
+    return created.getUuid();
+  }
+
+  /**
    * Update the resource defined by the id in {@link JsonApiPartialPatchDto} with the provided
    * attributes.
+   * Relationships are not supported at the moment.
    * @param patchDto
    */
   public void update(JsonApiPartialPatchDto patchDto) {
@@ -525,6 +542,21 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     dinaMapper.patchEntity(entity, dto, patchDto.getPropertiesName(), null);
 
     dinaService.update(entity);
+  }
+
+  /**
+   * Delete the resource identified by the provided identifier.
+   *
+   * @param identifier
+   */
+  public void delete(UUID identifier) {
+    E entity = dinaService.findOne(identifier, entityClass);
+    if (entity == null) {
+      throw new IllegalArgumentException(
+        resourceClass.getSimpleName() + " with ID " + identifier + " Not Found.");
+    }
+    authorizationService.authorizeDelete(entity);
+    dinaService.delete(entity);
   }
 
   /**

@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -118,20 +119,27 @@ public class DinaRepositoryV2IT {
   }
 
   @Test
-  public void onUpdate() {
+  public void onCreateUpdateDelete_noException() {
 
-    Person person = personService.create(Person.builder()
+    PersonDTO personDto = PersonDTO.builder()
       .name("Bob")
-      .build());
+      .build();
+
+    UUID assignedId = repositoryV2.create(personDto);
 
     JsonApiPartialPatchDto dto = new JsonApiPartialPatchDto();
-    dto.setId(person.getUuid());
+    dto.setId(assignedId);
     dto.set("name", "abc");
     dto.set("room", 21);
     // convert to string to mimic how we would get it with JsonApiPartialPatchDto
     dto.set("createdOn", OffsetDateTime.now().toString());
 
     repositoryV2.update(dto);
+
+    JsonApiDto<PersonDTO> getOneDto = repositoryV2.getOne(assignedId, null);
+    assertEquals("abc", getOneDto.getDto().getName());
+
+    repositoryV2.delete(assignedId);
   }
 
   @TestConfiguration
