@@ -3,22 +3,20 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jpa.PredicateHelper;
+import ca.gc.aafc.dina.vocabulary.VocabularyKeyHelper;
+
 import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.validation.SmartValidator;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -29,7 +27,6 @@ import java.util.stream.Collectors;
 public abstract class ManagedAttributeService<T extends ManagedAttribute>
   extends DefaultDinaService<T> {
   private static final String KEY = "key";
-  private static final Pattern NON_ALPHANUMERICAL = Pattern.compile("[^a-z0-9]");
   private final Class<T> maClass;
 
   public ManagedAttributeService(BaseDAO baseDAO, SmartValidator smartValidator, @NonNull Class<T> managedAttributeClass) {
@@ -40,7 +37,7 @@ public abstract class ManagedAttributeService<T extends ManagedAttribute>
   @Override
   protected void preCreate(T entity) {
     if (StringUtils.isNotBlank(entity.getName())) {
-      entity.setKey(generateKeyFromName(entity.getName()));
+      entity.setKey(VocabularyKeyHelper.generateKeyFromName(entity.getName()));
     }
   }
 
@@ -86,26 +83,4 @@ public abstract class ManagedAttributeService<T extends ManagedAttribute>
     return findOneByProperties(maClass,
         List.of(Pair.of(KEY, key), andClause));
   }
-
-  /**
-   * Transforms a name into a key. camelCase is supported.
-   * "Aa bb !! mySuperAttribute # 11" will become aa_bb_my_super_attribute_11
-   * @param name
-   * @return
-   */
-  private static String generateKeyFromName(String name) {
-    Objects.requireNonNull(name);
-
-    return Arrays.stream(StringUtils.
-        splitByCharacterTypeCamelCase(StringUtils.normalizeSpace(name)))
-        .filter(StringUtils::isNotBlank)
-        .map(ManagedAttributeService::processName)
-        .filter(StringUtils::isNotBlank)
-        .collect(Collectors.joining("_"));
-  }
-
-  private static String processName(String name) {
-    return RegExUtils.removeAll(name.toLowerCase(), NON_ALPHANUMERICAL);
-  }
-
 }
