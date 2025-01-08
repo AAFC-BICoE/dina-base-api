@@ -143,6 +143,14 @@ public class DinaMappingRegistry {
       .orElse(null);
   }
 
+  public InternalRelation getInternalRelation(Class<?> cls, String attribute) {
+    checkClassTracked(cls);
+    return resourceGraph.get(cls).getInternalRelations().stream()
+      .filter( i -> i.name.equalsIgnoreCase(attribute))
+      .findAny()
+      .orElse(null);
+  }
+
   /**
    * Return the class of the external relationship represented by the attribute.
    * @param cls

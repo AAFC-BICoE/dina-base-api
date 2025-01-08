@@ -16,6 +16,7 @@ import ca.gc.aafc.dina.dto.JsonApiPartialPatchDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.filter.QueryComponent;
+import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.mapper.PersonMapper;
 import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
@@ -28,7 +29,9 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -127,14 +130,23 @@ public class DinaRepositoryV2IT {
 
     UUID assignedId = repositoryV2.create(personDto);
 
-    JsonApiPartialPatchDto dto = new JsonApiPartialPatchDto();
-    dto.setId(assignedId);
-    dto.set("name", "abc");
-    dto.set("room", 21);
-    // convert to string to mimic how we would get it with JsonApiPartialPatchDto
-    dto.set("createdOn", OffsetDateTime.now().toString());
+    Map<String, Object> attributes = new HashMap<>();
+    //JsonApiPartialPatchDto dto = new JsonApiPartialPatchDto();
 
-    repositoryV2.update(dto);
+    attributes.put("name", "abc");
+    attributes.put("room", 21);
+    // convert to string to mimic how we would get it with JsonApiPartialPatchDto
+    attributes.put("createdOn", OffsetDateTime.now().toString());
+
+    JsonApiDocument document = JsonApiDocument.builder()
+      .data(JsonApiDocument.ResourceObject.builder()
+        .id(assignedId)
+        .attributes(attributes)
+        .build())
+      .build();
+
+
+    repositoryV2.update(document);
 
     JsonApiDto<PersonDTO> getOneDto = repositoryV2.getOne(assignedId, null);
     assertEquals("abc", getOneDto.getDto().getName());

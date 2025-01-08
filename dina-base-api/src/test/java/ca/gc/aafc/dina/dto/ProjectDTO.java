@@ -29,6 +29,7 @@ public final class ProjectDTO {
 
   public static final String RESOURCE_TYPE = "Project";
 
+  @com.toedter.spring.hateoas.jsonapi.JsonApiId
   @JsonApiId
   @org.javers.core.metamodel.annotation.Id
   @PropertyName("id")

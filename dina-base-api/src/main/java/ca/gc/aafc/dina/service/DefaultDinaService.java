@@ -4,6 +4,8 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import ca.gc.aafc.dina.validation.ValidationErrorsHelper;
+
+import java.util.function.Consumer;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -96,6 +98,11 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     validateConstraints(entity, OnUpdate.class);
     validateBusinessRules(entity);
     return baseDAO.update(entity);
+  }
+
+  @Override
+  public <T> void setRelationshipByNaturalIdReference(Class<T> entityClass, Object naturalId, Consumer<T> objConsumer) {
+    baseDAO.setRelationshipByNaturalIdReference(entityClass, naturalId, objConsumer);
   }
 
   /**

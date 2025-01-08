@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.jsonapi;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -61,6 +62,17 @@ public class JsonApiDocument {
      * Could be a ResourceIdentifier (to-one) or a List of ResourceIdentifier (to-many)
      */
     private Object data;
+
+    public boolean isCollection() {
+      return data instanceof Collection;
+    }
+
+    public Collection<?> getDataAsCollection() {
+      if (data instanceof Collection<?> c) {
+        return c;
+      }
+      return null;
+    }
   }
 
   /**

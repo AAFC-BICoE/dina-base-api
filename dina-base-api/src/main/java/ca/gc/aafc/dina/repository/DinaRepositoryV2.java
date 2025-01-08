@@ -24,11 +24,13 @@ import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
 import ca.gc.aafc.dina.filter.SimpleFilterHandlerV2;
+import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.mapper.DinaMapperV2;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
+import ca.gc.aafc.dina.util.ReflectionUtils;
 
 import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiModel;
 
@@ -521,13 +523,13 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
    * Relationships are not supported at the moment.
    * @param patchDto
    */
-  public void update(JsonApiPartialPatchDto patchDto) {
+  public void update(JsonApiDocument patchDto) {
 
     // We need to use Jackson for now here since MapStruct doesn't support setting
     // values from Map<String, Object> yet.
     // Reflection can't really be used since we won't know the type of the source
     // and how to convert it.
-    D dto = objMapper.convertValue(patchDto.getMap(), resourceClass);
+    D dto = objMapper.convertValue(patchDto.getAttributes(), resourceClass);
 
     // load entity
     E entity = dinaService.findOne(patchDto.getId(), entityClass);
@@ -539,9 +541,37 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     authorizationService.authorizeUpdate(entity);
 
     // apply DTO on entity using the keys from patchDto
-    dinaMapper.patchEntity(entity, dto, patchDto.getPropertiesName(), null);
+    dinaMapper.patchEntity(entity, dto, patchDto.getData().getAttributesName(), null);
+
+    var relationships = patchDto.getRelationships();
+    for (var relationship : relationships.entrySet()) {
+      String relName = relationship.getKey();
+      DinaMappingRegistry.InternalRelation relation = registry.getInternalRelation(entityClass, relName);
+      var relObject = relationship.getValue();
+      // to-many
+      if(relObject.isCollection()) {
+        for(Object el : relObject.getDataAsCollection()) {
+          var resourceIdentifier = toResourceIdentifier(el);
+
+        }
+      } else { // to-one
+        var resourceIdentifier = toResourceIdentifier(relObject.getData());
+        dinaService.setRelationshipByNaturalIdReference(relation.getEntityType(),
+          resourceIdentifier.getId(), (r) -> {
+            try {
+              ReflectionUtils.getSetterMethod(relName, entityClass).invoke(entity, r);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+              throw new RuntimeException(e);
+            }
+          });
+      }
+    }
 
     dinaService.update(entity);
+  }
+
+  private JsonApiDocument.ResourceIdentifier toResourceIdentifier(Object obj) {
+    return objMapper.convertValue(obj, JsonApiDocument.ResourceIdentifier.class);
   }
 
   /**

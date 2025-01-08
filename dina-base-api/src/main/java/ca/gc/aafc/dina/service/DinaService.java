@@ -2,6 +2,8 @@ package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.PredicateSupplier;
+
+import java.util.function.Consumer;
 import lombok.NonNull;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -36,6 +38,8 @@ public interface DinaService<E extends DinaEntity> {
    * @return a given entity as it was persisted.
    */
   E update(E entity);
+
+  <T> void setRelationshipByNaturalIdReference(Class<T> entityClass, Object naturalId, Consumer<T> objConsumer);
 
   /**
    * Deletes a given entity from the data source
