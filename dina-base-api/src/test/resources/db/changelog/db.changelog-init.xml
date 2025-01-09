@@ -281,6 +281,16 @@
 			<column name="created_by" type="varchar(255)"/>
 			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
 		</createTable>
+
+		<createTable tableName="task_history">
+			<column name="project_id" type="integer">
+				<constraints foreignKeyName="fk_task_history_project_id" references="project(id)"/>
+			</column>
+			<column name="task_id" type="integer">
+				<constraints foreignKeyName="fk_task_history_task_id" references="task(id)"/>
+			</column>
+		</createTable>
+
 		<createTable tableName="project_name_translations">
 			<column name="project_id" type="integer">
 			  <constraints foreignKeyName="fk_project_name_translations_project_id" references="project(id)"/>

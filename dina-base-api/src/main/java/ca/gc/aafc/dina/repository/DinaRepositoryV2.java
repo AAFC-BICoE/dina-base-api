@@ -15,7 +15,6 @@ import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.JsonApiExternalResource;
 import ca.gc.aafc.dina.dto.JsonApiMeta;
-import ca.gc.aafc.dina.dto.JsonApiPartialPatchDto;
 import ca.gc.aafc.dina.dto.JsonApiResource;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.filter.DinaFilterArgumentParser;
@@ -41,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -518,7 +518,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
   }
 
   /**
-   * Update the resource defined by the id in {@link JsonApiPartialPatchDto} with the provided
+   * Update the resource defined by the id in {@link JsonApiDocument} with the provided
    * attributes.
    * Relationships are not supported at the moment.
    * @param patchDto
@@ -543,31 +543,56 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     // apply DTO on entity using the keys from patchDto
     dinaMapper.patchEntity(entity, dto, patchDto.getData().getAttributesName(), null);
 
-    var relationships = patchDto.getRelationships();
-    for (var relationship : relationships.entrySet()) {
-      String relName = relationship.getKey();
-      DinaMappingRegistry.InternalRelation relation = registry.getInternalRelation(entityClass, relName);
-      var relObject = relationship.getValue();
-      // to-many
-      if(relObject.isCollection()) {
-        for(Object el : relObject.getDataAsCollection()) {
-          var resourceIdentifier = toResourceIdentifier(el);
-
-        }
-      } else { // to-one
-        var resourceIdentifier = toResourceIdentifier(relObject.getData());
-        dinaService.setRelationshipByNaturalIdReference(relation.getEntityType(),
-          resourceIdentifier.getId(), (r) -> {
-            try {
-              ReflectionUtils.getSetterMethod(relName, entityClass).invoke(entity, r);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-              throw new RuntimeException(e);
-            }
-          });
-      }
-    }
+    updateRelationships(entity, patchDto.getRelationships());
 
     dinaService.update(entity);
+  }
+
+  private void updateRelationships(E entity, Map<String, JsonApiDocument.RelationshipObject> relationships) {
+
+    if (relationships == null) {
+      return;
+    }
+
+    for (var relationship : relationships.entrySet()) {
+      String relName = relationship.getKey();
+
+      // get data about the relationship
+      DinaMappingRegistry.InternalRelation relation = registry.getInternalRelation(entityClass, relName);
+      if (relation == null) {
+        throw new IllegalArgumentException("Unknown relationship [" + relName + "]");
+      }
+
+      var relObject = relationship.getValue();
+      Object relationshipsReference;
+
+      if(!relObject.isNull()) {
+        // to-many
+        if (relObject.isCollection()) {
+          List<Object> relationshipsReferences = new ArrayList<>();
+          for (Object el : relObject.getDataAsCollection()) {
+            var resourceIdentifier = toResourceIdentifier(el);
+            relationshipsReferences.add(
+              dinaService.getReferenceByNaturalId(relation.getEntityType(),
+                resourceIdentifier.getId()));
+          }
+          relationshipsReference = relationshipsReferences;
+        } else { // to-one
+          var resourceIdentifier = toResourceIdentifier(relObject.getData());
+          relationshipsReference = dinaService.getReferenceByNaturalId(relation.getEntityType(),
+            resourceIdentifier.getId());
+        }
+      } else {
+        // remove relationship
+        relationshipsReference = null;
+      }
+
+      try {
+        ReflectionUtils.getSetterMethod(relName, entityClass).invoke(entity, relationshipsReference);
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   private JsonApiDocument.ResourceIdentifier toResourceIdentifier(Object obj) {

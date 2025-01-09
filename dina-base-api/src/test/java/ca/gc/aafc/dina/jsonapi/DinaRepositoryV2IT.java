@@ -1,14 +1,5 @@
 package ca.gc.aafc.dina.jsonapi;
 
-import java.net.URI;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-import lombok.Getter;
-
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -31,15 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ca.gc.aafc.dina.dto.JsonApiPartialPatchDto;
-import ca.gc.aafc.dina.dto.JsonApiPartialPatchDto2;
-import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.TaskDTO;
-import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.entity.Project;
 import ca.gc.aafc.dina.entity.Task;
-import ca.gc.aafc.dina.mapper.PersonMapper;
 import ca.gc.aafc.dina.mapper.ProjectDtoMapper;
 import ca.gc.aafc.dina.mapper.TaskDtoMapper;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
@@ -52,6 +37,14 @@ import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 
 import static com.toedter.spring.hateoas.jsonapi.MediaTypes.JSON_API_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.net.URI;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+import lombok.Getter;
 
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
@@ -74,8 +67,7 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
   }
 
   @Test
-  public void sendTask() {
-
+  public void onPatchToOneRelationship() {
     // Create a project
     ProjectDTO project = ProjectDTO.builder().build();
     UUID projectUuid = UUID.randomUUID();
@@ -94,9 +86,39 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
       JsonAPITestHelper.toRelationshipMap(JsonAPIRelationship.of("task", TaskDTO.RESOURCE_TYPE, taskUuid.toString()))
       , projectUuid.toString()))
       .extract().response().getStatusCode();
+    assertEquals(200, returnCode);
+  }
+
+  @Test
+  public void onPatchToManyRelationship() {
+    // Create a project
+    ProjectDTO project = ProjectDTO.builder().build();
+    UUID projectUuid = UUID.randomUUID();
+    sendPost(PATH + "/" + ProjectDTO.RESOURCE_TYPE, JsonAPITestHelper.toJsonAPIMap(
+      ProjectDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(project), null, projectUuid.toString()));
+
+    // Create 2 tasks
+    TaskDTO task = TaskDTO.builder().power(RandomUtils.nextInt()).build();
+    UUID taskUuid1 = UUID.randomUUID();
+    sendPost(PATH + "/" + TaskDTO.RESOURCE_TYPE, JsonAPITestHelper.toJsonAPIMap(
+      TaskDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(task), null, taskUuid1.toString()));
+
+    TaskDTO task2 = TaskDTO.builder().power(RandomUtils.nextInt()).build();
+    UUID taskUuid2 = UUID.randomUUID();
+    sendPost(PATH + "/" + TaskDTO.RESOURCE_TYPE, JsonAPITestHelper.toJsonAPIMap(
+      TaskDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(task2), null, taskUuid2.toString()));
+
+    // Patch the project to set the task
+    int returnCode = sendPatch(PATH + "/" + ProjectDTO.RESOURCE_TYPE, projectUuid.toString(),
+      JsonAPITestHelper.toJsonAPIMap(
+        ProjectDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(project),
+        JsonAPITestHelper.toRelationshipMapByName(List.of(
+          JsonAPIRelationship.of("taskHistory", TaskDTO.RESOURCE_TYPE, taskUuid1.toString()),
+          JsonAPIRelationship.of("taskHistory", TaskDTO.RESOURCE_TYPE, taskUuid2.toString())))
+        , projectUuid.toString()))
+      .extract().response().getStatusCode();
 
     assertEquals(200, returnCode);
-    assertEquals(task.getPower(), dynaBeanRepo.getLevel());
   }
 
   /**
@@ -130,17 +152,11 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
     }
 
     @PatchMapping(PATH + "/" + ProjectDTO.RESOURCE_TYPE + "/{id}")
+    @Transactional
     public ResponseEntity<RepresentationModel<?>> handlePatch(@RequestBody JsonApiDocument partialPatchDto,
                                                               @PathVariable String id) {
       projectRepo.update(partialPatchDto);
-    //  JsonApiDocument b = partialPatchDto;//.getContent();
-//      Map<String, String> s = b.getMap().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
-//        e -> e.getValue().toString()));
-//      s.put("id", b.getId().toString());
-//      TaskDTO t = TaskDtoMapper.INSTANCE.toTaskDto(s);
-//      level = t.getPower();
-
-      return null;
+      return ResponseEntity.ok().build();
     }
   }
 

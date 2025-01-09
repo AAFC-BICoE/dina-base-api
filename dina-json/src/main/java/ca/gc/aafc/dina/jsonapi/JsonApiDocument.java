@@ -73,6 +73,10 @@ public class JsonApiDocument {
       }
       return null;
     }
+
+    public boolean isNull() {
+      return data == null;
+    }
   }
 
   /**
