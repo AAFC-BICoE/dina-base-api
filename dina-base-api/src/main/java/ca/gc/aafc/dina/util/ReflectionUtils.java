@@ -48,8 +48,7 @@ public final class ReflectionUtils {
    * @param attributes
    * @throws IllegalArgumentException if attributes is not found or there is a type mismatch
    */
-  public static <T> void setAttributes(T target, Map<String, Object> attributes)
-    throws IllegalArgumentException {
+  public static <T> void setAttributes(T target, Map<String, Object> attributes) throws IllegalArgumentException {
     for (Map.Entry<String, Object> attribute : attributes.entrySet()) {
       try {
         PropertyUtils.setProperty(target, attribute.getKey(), attribute.getValue());

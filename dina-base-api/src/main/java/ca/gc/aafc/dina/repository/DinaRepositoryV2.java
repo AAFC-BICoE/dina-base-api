@@ -566,7 +566,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       var relObject = relationship.getValue();
       Object relationshipsReference;
 
-      if(!relObject.isNull()) {
+      if (!relObject.isNull()) {
         // to-many
         if (relObject.isCollection()) {
           List<Object> relationshipsReferences = new ArrayList<>();
