@@ -9,7 +9,9 @@ import org.mapstruct.SourcePropertyName;
 
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -70,6 +72,18 @@ public interface DinaMapperV2<D, E> {
       return null;
     }
     return Arrays.copyOf(arr, arr.length);
+  }
+
+  /**
+   * Used by MapStruct to map lists.
+   * Note: will always create ArrayList
+   * @return
+   */
+  default <T> List<T> nullSafeList(List<T> list) {
+    if (list == null) {
+      return null;
+    }
+    return new ArrayList<>(list);
   }
 
   /**
