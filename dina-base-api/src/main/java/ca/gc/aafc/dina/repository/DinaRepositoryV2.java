@@ -520,7 +520,6 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
   /**
    * Update the resource defined by the id in {@link JsonApiDocument} with the provided
    * attributes.
-   * Relationships are not supported at the moment.
    * @param patchDto
    */
   public void update(JsonApiDocument patchDto) {
@@ -548,6 +547,13 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     dinaService.update(entity);
   }
 
+  /**
+   * Update the relationships with the ones provided.
+   * If defined in relationships map, the relationships will be <b>replaced</b> by the one(s) provided.
+   * If null is provided as value for a relationship, the relationship will be removed.
+   * @param entity the entity from which the relationships should be updated
+   * @param relationships the relationships to update
+   */
   private void updateRelationships(E entity, Map<String, JsonApiDocument.RelationshipObject> relationships) {
 
     if (relationships == null) {
@@ -557,13 +563,14 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     for (var relationship : relationships.entrySet()) {
       String relName = relationship.getKey();
 
-      // get data about the relationship
+      // get information about the relationship
       DinaMappingRegistry.InternalRelation relation = registry.getInternalRelation(entityClass, relName);
       if (relation == null) {
         throw new IllegalArgumentException("Unknown relationship [" + relName + "]");
       }
 
-      var relObject = relationship.getValue();
+      JsonApiDocument.RelationshipObject relObject = relationship.getValue();
+      // we are keeping a (or a list of) Hibernate reference to the relationship instead of a complete object.
       Object relationshipsReference;
 
       if (!relObject.isNull()) {
@@ -595,6 +602,11 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     }
   }
 
+  /**
+   * Convert the provided Object to {@link JsonApiDocument.ResourceIdentifier}
+   * @param obj
+   * @return
+   */
   private JsonApiDocument.ResourceIdentifier toResourceIdentifier(Object obj) {
     return objMapper.convertValue(obj, JsonApiDocument.ResourceIdentifier.class);
   }
