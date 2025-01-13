@@ -106,7 +106,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
   /**
    * @param identifier
    * @param queryString
-   * @return
+   * @return the DTO wrapped in a {@link JsonApiDto} or null if not found
    */
   public JsonApiDto<D> getOne(UUID identifier, String queryString) {
 
@@ -117,6 +117,10 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     validateIncludes(includes);
 
     E entity = dinaService.findOne(identifier, entityClass, includes);
+
+    if (entity == null) {
+      return null;
+    }
 
     authorizationService.authorizeRead(entity);
 
