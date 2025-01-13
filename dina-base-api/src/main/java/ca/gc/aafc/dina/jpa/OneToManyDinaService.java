@@ -8,12 +8,14 @@ import org.springframework.validation.SmartValidator;
 import java.util.List;
 
 /**
+ * @deprecated not used
  * OneToManyDinaService is a DefaultDinaService that will handle resolving associations for children of a
  * declared parent type. The constructor will require you to submit a list of {@link OneToManyFieldHandler},
  * one for each One to many field you want to resolve. Fields without handlers will not be resolved.
  *
  * @param <E> Type of Parent
  */
+@Deprecated
 public abstract class OneToManyDinaService<E extends DinaEntity> extends DefaultDinaService<E> {
 
   private final List<OneToManyFieldHandler<E, ?>> handlers;
