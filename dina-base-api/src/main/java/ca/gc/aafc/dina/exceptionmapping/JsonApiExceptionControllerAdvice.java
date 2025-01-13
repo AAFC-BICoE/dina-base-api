@@ -14,7 +14,7 @@ import ca.gc.aafc.dina.repository.DinaRepositoryV2;
 /**
  * Exception handling for {@link DinaRepositoryV2}
  */
-@RestControllerAdvice(assignableTypes = {DinaRepositoryV2.class})
+@RestControllerAdvice(assignableTypes = DinaRepositoryV2.class)
 public class JsonApiExceptionControllerAdvice {
 
   @ExceptionHandler
