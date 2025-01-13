@@ -15,6 +15,7 @@ import com.toedter.spring.hateoas.jsonapi.JsonApiId;
  * It stores properties using a LazyDynaBean to make sure we can distinguish between null and
  * value not provided (which we should leave untouched in JSON:API).
  */
+@Deprecated
 public class JsonApiPartialPatchDto extends LazyDynaBean {
 
   @JsonApiId
