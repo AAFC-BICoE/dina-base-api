@@ -12,12 +12,15 @@ import java.io.Serializable;
 import java.util.Optional;
 
 /**
+ * @deprecated replaced by {@link ReadOnlyDinaRepositoryV2}
+ *
  * Read-only version of {@link DinaRepository}.
  * create, save and delete will throw a {@link MethodNotAllowedException}.
  * Authorization and auditing services is disabled.
  * @param <D>
  * @param <E>
  */
+@Deprecated
 public class ReadOnlyDinaRepository<D, E extends DinaEntity> extends DinaRepository<D, E> {
   public ReadOnlyDinaRepository(
     DinaService<E> dinaService,
