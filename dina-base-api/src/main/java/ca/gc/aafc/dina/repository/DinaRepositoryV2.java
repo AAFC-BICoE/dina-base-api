@@ -119,7 +119,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
     E entity = dinaService.findOne(identifier, entityClass, includes);
     if (entity == null) {
-      throw ResourceNotFoundException.create(resourceClass.getName(), identifier);
+      throw ResourceNotFoundException.create(resourceClass.getSimpleName(), identifier);
     }
 
     authorizationService.authorizeRead(entity);
@@ -537,7 +537,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     // load entity
     E entity = dinaService.findOne(patchDto.getId(), entityClass);
     if (entity == null) {
-      throw ResourceNotFoundException.create(resourceClass.getName(), patchDto.getId());
+      throw ResourceNotFoundException.create(resourceClass.getSimpleName(), patchDto.getId());
     }
 
     // Check for authorization on the entity
@@ -623,7 +623,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
   public void delete(UUID identifier) throws ResourceNotFoundException {
     E entity = dinaService.findOne(identifier, entityClass);
     if (entity == null) {
-      throw ResourceNotFoundException.create(resourceClass.getName(), identifier);
+      throw ResourceNotFoundException.create(resourceClass.getSimpleName(), identifier);
     }
     authorizationService.authorizeDelete(entity);
     dinaService.delete(entity);

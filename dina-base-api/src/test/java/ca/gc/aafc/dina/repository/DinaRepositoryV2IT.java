@@ -134,7 +134,7 @@ public class DinaRepositoryV2IT {
 
     attributes.put("name", "abc");
     attributes.put("room", 21);
-    // convert to string to mimic how we would get it with JsonApiPartialPatchDto
+    // convert to string to mimic how we would get it with json:api
     attributes.put("createdOn", OffsetDateTime.now().toString());
 
     JsonApiDocument document = JsonApiDocument.builder()
@@ -143,8 +143,6 @@ public class DinaRepositoryV2IT {
         .attributes(attributes)
         .build())
       .build();
-
-
     repositoryV2.update(document);
 
     JsonApiDto<PersonDTO> getOneDto = repositoryV2.getOne(assignedId, null);
