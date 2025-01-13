@@ -6,27 +6,33 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.RepresentationModel;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tennaito.rsql.misc.ArgumentParser;
 import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
+import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.JsonApiExternalResource;
 import ca.gc.aafc.dina.dto.JsonApiMeta;
 import ca.gc.aafc.dina.dto.JsonApiResource;
-import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.filter.DinaFilterArgumentParser;
 import ca.gc.aafc.dina.filter.EntityFilterHelper;
 import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
 import ca.gc.aafc.dina.filter.SimpleFilterHandlerV2;
+import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.mapper.DinaMapperV2;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
+import ca.gc.aafc.dina.util.ReflectionUtils;
+
+import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiModel;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLDecoder;
@@ -35,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -43,8 +50,6 @@ import javax.persistence.criteria.Predicate;
 import javax.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
-
-import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiModel;
 
 @Log4j2
 public class DinaRepositoryV2<D,E extends DinaEntity> {
@@ -62,6 +67,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
   protected final DinaMappingRegistry registry;
 
+  protected ObjectMapper objMapper;
   private final ArgumentParser rsqlArgumentParser = new DinaFilterArgumentParser();
 
   public DinaRepositoryV2(@NonNull DinaService<E> dinaService,
@@ -82,6 +88,10 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
     // build registry instance for resource class (dto)
     this.registry = new DinaMappingRegistry(resourceClass);
+
+    // copy the object mapper and set it to fail on unknown properties
+    this.objMapper = objMapper.copy()
+      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
   }
 
   /**
@@ -97,9 +107,9 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
   /**
    * @param identifier
    * @param queryString
-   * @return
+   * @return the DTO wrapped in a {@link JsonApiDto} or null if not found
    */
-  public JsonApiDto<D> getOne(UUID identifier, String queryString) {
+  public JsonApiDto<D> getOne(UUID identifier, String queryString) throws ResourceNotFoundException {
 
     // the only part of QueryComponent that can be used on getOne is "includes"
     QueryComponent queryComponents = QueryStringParser.parse(queryString);
@@ -108,6 +118,9 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     validateIncludes(includes);
 
     E entity = dinaService.findOne(identifier, entityClass, includes);
+    if (entity == null) {
+      throw ResourceNotFoundException.create(resourceClass.getSimpleName(), identifier);
+    }
 
     authorizationService.authorizeRead(entity);
 
@@ -490,6 +503,130 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
       return DEFAULT_PAGE_LIMIT;
     }
     return pageLimit;
+  }
+
+  /**
+   * Create a new resource.
+   * Relationships are not supported at the moment.
+   * @param dto
+   * @return the uuid assigned or used
+   */
+  public UUID create(D dto) {
+    E entity = dinaMapper.toEntity(dto,
+      registry.getAttributesPerClass().get(resourceClass),
+      null);
+
+    authorizationService.authorizeCreate(entity);
+    E created = dinaService.create(entity);
+    return created.getUuid();
+  }
+
+  /**
+   * Update the resource defined by the id in {@link JsonApiDocument} with the provided
+   * attributes.
+   * @param patchDto
+   */
+  public void update(JsonApiDocument patchDto) throws ResourceNotFoundException {
+
+    // We need to use Jackson for now here since MapStruct doesn't support setting
+    // values from Map<String, Object> yet.
+    // Reflection can't really be used since we won't know the type of the source
+    // and how to convert it.
+    D dto = objMapper.convertValue(patchDto.getAttributes(), resourceClass);
+
+    // load entity
+    E entity = dinaService.findOne(patchDto.getId(), entityClass);
+    if (entity == null) {
+      throw ResourceNotFoundException.create(resourceClass.getSimpleName(), patchDto.getId());
+    }
+
+    // Check for authorization on the entity
+    authorizationService.authorizeUpdate(entity);
+
+    // apply DTO on entity using the keys from patchDto
+    dinaMapper.patchEntity(entity, dto, patchDto.getData().getAttributesName(), null);
+
+    updateRelationships(entity, patchDto.getRelationships());
+
+    dinaService.update(entity);
+  }
+
+  /**
+   * Update the relationships with the ones provided.
+   * If defined in relationships map, the relationships will be <b>replaced</b> by the one(s) provided.
+   * If null is provided as value for a relationship, the relationship will be removed.
+   * @param entity the entity from which the relationships should be updated
+   * @param relationships the relationships to update
+   */
+  private void updateRelationships(E entity, Map<String, JsonApiDocument.RelationshipObject> relationships) {
+
+    if (relationships == null) {
+      return;
+    }
+
+    for (var relationship : relationships.entrySet()) {
+      String relName = relationship.getKey();
+
+      // get information about the relationship
+      DinaMappingRegistry.InternalRelation relation = registry.getInternalRelation(entityClass, relName);
+      if (relation == null) {
+        throw new IllegalArgumentException("Unknown relationship [" + relName + "]");
+      }
+
+      JsonApiDocument.RelationshipObject relObject = relationship.getValue();
+      // we are keeping a (or a list of) Hibernate reference to the relationship instead of a complete object.
+      Object relationshipsReference;
+
+      if (!relObject.isNull()) {
+        // to-many
+        if (relObject.isCollection()) {
+          List<Object> relationshipsReferences = new ArrayList<>();
+          for (Object el : relObject.getDataAsCollection()) {
+            var resourceIdentifier = toResourceIdentifier(el);
+            relationshipsReferences.add(
+              dinaService.getReferenceByNaturalId(relation.getEntityType(),
+                resourceIdentifier.getId()));
+          }
+          relationshipsReference = relationshipsReferences;
+        } else { // to-one
+          var resourceIdentifier = toResourceIdentifier(relObject.getData());
+          relationshipsReference = dinaService.getReferenceByNaturalId(relation.getEntityType(),
+            resourceIdentifier.getId());
+        }
+      } else {
+        // remove relationship
+        relationshipsReference = null;
+      }
+
+      try {
+        ReflectionUtils.getSetterMethod(relName, entityClass).invoke(entity, relationshipsReference);
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  /**
+   * Convert the provided Object to {@link JsonApiDocument.ResourceIdentifier}
+   * @param obj
+   * @return
+   */
+  private JsonApiDocument.ResourceIdentifier toResourceIdentifier(Object obj) {
+    return objMapper.convertValue(obj, JsonApiDocument.ResourceIdentifier.class);
+  }
+
+  /**
+   * Delete the resource identified by the provided identifier.
+   *
+   * @param identifier
+   */
+  public void delete(UUID identifier) throws ResourceNotFoundException {
+    E entity = dinaService.findOne(identifier, entityClass);
+    if (entity == null) {
+      throw ResourceNotFoundException.create(resourceClass.getSimpleName(), identifier);
+    }
+    authorizationService.authorizeDelete(entity);
+    dinaService.delete(entity);
   }
 
   /**

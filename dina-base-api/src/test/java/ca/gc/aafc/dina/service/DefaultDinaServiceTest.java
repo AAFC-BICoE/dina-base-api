@@ -228,8 +228,8 @@ public class DefaultDinaServiceTest {
 
   private static Department createDepartment() {
     return Department.builder()
-      .name(RandomStringUtils.random(5))
-      .location(RandomStringUtils.random(5))
+      .name(RandomStringUtils.randomAlphabetic(5))
+      .location(RandomStringUtils.randomAlphanumeric(5))
       .build();
   }
 

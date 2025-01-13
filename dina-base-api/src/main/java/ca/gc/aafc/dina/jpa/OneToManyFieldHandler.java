@@ -9,12 +9,14 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
+ * @deprecated not used
  * OneToManyFieldHandlers are used to resolve parent and child associations for One to Many relations during
  * common create/update/delete operations.
  *
  * @param <C> Child type
  * @param <P> Parent type
  */
+@Deprecated
 @RequiredArgsConstructor
 public class OneToManyFieldHandler<P, C extends DinaEntity> {
 

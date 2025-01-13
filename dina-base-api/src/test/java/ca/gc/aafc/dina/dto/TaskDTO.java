@@ -20,11 +20,15 @@ import java.util.UUID;
 @RelatedEntity(Task.class)
 @TypeName(TaskDTO.RESOURCE_TYPE)
 public final class TaskDTO {
+
   public static final String RESOURCE_TYPE = "Task";
+
+  @com.toedter.spring.hateoas.jsonapi.JsonApiId
   @JsonApiId
   @org.javers.core.metamodel.annotation.Id
   @PropertyName("id")
   private UUID uuid;
+
   private int powerLevel;
 
   private Integer power;

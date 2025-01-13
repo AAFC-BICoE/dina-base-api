@@ -5,6 +5,7 @@ import java.util.Set;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
 import ca.gc.aafc.dina.dto.ChainDto;
@@ -17,5 +18,8 @@ public interface ChainMapper extends DinaMapperV2<ChainDto, Chain> {
 
   @Mapping(source = "agent", target = "agent", qualifiedByName = "uuidToPersonExternalRelation")
   ChainDto toDto(Chain entity, @Context Set<String> provided, @Context String scope);
+
+  @Mapping(target = "chainTemplate", ignore = true)
+  void patchEntity(@MappingTarget Chain entity, ChainDto dto, @Context Set<String> provided, @Context String scope);
 
 }

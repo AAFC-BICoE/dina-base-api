@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.entity;
 
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -36,10 +38,19 @@ public final class Project implements DinaEntity {
   private String createdBy;
   private String alias;
 
-  //Internal Relation
+  //Internal to-one relationship
   @OneToOne
   @JoinColumn(name = "task_id")
   private Task task;
+
+  //Internal to-many relationship
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(
+    name = "task_history",
+    joinColumns = {@JoinColumn(name = "project_id")},
+    inverseJoinColumns = { @JoinColumn(name = "task_id")}
+  )
+  private List<Task> taskHistory;
 
   // External Relation
   private UUID acMetaDataCreator;

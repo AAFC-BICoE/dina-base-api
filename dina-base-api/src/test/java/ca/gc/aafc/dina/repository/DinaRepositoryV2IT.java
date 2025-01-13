@@ -14,7 +14,9 @@ import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.filter.QueryComponent;
+import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.mapper.PersonMapper;
 import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
@@ -23,12 +25,16 @@ import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -113,6 +119,36 @@ public class DinaRepositoryV2IT {
     JsonApiModelBuilder builder =
       repositoryV2.createJsonApiModelBuilder(repositoryV2.getAll(qc));
     assertNotNull(builder.build());
+  }
+
+  @Test
+  public void onCreateUpdateDelete_noException() throws ResourceNotFoundException {
+
+    PersonDTO personDto = PersonDTO.builder()
+      .name("Bob")
+      .build();
+
+    UUID assignedId = repositoryV2.create(personDto);
+
+    Map<String, Object> attributes = new HashMap<>();
+
+    attributes.put("name", "abc");
+    attributes.put("room", 21);
+    // convert to string to mimic how we would get it with json:api
+    attributes.put("createdOn", OffsetDateTime.now().toString());
+
+    JsonApiDocument document = JsonApiDocument.builder()
+      .data(JsonApiDocument.ResourceObject.builder()
+        .id(assignedId)
+        .attributes(attributes)
+        .build())
+      .build();
+    repositoryV2.update(document);
+
+    JsonApiDto<PersonDTO> getOneDto = repositoryV2.getOne(assignedId, null);
+    assertEquals("abc", getOneDto.getDto().getName());
+
+    repositoryV2.delete(assignedId);
   }
 
   @TestConfiguration
