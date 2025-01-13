@@ -6,18 +6,16 @@ import lombok.Getter;
 @Getter
 public class ResourceNotFoundException extends Exception {
 
+  private final String resourceType;
   private final String identifier;
 
-  public ResourceNotFoundException(String identifier, Throwable cause) {
-    super(cause);
-    this.identifier = identifier;
+  public static ResourceNotFoundException create(String resourceType, UUID identifier) {
+    return new ResourceNotFoundException(resourceType, identifier);
   }
 
-  public ResourceNotFoundException(UUID identifier) {
-    this(identifier.toString());
-  }
-
-  public ResourceNotFoundException(String identifier) {
-    this.identifier = identifier;
+  private ResourceNotFoundException(String resourceType, UUID identifier) {
+    super(resourceType + " with ID " + identifier.toString() + " Not Found");
+    this.resourceType = resourceType;
+    this.identifier = identifier.toString();
   }
 }

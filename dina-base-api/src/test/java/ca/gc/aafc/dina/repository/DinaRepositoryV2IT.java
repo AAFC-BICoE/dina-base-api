@@ -120,7 +120,7 @@ public class DinaRepositoryV2IT {
       repositoryV2.createJsonApiModelBuilder(repositoryV2.getAll(qc));
     assertNotNull(builder.build());
   }
-import ca.gc.aafc.dina.dto.JsonApiPartialPatchDto;
+
   @Test
   public void onCreateUpdateDelete_noException() throws ResourceNotFoundException {
 
