@@ -11,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.toedter.spring.hateoas.jsonapi.JsonApiId;
 
 /**
+ * @deprecated use JsonApiDocument from dina-json instead.
+ *
  * Special DTO used to received partial PATCH in JSON:API.
  * It stores properties using a LazyDynaBean to make sure we can distinguish between null and
  * value not provided (which we should leave untouched in JSON:API).
