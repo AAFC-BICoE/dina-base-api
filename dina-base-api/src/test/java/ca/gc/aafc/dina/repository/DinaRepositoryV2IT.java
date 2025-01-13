@@ -12,9 +12,9 @@ import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.JsonApiDto;
-import ca.gc.aafc.dina.dto.JsonApiPartialPatchDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.mapper.PersonMapper;
@@ -120,9 +120,9 @@ public class DinaRepositoryV2IT {
       repositoryV2.createJsonApiModelBuilder(repositoryV2.getAll(qc));
     assertNotNull(builder.build());
   }
-
+import ca.gc.aafc.dina.dto.JsonApiPartialPatchDto;
   @Test
-  public void onCreateUpdateDelete_noException() {
+  public void onCreateUpdateDelete_noException() throws ResourceNotFoundException {
 
     PersonDTO personDto = PersonDTO.builder()
       .name("Bob")
@@ -131,7 +131,6 @@ public class DinaRepositoryV2IT {
     UUID assignedId = repositoryV2.create(personDto);
 
     Map<String, Object> attributes = new HashMap<>();
-    //JsonApiPartialPatchDto dto = new JsonApiPartialPatchDto();
 
     attributes.put("name", "abc");
     attributes.put("room", 21);

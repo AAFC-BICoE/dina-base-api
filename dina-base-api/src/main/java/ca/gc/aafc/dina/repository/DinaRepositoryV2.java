@@ -17,6 +17,7 @@ import ca.gc.aafc.dina.dto.JsonApiExternalResource;
 import ca.gc.aafc.dina.dto.JsonApiMeta;
 import ca.gc.aafc.dina.dto.JsonApiResource;
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.filter.DinaFilterArgumentParser;
 import ca.gc.aafc.dina.filter.EntityFilterHelper;
 import ca.gc.aafc.dina.filter.FilterComponent;
@@ -108,7 +109,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
    * @param queryString
    * @return the DTO wrapped in a {@link JsonApiDto} or null if not found
    */
-  public JsonApiDto<D> getOne(UUID identifier, String queryString) {
+  public JsonApiDto<D> getOne(UUID identifier, String queryString) throws ResourceNotFoundException {
 
     // the only part of QueryComponent that can be used on getOne is "includes"
     QueryComponent queryComponents = QueryStringParser.parse(queryString);
@@ -117,9 +118,8 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     validateIncludes(includes);
 
     E entity = dinaService.findOne(identifier, entityClass, includes);
-
     if (entity == null) {
-      return null;
+      throw new ResourceNotFoundException(identifier);
     }
 
     authorizationService.authorizeRead(entity);
@@ -526,7 +526,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
    * attributes.
    * @param patchDto
    */
-  public void update(JsonApiDocument patchDto) {
+  public void update(JsonApiDocument patchDto) throws ResourceNotFoundException {
 
     // We need to use Jackson for now here since MapStruct doesn't support setting
     // values from Map<String, Object> yet.
@@ -537,7 +537,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     // load entity
     E entity = dinaService.findOne(patchDto.getId(), entityClass);
     if (entity == null) {
-      throw new IllegalArgumentException("not found");
+      throw new ResourceNotFoundException(patchDto.getId());
     }
 
     // Check for authorization on the entity
@@ -620,11 +620,10 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
    *
    * @param identifier
    */
-  public void delete(UUID identifier) {
+  public void delete(UUID identifier) throws ResourceNotFoundException {
     E entity = dinaService.findOne(identifier, entityClass);
     if (entity == null) {
-      throw new IllegalArgumentException(
-        resourceClass.getSimpleName() + " with ID " + identifier + " Not Found.");
+      throw new ResourceNotFoundException(identifier);
     }
     authorizationService.authorizeDelete(entity);
     dinaService.delete(entity);
