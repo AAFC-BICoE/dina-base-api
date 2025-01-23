@@ -77,6 +77,8 @@ public class JsonApiDocument {
      */
     private Object data;
 
+    private Map<String, Object> links;
+
     public boolean isCollection() {
       return data instanceof Collection;
     }
