@@ -14,9 +14,21 @@ import lombok.extern.jackson.Jacksonized;
 public class JsonApiDocument {
 
   private ResourceObject data;
+  private Map<String, Object> meta;
 
   public UUID getId() {
     return data != null ? data.getId() : null;
+  }
+
+  public String getIdAsStr() {
+    if (data == null || data.getId() == null) {
+      return null;
+    }
+    return data.getId().toString();
+  }
+
+  public String getType() {
+    return data != null ? data.getType() : null;
   }
 
   public Map<String, Object> getAttributes() {
@@ -41,6 +53,8 @@ public class JsonApiDocument {
 
     private Map<String, RelationshipObject> relationships;
 
+    private Map<String, Object> links;
+
     public Set<String> getAttributesName() {
       return attributes != null ? attributes.keySet() : Set.of();
     }
@@ -62,6 +76,8 @@ public class JsonApiDocument {
      * Could be a ResourceIdentifier (to-one) or a List of ResourceIdentifier (to-many)
      */
     private Object data;
+
+    private Map<String, Object> links;
 
     public boolean isCollection() {
       return data instanceof Collection;
