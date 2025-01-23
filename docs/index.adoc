@@ -40,5 +40,3 @@ include::release.adoc[]
 include::fieldAdapters.adoc[]
 
 include::CustomRsqlFilters.adoc[]
-
-include::oneToManyAssociations.adoc[]
