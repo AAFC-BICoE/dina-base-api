@@ -43,7 +43,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import javax.inject.Inject;
 import javax.transaction.Transactional;
 import lombok.Getter;
 
@@ -55,13 +54,6 @@ import lombok.Getter;
 public class DinaRepositoryV2IT extends BaseRestAssuredTest {
 
   private static final String PATH = "repo2";
-
-  @Inject
-  TestDynaBeanRepo dynaBeanRepo;
-
-
-  @Autowired
-  private DinaRepositoryV2<TaskDTO, Task> rep;
 
   protected DinaRepositoryV2IT() {
     super("");
@@ -123,7 +115,8 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
   }
 
   /**
-   * Test controller that will receive a JsonApiPartialPatchDto for a TaskDto.
+   * TestDynaBeanRepo is a REST controller that handles HTTP requests for creating and updating
+   * Project and Task resources using JSON:API specification.
    */
   @RestController
   @RequestMapping(produces = JSON_API_VALUE)
