@@ -540,12 +540,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_current_specs">18.1. Current Specs</a></li>
 </ul>
 </li>
-<li><a href="#_one_to_many_associations">19. One to Many Associations</a>
-<ul class="sectlevel2">
-<li><a href="#_using_the_onetomanydinaservice">19.1. Using the OneToManyDinaService</a></li>
-<li><a href="#_using_onetomanyfieldhandler_directly">19.2. Using OneToManyFieldHandler directly</a></li>
-</ul>
-</li>
 </ul>
 </div>
 </div>
@@ -1987,78 +1981,10 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 </div>
-<div class="sect1">
-<h2 id="_one_to_many_associations">19. One to Many Associations</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>There is some common functionality the currently needs to be run to resolve associations between child and parent resources.</p>
-</div>
-<div class="paragraph">
-<p>This documentation will provide the current strategies used in dina base to help resolve child/parent associations.</p>
-</div>
-<div class="paragraph">
-<p>Basic information around Hibernates requirements for Bi directional associations : <a href="https://vladmihalcea.com/the-best-way-to-map-a-onetomany-association-with-jpa-and-hibernate/">Article</a></p>
-</div>
-<div class="sect2">
-<h3 id="_using_the_onetomanydinaservice">19.1. Using the OneToManyDinaService</h3>
-<div class="paragraph">
-<p>The simplest way would be to extend the OneToManyDinaService. After extending a OneToManyDinaService, the constructor will require you to supply a list of OneToManyFieldHandler as shown in the example service below.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-java" data-lang="java">    @Service
-    public static class ParentService extends OneToManyDinaService&lt;Parent&gt; {
-
-      public ParentService(
-        @NonNull BaseDAO baseDAO,
-        @NonNull SmartValidator validator
-      ) {
-        super(baseDAO, validator,
-          List.of(
-            new OneToManyFieldHandler&lt;&gt;(
-              Child.class, // Class type of the child resource
-              child -&gt; child::setParent, // Method to apply the parent to the child
-              Parent::getChildren, // Method to supply the children from the parent
-              "parent", // field name of the parent on the child class
-              child -&gt; child.setParent(null)))); // Method to handle orphaned children of the parent resource
-      }
-
-      @Override
-      protected void preCreate(Parent entity) {
-        entity.setUuid(UUID.randomUUID());
-      }
-
-    }</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_using_onetomanyfieldhandler_directly">19.2. Using OneToManyFieldHandler directly</h3>
-<div class="paragraph">
-<p>OneToManyFieldHandlers can handle parent/child associations for a single field.</p>
-</div>
-<div class="paragraph">
-<p>If you cannot extend the OneToManyDinaService or need to handle associations outside of this class, you can always use the OneToManyFieldHandlers directly.</p>
-</div>
-<div class="paragraph">
-<p>After creating the OneToManyFieldHandler for a single field, 3 methods will be provided to allow you to resolve associations for common create/update/delete operations.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-java" data-lang="java">  public void onCreate(P parent)
-
-  public void onUpdate(P parent, DinaService&lt;?&gt; dinaService)
-
-  public void onDelete(P parent)</code></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-01-14 13:58:07 UTC
+Last updated 2025-01-24 17:43:22 UTC
 </div>
 </div>
 </body>
