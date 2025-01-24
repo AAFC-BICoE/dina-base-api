@@ -16,22 +16,18 @@ import org.springframework.validation.SmartValidator;
 
 import ca.gc.aafc.dina.DinaUserConfig.DepartmentDinaService;
 import ca.gc.aafc.dina.DinaUserConfig.EmployeeDinaService;
-import ca.gc.aafc.dina.DinaUserConfig.VocabularyDinaService;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
-import ca.gc.aafc.dina.dto.VocabularyDto;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
-import ca.gc.aafc.dina.entity.Vocabulary;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jsonapi.DinaRepoEagerLoadingIT;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
-import ca.gc.aafc.dina.repository.ReadOnlyDinaRepository;
 import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.security.auth.GroupAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
@@ -111,19 +107,6 @@ public class TestDinaBaseApp {
       null,
       dinaTestBuildProperties, objMapper);
   }
-
-  @Bean
-  public ReadOnlyDinaRepository<VocabularyDto, Vocabulary> readOnlyDinaRepository(BaseDAO baseDAO, VocabularyDinaService vocabularyDinaService) {
-    DinaMapper<VocabularyDto, Vocabulary> dinaMapper = new DinaMapper<>(VocabularyDto.class);
-    return new ReadOnlyDinaRepository<>(
-      vocabularyDinaService,
-      dinaMapper,
-      VocabularyDto.class,
-      Vocabulary.class,
-      null,
-      dinaTestBuildProperties);
-  }
-
 
   /**
    * Mocks a given token to return a agent identifier and list of given groups.
