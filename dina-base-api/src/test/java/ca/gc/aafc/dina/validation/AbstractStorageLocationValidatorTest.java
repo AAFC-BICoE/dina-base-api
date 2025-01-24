@@ -49,6 +49,28 @@ public class AbstractStorageLocationValidatorTest {
     assertTrue(errors.hasErrors());
   }
 
+  @Test
+  public void storageLocation_onlyOneCoordinateProvided_exception() {
+
+    StorageGridLayout sgl = StorageGridLayout.builder()
+      .numberOfRows(8)
+      .numberOfColumns(8)
+      .fillDirection(StorageGridLayout.FillDirection.BY_ROW)
+      .build();
+
+    TestStorageLocation tsl1 = new TestStorageLocation( "A", null, sgl);
+    TestStorageLocation tsl2 = new TestStorageLocation( null, 2, sgl);
+
+    TestValidator testValidator = new TestValidator(buildValidationMessageSource());
+    Errors errors = ValidationErrorsHelper.newErrorsObject("123", tsl1);
+    testValidator.validate(tsl1, errors);
+    assertTrue(errors.hasErrors());
+
+    errors = ValidationErrorsHelper.newErrorsObject("124", tsl2);
+    testValidator.validate(tsl2, errors);
+    assertTrue(errors.hasErrors());
+  }
+
   @Getter
   @AllArgsConstructor
   public static class TestStorageLocation {

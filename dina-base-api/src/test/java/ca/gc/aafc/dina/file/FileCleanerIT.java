@@ -7,6 +7,7 @@ import java.nio.file.attribute.FileTime;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.EnumSet;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -93,8 +94,9 @@ public class FileCleanerIT {
     FileTime fileTime = FileTime.from(oneHourAgo); 
     Files.setLastModifiedTime(oldFile, fileTime);
 
+    EnumSet<FileCleaner.Options> options = EnumSet.of(FileCleaner.Options.ALLOW_NON_TMP); 
     FileCleaner ttc = FileCleaner.newInstance(testFolder,
-        FileCleaner.buildMaxAgePredicate(ChronoUnit.SECONDS, 1800));
+        FileCleaner.buildMaxAgePredicate(ChronoUnit.SECONDS, 1800), options);
     ttc.clean();
 
     // Old file should be deleted. New file should exist.

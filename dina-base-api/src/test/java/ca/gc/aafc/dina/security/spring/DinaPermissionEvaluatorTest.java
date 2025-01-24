@@ -23,6 +23,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DinaPermissionEvaluatorTest {
 
@@ -229,12 +230,20 @@ class DinaPermissionEvaluatorTest {
   @Test
   void dinaRolePriorityComparison() {
     assertTrue(DinaRole.SUPER_USER.isHigherThan(DinaRole.GUEST));
+    assertFalse(DinaRole.GUEST.isHigherThan(DinaRole.GUEST));
     assertTrue(DinaRole.SUPER_USER.isHigherOrEqualThan(DinaRole.SUPER_USER));
 
     assertFalse(DinaRole.SUPER_USER.isHigherOrEqualThan(DinaRole.DINA_ADMIN));
     assertFalse(DinaRole.GUEST.isHigherOrEqualThan(DinaRole.DINA_ADMIN));
 
     assertEquals(-1, DinaRole.COMPARATOR.compare(DinaRole.SUPER_USER, DinaRole.GUEST));
+
+    assertThrows(NullPointerException.class, () -> {
+      DinaRole.GUEST.isHigherThan(null);
+    });
+    assertThrows(NullPointerException.class, () -> {
+      DinaRole.GUEST.isHigherOrEqualThan(null);
+    });
 
     // test sorting by priority
     List<DinaRole> dinaRoleList = new ArrayList<>(List.of(DinaRole.GUEST, DinaRole.SUPER_USER, DinaRole.READ_ONLY, DinaRole.DINA_ADMIN, DinaRole.READ_ONLY_ADMIN));
