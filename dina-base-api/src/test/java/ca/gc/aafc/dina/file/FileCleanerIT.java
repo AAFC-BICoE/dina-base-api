@@ -3,6 +3,10 @@ package ca.gc.aafc.dina.file;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -68,5 +72,45 @@ public class FileCleanerIT {
     assertFalse(txtFile.toFile().exists());
     assertTrue(mdFile.toFile().exists());
     assertTrue(txtNoDotFile.toFile().exists());
+  }
+
+  @Test
+  public void fileCleaner_predicateOnMaxAge_oldFilesRemoved() throws IOException, InterruptedException {
+    Path testFolder = Files.createTempDirectory("dina-test");
+
+    final String testText = "this is a test";
+    final String oldFilename = UUID.randomUUID() + "." + EXTENSION_TXT;
+    final String newFilename = UUID.randomUUID() + "." + EXTENSION_TXT;
+
+    Path oldFile = testFolder.resolve(oldFilename);
+    Path newFile = testFolder.resolve(newFilename);
+    Files.writeString(oldFile, testText);
+    Files.writeString(newFile, testText);
+
+    // Simulate the oldFile being older by an hour.
+    Instant now = Instant.now();
+    Instant oneHourAgo = now.minus(Duration.ofHours(1));
+    FileTime fileTime = FileTime.from(oneHourAgo); 
+    Files.setLastModifiedTime(oldFile, fileTime);
+
+    FileCleaner ttc = FileCleaner.newInstance(testFolder,
+        FileCleaner.buildMaxAgePredicate(ChronoUnit.SECONDS, 1800));
+    ttc.clean();
+
+    // Old file should be deleted. New file should exist.
+    assertFalse(oldFile.toFile().exists());
+    assertTrue(newFile.toFile().exists());
+  }
+
+  @Test
+  public void fileCleaner_onNonExistingDirectory_throwsException() {
+    Path nonExistingDir = Path.of("/non-existing-dir");
+
+    IllegalArgumentException exception = org.junit.jupiter.api.Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () -> FileCleaner.newInstance(nonExistingDir, (path) -> true)
+    );
+
+    assertTrue(exception.getMessage().contains("FileCleaner can only be initialized on an existing directory"));
   }
 }
