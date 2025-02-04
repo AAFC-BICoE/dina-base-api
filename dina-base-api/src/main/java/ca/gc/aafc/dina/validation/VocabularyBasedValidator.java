@@ -38,6 +38,41 @@ public abstract class VocabularyBasedValidator <T> extends DinaBaseValidator<T> 
   }
 
   /**
+   * Checks that each value are in the vocabulary (matching the key, case-sensitive)
+   * Only one error will be reported even if multiple values are not matching.
+   * @param values
+   * @param fieldName
+   * @param vocabularyElements
+   * @param errors
+   */
+  protected void validateValuesAgainstVocabulary(List<String> values, String fieldName,
+                                                 List<VocabularyElementConfiguration> vocabularyElements,
+                                                 Errors errors) {
+    for (String value : values) {
+      if (!isInVocabulary(value, vocabularyElements)) {
+        String errorMessage = getMessage(KEY_NOT_FOUND, value, fieldName);
+        errors.rejectValue(fieldName, KEY_NOT_FOUND, errorMessage);
+        return;
+      }
+    }
+  }
+
+  /**
+   * Checks if the provided key (case-sensitive) is in the vocabulary.
+   * @param key key to check
+   * @param vocabularyElements
+   * @return key is in the vocabulary or not
+   */
+  protected boolean isInVocabulary(String key, List<VocabularyElementConfiguration> vocabularyElements) {
+    for (VocabularyElementConfiguration el : vocabularyElements) {
+      if (el.getKey().equals(key)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Finds the first CollectionVocabularyElement where the key is matching (ignore case) the provided value.
    * @param key
    * @param vocabularyElements
