@@ -6,10 +6,14 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
+/**
+ * Represents a single json:api document.
+ */
 @Jacksonized
-@Builder
+@SuperBuilder
 @Getter
 public class JsonApiDocument {
 

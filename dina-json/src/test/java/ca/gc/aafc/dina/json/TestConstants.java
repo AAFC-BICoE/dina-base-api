@@ -7,5 +7,5 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TestConstants {
   static final TypeReference<Map<String, Object>> IT_OM_TYPE_REF = new TypeReference<>() { };
-  static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 }
