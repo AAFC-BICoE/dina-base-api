@@ -1,5 +1,8 @@
 package ca.gc.aafc.dina.jsonapi;
 
+import java.util.Map;
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -8,12 +11,16 @@ import ca.gc.aafc.dina.json.TestConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * Tests for {@link JsonApiDocument}, {@link JsonApiCompoundDocument} and
+ * {@link JsonApiDocuments}
+ */
 public class JsonApiDocumentTest {
 
   private static final String TEST_DOC = """
       {
         "data": {
-          "type": "articles",
+          "type": "article",
           "id": "0194d686-7ac0-72d0-be8a-5e3e40e5e370",
           "attributes": {
             "title": "Rails is Omakase"
@@ -21,8 +28,8 @@ public class JsonApiDocumentTest {
           "relationships": {
             "author": {
               "links": {
-                "self": "/articles/1/relationships/author",
-                "related": "/articles/1/author"
+                "self": "/article/1/relationships/author",
+                "related": "/article/1/author"
               },
               "data": {
                 "type": "people",
@@ -37,7 +44,7 @@ public class JsonApiDocumentTest {
   private static final String TEST_COMPOUND_DOC = """
       {
         "data": {
-          "type": "articles",
+          "type": "article",
           "id": "0194d686-7ac0-72d0-be8a-5e3e40e5e370",
           "attributes": {
             "title": "Rails is Omakase"
@@ -45,8 +52,8 @@ public class JsonApiDocumentTest {
           "relationships": {
             "author": {
               "links": {
-                "self": "/articles/1/relationships/author",
-                "related": "/articles/1/author"
+                "self": "/article/1/relationships/author",
+                "related": "/article/1/author"
               },
               "data": {
                 "type": "people",
@@ -71,7 +78,11 @@ public class JsonApiDocumentTest {
   @Test
   public void testParseJsonApiDocument() throws JsonProcessingException {
     JsonApiDocument jsonApiDocument = TestConstants.OBJECT_MAPPER.readValue(TEST_DOC, JsonApiDocument.class);
-    assertEquals("0194d686-7ac0-72d0-be8a-5e3e40e5e370", jsonApiDocument.getIdAsStr());
+    JsonApiDocument JsonApiDocumentToCompare = JsonApiDocuments.createJsonApiDocument(
+      UUID.fromString("0194d686-7ac0-72d0-be8a-5e3e40e5e370"), "article", Map.of());
+
+    assertEquals(JsonApiDocumentToCompare.getId(), jsonApiDocument.getId());
+    assertEquals(JsonApiDocumentToCompare.getType(), jsonApiDocument.getType());
   }
 
   @Test
