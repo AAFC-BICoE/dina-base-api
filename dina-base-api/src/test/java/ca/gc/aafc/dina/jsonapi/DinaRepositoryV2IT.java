@@ -8,7 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
@@ -50,7 +49,7 @@ import lombok.Getter;
   properties = {"dev-user.enabled: true", "keycloak.enabled: false"},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
-@Import({DinaRepositoryV2IT.TestDynaBeanRepo.class, DinaRepositoryV2IT.RepoV2TestConfig.class})
+@Import({DinaRepositoryV2IT.TestDinaRepositoryV2.class, DinaRepositoryV2IT.RepoV2TestConfig.class})
 public class DinaRepositoryV2IT extends BaseRestAssuredTest {
 
   private static final String PATH = "repo2";
@@ -120,7 +119,7 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
    */
   @RestController
   @RequestMapping(produces = JSON_API_VALUE)
-  static class TestDynaBeanRepo {
+  static class TestDinaRepositoryV2 {
 
     @Getter
     private Integer level;
@@ -133,15 +132,15 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
 
     @PostMapping(PATH + "/" + TaskDTO.RESOURCE_TYPE)
     @Transactional
-    public ResponseEntity<RepresentationModel<?>> handlePostTask(@RequestBody EntityModel<TaskDTO> taskDTO) {
-      taskRepo.create(taskDTO.getContent());
+    public ResponseEntity<RepresentationModel<?>> handlePostTask(@RequestBody JsonApiDocument doc) {
+      taskRepo.create(doc, (dto) -> dto.setUuid(doc.getId()));
       return ResponseEntity.created(URI.create("/")).build();
     }
 
     @PostMapping(PATH + "/" + ProjectDTO.RESOURCE_TYPE)
     @Transactional
-    public ResponseEntity<RepresentationModel<?>> handlePostProject(@RequestBody EntityModel<ProjectDTO> projectDTO) {
-      projectRepo.create(projectDTO.getContent());
+    public ResponseEntity<RepresentationModel<?>> handlePostProject(@RequestBody JsonApiDocument doc) {
+      projectRepo.create(doc, (dto) -> dto.setUuid(doc.getId()));
       return ResponseEntity.created(URI.create("/")).build();
     }
 

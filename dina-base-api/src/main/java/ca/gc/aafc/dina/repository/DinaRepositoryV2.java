@@ -46,6 +46,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import javax.persistence.criteria.Predicate;
 import javax.servlet.http.HttpServletRequest;
 import lombok.NonNull;
@@ -507,14 +508,23 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
   /**
    * Create a new resource.
-   * Relationships are not supported at the moment.
-   * @param dto
+   * @param docToCreate
+   * @param dtoCustomizer used to customize the dto before being transformed to entity.
+   *                      Example, setting the authenticated user as createdBy. Can be null.
    * @return the uuid assigned or used
    */
-  public UUID create(D dto) {
+  public UUID create(JsonApiDocument docToCreate, Consumer<D> dtoCustomizer) {
+
+    D dto = objMapper.convertValue(docToCreate.getAttributes(), resourceClass);
+    if(dtoCustomizer != null) {
+      dtoCustomizer.accept(dto);
+    }
+
     E entity = dinaMapper.toEntity(dto,
       registry.getAttributesPerClass().get(resourceClass),
       null);
+
+    updateRelationships(entity, docToCreate.getRelationships());
 
     authorizationService.authorizeCreate(entity);
     E created = dinaService.create(entity);
@@ -583,15 +593,25 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
           List<Object> relationshipsReferences = new ArrayList<>();
           for (Object el : relObject.getDataAsCollection()) {
             var resourceIdentifier = toResourceIdentifier(el);
-            relationshipsReferences.add(
-              dinaService.getReferenceByNaturalId(relation.getEntityType(),
-                resourceIdentifier.getId()));
+            if (resourceIdentifier != null) {
+              relationshipsReferences.add(
+                dinaService.getReferenceByNaturalId(relation.getEntityType(),
+                  resourceIdentifier.getId()));
+            } else {
+              log.warn("Can't convert to ResourceIdentifier list element, ignoring");
+              return;
+            }
           }
           relationshipsReference = relationshipsReferences;
         } else { // to-one
           var resourceIdentifier = toResourceIdentifier(relObject.getData());
-          relationshipsReference = dinaService.getReferenceByNaturalId(relation.getEntityType(),
-            resourceIdentifier.getId());
+          if (resourceIdentifier != null) {
+            relationshipsReference = dinaService.getReferenceByNaturalId(relation.getEntityType(),
+              resourceIdentifier.getId());
+          } else {
+            log.warn("Can't convert to ResourceIdentifier, ignoring");
+            return;
+          }
         }
       } else {
         // remove relationship

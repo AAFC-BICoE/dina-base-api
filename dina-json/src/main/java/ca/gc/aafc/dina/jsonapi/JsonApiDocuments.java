@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.jsonapi;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -23,7 +24,6 @@ public final class JsonApiDocuments {
    */
   public static JsonApiDocument createJsonApiDocument(UUID uuid, String type,
                                                       Map<String, Object> attributes) {
-    Objects.requireNonNull(uuid);
     Objects.requireNonNull(type);
     
     return JsonApiDocument.builder()
@@ -37,6 +37,34 @@ public final class JsonApiDocuments {
   }
 
   /**
+   * Creates a {@link JsonApiDocument} with to-one relationships for provided parameters.
+   * @param uuid
+   * @param type
+   * @param attributes
+   * @param relationships
+   * @return
+   */
+  public static JsonApiDocument createJsonApiDocumentWithRelToOne(UUID uuid, String type,
+                                                      Map<String, Object> attributes,
+                                                      Map<String, JsonApiDocument.ResourceIdentifier> relationships) {
+    return createJsonApiDocument(uuid, type, attributes, relationships);
+  }
+
+  /**
+   * Creates a {@link JsonApiDocument} with to-many relationships for provided parameters.
+   * @param uuid
+   * @param type
+   * @param attributes
+   * @param relationships
+   * @return
+   */
+  public static JsonApiDocument createJsonApiDocumentWithRelToMany(UUID uuid, String type,
+                                                                  Map<String, Object> attributes,
+                                                                  Map<String, List<JsonApiDocument.ResourceIdentifier>> relationships) {
+    return createJsonApiDocument(uuid, type, attributes, relationships);
+  }
+
+  /**
    * Creates a {@link JsonApiDocument} with relationships for provided parameters
    * @param uuid
    * @param type
@@ -46,8 +74,7 @@ public final class JsonApiDocuments {
    */
   public static JsonApiDocument createJsonApiDocument(UUID uuid, String type,
                                                       Map<String, Object> attributes,
-                                                      Map<String, Object> relationships) {
-    Objects.requireNonNull(uuid);
+                                                      Map<String, ?> relationships) {
     Objects.requireNonNull(type);
     Objects.requireNonNull(relationships);
 

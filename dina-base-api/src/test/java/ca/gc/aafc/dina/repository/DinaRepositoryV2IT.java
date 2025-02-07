@@ -17,10 +17,12 @@ import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
+import ca.gc.aafc.dina.jsonapi.JsonApiDocuments;
 import ca.gc.aafc.dina.mapper.PersonMapper;
 import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -128,7 +130,9 @@ public class DinaRepositoryV2IT {
       .name("Bob")
       .build();
 
-    UUID assignedId = repositoryV2.create(personDto);
+    JsonApiDocument doc = JsonApiDocuments.createJsonApiDocument(null, PersonDTO.TYPE_NAME,
+      JsonAPITestHelper.toAttributeMap(personDto));
+    UUID assignedId = repositoryV2.create(doc, null);
 
     Map<String, Object> attributes = new HashMap<>();
 
