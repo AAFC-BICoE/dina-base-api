@@ -516,7 +516,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
   public UUID create(JsonApiDocument docToCreate, Consumer<D> dtoCustomizer) {
 
     D dto = objMapper.convertValue(docToCreate.getAttributes(), resourceClass);
-    if(dtoCustomizer != null) {
+    if (dtoCustomizer != null) {
       dtoCustomizer.accept(dto);
     }
 
