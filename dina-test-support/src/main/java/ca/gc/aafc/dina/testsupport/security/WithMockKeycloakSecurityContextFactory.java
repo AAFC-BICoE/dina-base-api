@@ -33,6 +33,7 @@ public class WithMockKeycloakSecurityContextFactory
 
     // Create a Keycloak AccessToken with the groups in otherClaims
     AccessToken accessToken = new AccessToken();
+    accessToken.setRealmAccess(new AccessToken.Access());
 
     List<String> groupRoles = Arrays.stream(mockKeycloakUser.groupRole())
         .map(gr -> convertToKeycloakNotation(gr, mockKeycloakUser.failOnInvalidNotation()))
