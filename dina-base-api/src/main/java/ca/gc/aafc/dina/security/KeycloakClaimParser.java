@@ -22,6 +22,12 @@ public final class KeycloakClaimParser {
   private KeycloakClaimParser() {
   }
 
+  /**
+   * Parses a set of roles from Keycloak.
+   * If the role is admin-based, it is added to adminRoles. Otherwise, the role is ignored.
+   * @param roles
+   * @return
+   */
   public static Set<DinaRole> parseAdminRoles(Set<String> roles) {
     if (CollectionUtils.isEmpty(roles)) {
       return Collections.emptySet();
