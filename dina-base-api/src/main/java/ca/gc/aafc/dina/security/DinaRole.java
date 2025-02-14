@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Arrays;
 import java.util.List;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import java.util.regex.Pattern;
  * Represent user role in the context of a DINA module.
  * The roles that end with _ADMIN mean that they are admin-based so not restricted by group.
  */
+@SuppressFBWarnings(value = "MS_EXPOSE_REP")
 @RequiredArgsConstructor
 public enum DinaRole {
 
