@@ -67,7 +67,7 @@ public class DinaAdminOnlyAuthTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
+  @WithMockKeycloakUser(adminRole = {"DINA_ADMIN"})
   public void create_WhenAdmin_CreatesObject() {
     ItemDto dto = ItemDto.builder().uuid(UUID.randomUUID()).group("g").build();
     ItemDto result = testRepo.create(dto);

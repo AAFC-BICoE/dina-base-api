@@ -35,10 +35,13 @@ public class WithMockKeycloakSecurityContextFactory
     AccessToken accessToken = new AccessToken();
     accessToken.setRealmAccess(new AccessToken.Access());
 
-    List<String> groupRoles = Arrays.stream(mockKeycloakUser.groupRole())
+    if (mockKeycloakUser.groupRole() != null && mockKeycloakUser.groupRole().length > 0 &&
+      StringUtils.isNotBlank(mockKeycloakUser.groupRole()[0])) {
+      List<String> groupRoles = Arrays.stream(mockKeycloakUser.groupRole())
         .map(gr -> convertToKeycloakNotation(gr, mockKeycloakUser.failOnInvalidNotation()))
         .collect(Collectors.toList());
-    accessToken.setOtherClaims(GROUPS_CLAIM_KEY, groupRoles);
+      accessToken.setOtherClaims(GROUPS_CLAIM_KEY, groupRoles);
+    }
 
     if (StringUtils.isNotBlank(mockKeycloakUser.agentIdentifier())) {
       accessToken.setOtherClaims(AGENT_IDENTIFIER_CLAIM_KEY, mockKeycloakUser.agentIdentifier());

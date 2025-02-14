@@ -93,6 +93,23 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
   }
 
   /**
+   * returns true if the given user has a given admin role
+   *
+   * @param user user with roles
+   * @param role admin role to check for
+   * @return - true if the given user has a given role in one of it's many groups
+   */
+  public boolean hasAdminRole(DinaAuthenticatedUser user, String role) {
+    if (user == null || StringUtils.isBlank(role)) {
+      return false;
+    }
+
+    return user.getAdminRoles()
+      .stream()
+      .anyMatch(dinaRole -> dinaRole.name().equalsIgnoreCase(role.strip()));
+  }
+
+  /**
    * Returns true if the given authenticated user is a member of the group the given target object belongs to
    * and also has the given role for that group.
    *
