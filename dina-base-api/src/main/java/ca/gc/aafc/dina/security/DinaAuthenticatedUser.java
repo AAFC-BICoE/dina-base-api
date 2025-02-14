@@ -21,6 +21,7 @@ public class DinaAuthenticatedUser {
   private final String username;
   private final Set<String> groups;
   private final Map<String, Set<DinaRole>> rolesPerGroup;
+  private final Set<DinaRole> adminRoles;
   private final boolean isServiceAccount;
 
   @Builder
@@ -29,6 +30,7 @@ public class DinaAuthenticatedUser {
     String agentIdentifier,
     String internalIdentifier,
     Map<String, Set<DinaRole>> rolesPerGroup,
+    Set<DinaRole> adminRoles,
     boolean isServiceAccount
   ) {
     this.internalIdentifier = internalIdentifier;
@@ -36,6 +38,7 @@ public class DinaAuthenticatedUser {
     this.agentIdentifier = agentIdentifier;
     this.rolesPerGroup = rolesPerGroup == null ? Collections.emptyMap() : rolesPerGroup;
     this.groups = this.rolesPerGroup.keySet();
+    this.adminRoles = adminRoles == null ? Set.of() : adminRoles;
     this.isServiceAccount = isServiceAccount;
   }
 
