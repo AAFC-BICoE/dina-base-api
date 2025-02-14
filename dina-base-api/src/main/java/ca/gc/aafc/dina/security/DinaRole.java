@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.security;
 
+import java.util.Arrays;
+import java.util.List;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -11,17 +13,17 @@ import java.util.regex.Pattern;
 
 /**
  * Represent user role in the context of a DINA module.
- * The roles that end with _ADMIN mean that they are now restricted by group.
+ * The roles that end with _ADMIN mean that they are admin-based so not restricted by group.
  */
 @RequiredArgsConstructor
 public enum DinaRole {
 
-  DINA_ADMIN("dina-admin", 0),
-  SUPER_USER("super-user", 1),
-  USER("user", 2),
-  GUEST("guest", 3),
-  READ_ONLY_ADMIN("read-only-admin", 4), // for service accounts like search-cli
-  READ_ONLY("read-only", 5);
+  DINA_ADMIN("dina-admin", 0, true),
+  SUPER_USER("super-user", 1, false),
+  USER("user", 2, false),
+  GUEST("guest", 3, false),
+  READ_ONLY_ADMIN("read-only-admin", 4, true), // for service accounts like search-cli
+  READ_ONLY("read-only", 5, false);
 
   /**
    * Read carefully since sorting is done based on priority:
@@ -30,6 +32,14 @@ public enum DinaRole {
   public static final Comparator<DinaRole> COMPARATOR = Comparator.comparingInt(DinaRole::getPriority);
 
   private static final Pattern NON_ALPHA = Pattern.compile("[^A-Za-z]");
+
+  private static final List<DinaRole> ADMIN_BASED_ROLES = Arrays.stream(DinaRole.values())
+    .filter(DinaRole::isAdminBased)
+    .toList();
+
+  private static final List<DinaRole> GROUP_BASED_ROLES = Arrays.stream(DinaRole.values())
+    .filter(r -> !r.isAdminBased())
+    .toList();
 
   /**
    * Name as entered in Keycloak
@@ -41,6 +51,12 @@ public enum DinaRole {
    * Priority of the role, lower number = higher priority
    */
   private final int priority;
+
+  /**
+   * Is a role admin-based or not. admin-base roles are not restricted by group.
+   */
+  @Getter
+  private final boolean adminBased;
 
   /**
    * Similar but more lenient than {@link #valueOf(String)}.
@@ -60,6 +76,22 @@ public enum DinaRole {
       }
     }
     return Optional.empty();
+  }
+
+  /**
+   * List of roles that are group-based.
+   * @return
+   */
+  public static List<DinaRole> groupBasedRoles() {
+    return GROUP_BASED_ROLES;
+  }
+
+  /**
+   * List of roles that are admin-based.
+   * @return
+   */
+  public static List<DinaRole> adminBasedRoles() {
+    return ADMIN_BASED_ROLES;
   }
 
   /**
