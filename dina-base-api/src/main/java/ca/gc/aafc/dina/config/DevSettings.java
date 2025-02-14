@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.config;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -22,6 +23,8 @@ import ca.gc.aafc.dina.security.DinaRole;
 @Setter
 public class DevSettings {
 
+  private Set<String> adminRole;
+
   private Map<String, Set<String>> groupRole;
 
   public Map<String, Set<DinaRole>> getRolesPerGroup() {
@@ -38,8 +41,21 @@ public class DevSettings {
         .map(Optional::orElseThrow).collect(
         Collectors.toSet()));
     }
-
     return groupDinaRole;
   }
 
+  private Set<DinaRole> getAdminRoles() {
+    if (adminRole == null || adminRole.isEmpty()) {
+      return Set.of();
+    }
+
+    Set<DinaRole> adminDinaRole = new HashSet<>(adminRole.size());
+    for (String entry : adminRole) {
+      DinaRole dr = DinaRole.fromString(entry).orElseThrow();
+      if (dr.isAdminBased()) {
+        adminDinaRole.add(dr);
+      }
+    }
+    return adminDinaRole;
+  }
 }
