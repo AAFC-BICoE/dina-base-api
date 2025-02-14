@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 public class DinaAdminCUDAuthorizationService extends PermissionAuthorizationService {
 
   @Override
-  @PreAuthorize("hasDinaRole(@currentUser, 'DINA_ADMIN')")
+  @PreAuthorize("hasAdminRole(@currentUser, 'DINA_ADMIN')")
   public void authorizeCreate(Object entity) {
 
   }
@@ -18,13 +18,13 @@ public class DinaAdminCUDAuthorizationService extends PermissionAuthorizationSer
   }
 
   @Override
-  @PreAuthorize("hasDinaRole(@currentUser, 'DINA_ADMIN')")
+  @PreAuthorize("hasAdminRole(@currentUser, 'DINA_ADMIN')")
   public void authorizeUpdate(Object entity) {
 
   }
 
   @Override
-  @PreAuthorize("hasDinaRole(@currentUser, 'DINA_ADMIN')")
+  @PreAuthorize("hasAdminRole(@currentUser, 'DINA_ADMIN')")
   public void authorizeDelete(Object entity) {
 
   }

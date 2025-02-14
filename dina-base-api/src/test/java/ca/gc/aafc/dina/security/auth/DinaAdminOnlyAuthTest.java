@@ -67,7 +67,7 @@ public class DinaAdminOnlyAuthTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
+  @WithMockKeycloakUser(adminRole = {"DINA_ADMIN"})
   public void create_WhenAdmin_CreatesObject() {
     ItemDto dto = ItemDto.builder().uuid(UUID.randomUUID()).group("g").build();
     ItemDto result = testRepo.create(dto);
@@ -82,7 +82,7 @@ public class DinaAdminOnlyAuthTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
+  @WithMockKeycloakUser(adminRole = {"DINA_ADMIN"})
   void update_WhenAdmin_AccessAccepted() {
     assertDoesNotThrow(() -> testRepo.save(ItemDto.builder().uuid(persisted.getUuid()).build()));
   }
@@ -95,7 +95,7 @@ public class DinaAdminOnlyAuthTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = {"CNC:DINA_ADMIN"})
+  @WithMockKeycloakUser(adminRole = {"DINA_ADMIN"})
   public void delete_WhenAdmin_AccessAccepted() {
     assertDoesNotThrow(() -> testRepo.delete(persisted.getUuid()));
   }

@@ -117,12 +117,16 @@ public class KeycloakAuthConfig extends KeycloakWebSecurityConfigurerAdapter {
       rolesPerGroup = KeycloakClaimParser.parseGroupClaims(groupClaim);
     }
 
+    Set<DinaRole> adminRoles = KeycloakClaimParser
+      .parseAdminRoles(accessToken.getRealmAccess().getRoles());
+
     return DinaAuthenticatedUser.builder()
       .agentIdentifier(agentId)
       .isServiceAccount(isServiceAccount)
       .internalIdentifier(internalID)
       .username(username)
       .rolesPerGroup(rolesPerGroup)
+      .adminRoles(adminRoles)
       .build();
   }
 

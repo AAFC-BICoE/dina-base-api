@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.security;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -19,6 +20,28 @@ import lombok.extern.log4j.Log4j2;
 public final class KeycloakClaimParser {
 
   private KeycloakClaimParser() {
+  }
+
+  /**
+   * Parses a set of roles from Keycloak.
+   * If the role is admin-based, it is added to adminRoles. Otherwise, the role is ignored.
+   * @param roles
+   * @return
+   */
+  public static Set<DinaRole> parseAdminRoles(Set<String> roles) {
+    if (CollectionUtils.isEmpty(roles)) {
+      return Collections.emptySet();
+    }
+
+    Set<DinaRole> adminRoles = new HashSet<>();
+    for (String role : roles) {
+      DinaRole.fromString(role).ifPresent(r -> {
+        if (r.isAdminBased()) {
+          adminRoles.add(r);
+        }
+      });
+    }
+    return adminRoles;
   }
 
   /**

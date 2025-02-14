@@ -21,6 +21,8 @@ public @interface WithMockKeycloakUser {
    */
   String[] groupRole() default "";
 
+  String[] adminRole() default "";
+
   String agentIdentifier() default "";
 
   String internalIdentifier() default "";
