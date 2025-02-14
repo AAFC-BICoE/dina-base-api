@@ -46,6 +46,11 @@ public class WithMockKeycloakSecurityContextFactory
       accessToken.setSubject(mockKeycloakUser.internalIdentifier());
     }
 
+    if (mockKeycloakUser.adminRole() != null) {
+      Arrays.stream(mockKeycloakUser.adminRole())
+        .forEach(r -> accessToken.getRealmAccess().addRole(r));
+    }
+
     RefreshableKeycloakSecurityContext ctx = new RefreshableKeycloakSecurityContext(null, null,
         null, accessToken, null, null, null);
 
