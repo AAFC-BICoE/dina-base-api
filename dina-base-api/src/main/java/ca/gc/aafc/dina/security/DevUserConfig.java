@@ -41,6 +41,10 @@ public class DevUserConfig {
     return devSettings.getRolesPerGroup();
   }
 
+  public Set<DinaRole> getAdminRoles() {
+    return devSettings.getAdminRoles();
+  }
+
   /**
    * Get groups, regardless of the role within the group
    * @return
