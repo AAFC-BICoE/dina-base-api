@@ -138,11 +138,12 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
   /**
    * Returns true if the given authenticated user is a member of the group the given target object belongs to
    * and also has the given minimum role for that group.
+   * If the user is DINA_ADMIN this method returns true
    *
    * @param user               user with roles
    * @param minimumRole        minimum role to check the user has
    * @param targetDomainObject Target resource of the request
-   * @return true if the given user has the given minimum role for that group.
+   * @return true if the given user has the given minimum role for that group or is DINA_ADMIN
    */
   public boolean hasMinimumGroupAndRolePermissions(
     DinaAuthenticatedUser user,
@@ -153,9 +154,13 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
       return false;
     }
 
+    // DINA_ADMIN is always authorized
+    if (user.getAdminRoles().contains(DinaRole.DINA_ADMIN)) {
+      return true;
+    }
+
     Optional<DinaRole> minimumDinaRole = DinaRole.fromString(minimumRole);
     Optional<Set<DinaRole>> roles = user.getRolesForGroup(((DinaEntity) targetDomainObject).getGroup());
-
     if (roles.isEmpty() || minimumDinaRole.isEmpty()) {
       return false;
     }
