@@ -44,7 +44,7 @@ public class DevSettings {
     return groupDinaRole;
   }
 
-  private Set<DinaRole> getAdminRoles() {
+  public Set<DinaRole> getAdminRoles() {
     if (adminRole == null || adminRole.isEmpty()) {
       return Set.of();
     }

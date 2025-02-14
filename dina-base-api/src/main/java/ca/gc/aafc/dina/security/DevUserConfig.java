@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import lombok.Getter;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -62,6 +63,10 @@ public class DevUserConfig {
       authenticatedUserBuilder.rolesPerGroup(devSettings.getRolesPerGroup());
     } else {
       authenticatedUserBuilder.rolesPerGroup(Map.of("dev-group", Set.of(DinaRole.USER)));
+    }
+
+    if (CollectionUtils.isNotEmpty(devSettings.getAdminRoles())) {
+      authenticatedUserBuilder.adminRoles(devSettings.getAdminRoles());
     }
 
     return authenticatedUserBuilder.build();
