@@ -47,7 +47,7 @@
 
     <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.1.0</asciidoctorj.diagram.version>
-    <dependency.check.version>11.1.0</dependency.check.version>
+    <dependency.check.version>12.1.0</dependency.check.version>
     <lombok-maven-plugin.version>1.18.20.0</lombok-maven-plugin.version>
     <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
 
