@@ -10,8 +10,10 @@ import java.util.UUID;
  * For example, when a resource has a relationship to another resource:
  * 
  * <pre>
- * @JsonApiRelation
- * private List<OrganizationDto> organizations;
+ * <code>
+ * &#064;JsonApiRelation
+ * private List&lt;OrganizationDto&gt; organizations;
+ * </code>
  * </pre>
  * 
  * The related resource (e.g. OrganizationDto) will need to implement JsonApiResource.
