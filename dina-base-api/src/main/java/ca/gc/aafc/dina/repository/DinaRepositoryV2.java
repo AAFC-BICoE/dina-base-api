@@ -246,10 +246,6 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     validateIncludes(includes);
 
     E entity = dinaService.findOne(identifier, entityClass, includes);
-    if (entity == null) {
-      throw ResourceNotFoundException.create(resourceClass.getSimpleName(), identifier);
-    }
-
     authorizationService.authorizeRead(entity);
 
     Set<String> attributes = new HashSet<>(registry.getAttributesPerClass().get(entityClass));
