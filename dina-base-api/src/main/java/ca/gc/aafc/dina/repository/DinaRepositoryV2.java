@@ -131,7 +131,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
    * @throws ResourceNotFoundException
    */
   public ResponseEntity<RepresentationModel<?>> handleFindOne(UUID id, HttpServletRequest req)
-    throws ResourceNotFoundException {
+      throws ResourceNotFoundException {
 
     String queryString = req != null ? decodeQueryString(req) : null;
 
@@ -173,7 +173,7 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
    */
   public ResponseEntity<RepresentationModel<?>> handleCreate(JsonApiDocument postedDocument,
                                                              Consumer<D> dtoCustomizer)
-    throws ResourceNotFoundException {
+      throws ResourceNotFoundException {
 
     if (postedDocument == null) {
       return ResponseEntity.badRequest().build();
