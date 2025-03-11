@@ -182,7 +182,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     // reload dto
     JsonApiDto<D> jsonApiDto = getOne(uuid, null);
     JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto);
-    builder.link(generateLinkToResource(jsonApiDto.getDto()).withSelfRel());
+    builder.link(generateLinkToResource(jsonApiDto.getDto()));
 
     RepresentationModel<?> model = builder.build();
     URI uri = model.getRequiredLink(IanaLinkRelations.SELF).toUri();
