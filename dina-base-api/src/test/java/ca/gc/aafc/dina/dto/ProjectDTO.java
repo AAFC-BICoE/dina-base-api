@@ -4,6 +4,8 @@ import ca.gc.aafc.dina.entity.ComplexObject;
 import ca.gc.aafc.dina.entity.Project;
 import ca.gc.aafc.dina.entity.Task;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
@@ -63,10 +65,12 @@ public final class ProjectDTO implements ca.gc.aafc.dina.dto.JsonApiResource {
   // list of people but not exposed as relationship
   private List<PersonDTO> randomPeople;
 
+  @JsonIgnore
   public UUID getJsonApiId() {
     return uuid;
   }
 
+  @JsonIgnore
   public String getJsonApiType() {
     return RESOURCE_TYPE;
   }

@@ -11,6 +11,8 @@ import org.javers.core.metamodel.annotation.TypeName;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Data
 @io.crnk.core.resource.annotations.JsonApiResource(type = TaskDTO.RESOURCE_TYPE)
 @Builder
@@ -32,10 +34,12 @@ public final class TaskDTO implements JsonApiResource {
 
   private Integer power;
 
- public UUID getJsonApiId() {
-   return uuid;
- }
+  @JsonIgnore
+  public UUID getJsonApiId() {
+    return uuid;
+  }
 
+  @JsonIgnore
   public String getJsonApiType() {
     return RESOURCE_TYPE;
   }

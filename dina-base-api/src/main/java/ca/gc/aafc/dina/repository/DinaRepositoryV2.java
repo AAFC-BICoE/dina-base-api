@@ -120,7 +120,8 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @return
    */
   protected Link generateLinkToResource(D dto) {
-    return Link.of(dto.getJsonApiType() + "/" + dto.getJsonApiId().toString());
+    return Link.of(
+      Objects.toString(dto.getJsonApiType(), "") + "/" + Objects.toString(dto.getJsonApiId(), ""));
   }
 
   /**
