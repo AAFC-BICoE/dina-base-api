@@ -26,7 +26,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @RelatedEntity(Project.class)
 @TypeName(ProjectDTO.RESOURCE_TYPE)
-public final class ProjectDTO {
+public final class ProjectDTO implements ca.gc.aafc.dina.dto.JsonApiResource {
 
   public static final String RESOURCE_TYPE = "Project";
 
@@ -62,4 +62,12 @@ public final class ProjectDTO {
 
   // list of people but not exposed as relationship
   private List<PersonDTO> randomPeople;
+
+  public UUID getJsonApiId() {
+    return uuid;
+  }
+
+  public String getJsonApiType() {
+    return RESOURCE_TYPE;
+  }
 }

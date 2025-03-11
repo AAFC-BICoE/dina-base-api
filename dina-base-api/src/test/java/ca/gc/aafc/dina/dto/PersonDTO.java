@@ -25,6 +25,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Data
 @JsonApiResource(type = PersonDTO.TYPE_NAME)
 @Builder
@@ -33,7 +35,7 @@ import java.util.function.Supplier;
 @RelatedEntity(Person.class)
 @TypeName(PersonDTO.TYPE_NAME)
 @CustomFieldAdapter(adapters = PersonDTO.CustomFieldAdapterImp.class)
-public class PersonDTO {
+public class PersonDTO implements ca.gc.aafc.dina.dto.JsonApiResource {
 
   public static final String TYPE_NAME = "person";
   public static final String CONSTANT = "HAS CONSTANT";
@@ -61,6 +63,16 @@ public class PersonDTO {
 
   @IgnoreDinaMapping(reason = "derived from name + / + group")
   private String customField;
+
+  @JsonIgnore
+  public UUID getJsonApiId() {
+    return uuid;
+  }
+  
+  @JsonIgnore
+  public String getJsonApiType() {
+    return TYPE_NAME;
+  }
 
   public static class CustomFieldAdapterImp implements DinaFieldAdapter<PersonDTO, Person, String, String> {
 

@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.ResponseEntity;
 
@@ -16,6 +17,7 @@ import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.JsonApiExternalResource;
 import ca.gc.aafc.dina.dto.JsonApiMeta;
+import ca.gc.aafc.dina.dto.JsonApiResource;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.filter.DinaFilterArgumentParser;
@@ -33,10 +35,8 @@ import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.util.ReflectionUtils;
 
 import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiModel;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -55,7 +55,7 @@ import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class DinaRepositoryV2<D,E extends DinaEntity> {
+public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
   // default page limit/page size
   private static final int DEFAULT_PAGE_LIMIT = 20;
@@ -114,13 +114,13 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
   /**
    * Override this method to generate link to newly created resource.
-   * Example return methodOn(PersonRepositoryV2.class).onFindOne(dto.getUuid(), null)
+   * Example return linkTo(methodOn(PersonRepositoryV2.class).onFindOne(dto.getUuid(), null)
    * import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
    * @param dto
    * @return
    */
-  protected Method getOneFindOneMethod(D dto) {
-    return null;
+  protected Link generateLinkToResource(D dto) {
+    return Link.of(dto.getJsonApiType() + "/" + dto.getJsonApiId().toString());
   }
 
   /**
@@ -181,8 +181,8 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     // reload dto
     JsonApiDto<D> jsonApiDto = getOne(uuid, null);
     JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto);
+    builder.link(generateLinkToResource(jsonApiDto.getDto()).withSelfRel());
 
-    builder.link(linkTo(getOneFindOneMethod(jsonApiDto.getDto())).withSelfRel());
     RepresentationModel<?> model = builder.build();
     URI uri = model.getRequiredLink(IanaLinkRelations.SELF).toUri();
 
