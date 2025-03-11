@@ -9,6 +9,9 @@ import lombok.Singular;
 
 /**
  * Contains a DTO with its optional relationships.
+ * Used to properly capture a response on the web layer (repository) for getOne and getAll.
+ * As opposed to JsonApiModelBuilder, {@link JsonApiDto} is agnostic of the library used to serialize
+ * the response.
  */
 @AllArgsConstructor
 @Builder

@@ -166,7 +166,6 @@ public class DinaRepositoryV2IT {
         Optional.empty(), PersonMapper.INSTANCE, PersonDTO.class, Person.class,
         buildProperties, objMapper);
     }
-
   }
 
 }
