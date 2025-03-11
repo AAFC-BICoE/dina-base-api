@@ -136,9 +136,6 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     String queryString = req != null ? decodeQueryString(req) : null;
 
     JsonApiDto<D> jsonApiDto = getOne(id, queryString);
-    if (jsonApiDto == null) {
-      return ResponseEntity.notFound().build();
-    }
 
     JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto);
 
@@ -183,9 +180,6 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
     // reload dto
     JsonApiDto<D> jsonApiDto = getOne(uuid, null);
-    if (jsonApiDto == null) {
-      return ResponseEntity.notFound().build();
-    }
     JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto);
 
     builder.link(linkTo(getOneFindOneMethod(jsonApiDto.getDto())).withSelfRel());
@@ -212,9 +206,6 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
 
     // reload dto
     JsonApiDto<D> jsonApiDto = getOne(partialPatchDto.getId(), null);
-    if (jsonApiDto == null) {
-      return ResponseEntity.notFound().build();
-    }
     JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto);
 
     return ResponseEntity.ok().body(builder.build());
@@ -246,6 +237,9 @@ public class DinaRepositoryV2<D,E extends DinaEntity> {
     validateIncludes(includes);
 
     E entity = dinaService.findOne(identifier, entityClass, includes);
+    if (entity == null) {
+      throw ResourceNotFoundException.create(resourceClass.getSimpleName(), identifier);
+    }
     authorizationService.authorizeRead(entity);
 
     Set<String> attributes = new HashSet<>(registry.getAttributesPerClass().get(entityClass));
