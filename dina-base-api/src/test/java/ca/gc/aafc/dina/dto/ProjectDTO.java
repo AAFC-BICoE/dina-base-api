@@ -4,6 +4,8 @@ import ca.gc.aafc.dina.entity.ComplexObject;
 import ca.gc.aafc.dina.entity.Project;
 import ca.gc.aafc.dina.entity.Task;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
@@ -26,7 +28,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @RelatedEntity(Project.class)
 @TypeName(ProjectDTO.RESOURCE_TYPE)
-public final class ProjectDTO {
+public final class ProjectDTO implements ca.gc.aafc.dina.dto.JsonApiResource {
 
   public static final String RESOURCE_TYPE = "Project";
 
@@ -62,4 +64,14 @@ public final class ProjectDTO {
 
   // list of people but not exposed as relationship
   private List<PersonDTO> randomPeople;
+
+  @JsonIgnore
+  public UUID getJsonApiId() {
+    return uuid;
+  }
+
+  @JsonIgnore
+  public String getJsonApiType() {
+    return RESOURCE_TYPE;
+  }
 }

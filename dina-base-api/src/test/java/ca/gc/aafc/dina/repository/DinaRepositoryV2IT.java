@@ -1,10 +1,13 @@
 package ca.gc.aafc.dina.repository;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -132,7 +135,10 @@ public class DinaRepositoryV2IT {
 
     JsonApiDocument doc = JsonApiDocuments.createJsonApiDocument(null, PersonDTO.TYPE_NAME,
       JsonAPITestHelper.toAttributeMap(personDto));
-    UUID assignedId = repositoryV2.create(doc, null);
+
+    var created = repositoryV2.handleCreate(doc, null);
+    UUID assignedId = UUID.fromString(
+      StringUtils.substringAfterLast(created.getBody().getLink(IanaLinkRelations.SELF).get().getHref(), "/"));
 
     Map<String, Object> attributes = new HashMap<>();
 
@@ -152,6 +158,9 @@ public class DinaRepositoryV2IT {
     JsonApiDto<PersonDTO> getOneDto = repositoryV2.getOne(assignedId, null);
     assertEquals("abc", getOneDto.getDto().getName());
 
+    var handleFindOneResponse = repositoryV2.handleFindOne(assignedId, null);
+    assertEquals(HttpStatus.OK, handleFindOneResponse.getStatusCode());
+
     repositoryV2.delete(assignedId);
   }
 
@@ -162,11 +171,10 @@ public class DinaRepositoryV2IT {
     public DinaRepositoryV2<PersonDTO, Person> personRepositoryV2(DinaService<Person> dinaService,
                                                                   BuildProperties buildProperties,
                                                                   ObjectMapper objMapper) {
-      return new DinaRepositoryV2<>(dinaService, new AllowAllAuthorizationService(),
+      return new DinaRepositoryV2<PersonDTO, Person>(dinaService, new AllowAllAuthorizationService(),
         Optional.empty(), PersonMapper.INSTANCE, PersonDTO.class, Person.class,
         buildProperties, objMapper);
     }
-
   }
 
 }

@@ -23,7 +23,7 @@ public class JsonApiExceptionControllerAdvice {
 
   @ExceptionHandler
   public ResponseEntity<JsonApiErrors> handleVResourceNotFoundException(ResourceNotFoundException ex) {
-    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
       JsonApiErrors.create().withError(
         JsonApiError.create()
           .withCode(Integer.toString(HttpStatus.NOT_FOUND.value()))
