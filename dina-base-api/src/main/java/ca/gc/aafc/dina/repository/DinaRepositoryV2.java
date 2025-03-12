@@ -26,6 +26,7 @@ import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
 import ca.gc.aafc.dina.filter.SimpleFilterHandlerV2;
+import ca.gc.aafc.dina.jsonapi.JsonApiBulkDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.mapper.DinaMapperV2;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
@@ -56,6 +57,8 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
+
+  public static final String JSON_API_BULK = "application/vnd.api+json; ext=bulk";
 
   // default page limit/page size
   private static final int DEFAULT_PAGE_LIMIT = 20;
@@ -163,6 +166,13 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     return ResponseEntity.ok(builder.build());
   }
 
+  public void handleBulkCreate(JsonApiBulkDocument jsonApiBulkDocument,
+                               Consumer<D> dtoCustomizer) throws ResourceNotFoundException {
+    for (var data : jsonApiBulkDocument.getData()) {
+      handleCreate(JsonApiDocument.builder().data(data).build(), dtoCustomizer);
+    }
+  }
+
   /**
    * Handles create at the Spring hateoas level.
    * @param postedDocument
@@ -188,6 +198,30 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     URI uri = model.getRequiredLink(IanaLinkRelations.SELF).toUri();
 
     return ResponseEntity.created(uri).body(model);
+  }
+
+  /**
+   * Handles bulk updates.
+   * @param jsonApiBulkDocument
+   * @return
+   * @throws ResourceNotFoundException
+   */
+  public ResponseEntity<RepresentationModel<?>> handleBulkUpdate(JsonApiBulkDocument jsonApiBulkDocument) throws ResourceNotFoundException {
+    List<RepresentationModel<?>> repModels = new ArrayList<>();
+    for (var data : jsonApiBulkDocument.getData()) {
+      repModels.add(handleUpdate(JsonApiDocument.builder().data(data).build(), data.getId()).getBody());
+    }
+
+    JsonApiModelBuilder mainBuilder = jsonApiModel();
+    JsonApiMeta.builder()
+      .totalResourceCount(repModels.size())
+      .moduleVersion(buildProperties.getVersion())
+      .build()
+      .populateMeta(mainBuilder::meta);
+
+    mainBuilder.model(CollectionModel.of(repModels));
+
+    return ResponseEntity.ok().body(mainBuilder.build());
   }
 
   /**
