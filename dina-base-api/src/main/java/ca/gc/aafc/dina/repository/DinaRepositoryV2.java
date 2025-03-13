@@ -60,6 +60,7 @@ import lombok.extern.log4j.Log4j2;
 public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
   public static final String JSON_API_BULK = "application/vnd.api+json; ext=bulk";
+  public static final String JSON_API_BULK_LOAD = "application/vnd.api+json; ext=bulkload";
 
   // default page limit/page size
   private static final int DEFAULT_PAGE_LIMIT = 20;
@@ -129,6 +130,22 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
   }
 
   /**
+   * Handles bulk load.
+   * @param jsonApiBulkDocument
+   * @return
+   */
+  public ResponseEntity<RepresentationModel<?>> handleBulkLoad(JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument)
+    throws ResourceNotFoundException {
+
+    List<JsonApiDto<D> > dtos = new ArrayList<>();
+    for (var data : jsonApiBulkDocument.getData()) {
+      dtos.add(getOne(data.getId(), null));
+    }
+    JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos, null);
+    return ResponseEntity.ok().body(builder.build());
+  }
+
+  /**
    * Handles findOne at the Spring hateoas level.
    * @param id
    * @param req
@@ -141,7 +158,6 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     String queryString = req != null ? decodeQueryString(req) : null;
 
     JsonApiDto<D> jsonApiDto = getOne(id, queryString);
-
     JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto);
 
     return ResponseEntity.ok(builder.build());
@@ -221,17 +237,14 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @throws ResourceNotFoundException
    */
   public ResponseEntity<RepresentationModel<?>> handleBulkUpdate(JsonApiBulkDocument jsonApiBulkDocument) throws ResourceNotFoundException {
-    JsonApiModelBuilder mainBuilder = jsonApiModel();
-
     List<JsonApiDto<D> > dtos = new ArrayList<>();
     for (var data : jsonApiBulkDocument.getData()) {
       update(JsonApiDocument.builder().data(data).build());
       dtos.add(getOne(data.getId(), null));
     }
 
-    createJsonApiModelBuilder(dtos, null);
-
-    return ResponseEntity.ok().body(mainBuilder.build());
+    JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos, null);
+    return ResponseEntity.ok().body(builder.build());
   }
 
   /**
