@@ -27,6 +27,7 @@ import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
 import ca.gc.aafc.dina.filter.SimpleFilterHandlerV2;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkDocument;
+import ca.gc.aafc.dina.jsonapi.JsonApiBulkResourceIdentifierDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.mapper.DinaMapperV2;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
@@ -254,6 +255,19 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto);
 
     return ResponseEntity.ok().body(builder.build());
+  }
+
+  /**
+   * Handles bulk deletes.
+   * @param jsonApiBulkDocument
+   * @return
+   */
+  public ResponseEntity<RepresentationModel<?>> handleDelete(JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument)
+      throws ResourceNotFoundException {
+    for (var data : jsonApiBulkDocument.getData()) {
+      delete(data.getId());
+    }
+    return ResponseEntity.noContent().build();
   }
 
   /**
