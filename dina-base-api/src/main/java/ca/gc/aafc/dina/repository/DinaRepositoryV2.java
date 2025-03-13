@@ -175,7 +175,6 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    */
   public ResponseEntity<RepresentationModel<?>> handleBulkCreate(JsonApiBulkDocument jsonApiBulkDocument,
                                Consumer<D> dtoCustomizer) throws ResourceNotFoundException {
-    JsonApiModelBuilder mainBuilder = jsonApiModel();
 
     List<JsonApiDto<D> > dtos = new ArrayList<>();
     for (var data : jsonApiBulkDocument.getData()) {
@@ -183,9 +182,9 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
       dtos.add(getOne(uuid, null));
     }
 
-    createJsonApiModelBuilder(dtos, null);
+    JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos, null);
 
-    return ResponseEntity.ok().body(mainBuilder.build());
+    return ResponseEntity.ok().body(builder.build());
   }
 
   /**
