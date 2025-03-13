@@ -262,7 +262,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @param jsonApiBulkDocument
    * @return
    */
-  public ResponseEntity<RepresentationModel<?>> handleDelete(JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument)
+  public ResponseEntity<RepresentationModel<?>> handleBulkDelete(JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument)
       throws ResourceNotFoundException {
     for (var data : jsonApiBulkDocument.getData()) {
       delete(data.getId());
