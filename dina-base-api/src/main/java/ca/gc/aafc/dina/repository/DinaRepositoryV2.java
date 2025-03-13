@@ -166,11 +166,25 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     return ResponseEntity.ok(builder.build());
   }
 
-  public void handleBulkCreate(JsonApiBulkDocument jsonApiBulkDocument,
+  /**
+   * Handles bulk updates.
+   * @param jsonApiBulkDocument
+   * @param dtoCustomizer
+   * @throws ResourceNotFoundException
+   */
+  public ResponseEntity<RepresentationModel<?>> handleBulkCreate(JsonApiBulkDocument jsonApiBulkDocument,
                                Consumer<D> dtoCustomizer) throws ResourceNotFoundException {
+    JsonApiModelBuilder mainBuilder = jsonApiModel();
+
+    List<JsonApiDto<D> > dtos = new ArrayList<>();
     for (var data : jsonApiBulkDocument.getData()) {
-      handleCreate(JsonApiDocument.builder().data(data).build(), dtoCustomizer);
+      UUID uuid = create(JsonApiDocument.builder().data(data).build(), dtoCustomizer);
+      dtos.add(getOne(uuid, null));
     }
+
+    createJsonApiModelBuilder(dtos, null);
+
+    return ResponseEntity.ok().body(mainBuilder.build());
   }
 
   /**
@@ -207,24 +221,15 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @throws ResourceNotFoundException
    */
   public ResponseEntity<RepresentationModel<?>> handleBulkUpdate(JsonApiBulkDocument jsonApiBulkDocument) throws ResourceNotFoundException {
-    Set<UUID> included = new HashSet<>();
     JsonApiModelBuilder mainBuilder = jsonApiModel();
 
-    List<RepresentationModel<?>> repModels = new ArrayList<>();
+    List<JsonApiDto<D> > dtos = new ArrayList<>();
     for (var data : jsonApiBulkDocument.getData()) {
       update(JsonApiDocument.builder().data(data).build());
-      JsonApiModelBuilder builder = JsonApiModelBuilderHelper.
-        createJsonApiModelBuilder(getOne(data.getId(), null), mainBuilder, included);
-      repModels.add(builder.build());
+      dtos.add(getOne(data.getId(), null));
     }
 
-    JsonApiMeta.builder()
-      .totalResourceCount(repModels.size())
-      .moduleVersion(buildProperties.getVersion())
-      .build()
-      .populateMeta(mainBuilder::meta);
-
-    mainBuilder.model(CollectionModel.of(repModels));
+    createJsonApiModelBuilder(dtos, null);
 
     return ResponseEntity.ok().body(mainBuilder.build());
   }
@@ -359,16 +364,25 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
   }
 
   /**
-   * Same as {@link #createJsonApiModelBuilder(JsonApiDto)} but for pages resource.
+   * Same as {@link #createJsonApiModelBuilder(JsonApiDto)} but for {@link PagedResource}.
    * @param jsonApiDtos
    * @return
    */
   protected JsonApiModelBuilder createJsonApiModelBuilder(PagedResource<JsonApiDto<D>> jsonApiDtos) {
+    return createJsonApiModelBuilder(jsonApiDtos.resourceList(), jsonApiDtos.totalCount);
+  }
 
+  /**
+   *
+   * @param jsonApiDtos
+   * @param totalCount totalCount of resources or null to not include a totalResourceCount in the meta section.
+   * @return
+   */
+  protected JsonApiModelBuilder createJsonApiModelBuilder(List<JsonApiDto<D>> jsonApiDtos, Integer totalCount) {
     JsonApiModelBuilder mainBuilder = jsonApiModel();
     List<RepresentationModel<?>> repModels = new ArrayList<>();
     Set<UUID> included = new HashSet<>();
-    for (JsonApiDto<D> currResource : jsonApiDtos.resourceList()) {
+    for (JsonApiDto<D> currResource : jsonApiDtos) {
       JsonApiModelBuilder builder = JsonApiModelBuilderHelper.
         createJsonApiModelBuilder(currResource, mainBuilder, included);
       repModels.add(builder.build());
@@ -376,10 +390,14 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
     // use custom metadata instead of PagedModel.PageMetadata so we can control
     // the content and key names
-    JsonApiMeta.builder()
-      .totalResourceCount(jsonApiDtos.totalCount)
-      .moduleVersion(buildProperties.getVersion())
-      .build()
+    var metaSectionBuilder = JsonApiMeta.builder()
+      .moduleVersion(buildProperties.getVersion());
+
+    if(totalCount != null) {
+      metaSectionBuilder.totalResourceCount(totalCount);
+    }
+
+    metaSectionBuilder.build()
       .populateMeta(mainBuilder::meta);
 
     mainBuilder.model(CollectionModel.of(repModels));
