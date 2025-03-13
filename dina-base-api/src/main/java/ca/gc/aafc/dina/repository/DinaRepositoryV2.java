@@ -207,12 +207,17 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @throws ResourceNotFoundException
    */
   public ResponseEntity<RepresentationModel<?>> handleBulkUpdate(JsonApiBulkDocument jsonApiBulkDocument) throws ResourceNotFoundException {
+    Set<UUID> included = new HashSet<>();
+    JsonApiModelBuilder mainBuilder = jsonApiModel();
+
     List<RepresentationModel<?>> repModels = new ArrayList<>();
     for (var data : jsonApiBulkDocument.getData()) {
-      repModels.add(handleUpdate(JsonApiDocument.builder().data(data).build(), data.getId()).getBody());
+      update(JsonApiDocument.builder().data(data).build());
+      JsonApiModelBuilder builder = JsonApiModelBuilderHelper.
+        createJsonApiModelBuilder(getOne(data.getId(), null), mainBuilder, included);
+      repModels.add(builder.build());
     }
 
-    JsonApiModelBuilder mainBuilder = jsonApiModel();
     JsonApiMeta.builder()
       .totalResourceCount(repModels.size())
       .moduleVersion(buildProperties.getVersion())
