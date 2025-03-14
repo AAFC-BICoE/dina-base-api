@@ -56,7 +56,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.OffsetDateTime;
@@ -352,9 +351,9 @@ public class DinaRepositoryV2IT {
 
       @PostMapping(path = PATH + "/" + JSON_API_BULK_LOAD_PATH, consumes = JSON_API_BULK)
       public ResponseEntity<RepresentationModel<?>> onBulkLoad(
-        @RequestBody JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument)
+        @RequestBody JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument, HttpServletRequest req)
         throws ResourceNotFoundException {
-        return handleBulkLoad(jsonApiBulkDocument);
+        return handleBulkLoad(jsonApiBulkDocument, req);
       }
 
       @PostMapping(path = PATH)

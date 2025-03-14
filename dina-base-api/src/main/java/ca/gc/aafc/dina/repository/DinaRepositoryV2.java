@@ -61,6 +61,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
   public static final String JSON_API_BULK = "application/vnd.api+json; ext=bulk";
 
+  public static final String JSON_API_BULK_PATH = "bulk";
   public static final String JSON_API_BULK_LOAD_PATH = "bulk-load";
 
   // default page limit/page size
@@ -135,12 +136,13 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @param jsonApiBulkDocument
    * @return
    */
-  public ResponseEntity<RepresentationModel<?>> handleBulkLoad(JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument)
+  public ResponseEntity<RepresentationModel<?>> handleBulkLoad(JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument,
+                                                               HttpServletRequest req)
       throws ResourceNotFoundException {
-
+    String queryString = req != null ? decodeQueryString(req) : null;
     List<JsonApiDto<D> > dtos = new ArrayList<>();
     for (var data : jsonApiBulkDocument.getData()) {
-      dtos.add(getOne(data.getId(), null));
+      dtos.add(getOne(data.getId(), queryString));
     }
     JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos, null);
     return ResponseEntity.ok().body(builder.build());
