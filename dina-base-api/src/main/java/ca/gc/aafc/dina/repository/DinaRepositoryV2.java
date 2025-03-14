@@ -136,7 +136,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @return
    */
   public ResponseEntity<RepresentationModel<?>> handleBulkLoad(JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument)
-    throws ResourceNotFoundException {
+      throws ResourceNotFoundException {
 
     List<JsonApiDto<D> > dtos = new ArrayList<>();
     for (var data : jsonApiBulkDocument.getData()) {
@@ -420,7 +420,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     var metaSectionBuilder = JsonApiMeta.builder()
       .moduleVersion(buildProperties.getVersion());
 
-    if(totalCount != null) {
+    if (totalCount != null) {
       metaSectionBuilder.totalResourceCount(totalCount);
     }
 
