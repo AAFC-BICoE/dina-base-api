@@ -60,7 +60,8 @@ import lombok.extern.log4j.Log4j2;
 public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
   public static final String JSON_API_BULK = "application/vnd.api+json; ext=bulk";
-  public static final String JSON_API_BULK_LOAD = "application/vnd.api+json; ext=bulkload";
+
+  public static final String JSON_API_BULK_LOAD_PATH = "bulk-load";
 
   // default page limit/page size
   private static final int DEFAULT_PAGE_LIMIT = 20;

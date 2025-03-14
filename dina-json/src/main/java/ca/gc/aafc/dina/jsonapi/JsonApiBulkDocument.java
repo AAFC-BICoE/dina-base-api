@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.jsonapi;
 
 import java.util.List;
 import lombok.Getter;
+import lombok.Singular;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
@@ -13,5 +14,6 @@ import lombok.extern.jackson.Jacksonized;
 @Getter
 public class JsonApiBulkDocument {
 
+  @Singular("addData")
   private List<JsonApiDocument.ResourceObject> data;
 }
