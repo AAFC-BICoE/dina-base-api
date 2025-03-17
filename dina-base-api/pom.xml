@@ -13,7 +13,7 @@
 
   <artifactId>dina-base-api</artifactId>
   <name>dina-base-api</name>
-  <description>Base DINA API package for Java built on SpringBoot and Crnk</description>
+  <description>Base DINA API package for Java built on SpringBoot</description>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <properties>
@@ -100,23 +100,6 @@
       <groupId>javax.activation</groupId>
       <artifactId>javax.activation-api</artifactId>
       <version>${javax.activation.version}</version>
-    </dependency>
-
-    <!-- crnk (Must be installed locally, see legacy-libs/README) -->
-    <dependency>
-      <groupId>io.crnk</groupId>
-      <artifactId>crnk-setup-spring-boot2</artifactId>
-      <version>${crnk.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.crnk</groupId>
-      <artifactId>crnk-data-jpa</artifactId>
-      <version>${crnk.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.crnk</groupId>
-      <artifactId>crnk-operations</artifactId>
-      <version>${crnk.version}</version>
     </dependency>
 
     <!-- RSQL -->
@@ -288,27 +271,6 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <artifactSet>
-                <includes>
-                  <include>io.crnk:*</include>
-                </includes>
-              </artifactSet>
-              <useDependencyReducedPomInJar>true</useDependencyReducedPomInJar>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <sourcepath>${project.build.directory}/delombok</sourcepath>
@@ -323,8 +285,6 @@
           <excludes>
             <exclude>**/*Config.*</exclude>
             <exclude>**/*AutoConfiguration.*</exclude>
-
-            <exclude>**/PatchedCrnkErrorController.*</exclude>
           </excludes>
         </configuration>
         <executions>
