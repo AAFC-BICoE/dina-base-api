@@ -26,6 +26,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
 
 @Data
 @JsonApiResource(type = PersonDTO.TYPE_NAME)
@@ -35,12 +36,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @RelatedEntity(Person.class)
 @TypeName(PersonDTO.TYPE_NAME)
 @CustomFieldAdapter(adapters = PersonDTO.CustomFieldAdapterImp.class)
+@JsonApiTypeForClass(PersonDTO.TYPE_NAME)
 public class PersonDTO implements ca.gc.aafc.dina.dto.JsonApiResource {
 
   public static final String TYPE_NAME = "person";
   public static final String CONSTANT = "HAS CONSTANT";
 
   @JsonApiId
+  @com.toedter.spring.hateoas.jsonapi.JsonApiId
   @Id
   @PropertyName("id")
   private UUID uuid;
