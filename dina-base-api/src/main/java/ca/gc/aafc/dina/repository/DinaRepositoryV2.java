@@ -26,6 +26,8 @@ import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
 import ca.gc.aafc.dina.filter.SimpleFilterHandlerV2;
+import ca.gc.aafc.dina.jsonapi.JsonApiBulkDocument;
+import ca.gc.aafc.dina.jsonapi.JsonApiBulkResourceIdentifierDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.mapper.DinaMapperV2;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
@@ -56,6 +58,11 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
+
+  public static final String JSON_API_BULK = "application/vnd.api+json; ext=bulk";
+
+  public static final String JSON_API_BULK_PATH = "bulk";
+  public static final String JSON_API_BULK_LOAD_PATH = "bulk-load";
 
   // default page limit/page size
   private static final int DEFAULT_PAGE_LIMIT = 20;
@@ -125,6 +132,23 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
   }
 
   /**
+   * Handles bulk load.
+   * @param jsonApiBulkDocument
+   * @return
+   */
+  public ResponseEntity<RepresentationModel<?>> handleBulkLoad(JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument,
+                                                               HttpServletRequest req)
+      throws ResourceNotFoundException {
+    String queryString = req != null ? decodeQueryString(req) : null;
+    List<JsonApiDto<D> > dtos = new ArrayList<>();
+    for (var data : jsonApiBulkDocument.getData()) {
+      dtos.add(getOne(data.getId(), queryString));
+    }
+    JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos, null);
+    return ResponseEntity.ok().body(builder.build());
+  }
+
+  /**
    * Handles findOne at the Spring hateoas level.
    * @param id
    * @param req
@@ -137,7 +161,6 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     String queryString = req != null ? decodeQueryString(req) : null;
 
     JsonApiDto<D> jsonApiDto = getOne(id, queryString);
-
     JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto);
 
     return ResponseEntity.ok(builder.build());
@@ -161,6 +184,26 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos);
 
     return ResponseEntity.ok(builder.build());
+  }
+
+  /**
+   * Handles bulk updates.
+   * @param jsonApiBulkDocument
+   * @param dtoCustomizer
+   * @throws ResourceNotFoundException
+   */
+  public ResponseEntity<RepresentationModel<?>> handleBulkCreate(JsonApiBulkDocument jsonApiBulkDocument,
+                               Consumer<D> dtoCustomizer) throws ResourceNotFoundException {
+
+    List<JsonApiDto<D> > dtos = new ArrayList<>();
+    for (var data : jsonApiBulkDocument.getData()) {
+      UUID uuid = create(JsonApiDocument.builder().data(data).build(), dtoCustomizer);
+      dtos.add(getOne(uuid, null));
+    }
+
+    JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos, null);
+
+    return ResponseEntity.ok().body(builder.build());
   }
 
   /**
@@ -191,6 +234,23 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
   }
 
   /**
+   * Handles bulk updates.
+   * @param jsonApiBulkDocument
+   * @return
+   * @throws ResourceNotFoundException
+   */
+  public ResponseEntity<RepresentationModel<?>> handleBulkUpdate(JsonApiBulkDocument jsonApiBulkDocument) throws ResourceNotFoundException {
+    List<JsonApiDto<D> > dtos = new ArrayList<>();
+    for (var data : jsonApiBulkDocument.getData()) {
+      update(JsonApiDocument.builder().data(data).build());
+      dtos.add(getOne(data.getId(), null));
+    }
+
+    JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos, null);
+    return ResponseEntity.ok().body(builder.build());
+  }
+
+  /**
    * Handles update at the Spring hateoas level.
    * @param partialPatchDto
    * @param id
@@ -210,6 +270,19 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto);
 
     return ResponseEntity.ok().body(builder.build());
+  }
+
+  /**
+   * Handles bulk deletes.
+   * @param jsonApiBulkDocument
+   * @return
+   */
+  public ResponseEntity<RepresentationModel<?>> handleBulkDelete(JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument)
+      throws ResourceNotFoundException {
+    for (var data : jsonApiBulkDocument.getData()) {
+      delete(data.getId());
+    }
+    return ResponseEntity.noContent().build();
   }
 
   /**
@@ -320,16 +393,25 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
   }
 
   /**
-   * Same as {@link #createJsonApiModelBuilder(JsonApiDto)} but for pages resource.
+   * Same as {@link #createJsonApiModelBuilder(JsonApiDto)} but for {@link PagedResource}.
    * @param jsonApiDtos
    * @return
    */
   protected JsonApiModelBuilder createJsonApiModelBuilder(PagedResource<JsonApiDto<D>> jsonApiDtos) {
+    return createJsonApiModelBuilder(jsonApiDtos.resourceList(), jsonApiDtos.totalCount);
+  }
 
+  /**
+   *
+   * @param jsonApiDtos
+   * @param totalCount totalCount of resources or null to not include a totalResourceCount in the meta section.
+   * @return
+   */
+  protected JsonApiModelBuilder createJsonApiModelBuilder(List<JsonApiDto<D>> jsonApiDtos, Integer totalCount) {
     JsonApiModelBuilder mainBuilder = jsonApiModel();
     List<RepresentationModel<?>> repModels = new ArrayList<>();
     Set<UUID> included = new HashSet<>();
-    for (JsonApiDto<D> currResource : jsonApiDtos.resourceList()) {
+    for (JsonApiDto<D> currResource : jsonApiDtos) {
       JsonApiModelBuilder builder = JsonApiModelBuilderHelper.
         createJsonApiModelBuilder(currResource, mainBuilder, included);
       repModels.add(builder.build());
@@ -337,10 +419,14 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
     // use custom metadata instead of PagedModel.PageMetadata so we can control
     // the content and key names
-    JsonApiMeta.builder()
-      .totalResourceCount(jsonApiDtos.totalCount)
-      .moduleVersion(buildProperties.getVersion())
-      .build()
+    var metaSectionBuilder = JsonApiMeta.builder()
+      .moduleVersion(buildProperties.getVersion());
+
+    if (totalCount != null) {
+      metaSectionBuilder.totalResourceCount(totalCount);
+    }
+
+    metaSectionBuilder.build()
       .populateMeta(mainBuilder::meta);
 
     mainBuilder.model(CollectionModel.of(repModels));
