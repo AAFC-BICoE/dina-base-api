@@ -53,7 +53,7 @@ public class AuditSnapshotRepository {
     this.buildProperties = buildProperties;
   }
 
-  @GetMapping(path = AuditSnapshotDto.TYPE_NAME, produces = JSON_API_VALUE)
+  @GetMapping(path = "${dina.apiPrefix:}/" + AuditSnapshotDto.TYPE_NAME, produces = JSON_API_VALUE)
   public ResponseEntity<RepresentationModel<?>> findAll(HttpServletRequest req) {
     String queryString = req != null ? DinaRepositoryV2.decodeQueryString(req) : null;
     QueryComponent queryComponents = QueryStringParser.parse(queryString);
