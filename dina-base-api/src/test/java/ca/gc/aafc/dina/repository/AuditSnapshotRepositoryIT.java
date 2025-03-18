@@ -1,13 +1,7 @@
 package ca.gc.aafc.dina.repository;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Collections;
-
-import javax.inject.Inject;
-
-import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.javers.core.Javers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,35 +10,42 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-
-import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.dto.AuditSnapshotDto;
-import ca.gc.aafc.dina.dto.EmployeeDto;
-import ca.gc.aafc.dina.repository.auditlog.AuditSnapshotRepository;
-import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
-
-import io.crnk.core.queryspec.FilterOperator;
-import io.crnk.core.queryspec.FilterSpec;
-import io.crnk.core.queryspec.PathSpec;
-import io.crnk.core.queryspec.QuerySpec;
-import io.crnk.core.resource.list.ResourceList;
-import io.crnk.core.resource.meta.PagedMetaInformation;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.toedter.spring.hateoas.jsonapi.JsonApiConfiguration;
 
+import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.dto.AuditSnapshotDto;
+import ca.gc.aafc.dina.dto.EmployeeDto;
+import ca.gc.aafc.dina.json.JsonHelper;
+import ca.gc.aafc.dina.jsonapi.JSONApiDocumentStructure;
+import ca.gc.aafc.dina.repository.auditlog.AuditSnapshotRepository;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import javax.inject.Inject;
 
 @SpringBootTest(classes = {TestDinaBaseApp.class, AuditSnapshotRepositoryIT.JsonApiConfigurationTestConfig.class}, properties = "dina.auditing.enabled = true")
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class AuditSnapshotRepositoryIT {
+
+  private static final TypeReference<List<Map<String, Object>>> LIST_MAP_TYPE_REF = new TypeReference<>() { };
+  private static final TypeReference<Map<String, Object>> MAP_TYPE_REF = new TypeReference<>() { };
 
   @Autowired
   private WebApplicationContext wac;
@@ -95,50 +96,47 @@ public class AuditSnapshotRepositoryIT {
 
   @Test
   public void findAll_whenNoFilter_allSnapshotsReturned() throws Exception {
+    assertAuditEndpoint(null, null, 6);
+  }
 
-    var findAllResponse = mockMvc.perform(
-        get("/" + AuditSnapshotDto.TYPE_NAME)
-      )
+  @Test
+  public void findAll_whenFilteredByInstance_snapshotsFiltered() throws Exception {
+    assertAuditEndpoint("filter[instanceId]", TYPE + "/" + INSTANCE_ID, 2);
+  }
+
+  @Test
+  public void findAll_whenFilteredByAuthor_snapshotsFiltered() throws Exception {
+    assertAuditEndpoint("filter[author]", AUTHOR, 4);
+    assertAuditEndpoint("filter[author]", "other-user", 0);
+  }
+
+  private void assertAuditEndpoint(String filterStr, String filterValue, int expectedCount) throws Exception {
+
+    var requestBuilder = get("/" + AuditSnapshotDto.TYPE_NAME);
+
+    if (StringUtils.isNotBlank(filterStr)) {
+      requestBuilder.queryParam(filterStr, filterValue);
+    }
+
+    var findAllResponse = mockMvc.perform(requestBuilder)
       .andExpect(status().isOk())
       .andReturn();
 
+    JsonNode
+      docs2 = objMapper.readValue(findAllResponse.getResponse().getContentAsString(), JsonNode.class);
 
-    String str = findAllResponse.getResponse().getContentAsString();
+    Optional<JsonNode> dataNode2 = JsonHelper.atJsonPtr(docs2, JSONApiDocumentStructure.DATA_PTR);
+    Optional<JsonNode> metaNode2 = JsonHelper.atJsonPtr(docs2, JSONApiDocumentStructure.META_PTR);
 
-    int a;
-//
-//    ResourceList<AuditSnapshotDto> snapshots = snapshotRepo.findAll(null);
-//    assertEquals(6, snapshots.size());
-//    assertEquals(6, ((PagedMetaInformation) snapshots.getMeta()).getTotalResourceCount());
+    List<Map<String, Object>> documents2 = objMapper.readerFor(LIST_MAP_TYPE_REF)
+      .readValue(dataNode2.get());
+
+    Map<String, Object> metaBlock2 = objMapper.readerFor(MAP_TYPE_REF)
+      .readValue(metaNode2.get());
+
+    assertEquals(expectedCount, documents2.size());
+    assertEquals(expectedCount, metaBlock2.get("totalResourceCount"));
   }
-
-//  @Test
-//  public void findAll_whenFilteredByInstance_snapshotsFiltered() {
-//    QuerySpec qs = new QuerySpec(AuditSnapshotDto.class);
-//    qs.addFilter(filter("instanceId", TYPE + "/" + INSTANCE_ID));
-//    ResourceList<AuditSnapshotDto> snapshots = snapshotRepo.findAll(qs);
-//    assertEquals(2, snapshots.size());
-//    assertEquals(2, ((PagedMetaInformation) snapshots.getMeta()).getTotalResourceCount());
-//  }
-//
-//  @Test
-//  public void findAll_whenFilteredByAuthor_snapshotsFiltered() {
-//    QuerySpec qs1 = new QuerySpec(AuditSnapshotDto.class);
-//    qs1.addFilter(filter("author", AUTHOR));
-//    ResourceList<AuditSnapshotDto> snapshots1 = snapshotRepo.findAll(qs1);
-//    assertEquals(4, snapshots1.size());
-//    assertEquals(4, ((PagedMetaInformation) snapshots1.getMeta()).getTotalResourceCount());
-//
-//    QuerySpec qs2 = new QuerySpec(AuditSnapshotDto.class);
-//    qs2.addFilter(filter("author", "other-user"));
-//    ResourceList<AuditSnapshotDto> snapshots2 = snapshotRepo.findAll(qs2);
-//    assertEquals(0, snapshots2.size());
-//    assertEquals(0, ((PagedMetaInformation) snapshots2.getMeta()).getTotalResourceCount());
-//  }
-//
-//  private FilterSpec filter(String attribute, String value) {
-//    return new FilterSpec(PathSpec.of(attribute), FilterOperator.EQ, value);
-//  }
 
   private static EmployeeDto createDto() {
     EmployeeDto dto = new EmployeeDto();
@@ -164,5 +162,4 @@ public class AuditSnapshotRepositoryIT {
         });
     }
   }
-
 }
