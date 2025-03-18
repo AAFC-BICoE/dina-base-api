@@ -121,7 +121,7 @@ public class AuditSnapshotRepository {
   private static Map<String, String> getFilterMap(QueryComponent queryComponents) {
     Map<String, String> map = new HashMap<>();
 
-    if(queryComponents == null || queryComponents.getFilters() == null) {
+    if (queryComponents == null || queryComponents.getFilters() == null) {
       return Map.of();
     }
 
@@ -130,8 +130,8 @@ public class AuditSnapshotRepository {
     switch (queryComponents.getFilters()) {
       case FilterExpression fe -> map.put(fe.attribute(), fe.value());
       case FilterGroup fg -> {
-        for(FilterComponent gfg : fg.getComponents()) {
-          if( gfg instanceof FilterExpression gfe ) {
+        for (FilterComponent gfg : fg.getComponents()) {
+          if (gfg instanceof FilterExpression gfe) {
             map.put(gfe.attribute(), gfe.value());
           }
         }
