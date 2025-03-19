@@ -1,69 +1,97 @@
 package ca.gc.aafc.dina.repository.auditlog;
 
-import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.javers.core.metamodel.object.CdoSnapshot;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Repository;
+import org.springframework.boot.info.BuildProperties;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.dto.AuditSnapshotDto;
-import ca.gc.aafc.dina.repository.NoLinkInformation;
+import ca.gc.aafc.dina.dto.JsonApiDto;
+import ca.gc.aafc.dina.dto.JsonApiMeta;
+import ca.gc.aafc.dina.filter.FilterComponent;
+import ca.gc.aafc.dina.filter.FilterExpression;
+import ca.gc.aafc.dina.filter.FilterGroup;
+import ca.gc.aafc.dina.filter.QueryComponent;
+import ca.gc.aafc.dina.filter.QueryStringParser;
+import ca.gc.aafc.dina.repository.DinaRepositoryV2;
+import ca.gc.aafc.dina.repository.JsonApiModelBuilderHelper;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.AuditService.AuditInstance;
-import io.crnk.core.exception.MethodNotAllowedException;
-import io.crnk.core.queryspec.QuerySpec;
-import io.crnk.core.repository.ReadOnlyResourceRepositoryBase;
-import io.crnk.core.resource.list.DefaultResourceList;
-import io.crnk.core.resource.list.ResourceList;
-import io.crnk.core.resource.meta.DefaultPagedMetaInformation;
 
-@Repository
+import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiModel;
+import static com.toedter.spring.hateoas.jsonapi.MediaTypes.JSON_API_VALUE;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
+
+@RestController
 @ConditionalOnProperty(value = "dina.auditing.enabled", havingValue = "true")
-public class AuditSnapshotRepository extends ReadOnlyResourceRepositoryBase<AuditSnapshotDto, Long> {
+public class AuditSnapshotRepository {
 
-  private static final long DEFAULT_SKIP = 0L;
-  private static final long DEFAULT_LIMIT = 100L;
   private static final String INSTANCE_FILTER_VALUE = "instanceId";
   private static final String AUTHOR_FILTER_VALUE = "author";
 
   private final AuditService service;
+  private final BuildProperties buildProperties;
 
-  public AuditSnapshotRepository(AuditService service) {
-    super(AuditSnapshotDto.class);
+  public AuditSnapshotRepository(AuditService service, BuildProperties buildProperties) {
     this.service = service;
+    this.buildProperties = buildProperties;
   }
 
-  @Override
-  public ResourceList<AuditSnapshotDto> findAll(QuerySpec qs) {
-    int limit = Optional.ofNullable(qs.getLimit()).orElse(DEFAULT_LIMIT).intValue();
-    int skip = Optional.ofNullable(qs.getOffset()).orElse(DEFAULT_SKIP).intValue();
+  @GetMapping(path = "${dina.apiPrefix:}/" + AuditSnapshotDto.TYPE_NAME, produces = JSON_API_VALUE)
+  public ResponseEntity<RepresentationModel<?>> findAll(HttpServletRequest req) {
+    String queryString = req != null ? DinaRepositoryV2.decodeQueryString(req) : null;
+    QueryComponent queryComponents = QueryStringParser.parse(queryString);
 
-    Map<String, String> filters = getFilterMap(qs);
+    int pageOffset = DinaRepositoryV2.toSafePageOffset(queryComponents.getPageOffset());
+    int pageLimit = DinaRepositoryV2.toSafePageLimit(queryComponents.getPageLimit());
+
+    Map<String, String> filters = getFilterMap(queryComponents);
     String authorFilter = filters.get(AUTHOR_FILTER_VALUE);
     String instanceFilter = filters.get(INSTANCE_FILTER_VALUE);
 
     AuditInstance instance = AuditInstance.fromString(instanceFilter).orElse(null);
 
-    List<AuditSnapshotDto> dtos = service.findAll(instance, authorFilter, limit, skip)
-      .stream().map(AuditSnapshotRepository::toDto).collect(Collectors.toList());
+    List<AuditSnapshotDto> dtos = service.findAll(instance, authorFilter, pageLimit, pageOffset)
+      .stream().map(AuditSnapshotRepository::toDto).toList();
 
     Long count = service.getResouceCount(authorFilter, instance);
-    DefaultPagedMetaInformation meta = new DefaultPagedMetaInformation();
-    meta.setTotalResourceCount(count);
 
-    return new DefaultResourceList<>(dtos, meta, new NoLinkInformation());
-  }
+    JsonApiModelBuilder mainBuilder = jsonApiModel();
+    List<RepresentationModel<?>> repModels = new ArrayList<>();
+    Set<UUID> included = new HashSet<>();
+    for (AuditSnapshotDto currResource : dtos) {
+      JsonApiModelBuilder builder = JsonApiModelBuilderHelper.
+        createJsonApiModelBuilder(JsonApiDto.builder().dto(currResource).build(), mainBuilder, included);
+      repModels.add(builder.build());
+    }
 
-  @Override
-  public AuditSnapshotDto findOne(Long id, QuerySpec querySpec) {
-    // Disable findOne.
-    throw new MethodNotAllowedException("method not allowed");
+    // use custom metadata instead of PagedModel.PageMetadata so we can control
+    // the content and key names
+    JsonApiMeta.builder()
+      .totalResourceCount(Math.toIntExact(count))
+      .moduleVersion(buildProperties.getVersion())
+      .build()
+      .populateMeta(mainBuilder::meta);
+
+    mainBuilder.model(CollectionModel.of(repModels));
+
+    return ResponseEntity.ok(mainBuilder.build());
   }
 
   /** Converts Javers snapshot to our DTO format. */
@@ -88,16 +116,29 @@ public class AuditSnapshotRepository extends ReadOnlyResourceRepositoryBase<Audi
   }
 
   /**
-   * Converts Crnk's filters into a String/String Map.
+   * Converts QueryComponent filters into a String/String Map.
    */
-  private static Map<String, String> getFilterMap(QuerySpec qs) {
+  private static Map<String, String> getFilterMap(QueryComponent queryComponents) {
     Map<String, String> map = new HashMap<>();
-    qs.getFilters().forEach(
-      it -> map.put(
-        it.getPath().toString(),
-        it.getValue().toString()
-      )
-    );
+
+    if (queryComponents == null || queryComponents.getFilters() == null) {
+      return Map.of();
+    }
+
+    queryComponents.getFilterExpression().ifPresent( fe -> map.put(fe.attribute(), fe.value()));
+
+    switch (queryComponents.getFilters()) {
+      case FilterExpression fe -> map.put(fe.attribute(), fe.value());
+      case FilterGroup fg -> {
+        for (FilterComponent gfg : fg.getComponents()) {
+          if (gfg instanceof FilterExpression gfe) {
+            map.put(gfe.attribute(), gfe.value());
+          }
+        }
+      }
+      default ->
+        throw new IllegalStateException("Unexpected value: " + queryComponents.getFilters());
+    }
     return map;
   }
 

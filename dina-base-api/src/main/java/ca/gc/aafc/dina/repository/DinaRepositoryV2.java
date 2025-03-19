@@ -467,7 +467,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @param req
    * @return decoded query string or empty string if query string is absent
    */
-  protected static String decodeQueryString(HttpServletRequest req) {
+  public static String decodeQueryString(HttpServletRequest req) {
     Objects.requireNonNull(req);
 
     if (StringUtils.isBlank(req.getQueryString())) {
@@ -511,14 +511,14 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     }
   }
 
-  private static int toSafePageOffset(Integer pageOffset) {
+  public static int toSafePageOffset(Integer pageOffset) {
     if (pageOffset == null || pageOffset <= 0) {
       return 0;
     }
     return pageOffset;
   }
 
-  private static int toSafePageLimit(Integer pageLimit) {
+  public static int toSafePageLimit(Integer pageLimit) {
     if (pageLimit == null || pageLimit <= 0) {
       return DEFAULT_PAGE_LIMIT;
     }
