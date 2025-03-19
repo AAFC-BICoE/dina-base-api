@@ -4,7 +4,7 @@ import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class ResourceGoneException extends Exception {
+public final class ResourceGoneException extends Exception {
 
   private final String resourceType;
   private final String identifier;

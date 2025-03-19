@@ -104,9 +104,9 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     this.resourceClass = resourceClass;
 
     JsonApiTypeForClass annotation = resourceClass.getAnnotation(JsonApiTypeForClass.class);
-    if(annotation != null) {
+    if (annotation != null) {
       jsonApiType = annotation.value();
-    } else{
+    } else {
       jsonApiType = null;
     }
 
@@ -333,7 +333,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
     E entity = dinaService.findOne(identifier, entityClass, includes);
     if (entity == null) {
-      if( auditService != null) {
+      if (auditService != null) {
         AuditService.AuditInstance auditInstance = AuditService.AuditInstance.builder()
           .id(identifier.toString()).type(jsonApiType).build();
         if (auditService.hasTerminalSnapshot(auditInstance)) {
