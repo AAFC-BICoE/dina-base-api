@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tennaito.rsql.misc.ArgumentParser;
 import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
+import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
 
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.JsonApiDto;
@@ -19,6 +20,7 @@ import ca.gc.aafc.dina.dto.JsonApiExternalResource;
 import ca.gc.aafc.dina.dto.JsonApiMeta;
 import ca.gc.aafc.dina.dto.JsonApiResource;
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.filter.DinaFilterArgumentParser;
 import ca.gc.aafc.dina.filter.EntityFilterHelper;
@@ -31,6 +33,7 @@ import ca.gc.aafc.dina.jsonapi.JsonApiBulkResourceIdentifierDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.mapper.DinaMapperV2;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
+import ca.gc.aafc.dina.repository.auditlog.AuditSnapshotRepository;
 import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
@@ -69,9 +72,13 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
   private static final int MAX_PAGE_LIMIT = 100;
 
   private final DinaAuthorizationService authorizationService;
+  private final AuditService auditService;
   private final DinaService<E> dinaService;
   private final Class<E> entityClass;
+
   private final Class<D> resourceClass;
+  private final String jsonApiType;
+
   private final DinaMapperV2<D, E> dinaMapper;
   private final BuildProperties buildProperties;
 
@@ -91,9 +98,18 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
                           ObjectMapper objMapper) {
 
     this.authorizationService = authorizationService;
+    this.auditService = auditService.orElse(null);
     this.dinaService = dinaService;
     this.entityClass = entityClass;
     this.resourceClass = resourceClass;
+
+    JsonApiTypeForClass annotation = resourceClass.getAnnotation(JsonApiTypeForClass.class);
+    if(annotation != null) {
+      jsonApiType = annotation.value();
+    } else{
+      jsonApiType = null;
+    }
+
     this.dinaMapper = dinaMapper;
     this.buildProperties = buildProperties;
 
@@ -138,7 +154,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    */
   public ResponseEntity<RepresentationModel<?>> handleBulkLoad(JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument,
                                                                HttpServletRequest req)
-      throws ResourceNotFoundException {
+      throws ResourceNotFoundException, ResourceGoneException {
     String queryString = req != null ? decodeQueryString(req) : null;
     List<JsonApiDto<D> > dtos = new ArrayList<>();
     for (var data : jsonApiBulkDocument.getData()) {
@@ -156,7 +172,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @throws ResourceNotFoundException
    */
   public ResponseEntity<RepresentationModel<?>> handleFindOne(UUID id, HttpServletRequest req)
-      throws ResourceNotFoundException {
+      throws ResourceNotFoundException, ResourceGoneException {
 
     String queryString = req != null ? decodeQueryString(req) : null;
 
@@ -193,7 +209,8 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @throws ResourceNotFoundException
    */
   public ResponseEntity<RepresentationModel<?>> handleBulkCreate(JsonApiBulkDocument jsonApiBulkDocument,
-                               Consumer<D> dtoCustomizer) throws ResourceNotFoundException {
+                               Consumer<D> dtoCustomizer)
+      throws ResourceNotFoundException, ResourceGoneException {
 
     List<JsonApiDto<D> > dtos = new ArrayList<>();
     for (var data : jsonApiBulkDocument.getData()) {
@@ -214,7 +231,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    */
   public ResponseEntity<RepresentationModel<?>> handleCreate(JsonApiDocument postedDocument,
                                                              Consumer<D> dtoCustomizer)
-      throws ResourceNotFoundException {
+      throws ResourceNotFoundException, ResourceGoneException {
 
     if (postedDocument == null) {
       return ResponseEntity.badRequest().build();
@@ -239,7 +256,8 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @return
    * @throws ResourceNotFoundException
    */
-  public ResponseEntity<RepresentationModel<?>> handleBulkUpdate(JsonApiBulkDocument jsonApiBulkDocument) throws ResourceNotFoundException {
+  public ResponseEntity<RepresentationModel<?>> handleBulkUpdate(JsonApiBulkDocument jsonApiBulkDocument)
+      throws ResourceNotFoundException, ResourceGoneException {
     List<JsonApiDto<D> > dtos = new ArrayList<>();
     for (var data : jsonApiBulkDocument.getData()) {
       update(JsonApiDocument.builder().data(data).build());
@@ -257,7 +275,9 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @return
    */
   public ResponseEntity<RepresentationModel<?>> handleUpdate(JsonApiDocument partialPatchDto,
-                                                             UUID id) throws ResourceNotFoundException {
+                                                             UUID id)
+      throws ResourceNotFoundException, ResourceGoneException {
+
     // Sanity check
     if (!Objects.equals(id, partialPatchDto.getId())) {
       return ResponseEntity.badRequest().build();
@@ -302,7 +322,8 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @param queryString
    * @return the DTO wrapped in a {@link JsonApiDto} or null if not found
    */
-  public JsonApiDto<D> getOne(UUID identifier, String queryString) throws ResourceNotFoundException {
+  public JsonApiDto<D> getOne(UUID identifier, String queryString) throws ResourceNotFoundException,
+      ResourceGoneException {
 
     // the only part of QueryComponent that can be used on getOne is "includes"
     QueryComponent queryComponents = QueryStringParser.parse(queryString);
@@ -312,6 +333,14 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
     E entity = dinaService.findOne(identifier, entityClass, includes);
     if (entity == null) {
+      if( auditService != null) {
+        AuditService.AuditInstance auditInstance = AuditService.AuditInstance.builder()
+          .id(identifier.toString()).type(jsonApiType).build();
+        if (auditService.hasTerminalSnapshot(auditInstance)) {
+          throw ResourceGoneException.create(resourceClass.getSimpleName(), identifier,
+            AuditSnapshotRepository.generateUrlLink(jsonApiType, identifier.toString()));
+        }
+      }
       throw ResourceNotFoundException.create(resourceClass.getSimpleName(), identifier);
     }
     authorizationService.authorizeRead(entity);
