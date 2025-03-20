@@ -24,6 +24,7 @@ import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.TaskDTO;
 import ca.gc.aafc.dina.entity.Project;
 import ca.gc.aafc.dina.entity.Task;
+import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.mapper.ProjectDtoMapper;
 import ca.gc.aafc.dina.mapper.TaskDtoMapper;
@@ -148,7 +149,7 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
     @Transactional
     public ResponseEntity<RepresentationModel<?>> handlePatch(@RequestBody JsonApiDocument partialPatchDto,
                                                               @PathVariable String id)
-      throws ResourceNotFoundException {
+      throws ResourceNotFoundException, ResourceGoneException {
       projectRepo.update(partialPatchDto);
       return ResponseEntity.ok().build();
     }
