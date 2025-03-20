@@ -193,12 +193,11 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @throws ResourceNotFoundException
    */
   public ResponseEntity<RepresentationModel<?>> handleBulkCreate(JsonApiBulkDocument jsonApiBulkDocument,
-                               Consumer<D> dtoCustomizer) throws ResourceNotFoundException {
+                               Consumer<D> dtoCustomizer) {
 
     List<JsonApiDto<D> > dtos = new ArrayList<>();
     for (var data : jsonApiBulkDocument.getData()) {
-      UUID uuid = create(JsonApiDocument.builder().data(data).build(), dtoCustomizer);
-      dtos.add(getOne(uuid, null));
+      dtos.add(create(JsonApiDocument.builder().data(data).build(), dtoCustomizer));
     }
 
     JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos, null);
@@ -213,17 +212,13 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @return
    */
   public ResponseEntity<RepresentationModel<?>> handleCreate(JsonApiDocument postedDocument,
-                                                             Consumer<D> dtoCustomizer)
-      throws ResourceNotFoundException {
+                                                             Consumer<D> dtoCustomizer) {
 
     if (postedDocument == null) {
       return ResponseEntity.badRequest().build();
     }
 
-    UUID uuid = create(postedDocument, dtoCustomizer);
-
-    // reload dto
-    JsonApiDto<D> jsonApiDto = getOne(uuid, null);
+    JsonApiDto<D> jsonApiDto = create(postedDocument, dtoCustomizer);
     JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto);
     builder.link(generateLinkToResource(jsonApiDto.getDto()));
 
@@ -242,8 +237,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
   public ResponseEntity<RepresentationModel<?>> handleBulkUpdate(JsonApiBulkDocument jsonApiBulkDocument) throws ResourceNotFoundException {
     List<JsonApiDto<D> > dtos = new ArrayList<>();
     for (var data : jsonApiBulkDocument.getData()) {
-      update(JsonApiDocument.builder().data(data).build());
-      dtos.add(getOne(data.getId(), null));
+      dtos.add(update(JsonApiDocument.builder().data(data).build()));
     }
 
     JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos, null);
@@ -507,7 +501,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    *                      Example, setting the authenticated user as createdBy. Can be null.
    * @return the uuid assigned or used
    */
-  public UUID create(JsonApiDocument docToCreate, Consumer<D> dtoCustomizer) {
+  public JsonApiDto<D> create(JsonApiDocument docToCreate, Consumer<D> dtoCustomizer) {
 
     D dto = objMapper.convertValue(docToCreate.getAttributes(), resourceClass);
     if (dtoCustomizer != null) {
@@ -522,7 +516,13 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
     authorizationService.authorizeCreate(entity);
     E created = dinaService.create(entity);
-    return created.getUuid();
+
+    // reload dto to make sure calculated values and server generated values are returned
+    try {
+      return getOne(created.getUuid(), null);
+    } catch (ResourceNotFoundException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -530,7 +530,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * attributes.
    * @param patchDto
    */
-  public void update(JsonApiDocument patchDto) throws ResourceNotFoundException {
+  public JsonApiDto<D> update(JsonApiDocument patchDto) throws ResourceNotFoundException {
 
     // We need to use Jackson for now here since MapStruct doesn't support setting
     // values from Map<String, Object> yet.
@@ -553,6 +553,9 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     updateRelationships(entity, patchDto.getRelationships());
 
     dinaService.update(entity);
+
+    // reload dto to make sure calculated values and server generated values are returned
+    return getOne(entity.getUuid(), null);
   }
 
   /**
