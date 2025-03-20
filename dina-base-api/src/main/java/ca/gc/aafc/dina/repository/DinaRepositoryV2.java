@@ -332,17 +332,10 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     validateIncludes(includes);
 
     E entity = dinaService.findOne(identifier, entityClass, includes);
-    if (entity == null) {
-      if (auditService != null) {
-        AuditService.AuditInstance auditInstance = AuditService.AuditInstance.builder()
-          .id(identifier.toString()).type(jsonApiType).build();
-        if (auditService.hasTerminalSnapshot(auditInstance)) {
-          throw ResourceGoneException.create(resourceClass.getSimpleName(), identifier,
-            AuditSnapshotRepository.generateUrlLink(jsonApiType, identifier.toString()));
-        }
-      }
-      throw ResourceNotFoundException.create(resourceClass.getSimpleName(), identifier);
-    }
+
+    // Throw not found or gone exceptions if required.
+    handleEntityAuditExceptions(entity, identifier);
+
     authorizationService.authorizeRead(entity);
 
     Set<String> attributes = new HashSet<>(registry.getAttributesPerClass().get(entityClass));
@@ -559,7 +552,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * attributes.
    * @param patchDto
    */
-  public void update(JsonApiDocument patchDto) throws ResourceNotFoundException {
+  public void update(JsonApiDocument patchDto) throws ResourceNotFoundException, ResourceGoneException {
 
     // We need to use Jackson for now here since MapStruct doesn't support setting
     // values from Map<String, Object> yet.
@@ -569,9 +562,9 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
     // load entity
     E entity = dinaService.findOne(patchDto.getId(), entityClass);
-    if (entity == null) {
-      throw ResourceNotFoundException.create(resourceClass.getSimpleName(), patchDto.getId());
-    }
+
+    // Throw not found or gone exceptions if required.
+    handleEntityAuditExceptions(entity, patchDto.getId());
 
     // Check for authorization on the entity
     authorizationService.authorizeUpdate(entity);
@@ -670,6 +663,32 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     }
     authorizationService.authorizeDelete(entity);
     dinaService.delete(entity);
+  }
+
+  /**
+   * Checks the entity and audit service to determine if the correct exception should be thrown.
+   * 
+   * No exceptions are thrown if the entity exists.
+   * 
+   * @param entity The Dina Entity to be checked.
+   * @param identifier The UUID for the entity.
+   * @throws ResourceNotFoundException if the entity is not found.
+   * @throws ResourceGoneException if the entity has been deleted since a terminal snapshot has 
+   *    been found.
+   */
+  private void handleEntityAuditExceptions(E entity, UUID identifier)
+      throws ResourceNotFoundException, ResourceGoneException {
+    if (entity == null) {
+      if (auditService != null) {
+        AuditService.AuditInstance auditInstance = AuditService.AuditInstance.builder()
+            .id(identifier.toString()).type(jsonApiType).build();
+        if (auditService.hasTerminalSnapshot(auditInstance)) {
+          throw ResourceGoneException.create(resourceClass.getSimpleName(), identifier,
+              AuditSnapshotRepository.generateUrlLink(jsonApiType, identifier.toString()));
+        }
+      }
+      throw ResourceNotFoundException.create(resourceClass.getSimpleName(), identifier);
+    }
   }
 
   /**
