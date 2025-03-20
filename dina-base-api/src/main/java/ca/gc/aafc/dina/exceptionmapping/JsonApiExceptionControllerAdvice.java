@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.toedter.spring.hateoas.jsonapi.JsonApiError;
 import com.toedter.spring.hateoas.jsonapi.JsonApiErrors;
 
+import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
 
@@ -22,7 +23,7 @@ import ca.gc.aafc.dina.repository.DinaRepositoryV2;
 public class JsonApiExceptionControllerAdvice {
 
   @ExceptionHandler
-  public ResponseEntity<JsonApiErrors> handleVResourceNotFoundException(ResourceNotFoundException ex) {
+  public ResponseEntity<JsonApiErrors> handleResourceNotFoundException(ResourceNotFoundException ex) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
       JsonApiErrors.create().withError(
         JsonApiError.create()
@@ -30,6 +31,19 @@ public class JsonApiExceptionControllerAdvice {
           .withStatus(HttpStatus.NOT_FOUND.toString())
           .withTitle("Not Found")
           .withDetail(ex.getMessage()))
+    );
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleResourceGoneException(ResourceGoneException ex) {
+    return ResponseEntity.status(HttpStatus.GONE).body(
+      JsonApiErrors.create().withError(
+        JsonApiError.create()
+          .withCode(Integer.toString(HttpStatus.GONE.value()))
+          .withStatus(HttpStatus.GONE.toString())
+          .withTitle("Gone")
+          .withDetail(ex.getMessage())
+          .withAboutLink(ex.getLink()))
     );
   }
 
