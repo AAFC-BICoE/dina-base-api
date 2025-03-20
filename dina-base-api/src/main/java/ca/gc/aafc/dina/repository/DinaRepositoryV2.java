@@ -69,6 +69,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
   private static final int MAX_PAGE_LIMIT = 100;
 
   private final DinaAuthorizationService authorizationService;
+  private final AuditService auditService;
   private final DinaService<E> dinaService;
   private final Class<E> entityClass;
   private final Class<D> resourceClass;
@@ -91,6 +92,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
                           ObjectMapper objMapper) {
 
     this.authorizationService = authorizationService;
+    this.auditService = auditService.orElse(null);
     this.dinaService = dinaService;
     this.entityClass = entityClass;
     this.resourceClass = resourceClass;
@@ -499,7 +501,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @param docToCreate
    * @param dtoCustomizer used to customize the dto before being transformed to entity.
    *                      Example, setting the authenticated user as createdBy. Can be null.
-   * @return the uuid assigned or used
+   * @return freshly reloaded dto of the created resource
    */
   public JsonApiDto<D> create(JsonApiDocument docToCreate, Consumer<D> dtoCustomizer) {
 
@@ -518,17 +520,25 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     E created = dinaService.create(entity);
 
     // reload dto to make sure calculated values and server generated values are returned
+    JsonApiDto<D> reloadedDto;
     try {
-      return getOne(created.getUuid(), null);
+      reloadedDto = getOne(created.getUuid(), null);
     } catch (ResourceNotFoundException e) {
       throw new RuntimeException(e);
     }
+
+    if (auditService != null) {
+      auditService.audit(reloadedDto);
+    }
+
+    return reloadedDto;
   }
 
   /**
    * Update the resource defined by the id in {@link JsonApiDocument} with the provided
    * attributes.
    * @param patchDto
+   * @return freshly reloaded dto of the updated resource
    */
   public JsonApiDto<D> update(JsonApiDocument patchDto) throws ResourceNotFoundException {
 
@@ -555,7 +565,12 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     dinaService.update(entity);
 
     // reload dto to make sure calculated values and server generated values are returned
-    return getOne(entity.getUuid(), null);
+    JsonApiDto<D> reloadedDto = getOne(entity.getUuid(), null);
+
+    if (auditService != null) {
+      auditService.audit(reloadedDto);
+    }
+    return reloadedDto;
   }
 
   /**
@@ -643,6 +658,12 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
       throw ResourceNotFoundException.create(resourceClass.getSimpleName(), identifier);
     }
     authorizationService.authorizeDelete(entity);
+
+    if (auditService != null) {
+      JsonApiDto<D> dto = getOne(identifier, null);
+      auditService.auditDeleteEvent(dto);
+    }
+
     dinaService.delete(entity);
   }
 
