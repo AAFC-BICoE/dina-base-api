@@ -548,7 +548,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     }
 
     if (auditService != null) {
-      auditService.audit(reloadedDto);
+      auditService.audit(reloadedDto.getDto());
     }
 
     return reloadedDto;
@@ -589,7 +589,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     JsonApiDto<D> reloadedDto = getOne(entity.getUuid(), null);
 
     if (auditService != null) {
-      auditService.audit(reloadedDto);
+      auditService.audit(reloadedDto.getDto());
     }
     return reloadedDto;
   }
@@ -682,7 +682,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
     if (auditService != null) {
       JsonApiDto<D> dto = getOne(identifier, null);
-      auditService.auditDeleteEvent(dto);
+      auditService.auditDeleteEvent(dto.getDto());
     }
 
     dinaService.delete(entity);
