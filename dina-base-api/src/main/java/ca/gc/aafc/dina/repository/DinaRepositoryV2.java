@@ -209,13 +209,11 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @throws ResourceNotFoundException
    */
   public ResponseEntity<RepresentationModel<?>> handleBulkCreate(JsonApiBulkDocument jsonApiBulkDocument,
-                               Consumer<D> dtoCustomizer)
-      throws ResourceNotFoundException, ResourceGoneException {
+                               Consumer<D> dtoCustomizer) {
 
     List<JsonApiDto<D> > dtos = new ArrayList<>();
     for (var data : jsonApiBulkDocument.getData()) {
-      UUID uuid = create(JsonApiDocument.builder().data(data).build(), dtoCustomizer);
-      dtos.add(getOne(uuid, null));
+      dtos.add(create(JsonApiDocument.builder().data(data).build(), dtoCustomizer));
     }
 
     JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos, null);
@@ -230,17 +228,13 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @return
    */
   public ResponseEntity<RepresentationModel<?>> handleCreate(JsonApiDocument postedDocument,
-                                                             Consumer<D> dtoCustomizer)
-      throws ResourceNotFoundException, ResourceGoneException {
+                                                             Consumer<D> dtoCustomizer) {
 
     if (postedDocument == null) {
       return ResponseEntity.badRequest().build();
     }
 
-    UUID uuid = create(postedDocument, dtoCustomizer);
-
-    // reload dto
-    JsonApiDto<D> jsonApiDto = getOne(uuid, null);
+    JsonApiDto<D> jsonApiDto = create(postedDocument, dtoCustomizer);
     JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto);
     builder.link(generateLinkToResource(jsonApiDto.getDto()));
 
@@ -260,8 +254,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
       throws ResourceNotFoundException, ResourceGoneException {
     List<JsonApiDto<D> > dtos = new ArrayList<>();
     for (var data : jsonApiBulkDocument.getData()) {
-      update(JsonApiDocument.builder().data(data).build());
-      dtos.add(getOne(data.getId(), null));
+      dtos.add(update(JsonApiDocument.builder().data(data).build()));
     }
 
     JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos, null);
@@ -298,7 +291,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @return
    */
   public ResponseEntity<RepresentationModel<?>> handleBulkDelete(JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument)
-      throws ResourceNotFoundException {
+      throws ResourceNotFoundException, ResourceGoneException {
     for (var data : jsonApiBulkDocument.getData()) {
       delete(data.getId());
     }
@@ -310,7 +303,8 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @param id
    * @return
    */
-  public ResponseEntity<RepresentationModel<?>> handleDelete(UUID id) throws ResourceNotFoundException {
+  public ResponseEntity<RepresentationModel<?>> handleDelete(UUID id)
+      throws ResourceNotFoundException, ResourceGoneException {
     delete(id);
     return ResponseEntity.noContent().build();
   }
@@ -527,9 +521,9 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @param docToCreate
    * @param dtoCustomizer used to customize the dto before being transformed to entity.
    *                      Example, setting the authenticated user as createdBy. Can be null.
-   * @return the uuid assigned or used
+   * @return freshly reloaded dto of the created resource
    */
-  public UUID create(JsonApiDocument docToCreate, Consumer<D> dtoCustomizer) {
+  public JsonApiDto<D> create(JsonApiDocument docToCreate, Consumer<D> dtoCustomizer) {
 
     D dto = objMapper.convertValue(docToCreate.getAttributes(), resourceClass);
     if (dtoCustomizer != null) {
@@ -544,15 +538,30 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
     authorizationService.authorizeCreate(entity);
     E created = dinaService.create(entity);
-    return created.getUuid();
+
+    // reload dto to make sure calculated values and server generated values are returned
+    JsonApiDto<D> reloadedDto;
+    try {
+      reloadedDto = getOne(created.getUuid(), null);
+    } catch (ResourceNotFoundException | ResourceGoneException e) {
+      throw new RuntimeException(e);
+    }
+
+    if (auditService != null) {
+      auditService.audit(reloadedDto.getDto());
+    }
+
+    return reloadedDto;
   }
 
   /**
    * Update the resource defined by the id in {@link JsonApiDocument} with the provided
    * attributes.
    * @param patchDto
+   * @return freshly reloaded dto of the updated resource
    */
-  public void update(JsonApiDocument patchDto) throws ResourceNotFoundException, ResourceGoneException {
+  public JsonApiDto<D> update(JsonApiDocument patchDto)
+      throws ResourceNotFoundException, ResourceGoneException {
 
     // We need to use Jackson for now here since MapStruct doesn't support setting
     // values from Map<String, Object> yet.
@@ -575,6 +584,14 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     updateRelationships(entity, patchDto.getRelationships());
 
     dinaService.update(entity);
+
+    // reload dto to make sure calculated values and server generated values are returned
+    JsonApiDto<D> reloadedDto = getOne(entity.getUuid(), null);
+
+    if (auditService != null) {
+      auditService.audit(reloadedDto.getDto());
+    }
+    return reloadedDto;
   }
 
   /**
@@ -656,12 +673,18 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    *
    * @param identifier
    */
-  public void delete(UUID identifier) throws ResourceNotFoundException {
+  public void delete(UUID identifier) throws ResourceNotFoundException, ResourceGoneException {
     E entity = dinaService.findOne(identifier, entityClass);
     if (entity == null) {
       throw ResourceNotFoundException.create(resourceClass.getSimpleName(), identifier);
     }
     authorizationService.authorizeDelete(entity);
+
+    if (auditService != null) {
+      JsonApiDto<D> dto = getOne(identifier, null);
+      auditService.auditDeleteEvent(dto.getDto());
+    }
+
     dinaService.delete(entity);
   }
 

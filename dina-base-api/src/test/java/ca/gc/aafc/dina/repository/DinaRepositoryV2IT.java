@@ -387,14 +387,14 @@ public class DinaRepositoryV2IT {
       @Transactional
       public ResponseEntity<RepresentationModel<?>> onBulkDelete(@RequestBody
                                                                  JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument)
-        throws ResourceNotFoundException {
+        throws ResourceNotFoundException, ResourceGoneException {
         return handleBulkDelete(jsonApiBulkDocument);
       }
 
       @DeleteMapping(PATH + "/{id}")
       @Transactional
       public ResponseEntity<RepresentationModel<?>> onDelete(@PathVariable UUID id)
-        throws ResourceNotFoundException {
+        throws ResourceNotFoundException, ResourceGoneException {
         return handleDelete(id);
       }
     }
