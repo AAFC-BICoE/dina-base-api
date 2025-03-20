@@ -36,6 +36,7 @@ import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkDocument;
@@ -169,7 +170,8 @@ public class DinaRepositoryV2IT {
   }
 
   @Test
-  public void onCreateUpdateDelete_noException() throws ResourceNotFoundException {
+  public void onCreateUpdateDelete_noException() throws ResourceNotFoundException,
+      ResourceGoneException {
 
     PersonDTO personDto = PersonDTO.builder()
       .name("Bob")
@@ -324,7 +326,7 @@ public class DinaRepositoryV2IT {
         try {
           return linkTo(
             methodOn(PersonDinaTestRepositoryV2.class).onFindOne(dto.getUuid(), null)).withSelfRel();
-        } catch (ResourceNotFoundException e) {
+        } catch (ResourceNotFoundException | ResourceGoneException e) {
           throw new RuntimeException(e);
         }
       }
@@ -332,7 +334,7 @@ public class DinaRepositoryV2IT {
       @GetMapping(PATH + "/{id}")
       public ResponseEntity<RepresentationModel<?>> onFindOne(@PathVariable UUID id,
                                                               HttpServletRequest req)
-        throws ResourceNotFoundException {
+        throws ResourceNotFoundException, ResourceGoneException {
         return handleFindOne(id, req);
       }
 
@@ -345,14 +347,14 @@ public class DinaRepositoryV2IT {
       @Transactional
       public ResponseEntity<RepresentationModel<?>> onBulkCreate(
         @RequestBody JsonApiBulkDocument jsonApiBulkDocument)
-        throws ResourceNotFoundException {
+        throws ResourceNotFoundException, ResourceGoneException {
         return handleBulkCreate(jsonApiBulkDocument, null);
       }
 
       @PostMapping(path = PATH + "/" + JSON_API_BULK_LOAD_PATH, consumes = JSON_API_BULK)
       public ResponseEntity<RepresentationModel<?>> onBulkLoad(
         @RequestBody JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument, HttpServletRequest req)
-        throws ResourceNotFoundException {
+        throws ResourceNotFoundException, ResourceGoneException {
         return handleBulkLoad(jsonApiBulkDocument, req);
       }
 
@@ -360,7 +362,7 @@ public class DinaRepositoryV2IT {
       @Transactional
       public ResponseEntity<RepresentationModel<?>> onCreate(
         @RequestBody JsonApiDocument postedDocument)
-        throws ResourceNotFoundException {
+        throws ResourceNotFoundException, ResourceGoneException {
 
         return handleCreate(postedDocument, null);
       }
@@ -369,7 +371,7 @@ public class DinaRepositoryV2IT {
       @Transactional
       public ResponseEntity<RepresentationModel<?>> onUpdate(
         @RequestBody JsonApiDocument partialPatchDto,
-        @PathVariable UUID id) throws ResourceNotFoundException {
+        @PathVariable UUID id) throws ResourceNotFoundException, ResourceGoneException {
         return handleUpdate(partialPatchDto, id);
       }
 
@@ -377,7 +379,7 @@ public class DinaRepositoryV2IT {
       @Transactional
       public ResponseEntity<RepresentationModel<?>> onBulkUpdate(
         @RequestBody JsonApiBulkDocument jsonApiBulkDocument)
-        throws ResourceNotFoundException {
+        throws ResourceNotFoundException, ResourceGoneException {
         return handleBulkUpdate(jsonApiBulkDocument);
       }
 
