@@ -23,6 +23,8 @@ rabbitmq:
   port: 15672
 ```
 
+More on [messaging usage](https://aafc-bicoe.github.io/dina-base-api/#_messaging).
+
 ## Artifact
 
 `dina-messaging` artifact is published on Maven Central.
