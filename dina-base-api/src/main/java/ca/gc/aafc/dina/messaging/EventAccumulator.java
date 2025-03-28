@@ -16,13 +16,17 @@ import lombok.extern.log4j.Log4j2;
  * Accumulates unique events and publish them at a regular interval.
  * Requires a task scheduler
  *
- *     @Bean(name = "event-accumulator-task-scheduler")
- *     public ThreadPoolTaskScheduler taskScheduler2() {
- *         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
- *         scheduler.setPoolSize(1);
- *         scheduler.setThreadNamePrefix("eventAccumulatorTaskScheduler-");
- *         return scheduler;
- *     }
+ * <pre>
+ *{@code
+ * @Bean(name = "event-accumulator-task-scheduler")
+ * public ThreadPoolTaskScheduler taskScheduler2() {
+ *   ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+ *   scheduler.setPoolSize(1);
+ *   scheduler.setThreadNamePrefix("eventAccumulatorTaskScheduler-");
+ *   return scheduler;
+ * }
+ * }
+ * </pre>
  * @param <T>
  */
 @Log4j2
@@ -61,7 +65,7 @@ public class EventAccumulator<T> implements DinaEventPublisher<T> {
 
   private synchronized void trigger() {
     if (!events.isEmpty()) {
-      for(T event : events) {
+      for (T event : events) {
         eventPublisher.publishEvent(event);
       }
 
