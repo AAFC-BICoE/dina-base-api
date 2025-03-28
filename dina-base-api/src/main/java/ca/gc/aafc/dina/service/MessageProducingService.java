@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.messaging.DinaEventPublisher;
 import ca.gc.aafc.dina.messaging.EntityChanged;
 import ca.gc.aafc.dina.messaging.MessageQueueNotifier;
 import ca.gc.aafc.dina.messaging.message.DocumentOperationType;
@@ -14,21 +15,21 @@ import org.springframework.validation.SmartValidator;
 /**
  * Specialized {@link DefaultDinaService} that can emit events (using Spring {@link ApplicationEventPublisher})
  * when an entity changes.
- * see {@link MessageQueueNotifier}
+ * See {@link MessageQueueNotifier}
  * @param <E>
  */
 @Log4j2
 public class MessageProducingService<E extends DinaEntity> extends DefaultDinaService<E> {
 
   private final String resourceType;
-  private final ApplicationEventPublisher eventPublisher;
+  private final DinaEventPublisher<EntityChanged> eventPublisher;
   private final EnumSet<DocumentOperationType> supportedMessageOperations;
 
   public MessageProducingService(
     BaseDAO baseDAO,
     SmartValidator validator,
     String resourceType,
-    ApplicationEventPublisher eventPublisher
+    DinaEventPublisher<EntityChanged> eventPublisher
   ) {
     this(baseDAO, validator, resourceType,
       EnumSet.of(DocumentOperationType.ADD, DocumentOperationType.UPDATE,
@@ -49,7 +50,7 @@ public class MessageProducingService<E extends DinaEntity> extends DefaultDinaSe
     SmartValidator validator,
     String resourceType,
     EnumSet<DocumentOperationType> supportedMessageOperations,
-    ApplicationEventPublisher eventPublisher
+    DinaEventPublisher<EntityChanged> eventPublisher
   ) {
     super(baseDAO, validator);
     this.resourceType = resourceType;
@@ -131,13 +132,13 @@ public class MessageProducingService<E extends DinaEntity> extends DefaultDinaSe
 
   /**
    * Method used to publish an event.
-   * The message will only be sent after the main transaction is successfully committed.
+   * See {@link MessageQueueNotifier} for the receiver end.
    *
    * @param event
    */
   protected void publishEvent(EntityChanged event) {
     log.info("publishEvent: {}", event::toString);
-    eventPublisher.publishEvent(event);
+    eventPublisher.addEvent(event);
   }
 
   /**

@@ -1,22 +1,36 @@
 package ca.gc.aafc.dina.messaging;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.stereotype.Component;
+
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import lombok.extern.log4j.Log4j2;
 
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.TaskScheduler;
-
 /**
  * Accumulates unique events and publish them at a regular interval.
- * Requires the config to have @EnableScheduling so a taskScheduler can be provided
+ * Requires a task scheduler
+ *
+ *     @Bean(name = "event-accumulator-task-scheduler")
+ *     public ThreadPoolTaskScheduler taskScheduler2() {
+ *         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+ *         scheduler.setPoolSize(1);
+ *         scheduler.setThreadNamePrefix("eventAccumulatorTaskScheduler-");
+ *         return scheduler;
+ *     }
  * @param <T>
  */
 @Log4j2
-//@Component
-public class EventAccumulator<T> {
+@Component
+@ConditionalOnBean(name = "event-accumulator-task-scheduler")
+public class EventAccumulator<T> implements DinaEventPublisher<T> {
+
+  private static final int DELAY_IN_SECONDS = 2;
 
   private final TaskScheduler taskScheduler;
   private final ApplicationEventPublisher eventPublisher;
@@ -26,11 +40,13 @@ public class EventAccumulator<T> {
   private boolean isTaskSchedulerRunning = false;
   private ScheduledFuture<?> scheduledFuture;
 
-  public EventAccumulator(TaskScheduler taskScheduler, ApplicationEventPublisher eventPublisher) {
+  public EventAccumulator(@Qualifier("event-accumulator-task-scheduler") TaskScheduler taskScheduler, ApplicationEventPublisher eventPublisher) {
     this.taskScheduler = taskScheduler;
     this.eventPublisher = eventPublisher;
+    log.info("Using EventAccumulator");
   }
 
+  @Override
   public synchronized void addEvent(T event) {
     events.add(event);
     if (!isTaskSchedulerRunning) {
@@ -40,7 +56,7 @@ public class EventAccumulator<T> {
 
   private synchronized void startTaskScheduler() {
     isTaskSchedulerRunning = true;
-    scheduledFuture = taskScheduler.schedule(this::trigger, Instant.now().plusSeconds(2));
+    scheduledFuture = taskScheduler.schedule(this::trigger, Instant.now().plusSeconds(DELAY_IN_SECONDS));
   }
 
   private synchronized void trigger() {
@@ -52,9 +68,8 @@ public class EventAccumulator<T> {
       // Clear the list after sending
       events.clear();
     }
-    // Stop the timer
     isTaskSchedulerRunning = false;
-    // Cancel the scheduled task to prevent memory leaks
+    // Cancel the scheduled task
     if (scheduledFuture != null) {
       scheduledFuture.cancel(false);
     }

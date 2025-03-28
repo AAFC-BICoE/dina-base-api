@@ -3,6 +3,8 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.Item;
 import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.messaging.DinaEventPublisher;
+import ca.gc.aafc.dina.messaging.EntityChanged;
 import ca.gc.aafc.dina.messaging.config.RabbitMQQueueProperties;
 import ca.gc.aafc.dina.messaging.message.DocumentOperationNotification;
 import ca.gc.aafc.dina.messaging.message.DocumentOperationType;
@@ -36,8 +38,9 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
@@ -61,6 +64,7 @@ import java.util.concurrent.CountDownLatch;
     "rabbitmq.host=localhost"
   })
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
+@Import(MessageProducingServiceTest.TestConfigTaskScheduler.class)
 @DirtiesContext //it's an expensive test and we won't reuse the context
 class MessageProducingServiceTest {
 
@@ -162,6 +166,18 @@ class MessageProducingServiceTest {
   }
 
   @TestConfiguration
+  static class TestConfigTaskScheduler {
+    @Bean(name = "event-accumulator-task-scheduler")
+    public ThreadPoolTaskScheduler taskScheduler2() {
+      ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+      scheduler.setPoolSize(1);
+      scheduler.setThreadNamePrefix("eventAccumulatorTaskScheduler-");
+      return scheduler;
+    }
+
+  }
+
+  @TestConfiguration
   @EntityScan(basePackageClasses = TestConfig.class)
   @EnableRabbit
   static class TestConfig {
@@ -172,9 +188,9 @@ class MessageProducingServiceTest {
       public ItemService(
         @NonNull BaseDAO baseDAO,
         @NonNull SmartValidator sv,
-          ApplicationEventPublisher applicationEventPublisher
+        DinaEventPublisher<EntityChanged> eventPublisher
       ) {
-        super(baseDAO, sv, "item", applicationEventPublisher);
+        super(baseDAO, sv, "item", eventPublisher);
       }
 
       @Override
