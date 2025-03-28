@@ -137,7 +137,7 @@ public class MessageProducingService<E extends DinaEntity> extends DefaultDinaSe
    * @param event
    */
   protected void publishEvent(EntityChanged event) {
-    log.info("publishEvent: {}", event::toString);
+    log.info("addEvent: {}", event::toString);
     eventPublisher.addEvent(event);
   }
 

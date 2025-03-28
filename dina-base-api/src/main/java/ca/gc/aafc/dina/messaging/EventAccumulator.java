@@ -65,6 +65,7 @@ public class EventAccumulator<T> implements DinaEventPublisher<T> {
 
   private synchronized void trigger() {
     if (!events.isEmpty()) {
+      log.info("Publishing accumulated event(s): {}", events.size());
       for (T event : events) {
         eventPublisher.publishEvent(event);
       }

@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 @Log4j2
 @Component
 @ConditionalOnMissingBean(name = "event-accumulator-task-scheduler")
-public class EvenDirectPublisher<T> implements DinaEventPublisher<T> {
+public class EventDirectPublisher<T> implements DinaEventPublisher<T> {
 
   private final ApplicationEventPublisher eventPublisher;
 
-  public EvenDirectPublisher(ApplicationEventPublisher eventPublisher) {
+  public EventDirectPublisher(ApplicationEventPublisher eventPublisher) {
     this.eventPublisher = eventPublisher;
     log.info("Using EvenDirectPublisher");
   }
