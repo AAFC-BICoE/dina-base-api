@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.messaging;
 import ca.gc.aafc.dina.messaging.message.DocumentOperationType;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -16,6 +17,7 @@ import java.util.UUID;
 @Builder
 @Getter
 @ToString
+@EqualsAndHashCode
 public class EntityChanged {
   private final DocumentOperationType op;
   private final UUID uuid;

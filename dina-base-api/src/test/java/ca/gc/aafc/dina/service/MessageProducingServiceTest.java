@@ -3,6 +3,8 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.entity.Item;
 import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.messaging.DinaEventPublisher;
+import ca.gc.aafc.dina.messaging.EntityChanged;
 import ca.gc.aafc.dina.messaging.config.RabbitMQQueueProperties;
 import ca.gc.aafc.dina.messaging.message.DocumentOperationNotification;
 import ca.gc.aafc.dina.messaging.message.DocumentOperationType;
@@ -12,6 +14,7 @@ import ca.gc.aafc.dina.messaging.producer.RabbitMQMessageProducer;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.TransactionTestingHelper;
 
+import java.util.concurrent.TimeUnit;
 import javax.inject.Named;
 import lombok.Getter;
 import lombok.NonNull;
@@ -36,8 +39,9 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
@@ -52,6 +56,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 @SpringBootTest(classes = {TestDinaBaseApp.class, MessageProducingServiceTest.TestConfig.class},
   properties = {
     "dina.messaging.isProducer=true",
@@ -61,6 +68,7 @@ import java.util.concurrent.CountDownLatch;
     "rabbitmq.host=localhost"
   })
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
+@Import(MessageProducingServiceTest.TestConfigTaskScheduler.class)
 @DirtiesContext //it's an expensive test and we won't reuse the context
 class MessageProducingServiceTest {
 
@@ -130,6 +138,31 @@ class MessageProducingServiceTest {
     assertResult(DocumentOperationType.UPDATE, item.getUuid().toString());
   }
 
+
+  @SneakyThrows
+  @Test
+  void testAccumulator() {
+    Item item = Item.builder()
+      .uuid(UUID.randomUUID())
+      .group("CNC")
+      .build();
+    transactionTestingHelper.doInTransaction( ()-> itemService.create(item));
+    listener.getLatch().await();
+    listener.setLatch(new CountDownLatch(2));
+
+    // send 1000 updates, that should generate only 1 message
+    transactionTestingHelper.doInTransaction(() -> {
+        for (int i = 0; i < 1000; i++) {
+          itemService.update(item);
+        }
+        return item;
+      }
+    );
+    boolean got2Records = listener.getLatch().await(2, TimeUnit.SECONDS);
+    assertFalse(got2Records);
+    assertEquals(1, listener.getMessages().size());
+  }
+
   @SneakyThrows
   @Test
   void delete() {
@@ -150,15 +183,27 @@ class MessageProducingServiceTest {
   }
 
   private void assertResult(DocumentOperationType op, String id) throws java.io.IOException {
-    DocumentOperationNotification result = mapResult(listener.getMessages().get(0));
-    Assertions.assertFalse(result.isDryRun());
-    Assertions.assertEquals(op, result.getOperationType());
-    Assertions.assertEquals(id, result.getDocumentId());
-    Assertions.assertEquals("item", result.getDocumentType());
+    DocumentOperationNotification result = mapResult(listener.getMessages().getFirst());
+    assertFalse(result.isDryRun());
+    assertEquals(op, result.getOperationType());
+    assertEquals(id, result.getDocumentId());
+    assertEquals("item", result.getDocumentType());
   }
 
   private static DocumentOperationNotification mapResult(String content) throws java.io.IOException {
     return new ObjectMapper().readValue(content, DocumentOperationNotification.class);
+  }
+
+  @TestConfiguration
+  static class TestConfigTaskScheduler {
+    @Bean(name = "event-accumulator-task-scheduler")
+    public ThreadPoolTaskScheduler taskScheduler() {
+      ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+      scheduler.setPoolSize(1);
+      scheduler.setThreadNamePrefix("eventAccumulatorTaskScheduler-");
+      return scheduler;
+    }
+
   }
 
   @TestConfiguration
@@ -172,9 +217,9 @@ class MessageProducingServiceTest {
       public ItemService(
         @NonNull BaseDAO baseDAO,
         @NonNull SmartValidator sv,
-          ApplicationEventPublisher applicationEventPublisher
+        DinaEventPublisher<EntityChanged> eventPublisher
       ) {
-        super(baseDAO, sv, "item", applicationEventPublisher);
+        super(baseDAO, sv, "item", eventPublisher);
       }
 
       @Override
