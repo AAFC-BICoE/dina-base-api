@@ -15,7 +15,7 @@ public class EventDirectPublisher<T> implements DinaEventPublisher<T> {
 
   public EventDirectPublisher(ApplicationEventPublisher eventPublisher) {
     this.eventPublisher = eventPublisher;
-    log.info("Using EvenDirectPublisher");
+    log.info("Using EventDirectPublisher");
   }
 
   @Override
