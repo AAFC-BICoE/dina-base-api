@@ -47,6 +47,8 @@ import ca.gc.aafc.dina.mapper.PersonMapper;
 import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import ca.gc.aafc.dina.testsupport.TestResourceHelper;
+import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 
 import static com.toedter.spring.hateoas.jsonapi.MediaTypes.JSON_API_VALUE;
@@ -102,6 +104,18 @@ public class DinaRepositoryV2IT {
     repositoryV2.getAll("");
   }
 
+
+  @Test
+  public void findOne() throws ResourceGoneException, ResourceNotFoundException {
+    Person person = personService.create(Person.builder()
+      .name(TestableEntityFactory.generateRandomNameLettersOnly(11))
+      .room(38)
+      .build());
+
+    JsonApiDto<PersonDTO> dto = repositoryV2.getOne(person.getUuid(), null, true);
+
+    assertNotNull(dto.getMeta());
+  }
   @Test
   public void findAll_SortingByName_ReturnsSortedCaseSensitiveOrNot() {
 

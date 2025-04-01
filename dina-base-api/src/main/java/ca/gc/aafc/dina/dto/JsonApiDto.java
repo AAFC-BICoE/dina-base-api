@@ -19,6 +19,7 @@ import lombok.Singular;
 public class JsonApiDto<D> {
 
   private final D dto;
+  private final JsonApiDtoMeta meta;
 
   @Singular
   private final Map<String, RelationshipBase> relationships;

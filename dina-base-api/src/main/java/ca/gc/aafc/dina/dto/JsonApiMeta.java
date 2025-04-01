@@ -7,6 +7,7 @@ import lombok.Builder;
 
 /**
  * Represents the meta section of a JSON:API response.
+ * Top-Level meta section.
  *
  */
 @Builder

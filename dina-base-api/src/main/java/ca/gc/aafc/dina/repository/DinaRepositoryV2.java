@@ -16,6 +16,7 @@ import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
 
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.JsonApiDto;
+import ca.gc.aafc.dina.dto.JsonApiDtoMeta;
 import ca.gc.aafc.dina.dto.JsonApiExternalResource;
 import ca.gc.aafc.dina.dto.JsonApiMeta;
 import ca.gc.aafc.dina.dto.JsonApiResource;
@@ -63,6 +64,7 @@ import lombok.extern.log4j.Log4j2;
 public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
   public static final String JSON_API_BULK = "application/vnd.api+json; ext=bulk";
+  public static final String INCLUDE_PERMISSION_HEADER_KEY = "include-dina-permission";
 
   public static final String JSON_API_BULK_PATH = "bulk";
   public static final String JSON_API_BULK_LOAD_PATH = "bulk-load";
@@ -175,8 +177,9 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
       throws ResourceNotFoundException, ResourceGoneException {
 
     String queryString = req != null ? decodeQueryString(req) : null;
+    boolean includePermission = req != null && req.getHeader(INCLUDE_PERMISSION_HEADER_KEY) != null;
 
-    JsonApiDto<D> jsonApiDto = getOne(id, queryString);
+    JsonApiDto<D> jsonApiDto = getOne(id, queryString, includePermission);
     JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto);
 
     return ResponseEntity.ok(builder.build());
@@ -310,13 +313,27 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
   }
 
   /**
+   * see {@link #getOne(UUID, String, boolean)}
+   * @param identifier
+   * @param queryString
+   * @return
+   * @throws ResourceNotFoundException
+   * @throws ResourceGoneException
+   */
+  public JsonApiDto<D> getOne(UUID identifier, String queryString) throws ResourceNotFoundException,
+    ResourceGoneException {
+    return getOne(identifier, queryString, false);
+  }
+
+  /**
    * Handles findOne at the {@link JsonApiDto} level.
    * Responsible to call the service, apply authorization run mapper and build {@link JsonApiDto}.
    * @param identifier
    * @param queryString
+   * @param includePermissions should the metadata about permission be included ?
    * @return the DTO wrapped in a {@link JsonApiDto} or null if not found
    */
-  public JsonApiDto<D> getOne(UUID identifier, String queryString) throws ResourceNotFoundException,
+  public JsonApiDto<D> getOne(UUID identifier, String queryString, boolean includePermissions) throws ResourceNotFoundException,
       ResourceGoneException {
 
     // the only part of QueryComponent that can be used on getOne is "includes"
@@ -337,6 +354,11 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     addNestedAttributesFromIncludes(attributes, includes);
 
     D dto = dinaMapper.toDto(entity, attributes, null);
+
+    if(includePermissions) {
+      return jsonApiDtoAssistant.toJsonApiDto(dto, buildResourceObjectPermissionMeta(entity),
+        includes);
+    }
 
     return jsonApiDtoAssistant.toJsonApiDto(dto, includes);
   }
@@ -387,6 +409,15 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     return new PagedResource<>(pageOffset, pageLimit, resourceCount.intValue(), dtos);
   }
 
+  private JsonApiDtoMeta buildResourceObjectPermissionMeta(E entity) {
+    Set<String> permissions = authorizationService.getPermissionsForObject(entity);
+
+    return JsonApiDtoMeta.builder()
+      .permissionsProvider(authorizationService.getName())
+      .permissions(permissions)
+      .build();
+  }
+
   /**
    * Responsible to create the {@link JsonApiModelBuilder} for the provided {@link JsonApiDto}.
    *
@@ -400,6 +431,12 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
     JsonApiModelBuilder builder = JsonApiModelBuilderHelper.
       createJsonApiModelBuilder(jsonApiDto, mainBuilder, included);
+
+    // Set meta on the resource object if required
+    if (jsonApiDto.getMeta() != null) {
+      jsonApiDto.getMeta().populateMeta(builder::meta);
+    }
+
     JsonApiMeta.builder()
       .moduleVersion(buildProperties.getVersion())
       .build()
