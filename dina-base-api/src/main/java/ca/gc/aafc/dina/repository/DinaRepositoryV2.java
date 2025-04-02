@@ -321,7 +321,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
    * @throws ResourceGoneException
    */
   public JsonApiDto<D> getOne(UUID identifier, String queryString) throws ResourceNotFoundException,
-    ResourceGoneException {
+      ResourceGoneException {
     return getOne(identifier, queryString, false);
   }
 
@@ -355,7 +355,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
     D dto = dinaMapper.toDto(entity, attributes, null);
 
-    if(includePermissions) {
+    if (includePermissions) {
       return jsonApiDtoAssistant.toJsonApiDto(dto, buildResourceObjectPermissionMeta(entity),
         includes);
     }

@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.Singular;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -18,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 @Builder
 @AllArgsConstructor
+@Getter
 public class JsonApiDtoMeta {
 
   public static final String PERMISSIONS_PROVIDER = "permissionsProvider";

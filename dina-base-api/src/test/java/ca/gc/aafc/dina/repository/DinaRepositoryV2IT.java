@@ -106,7 +106,7 @@ public class DinaRepositoryV2IT {
 
 
   @Test
-  public void findOne() throws ResourceGoneException, ResourceNotFoundException {
+  public void findOne_onIncludePermissions_permissionMetaIncluded() throws ResourceGoneException, ResourceNotFoundException {
     Person person = personService.create(Person.builder()
       .name(TestableEntityFactory.generateRandomNameLettersOnly(11))
       .room(38)
@@ -115,7 +115,9 @@ public class DinaRepositoryV2IT {
     JsonApiDto<PersonDTO> dto = repositoryV2.getOne(person.getUuid(), null, true);
 
     assertNotNull(dto.getMeta());
+    assertNotNull(dto.getMeta().getPermissionsProvider());
   }
+
   @Test
   public void findAll_SortingByName_ReturnsSortedCaseSensitiveOrNot() {
 
