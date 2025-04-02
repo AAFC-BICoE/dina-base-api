@@ -7,5 +7,6 @@ public enum DocumentOperationType {
   NOT_DEFINED,
   ADD,
   UPDATE,
+  REFRESH,
   DELETE;
 }

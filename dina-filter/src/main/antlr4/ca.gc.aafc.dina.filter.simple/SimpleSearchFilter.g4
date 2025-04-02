@@ -27,7 +27,8 @@ attributeValue: (
   | UNDERSCORE
   | DASH
   | SYMBOLS
-  | SPACE)+;
+  | SPACE
+  | FORWARD_SLASH)+;
 
 pageValue: INT;
 
@@ -37,6 +38,7 @@ LETTERS: [a-zA-Z]+;
 UNDERSCORE: [_];
 DASH: [-];
 SYMBOLS: [.];
+FORWARD_SLASH: [/];
 SPACE: [ ];
 
 WS: [\t\r\n]+ -> skip; // Skip whitespace

@@ -24,8 +24,10 @@ public class MessageQueueNotifier {
     this.messageProducer = messageProducer;
   }
 
+  // We are using fallbackExecution = true since we want it to proceed even if no transaction is
+  // available
   @EventListener(EntityChanged.class)
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
   public void onEntityChanged(EntityChanged entityChanged) {
     log.info("Got entityChanged event: {}", entityChanged::toString);
     messageProducer.send(DocumentOperationNotification.builder()
