@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.repository;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
@@ -18,7 +17,6 @@ import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.JsonApiDtoMeta;
 import ca.gc.aafc.dina.dto.JsonApiExternalResource;
-import ca.gc.aafc.dina.dto.JsonApiMeta;
 import ca.gc.aafc.dina.dto.JsonApiResource;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
@@ -39,8 +37,6 @@ import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.util.ReflectionUtils;
-
-import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiModel;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;

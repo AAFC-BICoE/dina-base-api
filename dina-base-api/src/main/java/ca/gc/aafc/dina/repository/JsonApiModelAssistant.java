@@ -23,7 +23,8 @@ import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiMode
  * Utility class to assist with configuring {@link JsonApiModelBuilder} for {@link JsonApiDto}.
  * The main focus is around relationships.
  *
- * Mostly supposed to be used by {@link DinaRepositoryV2}
+ * Mostly supposed to be used by {@link DinaRepositoryV2} or other repositories to configure
+ * {@link JsonApiModelBuilder} to return Spring hateoas compliant response.
  */
 @Log4j2
 public class JsonApiModelAssistant <D extends JsonApiResource> {
