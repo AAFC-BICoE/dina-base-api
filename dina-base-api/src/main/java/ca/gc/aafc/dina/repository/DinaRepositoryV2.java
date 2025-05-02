@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.repository;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
@@ -18,7 +17,6 @@ import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.JsonApiDtoMeta;
 import ca.gc.aafc.dina.dto.JsonApiExternalResource;
-import ca.gc.aafc.dina.dto.JsonApiMeta;
 import ca.gc.aafc.dina.dto.JsonApiResource;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
@@ -39,8 +37,6 @@ import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.util.ReflectionUtils;
-
-import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiModel;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -85,7 +81,9 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
   private final BuildProperties buildProperties;
 
   protected final DinaMappingRegistry registry;
+
   protected final JsonApiDtoAssistant<D> jsonApiDtoAssistant;
+  protected final JsonApiModelAssistant<D> jsonApiModelAssistant;
 
   protected ObjectMapper objMapper;
   private final ArgumentParser rsqlArgumentParser = new DinaFilterArgumentParser();
@@ -121,6 +119,8 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     // configure an assistant for this specific resource
     this.jsonApiDtoAssistant = new JsonApiDtoAssistant<>(registry,
       this::externalRelationDtoToJsonApiExternalResource, resourceClass);
+
+    this.jsonApiModelAssistant = new JsonApiModelAssistant<>(buildProperties.getVersion());
 
     // copy the object mapper and set it to fail on unknown properties
     this.objMapper = objMapper.copy()
@@ -162,7 +162,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     for (var data : jsonApiBulkDocument.getData()) {
       dtos.add(getOne(data.getId(), queryString));
     }
-    JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos, null);
+    JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(dtos, null);
     return ResponseEntity.ok().body(builder.build());
   }
 
@@ -180,7 +180,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     boolean includePermission = req != null && req.getHeader(INCLUDE_PERMISSION_HEADER_KEY) != null;
 
     JsonApiDto<D> jsonApiDto = getOne(id, queryString, includePermission);
-    JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto);
+    JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(jsonApiDto);
 
     return ResponseEntity.ok(builder.build());
   }
@@ -200,7 +200,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
       return ResponseEntity.badRequest().build();
     }
 
-    JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos);
+    JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(dtos);
 
     return ResponseEntity.ok(builder.build());
   }
@@ -219,7 +219,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
       dtos.add(create(JsonApiDocument.builder().data(data).build(), dtoCustomizer));
     }
 
-    JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos, null);
+    JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(dtos, null);
 
     return ResponseEntity.ok().body(builder.build());
   }
@@ -238,7 +238,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
     }
 
     JsonApiDto<D> jsonApiDto = create(postedDocument, dtoCustomizer);
-    JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto);
+    JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(jsonApiDto);
     builder.link(generateLinkToResource(jsonApiDto.getDto()));
 
     RepresentationModel<?> model = builder.build();
@@ -260,7 +260,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
       dtos.add(update(JsonApiDocument.builder().data(data).build()));
     }
 
-    JsonApiModelBuilder builder = createJsonApiModelBuilder(dtos, null);
+    JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(dtos, null);
     return ResponseEntity.ok().body(builder.build());
   }
 
@@ -283,7 +283,7 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
 
     // reload dto
     JsonApiDto<D> jsonApiDto = getOne(partialPatchDto.getId(), null);
-    JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDto);
+    JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(jsonApiDto);
 
     return ResponseEntity.ok().body(builder.build());
   }
@@ -416,74 +416,6 @@ public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
       .permissionsProvider(authorizationService.getName())
       .permissions(permissions)
       .build();
-  }
-
-  /**
-   * Responsible to create the {@link JsonApiModelBuilder} for the provided {@link JsonApiDto}.
-   *
-   * @param jsonApiDto
-   * @return
-   */
-  protected JsonApiModelBuilder createJsonApiModelBuilder(JsonApiDto<D> jsonApiDto) {
-    Set<UUID> included = new HashSet<>(jsonApiDto.getRelationships().size());
-
-    JsonApiModelBuilder mainBuilder = jsonApiModel();
-
-    JsonApiModelBuilder builder = JsonApiModelBuilderHelper.
-      createJsonApiModelBuilder(jsonApiDto, mainBuilder, included);
-
-    // Set meta on the resource object if required
-    if (jsonApiDto.getMeta() != null) {
-      jsonApiDto.getMeta().populateMeta(builder::meta);
-    }
-
-    JsonApiMeta.builder()
-      .moduleVersion(buildProperties.getVersion())
-      .build()
-      .populateMeta(mainBuilder::meta);
-    mainBuilder.model(builder.build());
-    return mainBuilder;
-  }
-
-  /**
-   * Same as {@link #createJsonApiModelBuilder(JsonApiDto)} but for {@link PagedResource}.
-   * @param jsonApiDtos
-   * @return
-   */
-  protected JsonApiModelBuilder createJsonApiModelBuilder(PagedResource<JsonApiDto<D>> jsonApiDtos) {
-    return createJsonApiModelBuilder(jsonApiDtos.resourceList(), jsonApiDtos.totalCount);
-  }
-
-  /**
-   *
-   * @param jsonApiDtos
-   * @param totalCount totalCount of resources or null to not include a totalResourceCount in the meta section.
-   * @return
-   */
-  protected JsonApiModelBuilder createJsonApiModelBuilder(List<JsonApiDto<D>> jsonApiDtos, Integer totalCount) {
-    JsonApiModelBuilder mainBuilder = jsonApiModel();
-    List<RepresentationModel<?>> repModels = new ArrayList<>();
-    Set<UUID> included = new HashSet<>();
-    for (JsonApiDto<D> currResource : jsonApiDtos) {
-      JsonApiModelBuilder builder = JsonApiModelBuilderHelper.
-        createJsonApiModelBuilder(currResource, mainBuilder, included);
-      repModels.add(builder.build());
-    }
-
-    // use custom metadata instead of PagedModel.PageMetadata so we can control
-    // the content and key names
-    var metaSectionBuilder = JsonApiMeta.builder()
-      .moduleVersion(buildProperties.getVersion());
-
-    if (totalCount != null) {
-      metaSectionBuilder.totalResourceCount(totalCount);
-    }
-
-    metaSectionBuilder.build()
-      .populateMeta(mainBuilder::meta);
-
-    mainBuilder.model(CollectionModel.of(repModels));
-    return mainBuilder;
   }
 
   /**

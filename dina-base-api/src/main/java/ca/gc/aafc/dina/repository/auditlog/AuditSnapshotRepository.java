@@ -21,7 +21,7 @@ import ca.gc.aafc.dina.filter.FilterGroup;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
-import ca.gc.aafc.dina.repository.JsonApiModelBuilderHelper;
+import ca.gc.aafc.dina.repository.JsonApiModelAssistant;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.AuditService.AuditInstance;
 
@@ -76,7 +76,7 @@ public class AuditSnapshotRepository {
     List<RepresentationModel<?>> repModels = new ArrayList<>();
     Set<UUID> included = new HashSet<>();
     for (AuditSnapshotDto currResource : dtos) {
-      JsonApiModelBuilder builder = JsonApiModelBuilderHelper.
+      JsonApiModelBuilder builder = JsonApiModelAssistant.
         createJsonApiModelBuilder(JsonApiDto.builder().dto(currResource).build(), mainBuilder, included);
       repModels.add(builder.build());
     }

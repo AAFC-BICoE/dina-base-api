@@ -30,7 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.toedter.spring.hateoas.jsonapi.JsonApiConfiguration;
-import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.JsonApiDto;
@@ -47,7 +46,6 @@ import ca.gc.aafc.dina.mapper.PersonMapper;
 import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
-import ca.gc.aafc.dina.testsupport.TestResourceHelper;
 import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 
@@ -166,23 +164,6 @@ public class DinaRepositoryV2IT {
     resultList = repositoryV2.getAll(qc);
     assertEquals(byRoom.getFirst(), resultList.resourceList().getFirst().getDto().getName());
     assertEquals(byRoom.size(), resultList.totalCount());
-  }
-
-  @Test
-  public void onCreateJsonApiModelBuilder_noException() {
-
-    personService.create(Person.builder()
-      .name("abc defg")
-      .room(18)
-      .build());
-
-    QueryComponent qc = QueryComponent.builder()
-      .pageLimit(1)
-      .build();
-
-    JsonApiModelBuilder builder =
-      repositoryV2.createJsonApiModelBuilder(repositoryV2.getAll(qc));
-    assertNotNull(builder.build());
   }
 
   @Test
