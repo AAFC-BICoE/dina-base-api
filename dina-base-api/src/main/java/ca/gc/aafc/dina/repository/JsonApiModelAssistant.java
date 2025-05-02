@@ -1,15 +1,20 @@
 package ca.gc.aafc.dina.repository;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import lombok.extern.log4j.Log4j2;
 
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.RepresentationModel;
 
 import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.dto.JsonApiDto;
+import ca.gc.aafc.dina.dto.JsonApiMeta;
 import ca.gc.aafc.dina.dto.JsonApiResource;
 
 import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiModel;
@@ -21,10 +26,16 @@ import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiMode
  * Mostly supposed to be used by {@link DinaRepositoryV2}
  */
 @Log4j2
-public final class JsonApiModelBuilderHelper {
+public class JsonApiModelAssistant <D extends JsonApiResource> {
 
-  private JsonApiModelBuilderHelper () {
-    // utility class
+  private final String moduleVersion;
+
+  public JsonApiModelAssistant() {
+    this("");
+  }
+
+  public JsonApiModelAssistant(String moduleVersion) {
+    this.moduleVersion = moduleVersion;
   }
 
   /**
@@ -141,5 +152,74 @@ public final class JsonApiModelBuilderHelper {
       builder.included(include);
       included.add(include.getJsonApiId());
     }
+  }
+
+  /**
+   * Responsible to create the {@link JsonApiModelBuilder} for the provided {@link JsonApiDto}.
+   *
+   * @param jsonApiDto
+   * @return
+   */
+  public JsonApiModelBuilder createJsonApiModelBuilder(JsonApiDto<D> jsonApiDto) {
+    Set<UUID> included = new HashSet<>(jsonApiDto.getRelationships().size());
+
+    JsonApiModelBuilder mainBuilder = jsonApiModel();
+
+    JsonApiModelBuilder builder = JsonApiModelAssistant.
+      createJsonApiModelBuilder(jsonApiDto, mainBuilder, included);
+
+    // Set meta on the resource object if required
+    if (jsonApiDto.getMeta() != null) {
+      jsonApiDto.getMeta().populateMeta(builder::meta);
+    }
+
+    JsonApiMeta.builder()
+      .moduleVersion(moduleVersion)
+      .build()
+      .populateMeta(mainBuilder::meta);
+    mainBuilder.model(builder.build());
+    return mainBuilder;
+  }
+
+  /**
+   * Same as {@link #createJsonApiModelBuilder(JsonApiDto)} but for {@link DinaRepositoryV2.PagedResource}.
+   * @param jsonApiDtos
+   * @return
+   */
+  public JsonApiModelBuilder createJsonApiModelBuilder(
+    DinaRepositoryV2.PagedResource<JsonApiDto<D>> jsonApiDtos) {
+    return createJsonApiModelBuilder(jsonApiDtos.resourceList(), jsonApiDtos.totalCount());
+  }
+
+  /**
+   *
+   * @param jsonApiDtos
+   * @param totalCount totalCount of resources or null to not include a totalResourceCount in the meta section.
+   * @return
+   */
+  public JsonApiModelBuilder createJsonApiModelBuilder(List<JsonApiDto<D>> jsonApiDtos, Integer totalCount) {
+    JsonApiModelBuilder mainBuilder = jsonApiModel();
+    List<RepresentationModel<?>> repModels = new ArrayList<>();
+    Set<UUID> included = new HashSet<>();
+    for (JsonApiDto<D> currResource : jsonApiDtos) {
+      JsonApiModelBuilder builder = JsonApiModelAssistant.
+        createJsonApiModelBuilder(currResource, mainBuilder, included);
+      repModels.add(builder.build());
+    }
+
+    // use custom metadata instead of PagedModel.PageMetadata so we can control
+    // the content and key names
+    var metaSectionBuilder = JsonApiMeta.builder()
+      .moduleVersion(moduleVersion);
+
+    if (totalCount != null) {
+      metaSectionBuilder.totalResourceCount(totalCount);
+    }
+
+    metaSectionBuilder.build()
+      .populateMeta(mainBuilder::meta);
+
+    mainBuilder.model(CollectionModel.of(repModels));
+    return mainBuilder;
   }
 }
