@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.filter;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.querydsl.core.types.Ops;
@@ -118,6 +119,27 @@ public final class SimpleObjectFilterHandlerV2 {
 
     if (isReverse) {
       return comparator.reversed();
+    }
+    return comparator;
+  }
+
+  /**
+   * Generates a null- (null last) comparator for ordering based on a list of path.
+   * Reverse order is identified by a dash (-) prefix.
+   * @param sortList
+   * @return the combined comparator or null if sortList is empty or null
+   */
+  public static <T> Comparator<T> generateComparator(List<String> sortList) {
+    Comparator<T> comparator = null;
+    if (CollectionUtils.isNotEmpty(sortList)) {
+      for (String sort : sortList) {
+        if (comparator == null) {
+          comparator = generateComparator(sort);
+        } else {
+          comparator =
+            comparator.thenComparing(generateComparator(sort));
+        }
+      }
     }
     return comparator;
   }
