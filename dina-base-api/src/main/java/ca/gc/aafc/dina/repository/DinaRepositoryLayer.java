@@ -14,7 +14,7 @@ import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 public interface DinaRepositoryLayer<I,D> {
 
   JsonApiDto<D> getOne(I identifier, String queryString) throws ResourceNotFoundException,
-    ResourceGoneException;
+      ResourceGoneException;
 
   DinaRepositoryV2.PagedResource<JsonApiDto<D>> getAll(QueryComponent queryComponents);
 
