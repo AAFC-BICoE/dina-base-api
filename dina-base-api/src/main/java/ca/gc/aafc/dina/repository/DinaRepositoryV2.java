@@ -57,7 +57,8 @@ import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class DinaRepositoryV2<D extends JsonApiResource,E extends DinaEntity> {
+public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
+  implements DinaRepositoryLayer<UUID, D> {
 
   public static final String JSON_API_BULK = "application/vnd.api+json; ext=bulk";
   public static final String INCLUDE_PERMISSION_HEADER_KEY = "include-dina-permission";
