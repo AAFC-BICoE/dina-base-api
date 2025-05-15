@@ -1,6 +1,10 @@
 = Messaging
 
-== Message procucer
+== Messaging-related classes
+
+image::messaging_configuration.drawio.png[]
+
+== Message producer
 
 Declare a `RabbitMQQueueProperties` and `RabbitMQMessageProducer` based beans.
 

@@ -14,11 +14,11 @@ import ca.gc.aafc.dina.messaging.message.DocumentOperationNotification;
 public class LogBasedMessageProducer implements DinaMessageProducer, DocumentOperationNotificationMessageProducer {
 
   public void send(DinaMessage dinaMessage) {
-    log.info("Message produced : {}", dinaMessage::toString);
+    log.info("Message(DinaMessage) produced : {}", dinaMessage::toString);
   }
 
   @Override
   public void send(DocumentOperationNotification message) {
-    log.info("Message produced : {}", message::toString);
+    log.info("Message(DocumentOperationNotification) produced : {}", message::toString);
   }
 }
