@@ -11,7 +11,9 @@ import ca.gc.aafc.dina.dto.ExternalRelationDto;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -84,6 +86,17 @@ public interface DinaMapperV2<D, E> {
       return null;
     }
     return new ArrayList<>(list);
+  }
+
+  /**
+   * Used by MapStruct to handle null values in maps.
+   * Note: will always create an linked hash map
+   */
+  default <K, V> Map<K, V> nullSafeMap(Map<K, V> map) {
+    if (map == null) {
+      return null;
+    }
+    return new LinkedHashMap<>(map);
   }
 
   /**
