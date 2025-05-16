@@ -63,4 +63,26 @@ public class SimpleObjectFilterHandlerV2Test {
     // null last
     assertNull(deps.getLast().getName());
   }
+
+  @Test
+  public void generateComparator_onSortList_expectedOrder() {
+
+    DepartmentDto dep = DepartmentDto.builder()
+        .name("Jim").location("b").build();
+    DepartmentDto dep1 =  DepartmentDto.builder()
+      .name("Jim1").build();
+    DepartmentDto dep2 =  DepartmentDto.builder()
+      .name("Jim").location("a").build();
+    DepartmentDto dep3 =  DepartmentDto.builder()
+      .name(null).build();
+
+    List<DepartmentDto> deps = new ArrayList<>(List.of(dep2, dep1, dep, dep3));
+    deps.sort(SimpleObjectFilterHandlerV2.generateComparator(List.of("name", "location")));
+
+    assertEquals("Jim", deps.getFirst().getName());
+    assertEquals("a", deps.getFirst().getLocation());
+
+    // null last
+    assertNull(deps.getLast().getName());
+  }
 }
