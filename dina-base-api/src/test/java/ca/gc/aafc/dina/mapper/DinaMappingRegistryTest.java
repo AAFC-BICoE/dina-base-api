@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class DinaMappingRegistryTest {
 
   @Test
@@ -54,8 +56,8 @@ public class DinaMappingRegistryTest {
   void getAttributePerClass_WhenAttributesInherited() {
     DinaMappingRegistry registry = new DinaMappingRegistry(InheritedDto.class);
     String expectedField = "Inherited";
-    Assertions.assertTrue(registry.getAttributesPerClass().get(InheritedDto.class).contains(expectedField));
-    Assertions.assertTrue(registry.getAttributesPerClass().get(Inherited.class).contains(expectedField));
+    assertTrue(registry.getAttributesForClass(InheritedDto.class).contains(expectedField));
+    assertTrue(registry.getAttributesForClass(Inherited.class).contains(expectedField));
   }
 
   @Test
@@ -77,7 +79,7 @@ public class DinaMappingRegistryTest {
       .filter(ir -> ir.getName().equals("departmentsHeadBackup")).findFirst().orElse(null);
     Assertions.assertNotNull(resultCollectionRelation);
     Assertions.assertEquals(DepartmentDto.class, resultCollectionRelation.getDtoType());
-    Assertions.assertTrue(resultCollectionRelation.isCollection());
+    assertTrue(resultCollectionRelation.isCollection());
   }
 
   @Test
@@ -101,7 +103,7 @@ public class DinaMappingRegistryTest {
     Assertions.assertNotNull(resultCollectionRelation);
     Assertions.assertEquals(DepartmentDto.class, resultCollectionRelation.getDtoType());
     Assertions.assertEquals(Department.class, resultCollectionRelation.getEntityType());
-    Assertions.assertTrue(resultCollectionRelation.isCollection());
+    assertTrue(resultCollectionRelation.isCollection());
   }
 
   @Test
@@ -119,7 +121,7 @@ public class DinaMappingRegistryTest {
     Assertions.assertNotNull(employeesRelation);
     Assertions.assertEquals(Employee.class, employeesRelation.getEntityType());
     Assertions.assertEquals(EmployeeDto.class, employeesRelation.getDtoType());
-    Assertions.assertTrue(employeesRelation.isCollection());
+    assertTrue(employeesRelation.isCollection());
 
     DinaMappingRegistry.InternalRelation personRelation = results.stream()
       .filter(ir -> ir.getName().equals("departmentOwner")).findFirst().orElse(null);
@@ -132,8 +134,8 @@ public class DinaMappingRegistryTest {
   @Test
   void isRelationExternal() {
     DinaMappingRegistry registry = new DinaMappingRegistry(ProjectDTO.class);
-    Assertions.assertTrue(registry.isRelationExternal(ProjectDTO.class, "acMetaDataCreator"));
-    Assertions.assertTrue(registry.isRelationExternal(ProjectDTO.class, "originalAuthor"));
+    assertTrue(registry.isRelationExternal(ProjectDTO.class, "acMetaDataCreator"));
+    assertTrue(registry.isRelationExternal(ProjectDTO.class, "originalAuthor"));
     Assertions.assertFalse(registry.isRelationExternal(ProjectDTO.class, "task"));
   }
 

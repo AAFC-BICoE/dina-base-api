@@ -121,7 +121,7 @@ public class DinaMappingRegistry {
             internalRelations.add(mapToInternalRelation(dtoField));
             graph.putAll(initGraph(parseGenericTypeForField(dtoField), visited, ignoreNonMatchingAttributeType));
           } else {
-            if(ignoreNonMatchingAttributeType) {
+            if (ignoreNonMatchingAttributeType) {
               attributes.add(dtoField.getName());
             } else {
               throwDataTypeMismatchException(resourceClass, entityClass, dtoField.getName());
@@ -143,6 +143,15 @@ public class DinaMappingRegistry {
   public Set<InternalRelation> findMappableRelationsForClass(Class<?> cls) {
     checkClassTracked(cls);
     return this.resourceGraph.get(cls).getInternalRelations();
+  }
+
+  /**
+   * Get attributes registered in the registry for a specific class
+   * @param clazz
+   * @return
+   */
+  public Set<String> getAttributesForClass(Class<?> clazz) {
+    return attributesPerClass.get(clazz);
   }
 
   /**
