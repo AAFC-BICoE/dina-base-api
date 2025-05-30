@@ -53,21 +53,34 @@ public class DinaMappingRegistry {
    * <li>A relation is considered internal unless marked with {@link JsonApiExternalRelation}</li>
    * <li>An attribute is a field that is not {@link IgnoreDinaMapping} or marked as a relation and will be
    * mapped directly as a value.</li>
-   * <li>An attribute must have the same data type on the DTO class and its related entity</li>
+   * <li>An attribute must have the same data type on the DTO class and its related entity unless the registry is setup to ignore it</li>
    * <li>A field that is considered an attribute but with a different data type will throw an {@link
    * IllegalStateException}, unless the data type of the field is a valid DTO/RelatedEntity mapping between
-   * the classes</li>
+   * the classes or the registry is setup to ignore it</li>
    * </list>
    *
    * @param resourceClass - resource traverse and register
    */
   public DinaMappingRegistry(@NonNull Class<?> resourceClass) {
-    resourceGraph = initGraph(resourceClass, new HashSet<>());
+    // for backward compatibility we do NOT ignore non-matching types
+    this(resourceClass, false);
+  }
+
+  /**
+   * see {@link #DinaMappingRegistry(Class)}
+   * @param resourceClass
+   * @param ignoreNonMatchingAttributeType When the mapping is handled by MapStruct
+   *                                       non-matching types are delegated and the registry should not throw an error
+   */
+  public DinaMappingRegistry(@NonNull Class<?> resourceClass, boolean ignoreNonMatchingAttributeType) {
+    resourceGraph = initGraph(resourceClass, new HashSet<>(), ignoreNonMatchingAttributeType);
     this.attributesPerClass = this.resourceGraph.entrySet().stream()
       .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getAttributeNames()));
   }
 
-  private static Map<Class<?>, DinaResourceEntry> initGraph(Class<?> resourceClass, Set<Class<?>> visited) {
+  private static Map<Class<?>, DinaResourceEntry> initGraph(Class<?> resourceClass,
+                                                            Set<Class<?>> visited,
+                                                            boolean ignoreNonMatchingAttributeType) {
     HashMap<Class<?>, DinaResourceEntry> graph = new HashMap<>();
 
     if (visited.contains(resourceClass)) {
@@ -77,7 +90,7 @@ public class DinaMappingRegistry {
 
     if (resourceClass.getAnnotation(RelatedEntity.class) != null) {
       Class<?> entityClass = resourceClass.getAnnotation(RelatedEntity.class).value();
-      DinaResourceEntry entry = parseRegistryEntry(entityClass, resourceClass, visited, graph);
+      DinaResourceEntry entry = parseRegistryEntry(entityClass, resourceClass, visited, graph, ignoreNonMatchingAttributeType);
       graph.put(resourceClass, entry);
       graph.put(entityClass, entry);
     }
@@ -86,7 +99,8 @@ public class DinaMappingRegistry {
 
   private static DinaResourceEntry parseRegistryEntry(
     Class<?> entityClass, Class<?> resourceClass,
-    Set<Class<?>> visited, Map<Class<?>, DinaResourceEntry> graph
+    Set<Class<?>> visited, Map<Class<?>, DinaResourceEntry> graph,
+    boolean ignoreNonMatchingAttributeType
   ) {
     Set<String> attributes = new HashSet<>();
     Set<InternalRelation> internalRelations = new HashSet<>();
@@ -95,18 +109,23 @@ public class DinaMappingRegistry {
       if (isMappableRelation(resourceClass, entityClass, dtoField)) {
         // If relation register and traverse graph
         internalRelations.add(mapToInternalRelation(dtoField));
-        graph.putAll(initGraph(parseGenericTypeForField(dtoField), visited));
+        graph.putAll(initGraph(parseGenericTypeForField(dtoField), visited, ignoreNonMatchingAttributeType));
       } else if (isFieldConsideredAnAttribute(resourceClass, entityClass, dtoField)) {
         if (fieldHasSameDataType(entityClass, dtoField)) {
-          // Un marked dtoField with same data type considered attribute
+          // Unmarked dtoField with same data type considered attribute
           attributes.add(dtoField.getName());
         } else {
-          // Un marked dtoField without the same data type but have a related entity are considered a hidden relation
-          if (!parseGenericTypeForField(dtoField).isAnnotationPresent(RelatedEntity.class)) {
-            throwDataTypeMismatchException(resourceClass, entityClass, dtoField.getName());
-          } else {
+          // Unmarked dtoField without the same data type but have a related entity are considered a hidden relation
+          // It means they are not JSON:API relation but models some kind of relations (think jsonb)
+          if (parseGenericTypeForField(dtoField).isAnnotationPresent(RelatedEntity.class)) {
             internalRelations.add(mapToInternalRelation(dtoField));
-            graph.putAll(initGraph(parseGenericTypeForField(dtoField), visited));
+            graph.putAll(initGraph(parseGenericTypeForField(dtoField), visited, ignoreNonMatchingAttributeType));
+          } else {
+            if(ignoreNonMatchingAttributeType) {
+              attributes.add(dtoField.getName());
+            } else {
+              throwDataTypeMismatchException(resourceClass, entityClass, dtoField.getName());
+            }
           }
         }
       }

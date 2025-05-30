@@ -27,13 +27,20 @@ import java.util.Set;
 public class DinaMappingRegistryTest {
 
   @Test
-  void init_WhenInvalidDataTypes_ThrowsIllegalStateException() {
+  void init_whenNonMatchingDataTypes_ThrowsIllegalStateException() {
     Assertions.assertThrows( // Invalid data type
       IllegalStateException.class,
-      () -> new DinaMappingRegistry(InvalidDataTypeDto.class));
+      () -> new DinaMappingRegistry(NonMatchingDataTypeDto.class));
     Assertions.assertThrows( // Invalid generic type
       IllegalStateException.class,
       () -> new DinaMappingRegistry(InvalidGenericDataTypeDto.class));
+  }
+
+  @Test
+  void init_whenNonMatchingDataTypesWithFlag_NoException() {
+    Assertions.assertDoesNotThrow(() -> new DinaMappingRegistry(NonMatchingDataTypeDto.class, true));
+    Assertions.assertDoesNotThrow(
+      () -> new DinaMappingRegistry(InvalidGenericDataTypeDto.class, true));
   }
 
   @Test
@@ -185,8 +192,8 @@ public class DinaMappingRegistryTest {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
-  @RelatedEntity(InvalidDataTypeEntity.class)
-  static class InvalidDataTypeDto {
+  @RelatedEntity(NonMatchingDataTypeEntity.class)
+  static class NonMatchingDataTypeDto {
     private String invalidList;
   }
 
@@ -194,7 +201,7 @@ public class DinaMappingRegistryTest {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
-  static class InvalidDataTypeEntity {
+  static class NonMatchingDataTypeEntity {
     private Integer invalidList;
   }
 
