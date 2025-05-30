@@ -97,6 +97,21 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
                           @NonNull Class<E> entityClass,
                           @NonNull BuildProperties buildProperties,
                           ObjectMapper objMapper) {
+    this(dinaService, authorizationService, auditService, dinaMapper,
+      resourceClass, entityClass, buildProperties, objMapper,
+
+      // build registry instance for resource class (dto)
+      new DinaMappingRegistry(resourceClass));
+  }
+
+  public DinaRepositoryV2(@NonNull DinaService<E> dinaService,
+                          @NonNull DinaAuthorizationService authorizationService,
+                          @NonNull Optional<AuditService> auditService,
+                          @NonNull DinaMapperV2<D, E> dinaMapper,
+                          @NonNull Class<D> resourceClass,
+                          @NonNull Class<E> entityClass,
+                          @NonNull BuildProperties buildProperties,
+                          ObjectMapper objMapper, DinaMappingRegistry registry) {
 
     this.authorizationService = authorizationService;
     this.auditService = auditService.orElse(null);
@@ -113,9 +128,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
     this.dinaMapper = dinaMapper;
     this.buildProperties = buildProperties;
-
-    // build registry instance for resource class (dto)
-    this.registry = new DinaMappingRegistry(resourceClass);
+    this.registry = registry;
 
     // configure an assistant for this specific resource
     this.jsonApiDtoAssistant = new JsonApiDtoAssistant<>(registry,
