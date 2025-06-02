@@ -1,5 +1,18 @@
 = Messaging
 
+== How Messaging is working ?
+
+Messaging in DINA is implemented as an asynchonous process around RabbitMQ.
+
+There are 2 types of messages:
+
+ * `DocumentOperationNotification` for everything related to keep the search indices in sync
+ * `DinaMessage` for more generic messages (e.g. object export notifications from object-store-api)
+
+Example of how different components are integrated for `DocumentOperationNotification`. Some details are not included for readbility.
+
+image::document_operation_messaging_sequence.drawio.png[]
+
 == Messaging-related classes
 
 image::messaging_configuration.drawio.png[]
