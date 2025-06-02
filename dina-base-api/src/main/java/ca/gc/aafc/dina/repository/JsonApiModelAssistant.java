@@ -42,21 +42,41 @@ public class JsonApiModelAssistant <D extends JsonApiResource> {
     this.moduleVersion = moduleVersion;
   }
 
+
   /**
-   * Extract the UUID(id) of a created resource from a {@link RepresentationModel} object.
+   * same as {@link #extractUUIDFromRepresentationModelLink(ResponseEntity)} but for
+   * {@link ResponseEntity} wrapper
    * @param responseEntity
    * @return
    */
   public static UUID extractUUIDFromRepresentationModelLink(ResponseEntity<RepresentationModel<?>> responseEntity) {
 
-    if (responseEntity.getBody() == null ||
-      responseEntity.getBody().getLink(IanaLinkRelations.SELF).isEmpty()) {
+    if (responseEntity == null) {
+      return null;
+    }
+    return extractUUIDFromRepresentationModelLink(responseEntity.getBody());
+  }
+
+  /**
+   * Extract the UUID(id) of a created resource from a {@link RepresentationModel} object.
+   * @param representationModel
+   * @return
+   */
+  public static UUID extractUUIDFromRepresentationModelLink(
+    RepresentationModel<?> representationModel) {
+
+    if (representationModel == null) {
       return null;
     }
 
-    return UUID.fromString(StringUtils.substringAfterLast(responseEntity.getBody()
+    if (representationModel.getLink(IanaLinkRelations.SELF).isEmpty()) {
+      return null;
+    }
+
+    return UUID.fromString(StringUtils.substringAfterLast(representationModel
       .getLink(IanaLinkRelations.SELF).get().getHref(), "/"));
   }
+
 
   /**
    * Internal(package protected) method to create {@link JsonApiModelBuilder}.
