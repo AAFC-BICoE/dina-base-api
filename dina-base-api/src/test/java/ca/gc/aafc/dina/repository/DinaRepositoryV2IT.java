@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.repository;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +7,6 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpStatus;
@@ -178,11 +176,9 @@ public class DinaRepositoryV2IT {
       JsonAPITestHelper.toAttributeMap(personDto));
 
     var created = repositoryV2.handleCreate(doc, null);
-    UUID assignedId = UUID.fromString(
-      StringUtils.substringAfterLast(created.getBody().getLink(IanaLinkRelations.SELF).get().getHref(), "/"));
+    UUID assignedId = JsonApiModelAssistant.extractUUIDFromRepresentationModelLink(created);
 
     Map<String, Object> attributes = new HashMap<>();
-
     attributes.put("name", "abc");
     attributes.put("room", 21);
     // convert to string to mimic how we would get it with json:api
