@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.142-SNAPSHOT</version>
+    <version>0.142</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -21,7 +21,9 @@
     <local-javax-jaxb.version>2.3.0.1</local-javax-jaxb.version>
     <javax.activation.version>1.2.0</javax.activation.version>
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
-    <commons.beanutils.version>1.9.4</commons.beanutils.version>
+
+    <commons.beanutils.version>1.11.0</commons.beanutils.version>
+
     <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
     <javers.version>6.13.0</javers.version>
     <mybatis.version>2.2.2</mybatis.version>
@@ -157,22 +159,22 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-filter</artifactId>
-      <version>0.142-SNAPSHOT</version>
+      <version>0.142</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-messaging</artifactId>
-      <version>0.142-SNAPSHOT</version>
+      <version>0.142</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-json</artifactId>
-      <version>0.142-SNAPSHOT</version>
+      <version>0.142</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.142-SNAPSHOT</version>
+      <version>0.142</version>
       <scope>test</scope>
     </dependency>
     <dependency>
