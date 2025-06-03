@@ -8,8 +8,11 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.extern.log4j.Log4j2;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.http.ResponseEntity;
 
 import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
@@ -38,6 +41,42 @@ public class JsonApiModelAssistant <D extends JsonApiResource> {
   public JsonApiModelAssistant(String moduleVersion) {
     this.moduleVersion = moduleVersion;
   }
+
+
+  /**
+   * same as {@link #extractUUIDFromRepresentationModelLink(ResponseEntity)} but for
+   * {@link ResponseEntity} wrapper
+   * @param responseEntity
+   * @return
+   */
+  public static UUID extractUUIDFromRepresentationModelLink(ResponseEntity<RepresentationModel<?>> responseEntity) {
+
+    if (responseEntity == null) {
+      return null;
+    }
+    return extractUUIDFromRepresentationModelLink(responseEntity.getBody());
+  }
+
+  /**
+   * Extract the UUID(id) of a created resource from a {@link RepresentationModel} object.
+   * @param representationModel
+   * @return
+   */
+  public static UUID extractUUIDFromRepresentationModelLink(
+    RepresentationModel<?> representationModel) {
+
+    if (representationModel == null) {
+      return null;
+    }
+
+    if (representationModel.getLink(IanaLinkRelations.SELF).isEmpty()) {
+      return null;
+    }
+
+    return UUID.fromString(StringUtils.substringAfterLast(representationModel
+      .getLink(IanaLinkRelations.SELF).get().getHref(), "/"));
+  }
+
 
   /**
    * Internal(package protected) method to create {@link JsonApiModelBuilder}.
