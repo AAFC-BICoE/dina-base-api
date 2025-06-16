@@ -38,9 +38,13 @@ public class BaseRestAssuredTest {
 
   public static final String JSON_API_CONTENT_TYPE = "application/vnd.api+json";
   public static final String JSON_PATCH_CONTENT_TYPE = "application/json-patch+json";
+  public static final String JSON_API_BULK = "application/vnd.api+json; ext=bulk";
 
   protected static final Header CRNK_HEADER = new Header("crnk-compact", "true");
   private static final String CRNK_OPERATION_ENDPOINT = "operations";
+
+  public static final String JSON_API_BULK_PATH = "bulk";
+  public static final String JSON_API_BULK_LOAD_PATH = "bulk-load";
 
   @LocalServerPort
   protected int testPort;
@@ -66,9 +70,10 @@ public class BaseRestAssuredTest {
     return given()
       .header(CRNK_HEADER)
       .config(RestAssured.config()
-              .encoderConfig(EncoderConfig.encoderConfig()
-                      .defaultCharsetForContentType("UTF-8", JSON_API_CONTENT_TYPE)
-                      .defaultCharsetForContentType("UTF-8", JSON_PATCH_CONTENT_TYPE)))
+        .encoderConfig(EncoderConfig.encoderConfig()
+          .defaultCharsetForContentType("UTF-8", JSON_API_CONTENT_TYPE)
+          .defaultCharsetForContentType("UTF-8", JSON_PATCH_CONTENT_TYPE)
+          .defaultCharsetForContentType("UTF-8", JSON_API_BULK)))
       .port(testPort)
       .basePath(basePath);
   }
@@ -192,6 +197,26 @@ public class BaseRestAssuredTest {
     return response.then()
         .log().ifValidationFails()
         .statusCode(HttpStatus.OK.value());
+  }
+
+  /**
+   * Send a bulk-load request to the specified path.
+   * bulk-load path will be added.
+   * @param path
+   * @param body
+   * @return
+   */
+  protected ValidatableResponse sendBulkLoad(String path, Object body) {
+
+    Response response = newRequest()
+      .accept(JSON_API_CONTENT_TYPE)
+      .contentType(JSON_API_BULK)
+      .body(body)
+      .post(StringUtils.appendIfMissing(path, "/") + JSON_API_BULK_LOAD_PATH);
+
+    return response.then()
+      .log().ifValidationFails()
+      .statusCode(HttpStatus.OK.value());
   }
 
   /**
