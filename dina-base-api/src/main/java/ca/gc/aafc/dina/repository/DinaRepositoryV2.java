@@ -21,6 +21,7 @@ import ca.gc.aafc.dina.dto.JsonApiResource;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
+import ca.gc.aafc.dina.exception.ResourcesGoneException;
 import ca.gc.aafc.dina.exception.ResourcesNotFoundException;
 import ca.gc.aafc.dina.filter.DinaFilterArgumentParser;
 import ca.gc.aafc.dina.filter.EntityFilterHelper;
@@ -44,6 +45,7 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -171,13 +173,14 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
    */
   public ResponseEntity<RepresentationModel<?>> handleBulkLoad(JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument,
                                                                HttpServletRequest req)
-      throws ResourcesNotFoundException, ResourceGoneException {
+      throws ResourcesNotFoundException, ResourcesGoneException {
 
     String queryString = req != null ? decodeQueryString(req) : null;
     List<JsonApiDto<D>> dtos = new ArrayList<>();
 
     // initialize to null since it won't be used most of the time
     List<String> resourcesNotFound = null;
+    Map<String, String> resourcesGone = null;
 
     for (var data : jsonApiBulkDocument.getData()) {
       try {
@@ -187,6 +190,11 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
           resourcesNotFound = new ArrayList<>();
         }
         resourcesNotFound.add(exNotFound.getIdentifier());
+      } catch (ResourceGoneException exGone) {
+        if (resourcesGone == null) {
+          resourcesGone = new HashMap<>();
+        }
+        resourcesGone.put(exGone.getIdentifier(), exGone.getLink());
       }
     }
 
@@ -195,9 +203,12 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
       throw ResourcesNotFoundException.create(jsonApiType, resourcesNotFound);
     }
 
+    if (resourcesGone != null) {
+      throw ResourcesGoneException.create(jsonApiType, resourcesGone);
+    }
+
     JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(dtos, null);
-
-
+    
     return ResponseEntity.ok().body(builder.build());
   }
 

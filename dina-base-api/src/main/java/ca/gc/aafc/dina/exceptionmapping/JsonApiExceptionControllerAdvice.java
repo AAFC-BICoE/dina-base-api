@@ -14,6 +14,7 @@ import com.toedter.spring.hateoas.jsonapi.JsonApiErrors;
 
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
+import ca.gc.aafc.dina.exception.ResourcesGoneException;
 import ca.gc.aafc.dina.exception.ResourcesNotFoundException;
 import ca.gc.aafc.dina.jsonapi.JSONApiDocumentStructure;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
@@ -64,6 +65,24 @@ public class JsonApiExceptionControllerAdvice {
           .withAboutLink(ex.getLink()))
     );
   }
+
+  @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleResourcesGoneException(ResourcesGoneException ex) {
+    JsonApiErrors errors = JsonApiErrors.create();
+
+    ex.getIdentifierLinks().entrySet()
+      .stream()
+      .map(idLinkPair -> JsonApiError.create()
+        .withCode(Integer.toString(HttpStatus.GONE.value()))
+        .withStatus(HttpStatus.GONE.toString())
+        .withTitle("Gone")
+        .withSourcePointer(JSONApiDocumentStructure.pointerForDocumentId(idLinkPair.getKey()).toString())
+        .withAboutLink(idLinkPair.getValue())
+      )
+      .forEach(errors::withError);
+    return ResponseEntity.status(HttpStatus.GONE).body(errors);
+  }
+
 
   @ExceptionHandler
   public ResponseEntity<JsonApiErrors> handleValidationException(ValidationException ex) {

@@ -7,7 +7,7 @@ import lombok.Getter;
  * Similar to {@link ResourceNotFoundException} but for multiple resources.
  */
 @Getter
-public class ResourcesNotFoundException extends Exception {
+public final class ResourcesNotFoundException extends Exception {
 
   private final String resourceType;
   private final List<String> identifier;

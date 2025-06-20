@@ -35,6 +35,7 @@ import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
+import ca.gc.aafc.dina.exception.ResourcesGoneException;
 import ca.gc.aafc.dina.exception.ResourcesNotFoundException;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkDocument;
@@ -370,7 +371,7 @@ public class DinaRepositoryV2IT {
       @PostMapping(path = PATH + "/" + JSON_API_BULK_LOAD_PATH, consumes = JSON_API_BULK)
       public ResponseEntity<RepresentationModel<?>> onBulkLoad(
         @RequestBody JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument, HttpServletRequest req)
-        throws ResourcesNotFoundException, ResourceGoneException {
+        throws ResourcesNotFoundException, ResourcesGoneException {
         return handleBulkLoad(jsonApiBulkDocument, req);
       }
 
