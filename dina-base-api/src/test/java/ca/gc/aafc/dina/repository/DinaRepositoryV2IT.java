@@ -44,6 +44,7 @@ import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocuments;
 import ca.gc.aafc.dina.mapper.PersonMapper;
 import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
+import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
@@ -75,7 +76,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
 @Transactional
-@SpringBootTest(classes = {TestDinaBaseApp.class, DinaRepositoryV2IT.RepoV2TestConfig.class})
+@SpringBootTest(classes = {TestDinaBaseApp.class, DinaRepositoryV2IT.RepoV2TestConfig.class},
+  properties = "dina.auditing.enabled = true")
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class DinaRepositoryV2IT {
 
@@ -289,7 +291,7 @@ public class DinaRepositoryV2IT {
   }
 
   @Test
-  public void onBulkLoadNonExisting_Exception() throws Exception {
+  public void onBulkLoadNonExisting_NotFoundError() throws Exception {
 
     var bulkLoadDocument = JsonApiBulkResourceIdentifierDocument.builder();
     bulkLoadDocument.addData(JsonApiDocument.ResourceIdentifier.builder()
@@ -302,6 +304,38 @@ public class DinaRepositoryV2IT {
           .contentType(DinaRepositoryV2.JSON_API_BULK)
           .content(objMapper.writeValueAsString(bulkLoadDocument.build())))
       .andExpect(status().isNotFound())
+      .andReturn();
+
+    Map<String, Object> loadedDocs = objMapper.readValue(response.getResponse().getContentAsString(),
+      IT_OM_TYPE_REF);
+    assertNotNull(loadedDocs.get("errors"));
+  }
+
+  @Test
+  public void onBulkLoadDeleted_GoneError() throws Exception {
+
+    PersonDTO personDto1 = PersonDTO.builder()
+      .name("Bob test onBulkLoadDeleted_GoneError")
+      .build();
+    JsonApiDocument doc1 = JsonApiDocuments.createJsonApiDocument(null, PersonDTO.TYPE_NAME,
+      JsonAPITestHelper.toAttributeMap(personDto1));
+
+    var created = repositoryV2.handleCreate(doc1, null);
+    UUID assignedId = JsonApiModelAssistant.extractUUIDFromRepresentationModelLink(created);
+
+    repositoryV2.handleDelete(assignedId);
+
+    var bulkLoadDocument = JsonApiBulkResourceIdentifierDocument.builder();
+    bulkLoadDocument.addData(JsonApiDocument.ResourceIdentifier.builder()
+      .type(PersonDTO.TYPE_NAME)
+      .id(assignedId)
+      .build());
+
+    var response = mockMvc.perform(
+        post("/" + RepoV2TestConfig.PATH + "/" + DinaRepositoryV2.JSON_API_BULK_LOAD_PATH)
+          .contentType(DinaRepositoryV2.JSON_API_BULK)
+          .content(objMapper.writeValueAsString(bulkLoadDocument.build())))
+      .andExpect(status().isGone())
       .andReturn();
 
     Map<String, Object> loadedDocs = objMapper.readValue(response.getResponse().getContentAsString(),
@@ -331,10 +365,11 @@ public class DinaRepositoryV2IT {
       public PersonDinaTestRepositoryV2(
         DinaService<Person> dinaService,
         BuildProperties buildProperties,
+        AuditService auditService,
         ObjectMapper objMapper
       ) {
         super(dinaService, new AllowAllAuthorizationService(),
-          Optional.empty(), PersonMapper.INSTANCE, PersonDTO.class, Person.class,
+          Optional.of(auditService), PersonMapper.INSTANCE, PersonDTO.class, Person.class,
           buildProperties, objMapper);
       }
 

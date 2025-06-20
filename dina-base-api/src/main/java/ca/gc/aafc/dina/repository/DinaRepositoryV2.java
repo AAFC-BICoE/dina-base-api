@@ -208,7 +208,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     }
 
     JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(dtos, null);
-    
+
     return ResponseEntity.ok().body(builder.build());
   }
 
