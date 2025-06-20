@@ -35,6 +35,7 @@ import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
+import ca.gc.aafc.dina.exception.ResourcesNotFoundException;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkResourceIdentifierDocument;
@@ -47,6 +48,7 @@ import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 
+import static ca.gc.aafc.dina.repository.DinaRepository.IT_OM_TYPE_REF;
 import static com.toedter.spring.hateoas.jsonapi.MediaTypes.JSON_API_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -285,6 +287,27 @@ public class DinaRepositoryV2IT {
       .andReturn();
   }
 
+  @Test
+  public void onBulkLoadNonExisting_Exception() throws Exception {
+
+    var bulkLoadDocument = JsonApiBulkResourceIdentifierDocument.builder();
+    bulkLoadDocument.addData(JsonApiDocument.ResourceIdentifier.builder()
+      .type(PersonDTO.TYPE_NAME)
+      .id(UUID.randomUUID())
+      .build());
+
+    var response = mockMvc.perform(
+        post("/" + RepoV2TestConfig.PATH + "/" + DinaRepositoryV2.JSON_API_BULK_LOAD_PATH)
+          .contentType(DinaRepositoryV2.JSON_API_BULK)
+          .content(objMapper.writeValueAsString(bulkLoadDocument.build())))
+      .andExpect(status().isNotFound())
+      .andReturn();
+
+    Map<String, Object> loadedDocs = objMapper.readValue(response.getResponse().getContentAsString(),
+      IT_OM_TYPE_REF);
+    assertNotNull(loadedDocs.get("errors"));
+  }
+
   @TestConfiguration
   static class RepoV2TestConfig {
 
@@ -347,7 +370,7 @@ public class DinaRepositoryV2IT {
       @PostMapping(path = PATH + "/" + JSON_API_BULK_LOAD_PATH, consumes = JSON_API_BULK)
       public ResponseEntity<RepresentationModel<?>> onBulkLoad(
         @RequestBody JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument, HttpServletRequest req)
-        throws ResourceNotFoundException, ResourceGoneException {
+        throws ResourcesNotFoundException, ResourceGoneException {
         return handleBulkLoad(jsonApiBulkDocument, req);
       }
 

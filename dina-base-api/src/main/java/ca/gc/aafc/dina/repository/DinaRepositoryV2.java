@@ -21,6 +21,7 @@ import ca.gc.aafc.dina.dto.JsonApiResource;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
+import ca.gc.aafc.dina.exception.ResourcesNotFoundException;
 import ca.gc.aafc.dina.filter.DinaFilterArgumentParser;
 import ca.gc.aafc.dina.filter.EntityFilterHelper;
 import ca.gc.aafc.dina.filter.FilterComponent;
@@ -170,13 +171,33 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
    */
   public ResponseEntity<RepresentationModel<?>> handleBulkLoad(JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument,
                                                                HttpServletRequest req)
-      throws ResourceNotFoundException, ResourceGoneException {
+      throws ResourcesNotFoundException, ResourceGoneException {
+
     String queryString = req != null ? decodeQueryString(req) : null;
-    List<JsonApiDto<D> > dtos = new ArrayList<>();
+    List<JsonApiDto<D>> dtos = new ArrayList<>();
+
+    // initialize to null since it won't be used most of the time
+    List<String> resourcesNotFound = null;
+
     for (var data : jsonApiBulkDocument.getData()) {
-      dtos.add(getOne(data.getId(), queryString));
+      try {
+        dtos.add(getOne(data.getId(), queryString));
+      } catch (ResourceNotFoundException exNotFound) {
+        if (resourcesNotFound == null) {
+          resourcesNotFound = new ArrayList<>();
+        }
+        resourcesNotFound.add(exNotFound.getIdentifier());
+      }
     }
+
+    // errors handling
+    if (resourcesNotFound != null) {
+      throw ResourcesNotFoundException.create(jsonApiType, resourcesNotFound);
+    }
+
     JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(dtos, null);
+
+
     return ResponseEntity.ok().body(builder.build());
   }
 

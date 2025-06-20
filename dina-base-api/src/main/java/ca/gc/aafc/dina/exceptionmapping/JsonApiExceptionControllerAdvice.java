@@ -14,6 +14,8 @@ import com.toedter.spring.hateoas.jsonapi.JsonApiErrors;
 
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
+import ca.gc.aafc.dina.exception.ResourcesNotFoundException;
+import ca.gc.aafc.dina.jsonapi.JSONApiDocumentStructure;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
 
 /**
@@ -32,6 +34,22 @@ public class JsonApiExceptionControllerAdvice {
           .withTitle("Not Found")
           .withDetail(ex.getMessage()))
     );
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleResourceNotFoundException(ResourcesNotFoundException ex) {
+    JsonApiErrors errors = JsonApiErrors.create();
+
+    ex.getIdentifier()
+      .stream()
+      .map(docId -> JsonApiError.create()
+        .withCode(Integer.toString(HttpStatus.NOT_FOUND.value()))
+        .withStatus(HttpStatus.NOT_FOUND.toString())
+        .withTitle("Not Found")
+        .withSourcePointer(JSONApiDocumentStructure.pointerForDocumentId(docId).toString())
+      )
+      .forEach(errors::withError);
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
   }
 
   @ExceptionHandler
