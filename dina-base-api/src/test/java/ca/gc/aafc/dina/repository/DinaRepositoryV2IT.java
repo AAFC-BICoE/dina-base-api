@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.repository;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +7,6 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpStatus;
@@ -30,7 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.toedter.spring.hateoas.jsonapi.JsonApiConfiguration;
-import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.JsonApiDto;
@@ -47,6 +44,7 @@ import ca.gc.aafc.dina.mapper.PersonMapper;
 import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 
 import static com.toedter.spring.hateoas.jsonapi.MediaTypes.JSON_API_VALUE;
@@ -102,6 +100,20 @@ public class DinaRepositoryV2IT {
     repositoryV2.getAll("");
   }
 
+
+  @Test
+  public void findOne_onIncludePermissions_permissionMetaIncluded() throws ResourceGoneException, ResourceNotFoundException {
+    Person person = personService.create(Person.builder()
+      .name(TestableEntityFactory.generateRandomNameLettersOnly(11))
+      .room(38)
+      .build());
+
+    JsonApiDto<PersonDTO> dto = repositoryV2.getOne(person.getUuid(), null, true);
+
+    assertNotNull(dto.getMeta());
+    assertNotNull(dto.getMeta().getPermissionsProvider());
+  }
+
   @Test
   public void findAll_SortingByName_ReturnsSortedCaseSensitiveOrNot() {
 
@@ -153,23 +165,6 @@ public class DinaRepositoryV2IT {
   }
 
   @Test
-  public void onCreateJsonApiModelBuilder_noException() {
-
-    personService.create(Person.builder()
-      .name("abc defg")
-      .room(18)
-      .build());
-
-    QueryComponent qc = QueryComponent.builder()
-      .pageLimit(1)
-      .build();
-
-    JsonApiModelBuilder builder =
-      repositoryV2.createJsonApiModelBuilder(repositoryV2.getAll(qc));
-    assertNotNull(builder.build());
-  }
-
-  @Test
   public void onCreateUpdateDelete_noException() throws ResourceNotFoundException,
       ResourceGoneException {
 
@@ -181,11 +176,9 @@ public class DinaRepositoryV2IT {
       JsonAPITestHelper.toAttributeMap(personDto));
 
     var created = repositoryV2.handleCreate(doc, null);
-    UUID assignedId = UUID.fromString(
-      StringUtils.substringAfterLast(created.getBody().getLink(IanaLinkRelations.SELF).get().getHref(), "/"));
+    UUID assignedId = JsonApiModelAssistant.extractUUIDFromRepresentationModelLink(created);
 
     Map<String, Object> attributes = new HashMap<>();
-
     attributes.put("name", "abc");
     attributes.put("room", 21);
     // convert to string to mimic how we would get it with json:api

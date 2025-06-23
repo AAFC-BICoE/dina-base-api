@@ -24,16 +24,25 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class DinaMappingRegistryTest {
 
   @Test
-  void init_WhenInvalidDataTypes_ThrowsIllegalStateException() {
+  void init_whenNonMatchingDataTypes_ThrowsIllegalStateException() {
     Assertions.assertThrows( // Invalid data type
       IllegalStateException.class,
-      () -> new DinaMappingRegistry(InvalidDataTypeDto.class));
+      () -> new DinaMappingRegistry(NonMatchingDataTypeDto.class));
     Assertions.assertThrows( // Invalid generic type
       IllegalStateException.class,
       () -> new DinaMappingRegistry(InvalidGenericDataTypeDto.class));
+  }
+
+  @Test
+  void init_whenNonMatchingDataTypesWithFlag_NoException() {
+    Assertions.assertDoesNotThrow(() -> new DinaMappingRegistry(NonMatchingDataTypeDto.class, true));
+    Assertions.assertDoesNotThrow(
+      () -> new DinaMappingRegistry(InvalidGenericDataTypeDto.class, true));
   }
 
   @Test
@@ -47,8 +56,8 @@ public class DinaMappingRegistryTest {
   void getAttributePerClass_WhenAttributesInherited() {
     DinaMappingRegistry registry = new DinaMappingRegistry(InheritedDto.class);
     String expectedField = "Inherited";
-    Assertions.assertTrue(registry.getAttributesPerClass().get(InheritedDto.class).contains(expectedField));
-    Assertions.assertTrue(registry.getAttributesPerClass().get(Inherited.class).contains(expectedField));
+    assertTrue(registry.getAttributesForClass(InheritedDto.class).contains(expectedField));
+    assertTrue(registry.getAttributesForClass(Inherited.class).contains(expectedField));
   }
 
   @Test
@@ -70,7 +79,7 @@ public class DinaMappingRegistryTest {
       .filter(ir -> ir.getName().equals("departmentsHeadBackup")).findFirst().orElse(null);
     Assertions.assertNotNull(resultCollectionRelation);
     Assertions.assertEquals(DepartmentDto.class, resultCollectionRelation.getDtoType());
-    Assertions.assertTrue(resultCollectionRelation.isCollection());
+    assertTrue(resultCollectionRelation.isCollection());
   }
 
   @Test
@@ -94,7 +103,7 @@ public class DinaMappingRegistryTest {
     Assertions.assertNotNull(resultCollectionRelation);
     Assertions.assertEquals(DepartmentDto.class, resultCollectionRelation.getDtoType());
     Assertions.assertEquals(Department.class, resultCollectionRelation.getEntityType());
-    Assertions.assertTrue(resultCollectionRelation.isCollection());
+    assertTrue(resultCollectionRelation.isCollection());
   }
 
   @Test
@@ -112,7 +121,7 @@ public class DinaMappingRegistryTest {
     Assertions.assertNotNull(employeesRelation);
     Assertions.assertEquals(Employee.class, employeesRelation.getEntityType());
     Assertions.assertEquals(EmployeeDto.class, employeesRelation.getDtoType());
-    Assertions.assertTrue(employeesRelation.isCollection());
+    assertTrue(employeesRelation.isCollection());
 
     DinaMappingRegistry.InternalRelation personRelation = results.stream()
       .filter(ir -> ir.getName().equals("departmentOwner")).findFirst().orElse(null);
@@ -125,8 +134,8 @@ public class DinaMappingRegistryTest {
   @Test
   void isRelationExternal() {
     DinaMappingRegistry registry = new DinaMappingRegistry(ProjectDTO.class);
-    Assertions.assertTrue(registry.isRelationExternal(ProjectDTO.class, "acMetaDataCreator"));
-    Assertions.assertTrue(registry.isRelationExternal(ProjectDTO.class, "originalAuthor"));
+    assertTrue(registry.isRelationExternal(ProjectDTO.class, "acMetaDataCreator"));
+    assertTrue(registry.isRelationExternal(ProjectDTO.class, "originalAuthor"));
     Assertions.assertFalse(registry.isRelationExternal(ProjectDTO.class, "task"));
   }
 
@@ -185,8 +194,8 @@ public class DinaMappingRegistryTest {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
-  @RelatedEntity(InvalidDataTypeEntity.class)
-  static class InvalidDataTypeDto {
+  @RelatedEntity(NonMatchingDataTypeEntity.class)
+  static class NonMatchingDataTypeDto {
     private String invalidList;
   }
 
@@ -194,7 +203,7 @@ public class DinaMappingRegistryTest {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
-  static class InvalidDataTypeEntity {
+  static class NonMatchingDataTypeEntity {
     private Integer invalidList;
   }
 

@@ -11,13 +11,11 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Utility static class to deal with test resources.
  *
  */
-@SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
 public final class TestResourceHelper {
 
   public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();

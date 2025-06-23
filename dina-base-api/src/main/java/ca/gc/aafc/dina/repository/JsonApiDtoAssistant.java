@@ -12,6 +12,7 @@ import org.apache.commons.beanutils.PropertyUtils;
 
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.JsonApiDto;
+import ca.gc.aafc.dina.dto.JsonApiDtoMeta;
 import ca.gc.aafc.dina.dto.JsonApiExternalResource;
 import ca.gc.aafc.dina.dto.JsonApiResource;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
@@ -37,14 +38,23 @@ public class JsonApiDtoAssistant<D> {
   }
 
   /**
-   * Build a {@link JsonApiDto} for a given dto and a set of includes.
+   * see {@link #toJsonApiDto(Object, JsonApiDtoMeta, Set)}
+   */
+  public JsonApiDto<D> toJsonApiDto(D dto, Set<String> includes) {
+    return toJsonApiDto(dto, null, includes);
+  }
+
+  /**
+   * Build a {@link JsonApiDto} for a given dto, metadata and a set of includes.
    *
    * @param dto
+   * @param meta metadata related to the specific dto
    * @param includes
    * @return
    */
-  public JsonApiDto<D> toJsonApiDto(D dto, Set<String> includes) {
+  public JsonApiDto<D> toJsonApiDto(D dto, JsonApiDtoMeta meta, Set<String> includes) {
     JsonApiDto.JsonApiDtoBuilder<D> jsonApiDtoBuilder = JsonApiDto.builder();
+    jsonApiDtoBuilder.meta(meta);
     for (String include : includes) {
       try {
         Object rel = PropertyUtils.getProperty(dto, include);
