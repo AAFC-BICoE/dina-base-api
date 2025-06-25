@@ -35,6 +35,7 @@ public final class JSONApiDocumentStructure {
 
   // JSON Pointer version
   public static final JsonPointer DATA_PTR = JsonPointer.valueOf("/" + DATA);
+  public static final JsonPointer DATA_ID_PTR = JsonPointer.valueOf("/" + DATA + "/" + ID);
   public static final JsonPointer INCLUDED_PTR = JsonPointer.valueOf("/" + INCLUDED);
   public static final JsonPointer META_PTR = JsonPointer.valueOf("/" + META);
   public static final JsonPointer ATTRIBUTES_PTR = JsonPointer.valueOf("/" + DATA + "/" + ATTRIBUTES);
@@ -63,6 +64,14 @@ public final class JSONApiDocumentStructure {
       return false;
     }
     return currentPath.startsWith(DATA_ATTRIBUTES_PATH);
+  }
+
+  /**
+   * Get a JSON Pointer (RFC6901) that point to an id of a document.
+   * /data/id/{documentId}
+   */
+  public static JsonPointer pointerForDocumentId(String documentId) {
+    return DATA_ID_PTR.append(JsonPointer.valueOf("/" + documentId));
   }
 
   /**
