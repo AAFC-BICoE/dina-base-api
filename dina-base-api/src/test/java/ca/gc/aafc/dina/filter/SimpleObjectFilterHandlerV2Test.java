@@ -39,6 +39,33 @@ public class SimpleObjectFilterHandlerV2Test {
   }
 
   @Test
+  public void getRestriction_onFilterWithLike_predicateCreated() {
+
+    String content = "filter[name][LIKE]=Ji%";
+    QueryComponent queryComponent = QueryStringParser.parse(content);
+
+    Predicate<DepartmentDto> p = SimpleObjectFilterHandlerV2.createPredicate(queryComponent.getFilters());
+
+    DepartmentDto dep = new DepartmentDto();
+    dep.setName("Jim");
+    assertTrue(p.test(dep));
+
+    dep.setName("Jam");
+    assertFalse(p.test(dep));
+
+    content = "filter[name][LIKE]=%im";
+    queryComponent = QueryStringParser.parse(content);
+
+    p = SimpleObjectFilterHandlerV2.createPredicate(queryComponent.getFilters());
+
+    dep.setName("Jim");
+    assertTrue(p.test(dep));
+
+    dep.setName("Jam");
+    assertFalse(p.test(dep));
+  }
+
+  @Test
   public void generateComparator_onSort_expectedOrder() {
 
     DepartmentDto dep = new DepartmentDto();

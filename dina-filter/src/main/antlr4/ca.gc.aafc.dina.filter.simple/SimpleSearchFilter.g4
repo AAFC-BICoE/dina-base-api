@@ -12,7 +12,7 @@ page: 'page' '[' ( 'limit' | 'offset' ) ']' '=' pageValue;
 
 include: 'include' '=' propertyName ( ',' propertyName )*;
 
-comparison: 'EQ' | 'NEQ' | 'GT' | 'LT';
+comparison: 'EQ' | 'NEQ' | 'GT' | 'LT' | 'LIKE';
 
 propertyName: (LETTERS|UNDERSCORE)+ (LETTERS | INT |
 UNDERSCORE | SYMBOLS)*;
@@ -27,6 +27,7 @@ attributeValue: (
   | UNDERSCORE
   | DASH
   | SYMBOLS
+  | PERCENTAGE
   | SPACE
   | FORWARD_SLASH)+;
 
@@ -40,5 +41,6 @@ DASH: [-];
 SYMBOLS: [.];
 FORWARD_SLASH: [/];
 SPACE: [ ];
+PERCENTAGE: [%];
 
 WS: [\t\r\n]+ -> skip; // Skip whitespace

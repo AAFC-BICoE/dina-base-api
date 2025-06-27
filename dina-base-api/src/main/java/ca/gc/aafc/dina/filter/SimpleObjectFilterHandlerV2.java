@@ -11,6 +11,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 
@@ -167,19 +169,53 @@ public final class SimpleObjectFilterHandlerV2 {
   }
 
   private static <T> Predicate<T> generatePredicate(String path, Ops operator, String value) {
+    return switch (operator) {
+      case NE -> Predicate.not(createEqualPredicate(path, value));
+      case EQ -> createEqualPredicate(path, value);
+      case LIKE -> createLikePredicate(path, value);
+      default -> o -> false;
+    };
+  }
 
-    Predicate<T> isEqualPredicate = o -> {
+  private static <T> Predicate<T> createEqualPredicate(String path, String value) {
+    return o -> {
       try {
         return Objects.equals(value, PropertyUtils.getNestedProperty(o, path));
       } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
         throw new RuntimeException(e);
       }
     };
+  }
 
-    return switch (operator) {
-      case NE -> Predicate.not(isEqualPredicate);
-      case EQ -> isEqualPredicate;
-      default -> o -> false;
+  /**
+   * Creates a predicate that will mimic the SQL LIKE using Regex.
+   * @param path
+   * @param value
+   * @return
+   */
+  private static <T> Predicate<T> createLikePredicate(String path, String value) {
+    String regexPattern = Pattern.quote(value) // Escape special regex chars
+      .replace("%", "\\E.*\\Q")
+      .replace("_", "\\E.\\Q");
+    // ai-generated explanation of why we are using E and Q here
+    // Q and E create literal sections.  This means that everything
+    // between \Q and \E is interpreted literally. The .* and .
+    // must be outside the \Q and \E to be special.  So we can
+    // replace things like "foo%bar" with "foo\E.*\Qbar" so that the
+    // .* is treated as a regex wildcard, not literally.
+
+    return o -> {
+      if (o == null) {
+        return false;
+      }
+      Pattern regex = Pattern.compile(regexPattern);
+      Matcher matcher;
+      try {
+        matcher = regex.matcher(Objects.toString(PropertyUtils.getNestedProperty(o, path), ""));
+      } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        throw new RuntimeException(e);
+      }
+      return matcher.matches();
     };
   }
 
