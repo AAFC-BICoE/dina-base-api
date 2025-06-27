@@ -49,6 +49,20 @@ public class SimpleObjectFilterHandlerV2Test {
     DepartmentDto dep = new DepartmentDto();
     dep.setName("Jim");
     assertTrue(p.test(dep));
+
+    dep.setName("Jam");
+    assertFalse(p.test(dep));
+
+    content = "filter[name][LIKE]=%im";
+    queryComponent = QueryStringParser.parse(content);
+
+    p = SimpleObjectFilterHandlerV2.createPredicate(queryComponent.getFilters());
+
+    dep.setName("Jim");
+    assertTrue(p.test(dep));
+
+    dep.setName("Jam");
+    assertFalse(p.test(dep));
   }
 
   @Test
