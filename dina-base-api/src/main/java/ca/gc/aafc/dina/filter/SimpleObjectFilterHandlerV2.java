@@ -172,7 +172,8 @@ public final class SimpleObjectFilterHandlerV2 {
     return switch (operator) {
       case NE -> Predicate.not(createEqualPredicate(path, value));
       case EQ -> createEqualPredicate(path, value);
-      case LIKE -> createLikePredicate(path, value);
+      case LIKE -> createLikePredicate(path, value, true);
+      case LIKE_IC -> createLikePredicate(path, value, false);
       default -> o -> false;
     };
   }
@@ -188,12 +189,15 @@ public final class SimpleObjectFilterHandlerV2 {
   }
 
   /**
-   * Creates a predicate that will mimic the SQL LIKE using Regex.
-   * @param path
-   * @param value
+   * Creates a Predicate that acts like an SQL LIKE operator (case-sensitive or not).
+   *
+   * @param path          the path of the attribute to check
+   * @param value         the value to match. Supports '%' as a wildcard for zero or more characters
+   *                      and '_' as a wildcard for exactly one character. Backslash (\) can be used to escape special characters.
+   * @param caseSensitive case-sensitive or not
    * @return
    */
-  private static <T> Predicate<T> createLikePredicate(String path, String value) {
+  private static <T> Predicate<T> createLikePredicate(String path, String value, boolean caseSensitive) {
     String regexPattern = Pattern.quote(value) // Escape special regex chars
       .replace("%", "\\E.*\\Q")
       .replace("_", "\\E.\\Q");
@@ -208,7 +212,9 @@ public final class SimpleObjectFilterHandlerV2 {
       if (o == null) {
         return false;
       }
-      Pattern regex = Pattern.compile(regexPattern);
+
+      Pattern regex = caseSensitive ? Pattern.compile(regexPattern) :
+        Pattern.compile(regexPattern, Pattern.CASE_INSENSITIVE);
       Matcher matcher;
       try {
         matcher = regex.matcher(Objects.toString(PropertyUtils.getNestedProperty(o, path), ""));

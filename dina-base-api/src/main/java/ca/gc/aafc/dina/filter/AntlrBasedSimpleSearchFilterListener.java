@@ -117,8 +117,8 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
       case "LT" -> Ops.LT;
       case "GT" -> Ops.GT;
       case "LIKE" -> Ops.LIKE;
+      case "ILIKE" -> Ops.LIKE_IC;
       default -> null;
     };
   }
-
 }

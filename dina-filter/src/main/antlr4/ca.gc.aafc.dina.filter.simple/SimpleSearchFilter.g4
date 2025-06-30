@@ -12,7 +12,7 @@ page: 'page' '[' ( 'limit' | 'offset' ) ']' '=' pageValue;
 
 include: 'include' '=' propertyName ( ',' propertyName )*;
 
-comparison: 'EQ' | 'NEQ' | 'GT' | 'LT' | 'LIKE';
+comparison: 'EQ' | 'NEQ' | 'GT' | 'LT' | 'LIKE' | 'ILIKE';
 
 propertyName: (LETTERS|UNDERSCORE)+ (LETTERS | INT |
 UNDERSCORE | SYMBOLS)*;
