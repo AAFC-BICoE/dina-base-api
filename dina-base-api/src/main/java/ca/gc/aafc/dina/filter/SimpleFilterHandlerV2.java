@@ -134,8 +134,17 @@ public final class SimpleFilterHandlerV2 {
       if (isJsonb(attribute)) {
         predicates.add(generateJsonbPredicate(
             path.getParentPath(), cb, attributePath, attribute.getName(), filterValue.toString()));
-      } else {
-        predicates.add(cb.equal(path, parser.apply(filterValue.toString(), path.getJavaType())));
+      } else { // regular operators
+        switch (component.operator()) {
+          case EQ -> predicates.add(cb.equal(path, parser.apply(filterValue.toString(), path.getJavaType())));
+          case LIKE -> predicates.add(cb.like((Path<String>)path, filterValue.toString()));
+          // there is no built-in support for case-insensitive like in Hibernate so, we are using
+          // lower case. Could have performance impact on very large tables
+          case LIKE_IC -> predicates.add(cb.like(cb.lower((Path<String>)path), filterValue.toString().toLowerCase()));
+          default -> {
+            log.warn("Unhandled operator: {}", component.operator());
+          }
+        }
       }
     } 
   }
