@@ -62,22 +62,50 @@ public class SimpleFilterHandlerV2IT extends BasePostgresItContext {
   public void searchEmployees_whenNameFilterIsLike_filteredEmployeesAreReturned() {
     String expectedEmpName = "e2abc";
 
-    Employee emp1 = Employee.builder().uuid(UUID.randomUUID()).name("e1").build();
-    Employee emp2 = Employee.builder().uuid(UUID.randomUUID()).name(expectedEmpName).build();
-    Employee emp3 = Employee.builder().uuid(UUID.randomUUID()).name("e3").build();
-    Employee emp20 = Employee.builder().uuid(UUID.randomUUID()).name("e20").build();
+    Person emp1 = Person.builder().uuid(UUID.randomUUID()).name("e1").build();
+    Person emp2 = Person.builder().uuid(UUID.randomUUID()).name(expectedEmpName).build();
+    Person emp3 = Person.builder().uuid(UUID.randomUUID()).name("e3").build();
+    Person emp20 = Person.builder().uuid(UUID.randomUUID()).name("e20").build();
 
-    for (Employee newEmp : Arrays.asList(emp1, emp2, emp3, emp20)) {
-      entityManager.persist(newEmp);
+    for (Person newPerson : Arrays.asList(emp1, emp2, emp3, emp20)) {
+      entityManager.persist(newPerson);
     }
 
-    QuerySpec querySpec = new QuerySpec(EmployeeDto.class);
-    querySpec.addFilter(new FilterSpec(List.of("name"), FilterOperator.LIKE,
-      expectedEmpName.replace("c", "%")));
-    List<EmployeeDto> empDtos = this.employeeRepository.findAll(querySpec);
+    QueryComponent qc = QueryComponent.builder()
+      .filters(new FilterExpression("name", Ops.LIKE,
+        expectedEmpName.replace("c", "%")))
+      .build();
 
+    var personDtos = this.personRepository.getAll(qc);
     assertEquals(List.of(expectedEmpName),
-      empDtos.stream().map(EmployeeDto::getName).collect(Collectors.toList())
+      personDtos.resourceList().stream().map( m -> m.getDto().getName()).collect(Collectors.toList())
+    );
+  }
+
+  /**
+   * Case-insensitive like
+   */
+  @Test
+  public void searchEmployees_whenNameFilterIsILike_filteredEmployeesAreReturned() {
+    String expectedEmpName = "E2ABC";
+
+    Person emp1 = Person.builder().uuid(UUID.randomUUID()).name("E1").build();
+    Person emp2 = Person.builder().uuid(UUID.randomUUID()).name(expectedEmpName).build();
+    Person emp3 = Person.builder().uuid(UUID.randomUUID()).name("E3").build();
+    Person emp20 = Person.builder().uuid(UUID.randomUUID()).name("E20").build();
+
+    for (Person newPerson : Arrays.asList(emp1, emp2, emp3, emp20)) {
+      entityManager.persist(newPerson);
+    }
+
+    QueryComponent qc = QueryComponent.builder()
+      .filters(new FilterExpression("name", Ops.LIKE_IC,
+        expectedEmpName.replace("C", "%").toLowerCase()))
+      .build();
+
+    var personDtos = this.personRepository.getAll(qc);
+    assertEquals(List.of(expectedEmpName),
+      personDtos.resourceList().stream().map( m -> m.getDto().getName()).collect(Collectors.toList())
     );
   }
 
