@@ -344,7 +344,7 @@ public class DinaRepositoryV2IT {
   }
 
   @TestConfiguration
-  static class RepoV2TestConfig {
+  public static class RepoV2TestConfig {
 
     public static final String PATH = PersonDTO.TYPE_NAME + "v2";
 
@@ -365,11 +365,11 @@ public class DinaRepositoryV2IT {
       public PersonDinaTestRepositoryV2(
         DinaService<Person> dinaService,
         BuildProperties buildProperties,
-        AuditService auditService,
+        Optional<AuditService> auditService,
         ObjectMapper objMapper
       ) {
         super(dinaService, new AllowAllAuthorizationService(),
-          Optional.of(auditService), PersonMapper.INSTANCE, PersonDTO.class, Person.class,
+          auditService, PersonMapper.INSTANCE, PersonDTO.class, Person.class,
           buildProperties, objMapper);
       }
 
