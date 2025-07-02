@@ -1,8 +1,14 @@
 package ca.gc.aafc.dina.testsupport.repository;
 
+import java.io.UnsupportedEncodingException;
+
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,9 +22,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 public abstract class MockMvcBasedRepository {
 
   protected final String baseUrl;
+  protected final ObjectMapper objMapper;
 
-  protected MockMvcBasedRepository(String baseUrl) {
+  protected MockMvcBasedRepository(String baseUrl, ObjectMapper objMapper) {
     this.baseUrl = baseUrl;
+    this.objMapper = objMapper;
   }
 
   protected abstract MockMvc getMockMvc();
@@ -30,5 +38,10 @@ public abstract class MockMvcBasedRepository {
       )
       .andExpect(status().isOk())
       .andReturn();
+  }
+  
+  protected JsonApiDocument toJsonApiDocument(MvcResult mvcResult)
+    throws UnsupportedEncodingException, JsonProcessingException {
+    return objMapper.readValue(mvcResult.getResponse().getContentAsString(), JsonApiDocument.class);
   }
 }
