@@ -1,0 +1,34 @@
+package ca.gc.aafc.dina.testsupport.repository;
+
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+
+import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
+/**
+ * Abstract class to test repository layer using Spring MockMvc.
+ * MockMvc allows to mimic a Http request to Spring controllers without running test server (webEnvironment).
+ *
+ */
+public abstract class MockMvcBasedRepository {
+
+  protected final String baseUrl;
+
+  protected MockMvcBasedRepository(String baseUrl) {
+    this.baseUrl = baseUrl;
+  }
+
+  protected abstract MockMvc getMockMvc();
+
+  protected MvcResult sendGet(String id) throws Exception {
+    return getMockMvc().perform(
+        get(baseUrl + "/" + id)
+          .contentType(BaseRestAssuredTest.JSON_API_CONTENT_TYPE)
+      )
+      .andExpect(status().isOk())
+      .andReturn();
+  }
+}
