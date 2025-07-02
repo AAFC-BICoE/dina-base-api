@@ -23,6 +23,13 @@
   </properties>
 
   <dependencies>
+
+    <dependency>
+      <groupId>io.github.aafc-bicoe</groupId>
+      <artifactId>dina-json</artifactId>
+      <version>0.144-SNAPSHOT</version>
+    </dependency>
+
     <dependency>
       <groupId>org.eclipse.parsson</groupId>
       <artifactId>parsson</artifactId>
