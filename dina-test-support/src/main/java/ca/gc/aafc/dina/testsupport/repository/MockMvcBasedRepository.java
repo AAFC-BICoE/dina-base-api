@@ -39,9 +39,9 @@ public abstract class MockMvcBasedRepository {
       .andExpect(status().isOk())
       .andReturn();
   }
-  
+
   protected JsonApiDocument toJsonApiDocument(MvcResult mvcResult)
-    throws UnsupportedEncodingException, JsonProcessingException {
+      throws UnsupportedEncodingException, JsonProcessingException {
     return objMapper.readValue(mvcResult.getResponse().getContentAsString(), JsonApiDocument.class);
   }
 }
