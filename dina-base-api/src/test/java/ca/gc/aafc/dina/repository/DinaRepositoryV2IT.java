@@ -35,6 +35,8 @@ import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
+import ca.gc.aafc.dina.exception.ResourcesGoneException;
+import ca.gc.aafc.dina.exception.ResourcesNotFoundException;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkResourceIdentifierDocument;
@@ -42,11 +44,13 @@ import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocuments;
 import ca.gc.aafc.dina.mapper.PersonMapper;
 import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
+import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 
+import static ca.gc.aafc.dina.repository.DinaRepository.IT_OM_TYPE_REF;
 import static com.toedter.spring.hateoas.jsonapi.MediaTypes.JSON_API_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -72,7 +76,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
 @Transactional
-@SpringBootTest(classes = {TestDinaBaseApp.class, DinaRepositoryV2IT.RepoV2TestConfig.class})
+@SpringBootTest(classes = {TestDinaBaseApp.class, DinaRepositoryV2IT.RepoV2TestConfig.class},
+  properties = "dina.auditing.enabled = true")
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class DinaRepositoryV2IT {
 
@@ -285,8 +290,61 @@ public class DinaRepositoryV2IT {
       .andReturn();
   }
 
+  @Test
+  public void onBulkLoadNonExisting_NotFoundError() throws Exception {
+
+    var bulkLoadDocument = JsonApiBulkResourceIdentifierDocument.builder();
+    bulkLoadDocument.addData(JsonApiDocument.ResourceIdentifier.builder()
+      .type(PersonDTO.TYPE_NAME)
+      .id(UUID.randomUUID())
+      .build());
+
+    var response = mockMvc.perform(
+        post("/" + RepoV2TestConfig.PATH + "/" + DinaRepositoryV2.JSON_API_BULK_LOAD_PATH)
+          .contentType(DinaRepositoryV2.JSON_API_BULK)
+          .content(objMapper.writeValueAsString(bulkLoadDocument.build())))
+      .andExpect(status().isNotFound())
+      .andReturn();
+
+    Map<String, Object> loadedDocs = objMapper.readValue(response.getResponse().getContentAsString(),
+      IT_OM_TYPE_REF);
+    assertNotNull(loadedDocs.get("errors"));
+  }
+
+  @Test
+  public void onBulkLoadDeleted_GoneError() throws Exception {
+
+    PersonDTO personDto1 = PersonDTO.builder()
+      .name("Bob test onBulkLoadDeleted_GoneError")
+      .build();
+    JsonApiDocument doc1 = JsonApiDocuments.createJsonApiDocument(null, PersonDTO.TYPE_NAME,
+      JsonAPITestHelper.toAttributeMap(personDto1));
+
+    var created = repositoryV2.handleCreate(doc1, null);
+    UUID assignedId = JsonApiModelAssistant.extractUUIDFromRepresentationModelLink(created);
+
+    repositoryV2.handleDelete(assignedId);
+
+    var bulkLoadDocument = JsonApiBulkResourceIdentifierDocument.builder();
+    bulkLoadDocument.addData(JsonApiDocument.ResourceIdentifier.builder()
+      .type(PersonDTO.TYPE_NAME)
+      .id(assignedId)
+      .build());
+
+    var response = mockMvc.perform(
+        post("/" + RepoV2TestConfig.PATH + "/" + DinaRepositoryV2.JSON_API_BULK_LOAD_PATH)
+          .contentType(DinaRepositoryV2.JSON_API_BULK)
+          .content(objMapper.writeValueAsString(bulkLoadDocument.build())))
+      .andExpect(status().isGone())
+      .andReturn();
+
+    Map<String, Object> loadedDocs = objMapper.readValue(response.getResponse().getContentAsString(),
+      IT_OM_TYPE_REF);
+    assertNotNull(loadedDocs.get("errors"));
+  }
+
   @TestConfiguration
-  static class RepoV2TestConfig {
+  public static class RepoV2TestConfig {
 
     public static final String PATH = PersonDTO.TYPE_NAME + "v2";
 
@@ -307,10 +365,11 @@ public class DinaRepositoryV2IT {
       public PersonDinaTestRepositoryV2(
         DinaService<Person> dinaService,
         BuildProperties buildProperties,
+        Optional<AuditService> auditService,
         ObjectMapper objMapper
       ) {
         super(dinaService, new AllowAllAuthorizationService(),
-          Optional.empty(), PersonMapper.INSTANCE, PersonDTO.class, Person.class,
+          auditService, PersonMapper.INSTANCE, PersonDTO.class, Person.class,
           buildProperties, objMapper);
       }
 
@@ -347,7 +406,7 @@ public class DinaRepositoryV2IT {
       @PostMapping(path = PATH + "/" + JSON_API_BULK_LOAD_PATH, consumes = JSON_API_BULK)
       public ResponseEntity<RepresentationModel<?>> onBulkLoad(
         @RequestBody JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument, HttpServletRequest req)
-        throws ResourceNotFoundException, ResourceGoneException {
+        throws ResourcesNotFoundException, ResourcesGoneException {
         return handleBulkLoad(jsonApiBulkDocument, req);
       }
 

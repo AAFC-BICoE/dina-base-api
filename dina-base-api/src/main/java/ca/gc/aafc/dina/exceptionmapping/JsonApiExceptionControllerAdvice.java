@@ -14,6 +14,9 @@ import com.toedter.spring.hateoas.jsonapi.JsonApiErrors;
 
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
+import ca.gc.aafc.dina.exception.ResourcesGoneException;
+import ca.gc.aafc.dina.exception.ResourcesNotFoundException;
+import ca.gc.aafc.dina.jsonapi.JSONApiDocumentStructure;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
 
 /**
@@ -35,6 +38,22 @@ public class JsonApiExceptionControllerAdvice {
   }
 
   @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleResourceNotFoundException(ResourcesNotFoundException ex) {
+    JsonApiErrors errors = JsonApiErrors.create();
+
+    ex.getIdentifier()
+      .stream()
+      .map(docId -> JsonApiError.create()
+        .withCode(Integer.toString(HttpStatus.NOT_FOUND.value()))
+        .withStatus(HttpStatus.NOT_FOUND.toString())
+        .withTitle("Not Found")
+        .withSourcePointer(JSONApiDocumentStructure.pointerForDocumentId(docId).toString())
+      )
+      .forEach(errors::withError);
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
+  }
+
+  @ExceptionHandler
   public ResponseEntity<JsonApiErrors> handleResourceGoneException(ResourceGoneException ex) {
     return ResponseEntity.status(HttpStatus.GONE).body(
       JsonApiErrors.create().withError(
@@ -46,6 +65,24 @@ public class JsonApiExceptionControllerAdvice {
           .withAboutLink(ex.getLink()))
     );
   }
+
+  @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleResourcesGoneException(ResourcesGoneException ex) {
+    JsonApiErrors errors = JsonApiErrors.create();
+
+    ex.getIdentifierLinks().entrySet()
+      .stream()
+      .map(idLinkPair -> JsonApiError.create()
+        .withCode(Integer.toString(HttpStatus.GONE.value()))
+        .withStatus(HttpStatus.GONE.toString())
+        .withTitle("Gone")
+        .withSourcePointer(JSONApiDocumentStructure.pointerForDocumentId(idLinkPair.getKey()).toString())
+        .withAboutLink(idLinkPair.getValue())
+      )
+      .forEach(errors::withError);
+    return ResponseEntity.status(HttpStatus.GONE).body(errors);
+  }
+
 
   @ExceptionHandler
   public ResponseEntity<JsonApiErrors> handleValidationException(ValidationException ex) {
