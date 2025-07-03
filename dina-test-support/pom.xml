@@ -20,7 +20,6 @@
   <properties>
     <openapi4j.version>1.0.4</openapi4j.version>
     <jackson-datatype-jsr310.version>2.11.0</jackson-datatype-jsr310.version>
-    <jakarta.json-api.version>2.0.2</jakarta.json-api.version>
   </properties>
 
   <dependencies>
