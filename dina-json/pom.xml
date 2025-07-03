@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>dina-json</artifactId>
+    <name>dina-json</name>
     <description>DINA JSON utility classes</description>
     <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
