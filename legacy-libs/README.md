@@ -5,13 +5,6 @@ These dependencies must be installed to your local maven in order to build the d
 
 ```shell
 mvn install:install-file \
-  -Dfile=legacy-libs/crnk/crnk-client/crnk-client-3.2.20200419165537.jar \
-  -DgroupId=io.crnk \
-  -DartifactId=crnk-client \
-  -Dversion=3.2.20200419165537 \
-  -Dpackaging=jar
-
-mvn install:install-file \
   -Dfile=legacy-libs/crnk/crnk-data-jpa/crnk-data-jpa-3.2.20200419165537.jar \
   -DgroupId=io.crnk \
   -DartifactId=crnk-data-jpa \
