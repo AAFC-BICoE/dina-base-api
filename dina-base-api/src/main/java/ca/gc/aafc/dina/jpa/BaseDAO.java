@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.jpa;
 
-import io.crnk.core.engine.information.bean.BeanInformation;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.stream.Stream;
 import lombok.NonNull;
 
@@ -460,11 +461,11 @@ public class BaseDAO {
    * @return
    */
   public String getNaturalIdFieldName(Class<?> entityClass) {
-    BeanInformation beanInfo = BeanInformation.get(entityClass);
-    // Check for NaturalId:
-    for (String attrName : beanInfo.getAttributeNames()) {
-      if (beanInfo.getAttribute(attrName).getAnnotation(NaturalId.class).isPresent()) {
-        return attrName;
+    for (Field field : entityClass.getDeclaredFields()) {
+      for (Annotation annotation : field.getDeclaredAnnotations()) {
+        if (annotation.annotationType() == NaturalId.class) {
+          return field.getName();
+        }
       }
     }
     return null;
