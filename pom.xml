@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.144</version>
+  <version>0.145-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
@@ -341,15 +341,4 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-
-<!--  <distributionManagement>-->
-<!--    <snapshotRepository>-->
-<!--      <id>ossrh</id>-->
-<!--      <url>https://oss.sonatype.org/content/repositories/snapshots</url>-->
-<!--    </snapshotRepository>-->
-<!--    <repository>-->
-<!--      <id>ossrh</id>-->
-<!--      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>-->
-<!--    </repository>-->
-<!--  </distributionManagement>-->
 </project>
