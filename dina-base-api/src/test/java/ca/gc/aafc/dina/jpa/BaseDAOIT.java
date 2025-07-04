@@ -44,7 +44,12 @@ public class BaseDAOIT extends BasePostgresItContext {
   public void getFieldName_onCallWithEntityClass_returnRightFieldName() {
     assertEquals("id", baseDAO.getDatabaseIdFieldName(Department.class));
     assertEquals("uuid", baseDAO.getNaturalIdFieldName(Department.class));
+
+    // make sure it is working if the NaturalId is on the super class
+    assertEquals("uuid", baseDAO.getNaturalIdFieldName(Department2.class));
   }
+
+  static class Department2 extends Department {}
   
   @Test
   public void findOne_onValidIdentifier_returnsEntity() {

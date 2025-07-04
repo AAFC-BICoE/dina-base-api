@@ -6,6 +6,7 @@ import java.util.stream.Stream;
 import lombok.NonNull;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.Session;
 import org.hibernate.SimpleNaturalIdLoadAccess;
@@ -461,7 +462,7 @@ public class BaseDAO {
    * @return
    */
   public String getNaturalIdFieldName(Class<?> entityClass) {
-    for (Field field : entityClass.getDeclaredFields()) {
+    for (Field field : FieldUtils.getAllFields(entityClass)) {
       for (Annotation annotation : field.getDeclaredAnnotations()) {
         if (annotation.annotationType() == NaturalId.class) {
           return field.getName();
