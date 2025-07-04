@@ -45,7 +45,7 @@ public class BaseDAOIT extends BasePostgresItContext {
     assertEquals("id", baseDAO.getDatabaseIdFieldName(Department.class));
     assertEquals("uuid", baseDAO.getNaturalIdFieldName(Department.class));
 
-    // make it is working if the NaturalIdF is on the super class
+    // make sure it is working if the NaturalId is on the super class
     assertEquals("uuid", baseDAO.getNaturalIdFieldName(Department2.class));
   }
 
