@@ -6,6 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.querydsl.core.types.Ops;
 
+import ca.gc.aafc.dina.exception.UnknownAttributeException;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.Comparator;
 import java.util.List;
@@ -79,14 +81,7 @@ public final class SimpleObjectFilterHandlerV2 {
    */
   private static <T> Predicate<T> generateNullComparisonPredicate(String path, @NonNull Ops operator) {
 
-    Predicate<T> isNullPredicate = o -> {
-      try {
-        return Objects.isNull(PropertyUtils.getNestedProperty(o, path));
-      } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        throw new RuntimeException(e);
-      }
-    };
-
+    Predicate<T> isNullPredicate = o -> Objects.isNull(getPropertyByPath(o, path));
     return switch (operator) {
       case NE -> Predicate.not(isNullPredicate);
       case EQ, LIKE -> isNullPredicate;
@@ -146,10 +141,19 @@ public final class SimpleObjectFilterHandlerV2 {
     return comparator;
   }
 
-  private static Object getPropertyByPath(Object obj, String propertyPath) {
+  /**
+   * Wraps getNestedProperty to produce UnknownAttributeException if required
+   * @param obj
+   * @param propertyPath
+   * @return
+   */
+  private static Object getPropertyByPath(Object obj, String propertyPath)
+      throws UnknownAttributeException {
     try {
       return PropertyUtils.getNestedProperty(obj, propertyPath);
-    } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+    } catch (NoSuchMethodException e) {
+      throw new UnknownAttributeException(e);
+    } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
     }
   }
@@ -179,13 +183,7 @@ public final class SimpleObjectFilterHandlerV2 {
   }
 
   private static <T> Predicate<T> createEqualPredicate(String path, String value) {
-    return o -> {
-      try {
-        return Objects.equals(value, PropertyUtils.getNestedProperty(o, path));
-      } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        throw new RuntimeException(e);
-      }
-    };
+    return o -> Objects.equals(value, getPropertyByPath(o, path));
   }
 
   /**
@@ -215,12 +213,7 @@ public final class SimpleObjectFilterHandlerV2 {
 
       Pattern regex = caseSensitive ? Pattern.compile(regexPattern) :
         Pattern.compile(regexPattern, Pattern.CASE_INSENSITIVE);
-      Matcher matcher;
-      try {
-        matcher = regex.matcher(Objects.toString(PropertyUtils.getNestedProperty(o, path), ""));
-      } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        throw new RuntimeException(e);
-      }
+      Matcher matcher = regex.matcher(Objects.toString(getPropertyByPath(o, path), ""));
       return matcher.matches();
     };
   }

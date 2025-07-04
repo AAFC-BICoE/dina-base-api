@@ -9,9 +9,12 @@ import org.junit.jupiter.api.Test;
 import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.entity.Department;
 
+import ca.gc.aafc.dina.exception.UnknownAttributeException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SimpleObjectFilterHandlerV2Test {
@@ -36,6 +39,22 @@ public class SimpleObjectFilterHandlerV2Test {
 
     dep.setName("Tim");
     assertFalse(p.test(dep));
+  }
+
+  @Test
+  public void getRestriction_onNonExistingProperty_UnknownAttributeException() {
+
+    String content = "filter[notname][EQ]=Jim";
+    QueryComponent queryComponent = QueryStringParser.parse(content);
+
+    FilterComponent fg = queryComponent.getFilters();
+
+    Predicate<DepartmentDto> p = SimpleObjectFilterHandlerV2.createPredicate(fg);
+    DepartmentDto dep = new DepartmentDto();
+    dep.setName("Jim");
+
+    assertThrows(UnknownAttributeException.class,
+      () -> p.test(dep));
   }
 
   @Test
@@ -141,5 +160,17 @@ public class SimpleObjectFilterHandlerV2Test {
 
     // null last
     assertNull(deps.getLast().getName());
+  }
+
+  @Test
+  public void generateComparator_onNonExistingProperty_UnknownAttributeException() {
+    DepartmentDto dep = DepartmentDto.builder()
+      .name("Jim").location("b").build();
+    DepartmentDto dep1 =  DepartmentDto.builder()
+      .name("Jim1").build();
+
+    List<DepartmentDto> deps = new ArrayList<>(List.of(dep, dep1));
+    assertThrows(UnknownAttributeException.class,
+      () -> deps.sort(SimpleObjectFilterHandlerV2.generateComparator(List.of("notname"))));
   }
 }
