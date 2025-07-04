@@ -148,7 +148,7 @@ public final class SimpleObjectFilterHandlerV2 {
    * @return
    */
   private static Object getPropertyByPath(Object obj, String propertyPath)
-    throws UnknownAttributeException {
+      throws UnknownAttributeException {
     try {
       return PropertyUtils.getNestedProperty(obj, propertyPath);
     } catch (NoSuchMethodException e) {
