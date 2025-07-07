@@ -26,6 +26,7 @@ import ca.gc.aafc.dina.testsupport.DatabaseSupportService;
 import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.hibernate.annotations.NaturalId;
 import org.junit.jupiter.api.Test;
 
 import ca.gc.aafc.dina.entity.Department;
@@ -47,9 +48,21 @@ public class BaseDAOIT extends BasePostgresItContext {
 
     // make sure it is working if the NaturalId is on the super class
     assertEquals("uuid", baseDAO.getNaturalIdFieldName(Department2.class));
+
+    // make sure it is working if the NaturalId is on the getter
+    assertEquals("uuid", baseDAO.getNaturalIdFieldName(Department3.class));
   }
 
   static class Department2 extends Department {}
+
+  static class Department3 {
+    private UUID uuid;
+
+    @NaturalId
+    public UUID getUuid(){
+      return null;
+    }
+  }
   
   @Test
   public void findOne_onValidIdentifier_returnsEntity() {

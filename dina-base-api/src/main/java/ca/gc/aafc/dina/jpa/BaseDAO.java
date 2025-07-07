@@ -1,12 +1,17 @@
 package ca.gc.aafc.dina.jpa;
 
+import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.stream.Stream;
 import lombok.NonNull;
 
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.Session;
 import org.hibernate.SimpleNaturalIdLoadAccess;
@@ -456,10 +461,10 @@ public class BaseDAO {
   }
 
   /**
-   * Given a class, this method will extract the name of the field annotated with {@link NaturalId}.
+   * Given a class, this method will extract the name of the field/getter annotated with {@link NaturalId}.
    *
    * @param entityClass
-   * @return
+   * @return the name of the field
    */
   public String getNaturalIdFieldName(Class<?> entityClass) {
     for (Field field : FieldUtils.getAllFields(entityClass)) {
@@ -469,6 +474,20 @@ public class BaseDAO {
         }
       }
     }
+
+    // Maybe the annotation is on the getter
+    List<Method> naturalIdMethod =
+      MethodUtils.getMethodsListWithAnnotation(entityClass, NaturalId.class, true, false);
+    if (!naturalIdMethod.isEmpty()) {
+      PropertyDescriptor[] descriptors = PropertyUtils.getPropertyDescriptors(entityClass);
+      for (PropertyDescriptor descriptor : descriptors) {
+        if (descriptor.getReadMethod() != null &&
+          descriptor.getReadMethod().equals(naturalIdMethod.getFirst())) {
+          return descriptor.getName();
+        }
+      }
+    }
+
     return null;
   }
 
