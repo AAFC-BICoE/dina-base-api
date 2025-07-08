@@ -90,6 +90,12 @@ public class SimpleFilterHandlerV2IT extends BasePostgresItContext {
     assertThrows(UnknownAttributeException.class, () -> this.personRepository.getAll(rsqlQuery));
   }
 
+  @Test
+  public void searchEmployees_unknownSort_exception() {
+    String rsqlQuery = "sort=abc";
+    assertThrows(UnknownAttributeException.class, () -> this.personRepository.getAll(rsqlQuery));
+  }
+
   /**
    * Case-insensitive like
    */
@@ -192,5 +198,4 @@ public class SimpleFilterHandlerV2IT extends BasePostgresItContext {
       personDtos.resourceList().stream().map( m -> m.getDto().getCreatedOn()).collect(Collectors.toList())
     );
   }
-
 }
