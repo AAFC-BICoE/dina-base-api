@@ -1,12 +1,17 @@
 package ca.gc.aafc.dina.jpa;
 
+import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 import lombok.NonNull;
 
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.Session;
 import org.hibernate.SimpleNaturalIdLoadAccess;
@@ -45,6 +50,8 @@ public class BaseDAO {
   public static final int DEFAULT_STREAM_FETCH_SIZE = 100;
 
   public static final int DEFAULT_LIMIT = 100;
+
+  private static final Map<Class<?>, String> NATURAL_ID_CACHE = new ConcurrentHashMap<>();
   
   @PersistenceContext
   private EntityManager entityManager;
@@ -456,19 +463,41 @@ public class BaseDAO {
   }
 
   /**
-   * Given a class, this method will extract the name of the field annotated with {@link NaturalId}.
+   * Given a class, this method will extract the name of the field/getter annotated with {@link NaturalId}.
    *
    * @param entityClass
-   * @return
+   * @return the name of the field
    */
   public String getNaturalIdFieldName(Class<?> entityClass) {
+
+    // Check cache first
+    if (NATURAL_ID_CACHE.containsKey(entityClass)) {
+      return NATURAL_ID_CACHE.get(entityClass);
+    }
+
     for (Field field : FieldUtils.getAllFields(entityClass)) {
       for (Annotation annotation : field.getDeclaredAnnotations()) {
         if (annotation.annotationType() == NaturalId.class) {
+          NATURAL_ID_CACHE.put(entityClass, field.getName());
           return field.getName();
         }
       }
     }
+
+    // Maybe the annotation is on the getter
+    List<Method> naturalIdMethod =
+      MethodUtils.getMethodsListWithAnnotation(entityClass, NaturalId.class, true, false);
+    if (!naturalIdMethod.isEmpty()) {
+      PropertyDescriptor[] descriptors = PropertyUtils.getPropertyDescriptors(entityClass);
+      for (PropertyDescriptor descriptor : descriptors) {
+        if (descriptor.getReadMethod() != null &&
+          descriptor.getReadMethod().equals(naturalIdMethod.getFirst())) {
+          NATURAL_ID_CACHE.put(entityClass, descriptor.getName());
+          return descriptor.getName();
+        }
+      }
+    }
+
     return null;
   }
 
