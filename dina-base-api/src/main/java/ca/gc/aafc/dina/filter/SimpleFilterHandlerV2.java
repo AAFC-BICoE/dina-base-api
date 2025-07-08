@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.filter;
 
+import ca.gc.aafc.dina.exception.UnknownAttributeException;
 import ca.gc.aafc.dina.jpa.JsonbKeyValuePredicate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.querydsl.core.types.Ops;
@@ -57,7 +58,7 @@ public final class SimpleFilterHandlerV2 {
       @NonNull CriteriaBuilder cb,
       @NonNull BiFunction<String, Class<?>, Object> parser,
       @NonNull Metamodel metamodel,
-      @NonNull List<FilterComponent> filters) {
+      @NonNull List<FilterComponent> filters) throws UnknownAttributeException {
 
     // Final list of predicates this method will generate.
     List<Predicate> predicates = new ArrayList<>();
@@ -76,6 +77,7 @@ public final class SimpleFilterHandlerV2 {
           }
 
           Path<?> path = root;
+          boolean attributeFound = false;
           for (String pathElement : attributePath) {
             Optional<Attribute<?, ?>> attribute = findAttribute(
               metamodel, List.of(pathElement), path.getJavaType());
@@ -86,12 +88,14 @@ public final class SimpleFilterHandlerV2 {
                 // basic attribute start generating predicates
                 addPredicates(cb, parser, predicates, expression, path, attribute.get(),
                   attributePath);
+                attributeFound = true;
               }
             }
           }
-        } catch (IllegalArgumentException | NoSuchFieldException | NoSuchMethodException e) {
-          // This FilterHandler will ignore filter parameters that do not map to fields on
-          // the DTO, like "rsql" or others that are only handled by other FilterHandlers.
+
+          if (!attributeFound) {
+            throw new UnknownAttributeException(expression.attribute());
+          }
         } catch (JsonProcessingException e) {
           throw new IllegalArgumentException("Invalid Json filter value", e);
         }
@@ -114,8 +118,6 @@ public final class SimpleFilterHandlerV2 {
    * @param path            Used for determining the type of the entity.
    * @param attribute       Metamodel attribute.
    * @param attributePath   Required for jsonb fields.
-   * @throws NoSuchFieldException
-   * @throws NoSuchMethodException
    * @throws JsonProcessingException
    */
   private static void addPredicates(
@@ -126,7 +128,7 @@ public final class SimpleFilterHandlerV2 {
       @NonNull Path<?> path,
       @NonNull Attribute<?, ?> attribute,
       @NonNull List<String> attributePath
-  ) throws NoSuchFieldException, NoSuchMethodException, JsonProcessingException {
+  ) throws JsonProcessingException {
     Object filterValue = component.value();
     if (filterValue == null) {
       predicates.add(generateNullComparisonPredicate(cb, path, component.operator()));

@@ -7,4 +7,8 @@ public class UnknownAttributeException extends RuntimeException {
   public UnknownAttributeException(Throwable cause) {
     super(cause);
   }
+
+  public UnknownAttributeException(String message) {
+    super(message);
+  }
 }
