@@ -213,17 +213,22 @@ public final class SimpleFilterHandlerV2 {
 
     Class<?> rootJavaType = rootType;
     Attribute<?, ?> attribute = null;
-    for (String pathField : attributePath) {
-      attribute = metamodel.entity(rootJavaType).getAttributes()
+    try {
+      for (String pathField : attributePath) {
+        attribute = metamodel.entity(rootJavaType).getAttributes()
           .stream()
           .filter(a -> a.getName().equalsIgnoreCase(pathField))
           .findFirst().orElse(null);
-      if (attribute == null || isBasicAttribute(attribute)) {
-        return Optional.ofNullable(attribute);
-      } else {
-        rootJavaType = attribute.getJavaType();
+        if (attribute == null || isBasicAttribute(attribute)) {
+          return Optional.ofNullable(attribute);
+        } else {
+          rootJavaType = attribute.getJavaType();
+        }
       }
+    } catch (IllegalArgumentException ex) {
+      return Optional.empty();
     }
+
     return Optional.ofNullable(attribute);
   }
 
