@@ -16,6 +16,7 @@ import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.exception.ResourcesGoneException;
 import ca.gc.aafc.dina.exception.ResourcesNotFoundException;
+import ca.gc.aafc.dina.exception.UnknownAttributeException;
 import ca.gc.aafc.dina.jsonapi.JSONApiDocumentStructure;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
 
@@ -81,6 +82,18 @@ public class JsonApiExceptionControllerAdvice {
       )
       .forEach(errors::withError);
     return ResponseEntity.status(HttpStatus.GONE).body(errors);
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleUnknownAttributeException(UnknownAttributeException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+      JsonApiErrors.create().withError(
+        JsonApiError.create()
+          .withCode(Integer.toString(HttpStatus.BAD_REQUEST.value()))
+          .withStatus(HttpStatus.BAD_REQUEST.toString())
+          .withTitle("Bad Request")
+          .withDetail(ex.getMessage()))
+    );
   }
 
 
