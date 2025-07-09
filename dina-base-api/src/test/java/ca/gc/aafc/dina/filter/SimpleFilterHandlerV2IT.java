@@ -10,11 +10,13 @@ import ca.gc.aafc.dina.BasePostgresItContext;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.exception.UnknownAttributeException;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2IT;
 import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
@@ -80,6 +82,18 @@ public class SimpleFilterHandlerV2IT extends BasePostgresItContext {
     assertEquals(List.of(expectedEmpName),
       personDtos.resourceList().stream().map( m -> m.getDto().getName()).collect(Collectors.toList())
     );
+  }
+
+  @Test
+  public void searchEmployees_whenRSQL_exception() {
+    String rsqlQuery = "filter[rsql]=name==c";
+    assertThrows(UnknownAttributeException.class, () -> this.personRepository.getAll(rsqlQuery));
+  }
+
+  @Test
+  public void searchEmployees_unknownSort_exception() {
+    String rsqlQuery = "sort=abc";
+    assertThrows(UnknownAttributeException.class, () -> this.personRepository.getAll(rsqlQuery));
   }
 
   /**
@@ -184,5 +198,4 @@ public class SimpleFilterHandlerV2IT extends BasePostgresItContext {
       personDtos.resourceList().stream().map( m -> m.getDto().getCreatedOn()).collect(Collectors.toList())
     );
   }
-
 }
