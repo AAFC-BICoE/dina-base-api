@@ -175,6 +175,7 @@ public class DinaRepositoryV2IT {
 
     PersonDTO personDto = PersonDTO.builder()
       .name("Bob")
+      .group("g1")
       .build();
 
     JsonApiDocument doc = JsonApiDocuments.createJsonApiDocument(null, PersonDTO.TYPE_NAME,
@@ -186,6 +187,7 @@ public class DinaRepositoryV2IT {
     Map<String, Object> attributes = new HashMap<>();
     attributes.put("name", "abc");
     attributes.put("room", 21);
+    attributes.put("group", "g2");
     // convert to string to mimic how we would get it with json:api
     attributes.put("createdOn", OffsetDateTime.now().toString());
 
@@ -199,6 +201,8 @@ public class DinaRepositoryV2IT {
 
     JsonApiDto<PersonDTO> getOneDto = repositoryV2.getOne(assignedId, null);
     assertEquals("abc", getOneDto.getDto().getName());
+
+    assertEquals("g1", getOneDto.getDto().getGroup());
 
     var handleFindOneResponse = repositoryV2.handleFindOne(assignedId, null);
     assertEquals(HttpStatus.OK, handleFindOneResponse.getStatusCode());
