@@ -138,10 +138,10 @@ public class DinaMappingRegistry {
         if (fieldHasSameDataType(entityClass, dtoField)) {
           // Unmarked dtoField with same data type considered attribute
           attributes.add(dtoField.getName());
-          if (isFieldImmutableOnCreate(dtoField)) {
+          if (isFieldImmutableOn(dtoField, JsonApiImmutable.ImmutableOn.CREATE)) {
             attributesImmutableOnCreate.add(dtoField.getName());
           }
-          if (isFieldImmutableOnUpdate(dtoField)) {
+          if (isFieldImmutableOn(dtoField, JsonApiImmutable.ImmutableOn.UPDATE)) {
             attributeImmutableOnUpdate.add(dtoField.getName());
           }
         } else {
@@ -381,18 +381,15 @@ public class DinaMappingRegistry {
       && !field.isSynthetic();
   }
 
-  private static boolean isFieldImmutableOnCreate(Field field) {
+  /**
+   * Checks if a field is identified as immutable with {@link JsonApiImmutable} annotation.
+   * @param field
+   * @param immutableOn
+   * @return
+   */
+  private static boolean isFieldImmutableOn(Field field, JsonApiImmutable.ImmutableOn immutableOn) {
     if (field.isAnnotationPresent(JsonApiImmutable.class)) {
-      return JsonApiImmutable.ImmutableOn.CREATE ==
-        field.getAnnotation(JsonApiImmutable.class).value();
-    }
-    return false;
-  }
-
-  private static boolean isFieldImmutableOnUpdate(Field field) {
-    if (field.isAnnotationPresent(JsonApiImmutable.class)) {
-      return JsonApiImmutable.ImmutableOn.UPDATE ==
-        field.getAnnotation(JsonApiImmutable.class).value();
+      return immutableOn == field.getAnnotation(JsonApiImmutable.class).value();
     }
     return false;
   }

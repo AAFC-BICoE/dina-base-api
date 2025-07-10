@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.repository;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.hateoas.IanaLinkRelations;
