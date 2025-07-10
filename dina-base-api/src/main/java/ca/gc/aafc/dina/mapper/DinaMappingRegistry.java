@@ -87,7 +87,7 @@ public class DinaMappingRegistry {
     Map<Class<?>, Set<String>>  attributeImmutableOnCreatePerClass = new HashMap<>();
     Map<Class<?>, Set<String>>  attributeImmutableOnUpdatePerClass = new HashMap<>();
 
-    for(var entry : resourceGraph.entrySet()){
+    for (var entry : resourceGraph.entrySet()) {
       attributesPerClass.put(entry.getKey(), entry.getValue().getAttributeNames());
       attributeImmutableOnCreatePerClass.put(entry.getKey(), entry.getValue().getAttributeNamesImmutableOnCreate());
       attributeImmutableOnUpdatePerClass.put(entry.getKey(), entry.getValue().getAttributeNamesImmutableOnUpdate());
