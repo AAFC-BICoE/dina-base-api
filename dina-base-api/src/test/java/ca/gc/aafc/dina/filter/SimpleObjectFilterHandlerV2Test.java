@@ -42,6 +42,29 @@ public class SimpleObjectFilterHandlerV2Test {
   }
 
   @Test
+  public void getRestriction_onInFilter_predicateCreated() {
+
+    String content = "filter[name][IN]=Jim,\"jimmy,jim\"";
+    QueryComponent queryComponent = QueryStringParser.parse(content);
+
+    FilterGroup fe = queryComponent.getFilterGroup().get();
+    Predicate<DepartmentDto> p = SimpleObjectFilterHandlerV2.createPredicate(fe);
+
+    DepartmentDto dep = new DepartmentDto();
+    dep.setName("Jim");
+
+    Department.DepartmentDetails depDetails = new Department.DepartmentDetails("best one");
+    dep.setDepartmentDetails(depDetails);
+    assertTrue(p.test(dep));
+
+    dep.setName("Tim");
+    assertFalse(p.test(dep));
+
+    dep.setName("jimmy,jim");
+    assertTrue(p.test(dep));
+  }
+
+  @Test
   public void getRestriction_onNonExistingProperty_UnknownAttributeException() {
 
     String content = "filter[notname][EQ]=Jim";
