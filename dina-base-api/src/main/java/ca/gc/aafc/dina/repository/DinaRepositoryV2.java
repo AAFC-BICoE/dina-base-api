@@ -545,9 +545,11 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
       dtoCustomizer.accept(dto);
     }
 
-    E entity = dinaMapper.toEntity(dto,
-      registry.getAttributesPerClass().get(resourceClass),
-      null);
+    // apply DTO on entity using the keys from docToCreate but remove all immutable fields (if any)
+    Set<String> attributesToConsider = new HashSet<>(registry.getAttributesPerClass().get(resourceClass));
+    attributesToConsider.removeAll(registry.getAttributeImmutableOnCreatePerClass().get(resourceClass));
+
+    E entity = dinaMapper.toEntity(dto, attributesToConsider, null);
 
     updateRelationships(entity, docToCreate.getRelationships());
 
@@ -593,8 +595,10 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     // Check for authorization on the entity
     authorizationService.authorizeUpdate(entity);
 
-    // apply DTO on entity using the keys from patchDto
-    dinaMapper.patchEntity(entity, dto, patchDto.getData().getAttributesName(), null);
+    // apply DTO on entity using the keys from patchDto but remove all immutable fields (if any)
+    Set<String> attributesToPatch = new HashSet<>(patchDto.getData().getAttributesName());
+    attributesToPatch.removeAll(registry.getAttributeImmutableOnUpdatePerClass().get(resourceClass));
+    dinaMapper.patchEntity(entity, dto, attributesToPatch, null);
 
     updateRelationships(entity, patchDto.getRelationships());
 

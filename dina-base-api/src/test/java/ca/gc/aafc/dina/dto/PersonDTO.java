@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.dto;
 
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.jsonapi.JsonApiImmutable;
 import ca.gc.aafc.dina.mapper.CustomFieldAdapter;
 import ca.gc.aafc.dina.mapper.DinaFieldAdapter;
 import ca.gc.aafc.dina.mapper.IgnoreDinaMapping;
@@ -52,6 +53,7 @@ public class PersonDTO implements ca.gc.aafc.dina.dto.JsonApiResource {
 
   private Integer room;
 
+  @JsonApiImmutable(JsonApiImmutable.ImmutableOn.UPDATE)
   private String group;
 
   private String[] nickNames;

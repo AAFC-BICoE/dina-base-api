@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
+import ca.gc.aafc.dina.jsonapi.JsonApiImmutable;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
@@ -35,6 +36,13 @@ public class DinaMappingRegistry {
 
   @Getter
   private final Map<Class<?>, Set<String>> attributesPerClass;
+
+  @Getter
+  private final Map<Class<?>, Set<String>> attributeImmutableOnCreatePerClass;
+
+  @Getter
+  private final Map<Class<?>, Set<String>> attributeImmutableOnUpdatePerClass;
+
   // Set of entries tracked by class for faster lookup.
   private final Map<Class<?>, DinaResourceEntry> resourceGraph;
 
@@ -74,8 +82,21 @@ public class DinaMappingRegistry {
    */
   public DinaMappingRegistry(@NonNull Class<?> resourceClass, boolean ignoreNonMatchingAttributeType) {
     resourceGraph = initGraph(resourceClass, new HashSet<>(), ignoreNonMatchingAttributeType);
-    this.attributesPerClass = this.resourceGraph.entrySet().stream()
-      .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getAttributeNames()));
+
+    Map<Class<?>, Set<String>> attributesPerClass = new HashMap<>();
+    Map<Class<?>, Set<String>>  attributeImmutableOnCreatePerClass = new HashMap<>();
+    Map<Class<?>, Set<String>>  attributeImmutableOnUpdatePerClass = new HashMap<>();
+
+    for (var entry : resourceGraph.entrySet()) {
+      attributesPerClass.put(entry.getKey(), entry.getValue().getAttributeNames());
+      attributeImmutableOnCreatePerClass.put(entry.getKey(), entry.getValue().getAttributeNamesImmutableOnCreate());
+      attributeImmutableOnUpdatePerClass.put(entry.getKey(), entry.getValue().getAttributeNamesImmutableOnUpdate());
+    }
+
+    // keep immutable structures
+    this.attributesPerClass = Map.copyOf(attributesPerClass);
+    this.attributeImmutableOnCreatePerClass = Map.copyOf(attributeImmutableOnCreatePerClass);
+    this.attributeImmutableOnUpdatePerClass = Map.copyOf(attributeImmutableOnUpdatePerClass);
   }
 
   private static Map<Class<?>, DinaResourceEntry> initGraph(Class<?> resourceClass,
@@ -103,6 +124,9 @@ public class DinaMappingRegistry {
     boolean ignoreNonMatchingAttributeType
   ) {
     Set<String> attributes = new HashSet<>();
+    Set<String> attributesImmutableOnCreate = new HashSet<>();
+    Set<String> attributeImmutableOnUpdate = new HashSet<>();
+
     Set<InternalRelation> internalRelations = new HashSet<>();
 
     for (Field dtoField : getAllFields(resourceClass)) {
@@ -114,6 +138,12 @@ public class DinaMappingRegistry {
         if (fieldHasSameDataType(entityClass, dtoField)) {
           // Unmarked dtoField with same data type considered attribute
           attributes.add(dtoField.getName());
+          if (isFieldImmutableOn(dtoField, JsonApiImmutable.ImmutableOn.CREATE)) {
+            attributesImmutableOnCreate.add(dtoField.getName());
+          }
+          if (isFieldImmutableOn(dtoField, JsonApiImmutable.ImmutableOn.UPDATE)) {
+            attributeImmutableOnUpdate.add(dtoField.getName());
+          }
         } else {
           // Unmarked dtoField without the same data type but have a related entity are considered a hidden relation
           // It means they are not JSON:API relation but models some kind of relations (think jsonb)
@@ -130,7 +160,8 @@ public class DinaMappingRegistry {
         }
       }
     }
-    return buildResourceEntry(resourceClass, entityClass, attributes, internalRelations);
+    return buildResourceEntry(resourceClass, entityClass, attributes, attributesImmutableOnCreate,
+      attributeImmutableOnUpdate, internalRelations);
   }
 
   /**
@@ -351,6 +382,19 @@ public class DinaMappingRegistry {
   }
 
   /**
+   * Checks if a field is identified as immutable with {@link JsonApiImmutable} annotation.
+   * @param field
+   * @param immutableOn
+   * @return
+   */
+  private static boolean isFieldImmutableOn(Field field, JsonApiImmutable.ImmutableOn immutableOn) {
+    if (field.isAnnotationPresent(JsonApiImmutable.class)) {
+      return immutableOn == field.getAnnotation(JsonApiImmutable.class).value();
+    }
+    return false;
+  }
+
+  /**
    * Returns true if the dina repo should map the given relation. A relation should be mapped if it is not
    * external, and present in the given dto and entity classes.
    *
@@ -415,6 +459,8 @@ public class DinaMappingRegistry {
     Class<?> resourceClass,
     Class<?> entityClass,
     Set<String> attributes,
+    Set<String> attributeNamesImmutableOnCreate,
+    Set<String> attributeNamesImmutableOnUpdate,
     Set<InternalRelation> internalRelations
   ) {
     return DinaResourceEntry.builder()
@@ -422,6 +468,8 @@ public class DinaMappingRegistry {
       .entityClass(entityClass)
       .externalNameToTypeMap(parseExternalRelationNamesToType(resourceClass))
       .attributeNames(attributes)
+      .attributeNamesImmutableOnCreate(attributeNamesImmutableOnCreate)
+      .attributeNamesImmutableOnUpdate(attributeNamesImmutableOnUpdate)
       .internalRelations(internalRelations)
       .jsonIdFieldName(parseJsonIdFieldName(resourceClass))
       .fieldAdapterHandler(new DinaFieldAdapterHandler<>(resourceClass))
@@ -459,11 +507,6 @@ public class DinaMappingRegistry {
     return Collection.class.isAssignableFrom(clazz);
   }
 
-  // Avoid CT_CONSTRUCTOR_THROW
-  protected final void finalize() {
-    // no-op
-  }
-
   /**
    * Internal Relation Representing a field of class to be mapped
    */
@@ -482,7 +525,11 @@ public class DinaMappingRegistry {
     private Class<?> dtoClass;
     private Class<?> entityClass;
     private String jsonIdFieldName;
+
     private Set<String> attributeNames;
+    private Set<String> attributeNamesImmutableOnCreate;
+    private Set<String> attributeNamesImmutableOnUpdate;
+
     private Set<InternalRelation> internalRelations;
     private Map<String, String> externalNameToTypeMap;
     private DinaFieldAdapterHandler<?> fieldAdapterHandler;
