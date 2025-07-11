@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
@@ -38,6 +39,14 @@ public abstract class MockMvcBasedRepository {
       )
       .andExpect(status().isOk())
       .andReturn();
+  }
+
+  protected MvcResult sendPost(JsonApiDocument docToPost) throws Exception {
+    return this.getMockMvc().perform(
+        post(this.baseUrl)
+          .contentType(BaseRestAssuredTest.JSON_API_CONTENT_TYPE)
+          .content(objMapper.writeValueAsString(docToPost)))
+      .andExpect(status().isCreated()).andReturn();
   }
 
   protected JsonApiDocument toJsonApiDocument(MvcResult mvcResult)
