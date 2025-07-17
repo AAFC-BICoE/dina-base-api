@@ -5,10 +5,12 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import ca.gc.aafc.dina.validation.ValidationErrorsHelper;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
@@ -174,7 +176,11 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     CriteriaQuery<T> criteria = criteriaBuilder.createQuery(entityClass);
     Root<T> root = criteria.from(entityClass);
     Predicate[] predicates = baseDAO.buildPredicateFromSupplier(where, criteriaBuilder, root);
-    criteria.where(predicates).select(root);
+
+    if (ArrayUtils.isNotEmpty(predicates)) {
+      criteria.where(predicates);
+    }
+    criteria.select(root);
     if (orderBy != null) {
       criteria.orderBy(orderBy.apply(criteriaBuilder, root));
     }

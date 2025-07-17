@@ -292,7 +292,7 @@ public class DinaFilterResolver {
       List<FilterComponent> components = querySpec.getFilters().stream()
           .map(CrnkFilterAdapter::convertFilterSpecToComponent)
           .toList();
-      restrictions.add(SimpleFilterHandlerV2.getRestriction(root, cb, rsqlArgumentParser::parse, em.getMetamodel(), components));
+      restrictions.add(SimpleFilterHandlerV2.createPredicate(root, cb, rsqlArgumentParser::parse, em.getMetamodel(), components.getFirst()));
     } else {
       restrictions.add(SimpleFilterHandler.getRestriction(
         root, cb, rsqlArgumentParser::parse, em.getMetamodel(), querySpec.getFilters()));
