@@ -405,14 +405,21 @@ public class DinaRepositoryIT {
     long offset = 2;
     List<PersonDTO> dtos = new ArrayList<>();
 
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    List<PersonDTO> result = dinaRepository.findAll(null, querySpec);
+
+    //cleanup old records
+    for(PersonDTO oldRecord : result) {
+      dinaRepository.delete(oldRecord.getUuid());
+    }
+
     for (int i = 0; i < 10; i++) {
       PersonDTO dto = persistPerson();
       dtos.add(dto);
     }
 
-    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
     querySpec.setOffset(offset);
-    List<PersonDTO> result = dinaRepository.findAll(null, querySpec);
+    result = dinaRepository.findAll(null, querySpec);
 
     List<PersonDTO> expectedDtos = dtos.subList((int) offset, dtos.size());
     for (int i = 0; i < expectedDtos.size(); i++) {

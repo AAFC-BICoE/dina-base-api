@@ -110,9 +110,6 @@ public final class SimpleFilterHandlerV2 {
       if (attribute.isPresent()) {
         path = path.get(pathElement);
         if (isBasicAttribute(attribute.get())) {
-          // basic attribute start generating predicates
-//            addPredicates(cb, parser, predicates, expression, path, attribute.get(),
-//              attributePath);
           attributeFound = true;
           break;
         }
