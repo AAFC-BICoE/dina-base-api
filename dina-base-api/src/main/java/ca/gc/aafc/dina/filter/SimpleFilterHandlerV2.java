@@ -75,19 +75,12 @@ public final class SimpleFilterHandlerV2 {
     if (fc == null) {
       return null;
     }
-    
+
     Predicate predicate;
     switch (fc) {
-      case FilterGroup fgrp -> {
-        // multiple values can be submitted with en EQUALS to create an OR.
-        if (fgrp.getConjunction() == FilterGroup.Conjunction.OR) {
-          predicate = handleOr(ctx, root, fgrp.getComponents());
-        } else {
-          predicate = handleAnd(ctx, root, fgrp.getComponents());
-        }
-      }
-      case FilterExpression fEx ->
-        predicate = buildPredicate(ctx, root, fEx);
+      case FilterGroup fgrp ->
+        predicate = handleConjunction(ctx, root, fgrp.getConjunction(), fgrp.getComponents());
+      case FilterExpression fEx -> predicate = buildPredicate(ctx, root, fEx);
       default -> throw new IllegalStateException("Unexpected value: " + fc);
     }
     return predicate;
@@ -284,9 +277,10 @@ public final class SimpleFilterHandlerV2 {
     return false;
   }
 
-  private static Predicate handleOr(PredicateContext ctx, Root<?> root, List<FilterComponent> orList) {
+  private static Predicate handleConjunction(PredicateContext ctx, Root<?> root,
+                                             FilterGroup.Conjunction conjunction, List<FilterComponent> conjunctionList) {
     List<Predicate> predicates = new ArrayList<>();
-    for (FilterComponent fc : orList) {
+    for (FilterComponent fc : conjunctionList) {
       switch(fc) {
         case FilterGroup fg -> predicates.add(createPredicate(ctx, root, fg));
         case FilterExpression fex -> predicates.add(buildPredicate(ctx, root, fex));
@@ -295,23 +289,11 @@ public final class SimpleFilterHandlerV2 {
     }
 
     if (!predicates.isEmpty()) {
-      return ctx.cb().or(predicates.toArray(Predicate[]::new));
-    }
-    return null;
-  }
-
-  private static Predicate handleAnd(PredicateContext ctx, Root<?> root, List<FilterComponent> andList) {
-    List<Predicate> predicates = new ArrayList<>();
-    for (FilterComponent fc : andList) {
-      switch(fc) {
-        case FilterGroup fg -> predicates.add(createPredicate(ctx, root, fg));
-        case FilterExpression fex -> predicates.add(buildPredicate(ctx, root, fex));
-        default -> throw new IllegalStateException("Unexpected value: " + fc);
+      if (FilterGroup.Conjunction.OR == conjunction) {
+        return ctx.cb().or(predicates.toArray(Predicate[]::new));
+      } else if (FilterGroup.Conjunction.AND == conjunction) {
+        return ctx.cb().and(predicates.toArray(Predicate[]::new));
       }
-    }
-
-    if (!predicates.isEmpty()) {
-      return ctx.cb().and(predicates.toArray(Predicate[]::new));
     }
     return null;
   }
