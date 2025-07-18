@@ -18,6 +18,7 @@ import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.queryspec.SortSpec;
 import io.crnk.core.resource.list.ResourceList;
 import io.crnk.core.resource.meta.PagedMetaInformation;
+import java.util.Comparator;
 import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -419,7 +420,9 @@ public class DinaRepositoryIT {
     }
 
     querySpec.setOffset(offset);
+    querySpec.setSort(List.of(SortSpec.asc(List.of("name"))));
     result = dinaRepository.findAll(null, querySpec);
+    dtos.sort(Comparator.comparing( p -> p.getName().toLowerCase()));
 
     List<PersonDTO> expectedDtos = dtos.subList((int) offset, dtos.size());
     for (int i = 0; i < expectedDtos.size(); i++) {
