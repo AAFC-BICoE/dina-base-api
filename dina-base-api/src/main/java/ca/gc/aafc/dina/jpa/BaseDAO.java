@@ -615,7 +615,7 @@ public class BaseDAO {
 
     Predicate[] predicates = predicateSupplier.supply(cb, root, entityManager);
 
-    if(predicates != null) {
+    if (predicates != null) {
       countQuery.where(predicates);
     }
     return entityManager.createQuery(countQuery).getSingleResult();
