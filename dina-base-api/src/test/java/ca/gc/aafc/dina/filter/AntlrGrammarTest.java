@@ -69,6 +69,31 @@ public class AntlrGrammarTest {
   }
 
   @Test
+  public void onEqWithList_structureReturned() {
+    String content = "filter[name][EQ]=e1,e2";
+
+    QueryComponent queryComponent = QueryStringParser.parse(content);
+    FilterGroup fg = queryComponent.getFilterGroup().orElseThrow();
+
+    assertEquals(2, fg.getComponents().size());
+
+    // Name expected for both components.
+    assertEquals("name", ((FilterExpression)fg.getComponents().getFirst()).attribute());
+    assertEquals("name", ((FilterExpression)fg.getComponents().getLast()).attribute());
+
+    // EQ operator expected for both components.
+    assertEquals(Ops.EQ, ((FilterExpression)fg.getComponents().getFirst()).operator());
+    assertEquals(Ops.EQ, ((FilterExpression)fg.getComponents().getLast()).operator());
+
+    // Values expected for both components.
+    assertEquals("e1", ((FilterExpression)fg.getComponents().getFirst()).value());
+    assertEquals("e2", ((FilterExpression)fg.getComponents().getLast()).value());
+    
+    // Conjunction expected to be OR.
+    assertEquals(FilterGroup.Conjunction.OR, fg.getConjunction());
+  }
+
+  @Test
   public void onNoOperator_EqualOperatorUsed() {
     String content = "filter[type]=metadata&filter[name]=drawing.png&filter[group][EQ]=test";
 
