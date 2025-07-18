@@ -276,21 +276,29 @@ public final class SimpleFilterHandlerV2 {
 
   private static Predicate handleConjunction(PredicateContext ctx, Root<?> root,
                                              FilterGroup.Conjunction conjunction, List<FilterComponent> conjunctionList) {
+
+    if (CollectionUtils.isEmpty(conjunctionList)) {
+      return null;
+    }
+
     List<Predicate> predicates = new ArrayList<>();
     for (FilterComponent fc : conjunctionList) {
-      switch(fc) {
-        case FilterGroup fg -> predicates.add(createPredicate(ctx, root, fg));
-        case FilterExpression fex -> predicates.add(buildPredicate(ctx, root, fex));
+      Predicate predicate = switch(fc) {
+        case FilterGroup fg -> createPredicate(ctx, root, fg);
+        case FilterExpression fex -> buildPredicate(ctx, root, fex);
         default -> throw new IllegalStateException("Unexpected value: " + fc);
+      };
+
+      if (predicate != null) {
+        predicates.add(predicate);
       }
     }
 
     if (!predicates.isEmpty()) {
-      if (FilterGroup.Conjunction.OR == conjunction) {
-        return ctx.cb().or(predicates.toArray(Predicate[]::new));
-      } else if (FilterGroup.Conjunction.AND == conjunction) {
-        return ctx.cb().and(predicates.toArray(Predicate[]::new));
-      }
+      return switch (conjunction) {
+        case OR -> ctx.cb().or(predicates.toArray(Predicate[]::new));
+        case AND -> ctx.cb().and(predicates.toArray(Predicate[]::new));
+      };
     }
     return null;
   }
