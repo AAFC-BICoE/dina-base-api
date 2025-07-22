@@ -430,8 +430,8 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
       (criteriaBuilder, root, em) -> {
         EntityFilterHelper.leftJoinSortRelations(root, queryComponents.getSorts(), resourceClass, registry);
 
-        Predicate restriction = SimpleFilterHandlerV2.getRestriction(root, criteriaBuilder, rsqlArgumentParser::parse, em.getMetamodel(), fc != null ? List.of(fc) : List.of());
-        return new Predicate[]{restriction};
+        Predicate restriction = SimpleFilterHandlerV2.createPredicate(root, criteriaBuilder, rsqlArgumentParser::parse, em.getMetamodel(), fc);
+        return restriction == null ? null : new Predicate[]{restriction};
       },
       (cb, root) -> EntityFilterHelper.getOrders(cb, root, queryComponents.getSorts(), false),
       pageOffset, pageLimit, includes, relationshipsPath);
@@ -448,8 +448,8 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
     Long resourceCount = dinaService.getResourceCount( entityClass,
       (criteriaBuilder, root, em) -> {
-        Predicate restriction = SimpleFilterHandlerV2.getRestriction(root, criteriaBuilder, rsqlArgumentParser::parse, em.getMetamodel(), fc != null ? List.of(fc) : List.of());
-        return new Predicate[]{restriction};
+        Predicate restriction = SimpleFilterHandlerV2.createPredicate(root, criteriaBuilder, rsqlArgumentParser::parse, em.getMetamodel(), fc);
+        return restriction == null ? null : new Predicate[]{restriction};
       });
 
     return new PagedResource<>(pageOffset, pageLimit, resourceCount.intValue(), dtos);

@@ -601,7 +601,7 @@ public class BaseDAO {
    *
    * @param <E>               entity type
    * @param entityClass       - entity class to query cannot be null
-   * @param predicateSupplier - function to return the predicates cannot be null
+   * @param predicateSupplier - function to return the predicates cannot be null but can return null
    * @return resource count
    */
   public <E> Long getResourceCount(
@@ -612,7 +612,12 @@ public class BaseDAO {
     CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
     Root<E> root = countQuery.from(entityClass);
     countQuery.select(cb.count(root));
-    countQuery.where(predicateSupplier.supply(cb, root, entityManager));
+
+    Predicate[] predicates = predicateSupplier.supply(cb, root, entityManager);
+
+    if (predicates != null) {
+      countQuery.where(predicates);
+    }
     return entityManager.createQuery(countQuery).getSingleResult();
   }
 }

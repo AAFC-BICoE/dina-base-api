@@ -11,6 +11,7 @@ import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.exception.UnknownAttributeException;
+import ca.gc.aafc.dina.filter.FilterGroup.Conjunction;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2IT;
 import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
@@ -56,6 +57,31 @@ public class SimpleFilterHandlerV2IT extends BasePostgresItContext {
 
     var personDtos = this.personRepository.getAll(qc);
     assertEquals(List.of(expectedEmpName),
+      personDtos.resourceList().stream().map( m -> m.getDto().getName()).collect(Collectors.toList())
+    );
+  }
+
+  @Test
+  public void searchEmployees_whenNameFilterIsEqList_filteredEmployeesAreReturned() {
+    Person emp1 = Person.builder().uuid(UUID.randomUUID()).name("e1").build();
+    Person emp2 = Person.builder().uuid(UUID.randomUUID()).name("e2").build();
+    Person emp3 = Person.builder().uuid(UUID.randomUUID()).name("e3").build();
+
+    for (Person newPerson : Arrays.asList(emp1, emp2, emp3)) {
+      entityManager.persist(newPerson);
+    }
+
+    QueryComponent qc = QueryComponent.builder()
+        .filters(FilterGroup.builder()
+            .conjunction(Conjunction.OR)
+            .component(new FilterExpression("name", Ops.EQ, "e1"))
+            .component(new FilterExpression("name", Ops.EQ, "e2"))
+            .build())
+        .build();
+
+    var personDtos = this.personRepository.getAll(qc);
+    assertEquals(2, personDtos.resourceList().size());
+    assertEquals(List.of("e1", "e2"),
       personDtos.resourceList().stream().map( m -> m.getDto().getName()).collect(Collectors.toList())
     );
   }

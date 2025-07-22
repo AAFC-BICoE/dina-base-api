@@ -53,102 +53,102 @@ public final class SimpleFilterHandlerV2 {
    * @param metamodel JPA Metamodel
    * @return Generates a predicate for a given filter component.
    */
-  public static <E> Predicate getRestriction(
-      @NonNull Root<E> root,
-      @NonNull CriteriaBuilder cb,
-      @NonNull BiFunction<String, Class<?>, Object> parser,
-      @NonNull Metamodel metamodel,
-      @NonNull List<FilterComponent> filters) throws UnknownAttributeException {
-
-    // Final list of predicates this method will generate.
-    List<Predicate> predicates = new ArrayList<>();
-    for (FilterComponent component : filters) {
-      // Only FilterExpression are supported for simple filters.
-      if (component instanceof FilterExpression expression) {
-        try {
-          // Using the attribute path on the component, generate a list of all the path steps.
-          // "data.attributes.name" --> ["data", "attributes", "name"]
-          List<String> attributePath = Arrays.asList(
-            StringUtils.split(expression.attribute(), '.')
-          );
-
-          if (CollectionUtils.isEmpty(attributePath)) {
-            continue; // Move to the next filter spec.
-          }
-
-          Path<?> path = root;
-          boolean attributeFound = false;
-          for (String pathElement : attributePath) {
-            Optional<Attribute<?, ?>> attribute = findAttribute(
-              metamodel, List.of(pathElement), path.getJavaType());
-
-            if (attribute.isPresent()) {
-              path = path.get(pathElement);
-              if (isBasicAttribute(attribute.get())) {
-                // basic attribute start generating predicates
-                addPredicates(cb, parser, predicates, expression, path, attribute.get(),
-                  attributePath);
-                attributeFound = true;
-              }
-            }
-          }
-
-          if (!attributeFound) {
-            throw new UnknownAttributeException(expression.attribute());
-          }
-        } catch (JsonProcessingException e) {
-          throw new IllegalArgumentException("Invalid Json filter value", e);
-        }
-      } else {
-        log.info("Ignoring FilterComponent that is not an instance of FilterExpression");
-      }
-    }
-
-    return cb.and(predicates.toArray(Predicate[]::new));
+  public static Predicate createPredicate(
+    @NonNull Root<?> root,
+    @NonNull CriteriaBuilder cb,
+    @NonNull BiFunction<String, Class<?>, Object> parser,
+    @NonNull Metamodel metamodel,
+    FilterComponent fc) {
+    return createPredicate(new PredicateContext(cb, parser, metamodel), root, fc);
   }
 
   /**
-   * Using a filter and the current list of predicates, generate a new predicate to this array.
-   * 
-   * @param cb              The CriteriaBuilder used to construct the predicate.
-   * @param parser          Lambda Expression to convert a given string value to a
-   *                        given class representation of that value.
-   * @param predicates      The existing list of predicates to add a new one to.
-   * @param component       The Filter Expression to generate the predicate from.
-   * @param path            Used for determining the type of the entity.
-   * @param attribute       Metamodel attribute.
-   * @param attributePath   Required for jsonb fields.
-   * @throws JsonProcessingException
+   * Main function to create {@link Predicate} from {@link FilterComponent}.
+   * @param fc
+   * @return the {@link Predicate} or null if the provided {@link FilterComponent} was null
    */
-  private static void addPredicates(
-      CriteriaBuilder cb,
-      BiFunction<String, Class<?>, Object> parser,
-      @NonNull List<Predicate> predicates,
-      @NonNull FilterExpression component,
-      @NonNull Path<?> path,
-      @NonNull Attribute<?, ?> attribute,
-      @NonNull List<String> attributePath
-  ) throws JsonProcessingException {
-    Object filterValue = component.value();
-    if (filterValue == null) {
-      predicates.add(generateNullComparisonPredicate(cb, path, component.operator()));
-    } else {
-      if (isJsonb(attribute)) {
-        predicates.add(generateJsonbPredicate(
-            path.getParentPath(), cb, attributePath, attribute.getName(), filterValue.toString()));
-      } else { // regular operators
-        switch (component.operator()) {
-          case EQ -> predicates.add(cb.equal(path, parser.apply(filterValue.toString(), path.getJavaType())));
-          case LIKE -> predicates.add(cb.like((Path<String>)path, filterValue.toString()));
-          // there is no built-in support for case-insensitive like in Hibernate so, we are using
-          // lower case. Could have performance impact on very large tables
-          case LIKE_IC -> predicates.add(cb.like(cb.lower((Path<String>)path), filterValue.toString().toLowerCase()));
-          default -> {
-            log.warn("Unhandled operator: {}", component.operator());
-          }
+  private static Predicate createPredicate(
+    @NonNull PredicateContext ctx,
+    @NonNull Root<?> root,
+    FilterComponent fc) {
+
+    if (fc == null) {
+      return null;
+    }
+
+    Predicate predicate;
+    switch (fc) {
+      case FilterGroup fgrp ->
+        predicate = handleConjunction(ctx, root, fgrp.getConjunction(), fgrp.getComponents());
+      case FilterExpression fEx -> predicate = buildPredicate(ctx, root, fEx);
+      default -> throw new IllegalStateException("Unexpected value: " + fc);
+    }
+    return predicate;
+  }
+
+  /**
+   * Build a predicate from a {@link FilterExpression}.
+   * @param filterExpression  The Filter Expression to generate the predicate from.
+   * @return the predicate
+   */
+  private static Predicate buildPredicate(PredicateContext ctx, Root<?> root, FilterExpression filterExpression) {
+    Object filterValue = filterExpression.value();
+
+    // Using the attribute path on the component, generate a list of all the path steps.
+    // "data.attributes.name" --> ["data", "attributes", "name"]
+    List<String> attributePath = Arrays.asList(
+      StringUtils.split(filterExpression.attribute(), '.')
+    );
+
+    Path<?> path = root;
+    boolean attributeFound = false;
+    Optional<Attribute<?, ?>> attribute = Optional.empty();
+    for (String pathElement : attributePath) {
+      attribute = findAttribute(
+        ctx.metamodel(), List.of(pathElement), path.getJavaType());
+
+      if (attribute.isPresent()) {
+        path = path.get(pathElement);
+        if (isBasicAttribute(attribute.get())) {
+          attributeFound = true;
+          break;
         }
       }
-    } 
+    }
+
+    if (!attributeFound) {
+      throw new UnknownAttributeException(filterExpression.attribute());
+    }
+
+    if (filterValue == null) {
+      return generateNullComparisonPredicate(ctx.cb(),
+        path, filterExpression.operator());
+    } else  if (isJsonb(attribute.get())) {
+      try {
+        return generateJsonbPredicate(ctx,
+            path.getParentPath(), attributePath, attribute.get().getName(), filterValue.toString());
+      } catch (JsonProcessingException e) {
+        throw new IllegalArgumentException("Invalid Json filter value", e);
+      }
+    } else {
+      return generatePredicate(ctx, path, filterExpression.operator(),
+        filterValue.toString());
+    }
+  }
+
+  private static Predicate generatePredicate(PredicateContext ctx, Path<?> path, Ops operator, String value) {
+    return switch (operator) {
+      case NE -> ctx.cb().not(ctx.cb().equal(path, ctx.parser().apply(value, path.getJavaType())));
+      case EQ -> ctx.cb().equal(path, ctx.parser().apply(value, path.getJavaType()));
+      case LIKE -> ctx.cb().like((Path<String>) path, value);
+      // there is no built-in support for case-insensitive like in Hibernate so, we are using
+      // lower case. Could have performance impact on very large tables
+      case LIKE_IC -> ctx.cb().like(ctx.cb().lower((Path<String>) path), value.toLowerCase());
+      default -> {
+        log.warn("Unhandled operator: {}", operator);
+        yield null;
+      }
+    };
   }
 
   /**
@@ -172,8 +172,7 @@ public final class SimpleFilterHandlerV2 {
    * Generates a JSONB predicate for querying a path based on the provided attribute path, 
    * column name, and value.
    *
-   * @param root           the root path.
-   * @param cb             the CriteriaBuilder instance.
+   * @param ctx            Context for building the predicate
    * @param attributePath  the list of attribute paths to traverse within the JSONB structure.
    * @param columnName     the name of the column to match within the JSONB structure.
    * @param value          the value to match against the specified column name.
@@ -181,16 +180,17 @@ public final class SimpleFilterHandlerV2 {
    * @throws JsonProcessingException if an error occurs during JSON processing.
    */
   private static <E> Predicate generateJsonbPredicate(
-    Path<E> root, CriteriaBuilder cb, List<String> attributePath, String columnName, String value
+    PredicateContext ctx,
+    Path<E> root, List<String> attributePath, String columnName, String value
   ) throws JsonProcessingException {
     Queue<String> jsonbPath = new LinkedList<>(attributePath);
     while (!jsonbPath.isEmpty()) {
       if (jsonbPath.poll().equalsIgnoreCase(columnName)) {
         return JsonbKeyValuePredicate.onKey(columnName, StringUtils.join(jsonbPath, "."))
-          .buildUsing(root, cb, value, true);
+          .buildUsing(root, ctx.cb(), value, true);
       }
     }
-    return cb.and();
+    return null;
   }
 
   /**
@@ -274,6 +274,35 @@ public final class SimpleFilterHandlerV2 {
     return false;
   }
 
+  private static Predicate handleConjunction(PredicateContext ctx, Root<?> root,
+                                             FilterGroup.Conjunction conjunction, List<FilterComponent> conjunctionList) {
+
+    if (CollectionUtils.isEmpty(conjunctionList)) {
+      return null;
+    }
+
+    List<Predicate> predicates = new ArrayList<>();
+    for (FilterComponent fc : conjunctionList) {
+      Predicate predicate = switch(fc) {
+        case FilterGroup fg -> createPredicate(ctx, root, fg);
+        case FilterExpression fex -> buildPredicate(ctx, root, fex);
+        default -> throw new IllegalStateException("Unexpected value: " + fc);
+      };
+
+      if (predicate != null) {
+        predicates.add(predicate);
+      }
+    }
+
+    if (!predicates.isEmpty()) {
+      return switch (conjunction) {
+        case OR -> ctx.cb().or(predicates.toArray(Predicate[]::new));
+        case AND -> ctx.cb().and(predicates.toArray(Predicate[]::new));
+      };
+    }
+    return null;
+  }
+
   private static Field safeGetDeclaredField(Class<?> clazz, String attributeName) {
     try {
       return clazz.getDeclaredField(attributeName);
@@ -290,6 +319,10 @@ public final class SimpleFilterHandlerV2 {
       // ignore
     }
     return null;
+  }
+
+  public record PredicateContext(CriteriaBuilder cb, BiFunction<String, Class<?>, Object> parser,
+                                 Metamodel metamodel) {
   }
 
 }
