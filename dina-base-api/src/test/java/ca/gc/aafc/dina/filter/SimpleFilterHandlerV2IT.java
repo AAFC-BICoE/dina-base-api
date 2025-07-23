@@ -62,6 +62,30 @@ public class SimpleFilterHandlerV2IT extends BasePostgresItContext {
   }
 
   @Test
+  public void searchEmployees_whenNameFilterIsIn_filteredEmployeesAreReturned() {
+    List<String> expectedEmpNames = List.of("e1", "e4");
+
+    Person emp1 = Person.builder().uuid(UUID.randomUUID()).name("e1").build();
+    Person emp2 = Person.builder().uuid(UUID.randomUUID()).name("e2").build();
+    Person emp3 = Person.builder().uuid(UUID.randomUUID()).name("e3").build();
+    Person emp20 = Person.builder().uuid(UUID.randomUUID()).name("e4").build();
+
+    for (Person newPerson : Arrays.asList(emp1, emp2, emp3, emp20)) {
+      entityManager.persist(newPerson);
+    }
+
+    QueryComponent qc = QueryComponent.builder()
+      .filters(new FilterExpression("name", Ops.IN, String.join(",", expectedEmpNames)))
+      .build();
+
+    var personDtos = this.personRepository.getAll(qc);
+    assertEquals(expectedEmpNames,
+      personDtos.resourceList().stream().map( m -> m.getDto().getName()).collect(Collectors.toList())
+    );
+  }
+
+
+  @Test
   public void searchEmployees_whenNameFilterIsEqList_filteredEmployeesAreReturned() {
     Person emp1 = Person.builder().uuid(UUID.randomUUID()).name("e1").build();
     Person emp2 = Person.builder().uuid(UUID.randomUUID()).name("e2").build();

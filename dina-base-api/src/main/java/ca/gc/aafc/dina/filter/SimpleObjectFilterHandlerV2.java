@@ -191,7 +191,7 @@ public final class SimpleObjectFilterHandlerV2 {
   /**
    *
    * @param path
-   * @param value comma-separated
+   * @param values comma-separated
    * @return
    * @param <T>
    */
