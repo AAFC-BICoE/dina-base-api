@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.querydsl.core.types.Ops;
 
 import java.lang.reflect.AccessibleObject;
+import java.util.Set;
 import lombok.NonNull;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -144,11 +145,29 @@ public final class SimpleFilterHandlerV2 {
       // there is no built-in support for case-insensitive like in Hibernate so, we are using
       // lower case. Could have performance impact on very large tables
       case LIKE_IC -> ctx.cb().like(ctx.cb().lower((Path<String>) path), value.toLowerCase());
+      case IN -> generateInPredicate(ctx, path, value);
       default -> {
         log.warn("Unhandled operator: {}", operator);
         yield null;
       }
     };
+  }
+
+  /**
+   * Generates an IN predicate for the provided Path and values (comma separated, quotes to escape comma)
+   * @param path
+   * @param values comma-separated
+   * @return
+   */
+  private static Predicate generateInPredicate(PredicateContext ctx, Path<?> path, String values) {
+    if (values == null || values.trim().isEmpty()) {
+      return null;
+    }
+    Set<String> valueSet = QueryStringParser.parseQuotedValues(values);
+    List<Object> parsedValues =
+      valueSet.stream().map(v -> ctx.parser().apply(v, path.getJavaType())).toList();
+
+    return path.in(parsedValues);
   }
 
   /**

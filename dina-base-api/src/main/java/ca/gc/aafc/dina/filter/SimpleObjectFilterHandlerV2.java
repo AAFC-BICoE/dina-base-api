@@ -12,6 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -176,6 +177,7 @@ public final class SimpleObjectFilterHandlerV2 {
     return switch (operator) {
       case NE -> Predicate.not(createEqualPredicate(path, value));
       case EQ -> createEqualPredicate(path, value);
+      case IN -> createInPredicate(path, value);
       case LIKE -> createLikePredicate(path, value, true);
       case LIKE_IC -> createLikePredicate(path, value, false);
       default -> o -> false;
@@ -184,6 +186,27 @@ public final class SimpleObjectFilterHandlerV2 {
 
   private static <T> Predicate<T> createEqualPredicate(String path, String value) {
     return o -> Objects.equals(value, getPropertyByPath(o, path));
+  }
+
+  /**
+   *
+   * @param path
+   * @param values comma-separated
+   * @return
+   * @param <T>
+   */
+  private static <T> Predicate<T> createInPredicate(String path, String values) {
+    if (values == null || values.trim().isEmpty()) {
+      return o -> false;
+    }
+    Set<String> valueSet = QueryStringParser.parseQuotedValues(values);
+    return o -> {
+      Object propertyValue = getPropertyByPath(o, path);
+      if (propertyValue == null) {
+        return valueSet.contains("null") || valueSet.contains("");
+      }
+      return valueSet.contains(propertyValue.toString());
+    };
   }
 
   /**

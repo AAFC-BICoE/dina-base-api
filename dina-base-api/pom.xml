@@ -35,6 +35,8 @@
     <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 
     <commons-io.version>2.19.0</commons-io.version>
+    <commons-csv.version>1.14.0</commons-csv.version>
+
     <java-uuid-generator.version>4.3.0</java-uuid-generator.version>
     <spring-hateoas-jsonapi.version>1.6.0</spring-hateoas-jsonapi.version>
 
@@ -192,6 +194,11 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>${commons-io.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>${commons-csv.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.uuid</groupId>
