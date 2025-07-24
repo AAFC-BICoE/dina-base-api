@@ -382,9 +382,10 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
   public JsonApiDto<D> getOne(UUID identifier, String queryString, boolean includePermissions) throws ResourceNotFoundException,
       ResourceGoneException {
 
-    // the only part of QueryComponent that can be used on getOne is "includes"
+    // the only parts of QueryComponent that can be used on getOne is "includes" and "fields"
     QueryComponent queryComponents = QueryStringParser.parse(queryString);
     Set<String> includes = queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of();
+    Map<String, List<String>> fields = queryComponents.getFields();
 
     validateIncludes(includes);
 
@@ -403,10 +404,10 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
     if (includePermissions) {
       return jsonApiDtoAssistant.toJsonApiDto(dto, buildResourceObjectPermissionMeta(entity),
-        includes);
+        fields, includes);
     }
 
-    return jsonApiDtoAssistant.toJsonApiDto(dto, includes);
+    return jsonApiDtoAssistant.toJsonApiDto(dto, fields, includes);
   }
 
   public PagedResource<JsonApiDto<D>> getAll(String queryString) {
@@ -420,6 +421,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
     Set<String> relationshipsPath = EntityFilterHelper.extractRelationships(queryComponents.getIncludes(), resourceClass, registry);
     Set<String> includes = queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of();
+    Map<String, List<String>> fields = queryComponents.getFields();
 
     validateIncludes(includes);
     int pageOffset = toSafePageOffset(queryComponents.getPageOffset());
@@ -443,7 +445,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     addNestedAttributesFromIncludes(attributes, includes);
 
     for (E e : entities) {
-      dtos.add(jsonApiDtoAssistant.toJsonApiDto(dinaMapper.toDto(e, attributes, null), includes));
+      dtos.add(jsonApiDtoAssistant.toJsonApiDto(dinaMapper.toDto(e, attributes, null), fields, includes));
     }
 
     Long resourceCount = dinaService.getResourceCount( entityClass,

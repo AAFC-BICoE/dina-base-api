@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import lombok.extern.log4j.Log4j2;
@@ -38,10 +39,10 @@ public class JsonApiDtoAssistant<D> {
   }
 
   /**
-   * see {@link #toJsonApiDto(Object, JsonApiDtoMeta, Set)}
+   * see {@link #toJsonApiDto(Object, JsonApiDtoMeta, Map, Set)}
    */
-  public JsonApiDto<D> toJsonApiDto(D dto, Set<String> includes) {
-    return toJsonApiDto(dto, null, includes);
+  public JsonApiDto<D> toJsonApiDto(D dto, Map<String, List<String>> fields, Set<String> includes) {
+    return toJsonApiDto(dto, null, fields, includes);
   }
 
   /**
@@ -49,12 +50,16 @@ public class JsonApiDtoAssistant<D> {
    *
    * @param dto
    * @param meta metadata related to the specific dto
+   * @param includes sparse field-set by type
    * @param includes
    * @return
    */
-  public JsonApiDto<D> toJsonApiDto(D dto, JsonApiDtoMeta meta, Set<String> includes) {
+  public JsonApiDto<D> toJsonApiDto(D dto, JsonApiDtoMeta meta, Map<String, List<String>> fields,
+                                    Set<String> includes) {
     JsonApiDto.JsonApiDtoBuilder<D> jsonApiDtoBuilder = JsonApiDto.builder();
     jsonApiDtoBuilder.meta(meta);
+    jsonApiDtoBuilder.fields(fields);
+
     for (String include : includes) {
       try {
         Object rel = PropertyUtils.getProperty(dto, include);

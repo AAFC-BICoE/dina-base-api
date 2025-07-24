@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.filter;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import lombok.Builder;
@@ -18,8 +19,8 @@ public class QueryComponent {
   private final Set<String> includes;
   private final List<String> sorts;
 
-  // Sparse fields set
-  private final List<String> fields;
+  // Sparse fields set where the key is the type
+  private final Map<String, List<String>> fields;
 
   private final Integer pageOffset;
   private final Integer pageLimit;

@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.filter;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import com.querydsl.core.types.Ops;
@@ -17,6 +19,17 @@ public class AntlrGrammarTest {
 
     QueryComponent queryComponent = QueryStringParser.parse(content);
     queryComponent.getFilterExpression();
+  }
+
+  @Test
+  public void onSparseFieldSet_structureReturned() {
+    String content =
+      "filter[type][EQ]=metadata&filter[name][EQ]=drawing.png&fields[metadata]=name,type";
+
+    QueryComponent queryComponent = QueryStringParser.parse(content);
+    List<String> fields = queryComponent.getFields().get("metadata");
+    assertTrue(fields.contains("name"));
+    assertTrue(fields.contains("type"));
   }
 
   @Test

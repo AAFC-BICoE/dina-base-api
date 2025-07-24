@@ -53,12 +53,15 @@ import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import static ca.gc.aafc.dina.repository.DinaRepository.IT_OM_TYPE_REF;
 import static com.toedter.spring.hateoas.jsonapi.MediaTypes.JSON_API_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.OffsetDateTime;
@@ -105,7 +108,6 @@ public class DinaRepositoryV2IT {
     repositoryV2.getAll("");
   }
 
-
   @Test
   public void findOne_onIncludePermissions_permissionMetaIncluded() throws ResourceGoneException, ResourceNotFoundException {
     Person person = personService.create(Person.builder()
@@ -117,6 +119,24 @@ public class DinaRepositoryV2IT {
 
     assertNotNull(dto.getMeta());
     assertNotNull(dto.getMeta().getPermissionsProvider());
+  }
+
+  @Test
+  public void findOne_onSparseFieldSet_fieldsIncluded() throws Exception {
+    Person person = personService.create(Person.builder()
+      .name(TestableEntityFactory.generateRandomNameLettersOnly(11))
+      .room(39)
+      .build());
+
+    var getResponse = mockMvc.perform(
+        get("/" + RepoV2TestConfig.PATH + "/" + person.getUuid() + "?fields[person]=name")
+          .contentType(JSON_API_VALUE)
+      )
+      .andExpect(status().isOk())
+      .andReturn();
+
+    assertTrue(getResponse.getResponse().getContentAsString().contains("name"));
+    assertFalse(getResponse.getResponse().getContentAsString().contains("room"));
   }
 
   @Test
