@@ -95,7 +95,7 @@ public class JsonApiModelAssistant <D extends JsonApiResource> {
 
     // sparse field set
     if (MapUtils.isNotEmpty(jsonApiDto.getFields())) {
-      for(var field : jsonApiDto.getFields().entrySet()) {
+      for (var field : jsonApiDto.getFields().entrySet()) {
         builder.fields(field.getKey(), field.getValue().toArray(String[]::new));
       }
     }

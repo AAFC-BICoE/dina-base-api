@@ -71,7 +71,7 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
   @Override
   public void exitFields(SimpleSearchFilterParser.FieldsContext ctx) {
     List<String> fieldsForType = fields.computeIfAbsent(ctx.fieldName().getText(),
-      (k) -> new ArrayList<>());
+      k -> new ArrayList<>());
     for (var property : ctx.propertyName()) {
       fieldsForType.add(property.getText());
     }
