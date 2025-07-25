@@ -53,6 +53,7 @@ public final class QueryStringParser {
 
     return QueryComponent.builder()
       .filters(listener.buildFilterComponent())
+      .fields(listener.getFields())
       .includes(listener.getInclude() != null ? Set.copyOf(listener.getInclude()) : null)
       .sorts(listener.getSort())
       .pageLimit(listener.getPageLimit())

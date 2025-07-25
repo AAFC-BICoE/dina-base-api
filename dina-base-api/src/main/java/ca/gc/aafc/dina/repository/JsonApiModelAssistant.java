@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.extern.log4j.Log4j2;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -89,7 +90,15 @@ public class JsonApiModelAssistant <D extends JsonApiResource> {
   public static JsonApiModelBuilder createJsonApiModelBuilder(JsonApiDto<?> jsonApiDto,
                                                         JsonApiModelBuilder includeBuilder,
                                                         Set<UUID> included) {
+
     JsonApiModelBuilder builder = jsonApiModel().model(RepresentationModel.of(jsonApiDto.getDto()));
+
+    // sparse field set
+    if (MapUtils.isNotEmpty(jsonApiDto.getFields())) {
+      for (var field : jsonApiDto.getFields().entrySet()) {
+        builder.fields(field.getKey(), field.getValue().toArray(String[]::new));
+      }
+    }
 
     for (var rel : jsonApiDto.getRelationships().entrySet()) {
       switch (rel.getValue()) {

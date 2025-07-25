@@ -1,7 +1,9 @@
 package ca.gc.aafc.dina.filter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.querydsl.core.types.Ops;
 
@@ -19,6 +21,7 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
 
   private final List<FilterComponent> components = new ArrayList<>();
   private final List<String> includes = new ArrayList<>();
+  private final Map<String, List<String>> fields = new HashMap<>();
   private final List<String> sortAttributes = new ArrayList<>();
 
   private Integer pageOffset;
@@ -65,6 +68,15 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
     }
   }
 
+  @Override
+  public void exitFields(SimpleSearchFilterParser.FieldsContext ctx) {
+    List<String> fieldsForType = fields.computeIfAbsent(ctx.fieldName().getText(),
+      k -> new ArrayList<>());
+    for (var property : ctx.propertyName()) {
+      fieldsForType.add(property.getText());
+    }
+  }
+
   /**
    * Comparison operator is optional, this method will return the default operator
    * if absent.
@@ -85,13 +97,17 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
    */
   public FilterComponent buildFilterComponent() {
     if (components.size() == 1) {
-      return components.get(0);
+      return components.getFirst();
     } else if (components.size() > 1) {
       return
         FilterGroup.builder().conjunction(FilterGroup.Conjunction.AND)
           .components(components).build();
     }
     return null;
+  }
+
+  public Map<String, List<String>> getFields() {
+    return fields;
   }
 
   public List<String> getInclude() {

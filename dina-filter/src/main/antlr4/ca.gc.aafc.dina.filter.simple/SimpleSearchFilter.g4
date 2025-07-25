@@ -2,9 +2,11 @@ grammar SimpleSearchFilter;
 
 simpleFilter: expression ( '&' expression )*;
 
-expression: filter | sort | page | include;
+expression: filter | fields | sort | page | include;
 
 filter: 'filter' '[' propertyName ']'( '[' comparison ']' )? '=' attributeValue (',' attributeValue)*;
+
+fields: 'fields' '[' fieldName ']' '=' propertyName ( ',' propertyName )*;
 
 sort: 'sort' '=' sortPropertyName ( ',' sortPropertyName )*;
 
@@ -14,12 +16,13 @@ include: 'include' '=' propertyName ( ',' propertyName )*;
 
 comparison: 'EQ' | 'NEQ' | 'GT' | 'LT' | 'LIKE' | 'ILIKE' | 'IN';
 
-propertyName: (LETTERS|UNDERSCORE)+ (LETTERS | INT |
-UNDERSCORE | DOT)*;
+namePart: (LETTERS|UNDERSCORE)+ (LETTERS | INT | UNDERSCORE | DOT)*;
+
+propertyName: namePart;
+fieldName: namePart;
 
 // sort property can start with a dash to indicate descending
-sortPropertyName: (DASH)? (LETTERS|UNDERSCORE)+ (LETTERS | INT |
-UNDERSCORE | DOT)*;
+sortPropertyName: (DASH)? namePart;
 
 attributeValue: QUOTED_STRING | attributeAcceptedValue;
 

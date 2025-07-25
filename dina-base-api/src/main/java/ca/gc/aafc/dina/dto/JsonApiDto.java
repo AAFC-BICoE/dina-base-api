@@ -21,6 +21,8 @@ public class JsonApiDto<D> {
   private final D dto;
   private final JsonApiDtoMeta meta;
 
+  private final Map<String, List<String>> fields;
+
   @Singular
   private final Map<String, RelationshipBase> relationships;
 
