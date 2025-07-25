@@ -86,16 +86,13 @@ public class JsonApiExceptionControllerAdvice {
 
   @ExceptionHandler
   public ResponseEntity<JsonApiErrors> handleUnknownAttributeException(UnknownAttributeException ex) {
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-      JsonApiErrors.create().withError(
-        JsonApiError.create()
-          .withCode(Integer.toString(HttpStatus.BAD_REQUEST.value()))
-          .withStatus(HttpStatus.BAD_REQUEST.toString())
-          .withTitle("Bad Request")
-          .withDetail(ex.getMessage()))
-    );
+    return buildBadRequestResponse(ex);
   }
 
+  @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleIllegalArgumentException(IllegalArgumentException ex) {
+    return buildBadRequestResponse(ex);
+  }
 
   @ExceptionHandler
   public ResponseEntity<JsonApiErrors> handleValidationException(ValidationException ex) {
@@ -125,6 +122,17 @@ public class JsonApiExceptionControllerAdvice {
 
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
       errors);
+  }
+
+  private static ResponseEntity<JsonApiErrors> buildBadRequestResponse(Exception ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+      JsonApiErrors.create().withError(
+        JsonApiError.create()
+          .withCode(Integer.toString(HttpStatus.BAD_REQUEST.value()))
+          .withStatus(HttpStatus.BAD_REQUEST.toString())
+          .withTitle("Bad Request")
+          .withDetail(ex.getMessage()))
+    );
   }
 
   private static String generateDetail(ConstraintViolation<?> cv) {
