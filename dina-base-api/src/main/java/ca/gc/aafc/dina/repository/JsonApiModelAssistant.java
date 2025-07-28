@@ -97,6 +97,10 @@ public class JsonApiModelAssistant <D extends JsonApiResource> {
     if (MapUtils.isNotEmpty(jsonApiDto.getFields())) {
       for (var field : jsonApiDto.getFields().entrySet()) {
         builder.fields(field.getKey(), field.getValue().toArray(String[]::new));
+        // propagate to include builder
+        if (includeBuilder != null) {
+          includeBuilder.fields(field.getKey(), field.getValue().toArray(String[]::new));
+        }
       }
     }
 

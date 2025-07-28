@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.repository;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +12,11 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.validation.SmartValidator;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -32,12 +35,14 @@ import com.toedter.spring.hateoas.jsonapi.JsonApiConfiguration;
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
+import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.exception.ResourcesGoneException;
 import ca.gc.aafc.dina.exception.ResourcesNotFoundException;
 import ca.gc.aafc.dina.filter.QueryComponent;
+import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkResourceIdentifierDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
@@ -45,6 +50,7 @@ import ca.gc.aafc.dina.jsonapi.JsonApiDocuments;
 import ca.gc.aafc.dina.mapper.PersonMapper;
 import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
+import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
@@ -77,6 +83,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import lombok.NonNull;
 
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, DinaRepositoryV2IT.RepoV2TestConfig.class},
@@ -89,6 +96,9 @@ public class DinaRepositoryV2IT {
 
   @Inject
   private DinaRepositoryIT.DinaPersonService personService;
+
+  @Inject
+  private DinaRepositoryV2IT.RepoV2TestConfig.DinaDepartmentService departmentService;
 
   @Inject
   private ObjectMapper objMapper;
@@ -123,13 +133,22 @@ public class DinaRepositoryV2IT {
 
   @Test
   public void findOne_onSparseFieldSet_fieldsIncluded() throws Exception {
+
+    Department department = departmentService.create(Department.builder()
+      .uuid(UUID.randomUUID())
+      .name(RandomStringUtils.randomAlphabetic(4))
+      .location(RandomStringUtils.randomAlphabetic(4))
+      .build());
+
     Person person = personService.create(Person.builder()
       .name(TestableEntityFactory.generateRandomNameLettersOnly(11))
       .room(39)
+      .department(department)
       .build());
 
     var getResponse = mockMvc.perform(
-        get("/" + RepoV2TestConfig.PATH + "/" + person.getUuid() + "?fields[person]=name")
+        get("/" + RepoV2TestConfig.PATH + "/" + person.getUuid() +
+          "?fields[person]=name&fields[department]=name&include=department")
           .contentType(JSON_API_VALUE)
       )
       .andExpect(status().isOk())
@@ -137,6 +156,9 @@ public class DinaRepositoryV2IT {
 
     assertTrue(getResponse.getResponse().getContentAsString().contains("name"));
     assertFalse(getResponse.getResponse().getContentAsString().contains("room"));
+
+    // we are asking for fields[department]=name so location should not be included
+    assertFalse(getResponse.getResponse().getContentAsString().contains("location"));
   }
 
   @Test
@@ -381,6 +403,19 @@ public class DinaRepositoryV2IT {
           objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
           objectMapper.registerModule(new JavaTimeModule());
         });
+    }
+
+    @Service
+    public static class DinaDepartmentService extends DefaultDinaService<Department> {
+
+      public DinaDepartmentService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
+        super(baseDAO, sv);
+      }
+
+      @Override
+      protected void preCreate(Department entity) {
+        entity.setUuid(UUID.randomUUID());
+      }
     }
 
     @RestController
