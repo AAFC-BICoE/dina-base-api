@@ -25,17 +25,24 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
+
 @Data
-@JsonApiResource(type = "department")
+@JsonApiResource(type = DepartmentDto.TYPE_NAME)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @RelatedEntity(Department.class)
-@TypeName("department")
+@TypeName(DepartmentDto.TYPE_NAME)
 @CustomFieldAdapter(adapters = DepartmentDto.DerivedAdapter.class)
-public class DepartmentDto {
+@JsonApiTypeForClass(DepartmentDto.TYPE_NAME)
+public class DepartmentDto implements ca.gc.aafc.dina.dto.JsonApiResource {
+
+  public static final String TYPE_NAME = "department";
 
   @JsonApiId
+  @com.toedter.spring.hateoas.jsonapi.JsonApiId
   @Id
   @PropertyName("id")
   private UUID uuid;
@@ -65,6 +72,18 @@ public class DepartmentDto {
   private List<Department.DepartmentAlias> aliases = new ArrayList<>();
 
   private String establishedOn;
+
+  @Override
+  @JsonIgnore
+  public String getJsonApiType() {
+    return TYPE_NAME;
+  }
+
+  @Override
+  @JsonIgnore
+  public UUID getJsonApiId() {
+    return uuid;
+  }
 
   public static class DerivedAdapter implements DinaFieldAdapter<DepartmentDto, Department, String, String> {
 
