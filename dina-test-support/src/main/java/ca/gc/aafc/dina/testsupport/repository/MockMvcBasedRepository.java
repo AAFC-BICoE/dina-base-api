@@ -8,9 +8,13 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import ca.gc.aafc.dina.jsonapi.JsonApiBulkDocument;
+import ca.gc.aafc.dina.jsonapi.JsonApiBulkResourceIdentifierDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 
+import static ca.gc.aafc.dina.testsupport.BaseRestAssuredTest.JSON_API_BULK;
+import static ca.gc.aafc.dina.testsupport.BaseRestAssuredTest.JSON_API_BULK_LOAD_PATH;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -41,6 +45,14 @@ public abstract class MockMvcBasedRepository {
       .andReturn();
   }
 
+  protected MvcResult sendBulkLoad(JsonApiBulkResourceIdentifierDocument bulkLoadDoc)
+      throws Exception {
+    return this.getMockMvc().perform(post(this.baseUrl + "/" + JSON_API_BULK_LOAD_PATH)
+      .contentType(JSON_API_BULK)
+      .content(objMapper.writeValueAsString(bulkLoadDoc))).andExpect(
+      status().isOk()).andReturn();
+  }
+
   protected MvcResult sendPost(JsonApiDocument docToPost) throws Exception {
     return this.getMockMvc().perform(
         post(this.baseUrl)
@@ -53,4 +65,10 @@ public abstract class MockMvcBasedRepository {
       throws UnsupportedEncodingException, JsonProcessingException {
     return objMapper.readValue(mvcResult.getResponse().getContentAsString(), JsonApiDocument.class);
   }
+
+  protected JsonApiBulkDocument toJsonApiBulkDocument(MvcResult mvcResult)
+    throws UnsupportedEncodingException, JsonProcessingException {
+    return objMapper.readValue(mvcResult.getResponse().getContentAsString(), JsonApiBulkDocument.class);
+  }
+
 }
