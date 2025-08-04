@@ -33,6 +33,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.toedter.spring.hateoas.jsonapi.JsonApiConfiguration;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
@@ -61,6 +62,7 @@ import static com.toedter.spring.hateoas.jsonapi.MediaTypes.JSON_API_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -389,6 +391,16 @@ public class DinaRepositoryV2IT {
     assertNotNull(loadedDocs.get("errors"));
   }
 
+  @Test
+  public void create_unsafePayload_ExceptionThrown() {
+    PersonDTO personDto1 = PersonDTO.builder()
+      .name("abc<iframe src=javascript:alert(32311)>")
+      .build();
+    JsonApiDocument doc1 = JsonApiDocuments.createJsonApiDocument(null, PersonDTO.TYPE_NAME,
+      JsonAPITestHelper.toAttributeMap(personDto1));
+    assertThrows(IllegalArgumentException.class, () -> repositoryV2.create(doc1, null));
+  }
+
   @TestConfiguration
   public static class RepoV2TestConfig {
 
@@ -457,8 +469,7 @@ public class DinaRepositoryV2IT {
       @PostMapping(path = PATH, consumes = JSON_API_BULK)
       @Transactional
       public ResponseEntity<RepresentationModel<?>> onBulkCreate(
-        @RequestBody JsonApiBulkDocument jsonApiBulkDocument)
-        throws ResourceNotFoundException, ResourceGoneException {
+        @RequestBody JsonApiBulkDocument jsonApiBulkDocument) {
         return handleBulkCreate(jsonApiBulkDocument, null);
       }
 
@@ -472,8 +483,7 @@ public class DinaRepositoryV2IT {
       @PostMapping(path = PATH)
       @Transactional
       public ResponseEntity<RepresentationModel<?>> onCreate(
-        @RequestBody JsonApiDocument postedDocument)
-        throws ResourceNotFoundException, ResourceGoneException {
+        @RequestBody JsonApiDocument postedDocument) {
 
         return handleCreate(postedDocument, null);
       }

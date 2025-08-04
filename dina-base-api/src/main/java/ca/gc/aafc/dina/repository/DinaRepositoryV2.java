@@ -7,6 +7,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.ResponseEntity;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tennaito.rsql.misc.ArgumentParser;
@@ -29,12 +30,14 @@ import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
 import ca.gc.aafc.dina.filter.SimpleFilterHandlerV2;
+import ca.gc.aafc.dina.json.JsonDocumentInspector;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkResourceIdentifierDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.mapper.DinaMapperV2;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import ca.gc.aafc.dina.repository.auditlog.AuditSnapshotRepository;
+import ca.gc.aafc.dina.security.TextHtmlSanitizer;
 import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
@@ -68,6 +71,8 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
   public static final String JSON_API_BULK_PATH = "bulk";
   public static final String JSON_API_BULK_LOAD_PATH = "bulk-load";
+
+  protected static final TypeReference<Map<String, Object>> IT_OM_TYPE_REF = new TypeReference<>() { };
 
   // default page limit/page size
   private static final int DEFAULT_PAGE_LIMIT = 20;
@@ -542,6 +547,9 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
    */
   public JsonApiDto<D> create(JsonApiDocument docToCreate, Consumer<D> dtoCustomizer) {
 
+    // make sure data is safe to manipulate
+    checkSubmittedData(docToCreate.getAttributes());
+
     D dto = objMapper.convertValue(docToCreate.getAttributes(), resourceClass);
     if (dtoCustomizer != null) {
       dtoCustomizer.accept(dto);
@@ -582,6 +590,8 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
   public JsonApiDto<D> update(JsonApiDocument patchDto)
       throws ResourceNotFoundException, ResourceGoneException {
 
+    // make sure data is safe to manipulate
+    checkSubmittedData(patchDto.getAttributes());
     // We need to use Jackson for now here since MapStruct doesn't support setting
     // values from Map<String, Object> yet.
     // Reflection can't really be used since we won't know the type of the source
@@ -707,6 +717,24 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     }
 
     dinaService.delete(entity);
+  }
+
+  /**
+   *
+   * @param attributes without relationships
+   */
+  protected void checkSubmittedData(Map<String, Object> attributes) {
+    if (!JsonDocumentInspector.testPredicateOnValues(attributes, supplyCheckSubmittedDataPredicate())) {
+      throw new IllegalArgumentException("Unaccepted value detected in attributes");
+    }
+  }
+
+  /**
+   * Override this method to change the default predicate used on submitted data.
+   * @return
+   */
+  protected java.util.function.Predicate<String> supplyCheckSubmittedDataPredicate() {
+    return TextHtmlSanitizer::isSafeText;
   }
 
   /**
