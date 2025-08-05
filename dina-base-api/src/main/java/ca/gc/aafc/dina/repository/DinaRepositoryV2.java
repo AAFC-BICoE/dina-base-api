@@ -647,7 +647,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
   private void updateRelationship(E entity, String relationshipName,
                                           JsonApiDocument.RelationshipObject relationshipObj)
-    throws InvocationTargetException, IllegalAccessException {
+      throws InvocationTargetException, IllegalAccessException {
 
     // get information about the relationship
     DinaMappingRegistry.InternalRelation relation = registry.getInternalRelation(entityClass, relationshipName);
@@ -690,7 +690,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
   private void updateExternalRelationship(E entity, String relationshipName,
                                           JsonApiDocument.RelationshipObject relationshipObj)
-    throws InvocationTargetException, IllegalAccessException {
+      throws InvocationTargetException, IllegalAccessException {
 
     if (registry.isRelationExternal(resourceClass, relationshipName)) {
       if (relationshipObj.getData() == null) {
