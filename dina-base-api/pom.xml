@@ -29,7 +29,7 @@
     <mybatis.version>2.2.2</mybatis.version>
     <hypersistence-utils-hibernate-55.version>3.6.1</hypersistence-utils-hibernate-55.version>
 
-    <jsoup.version>1.18.3</jsoup.version>
+    <jsoup.version>1.19.1</jsoup.version>
 
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
