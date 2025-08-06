@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.dto;
 
 import ca.gc.aafc.dina.entity.ComplexObject;
 import ca.gc.aafc.dina.entity.Project;
-import ca.gc.aafc.dina.entity.Task;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -56,10 +55,12 @@ public final class ProjectDTO implements ca.gc.aafc.dina.dto.JsonApiResource {
 
   @JsonApiExternalRelation(type = "author")
   @JsonApiRelation
+ // @JsonIgnore can be added once migration to v2 is completed
   private ExternalRelationDto originalAuthor;
 
   @JsonApiExternalRelation(type = "author")
   @JsonApiRelation
+  @JsonIgnore
   private List<ExternalRelationDto> authors;
 
   // list of people but not exposed as relationship

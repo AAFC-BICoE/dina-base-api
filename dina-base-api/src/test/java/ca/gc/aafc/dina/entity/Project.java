@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.entity;
 
+import io.hypersistence.utils.hibernate.type.array.ListArrayType;
+import javax.persistence.Column;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import lombok.AllArgsConstructor;
@@ -7,6 +9,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.validator.constraints.UniqueElements;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -27,6 +32,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@TypeDef(name = "list-array", typeClass = ListArrayType.class)
 public final class Project implements DinaEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,7 +67,9 @@ public final class Project implements DinaEntity {
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<ComplexObject> nameTranslations;
 
-  @Transient
+  @Type(type = "list-array")
+  @Column(name = "authors", columnDefinition = "uuid[]")
+  @UniqueElements
   private List<UUID> authors;
 
   // list of people but not exposed as relationship

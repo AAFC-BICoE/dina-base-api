@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import ca.gc.aafc.dina.dto.ExternalRelationDto;
+import ca.gc.aafc.dina.dto.JsonApiExternalResource;
+import ca.gc.aafc.dina.dto.PersonExternalDto;
 import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.TaskDTO;
 import ca.gc.aafc.dina.entity.Project;
@@ -41,8 +45,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import lombok.Getter;
 
@@ -83,6 +89,52 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
   }
 
   @Test
+  public void onPatchToOneExternalRelationship() {
+    // Create a project
+    ProjectDTO project = ProjectDTO.builder().build();
+    UUID projectUuid = UUID.randomUUID();
+    sendPost(PATH + "/" + ProjectDTO.RESOURCE_TYPE, JsonAPITestHelper.toJsonAPIMap(
+      ProjectDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(project), null, projectUuid.toString()));
+
+    String originalAuthorUuid = UUID.randomUUID().toString();
+    // Patch the project to set the task
+    var response = sendPatch(PATH + "/" + ProjectDTO.RESOURCE_TYPE , projectUuid.toString(), JsonAPITestHelper.toJsonAPIMap(
+      ProjectDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(project),
+      JsonAPITestHelper.toRelationshipMap(JsonAPIRelationship.of("originalAuthor", "author", originalAuthorUuid))
+      , projectUuid.toString()))
+      .extract().response();
+
+    assertEquals(200, response.getStatusCode());
+
+    var getResponse = sendGet(PATH + "/" + ProjectDTO.RESOURCE_TYPE, projectUuid.toString(), Map.of("include", "originalAuthor"), 200);
+    assertEquals(originalAuthorUuid, getResponse.extract().jsonPath().getString("data.relationships.originalAuthor.data.id"));
+  }
+
+  @Test
+  public void onPatchToManyExternalRelationship() {
+    // Create a project
+    ProjectDTO project = ProjectDTO.builder().build();
+    UUID projectUuid = UUID.randomUUID();
+    sendPost(PATH + "/" + ProjectDTO.RESOURCE_TYPE, JsonAPITestHelper.toJsonAPIMap(
+      ProjectDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(project), null, projectUuid.toString()));
+
+    String authorUuid = UUID.randomUUID().toString();
+    // Patch the project to set the task
+    var response = sendPatch(PATH + "/" + ProjectDTO.RESOURCE_TYPE , projectUuid.toString(), JsonAPITestHelper.toJsonAPIMap(
+      ProjectDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(project),
+      JsonAPITestHelper.toRelationshipMapByName(List.of(
+        JsonAPIRelationship.of("authors", "author", authorUuid),
+        JsonAPIRelationship.of("authors", "author", UUID.randomUUID().toString())))
+      , projectUuid.toString()))
+      .extract().response();
+
+    assertEquals(200, response.getStatusCode());
+
+    var getResponse = sendGet(PATH + "/" + ProjectDTO.RESOURCE_TYPE, projectUuid.toString(), Map.of("include", "authors"), 200);
+    assertEquals(authorUuid, getResponse.extract().jsonPath().getString("data.relationships.authors.data[0].id"));
+  }
+
+  @Test
   public void onPatchToManyRelationship() {
     // Create a project
     ProjectDTO project = ProjectDTO.builder().build();
@@ -115,7 +167,7 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
   }
 
   /**
-   * TestDynaBeanRepo is a REST controller that handles HTTP requests for creating and updating
+   * TestDinaRepositoryV2 is a REST controller that handles HTTP requests for creating and updating
    * Project and Task resources using JSON:API specification.
    */
   @RestController
@@ -138,20 +190,26 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
       return ResponseEntity.created(URI.create("/")).build();
     }
 
+    @GetMapping(PATH + "/" + ProjectDTO.RESOURCE_TYPE + "/{id}")
+    @Transactional
+    public ResponseEntity<RepresentationModel<?>> handleGetProject(@PathVariable UUID id,
+                                                                   HttpServletRequest req)
+        throws ResourceGoneException, ResourceNotFoundException {
+      return projectRepo.handleFindOne(id, req);
+    }
+
     @PostMapping(PATH + "/" + ProjectDTO.RESOURCE_TYPE)
     @Transactional
     public ResponseEntity<RepresentationModel<?>> handlePostProject(@RequestBody JsonApiDocument doc) {
-      projectRepo.create(doc, (dto) -> dto.setUuid(doc.getId()));
-      return ResponseEntity.created(URI.create("/")).build();
+      return projectRepo.handleCreate(doc, (dto) -> dto.setUuid(doc.getId()));
     }
 
     @PatchMapping(PATH + "/" + ProjectDTO.RESOURCE_TYPE + "/{id}")
     @Transactional
     public ResponseEntity<RepresentationModel<?>> handlePatch(@RequestBody JsonApiDocument partialPatchDto,
-                                                              @PathVariable String id)
+                                                              @PathVariable UUID id)
       throws ResourceNotFoundException, ResourceGoneException {
-      projectRepo.update(partialPatchDto);
-      return ResponseEntity.ok().build();
+      return projectRepo.handleUpdate(partialPatchDto, id);
     }
   }
 
@@ -173,7 +231,13 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
                                                                   ObjectMapper objMapper) {
       return new DinaRepositoryV2<>(dinaService, new AllowAllAuthorizationService(),
         Optional.empty(), ProjectDtoMapper.INSTANCE, ProjectDTO.class, Project.class,
-        buildProperties, objMapper);
+        buildProperties, objMapper) {
+          @Override
+          protected JsonApiExternalResource externalRelationDtoToJsonApiExternalResource(ExternalRelationDto externalRelationDto) {
+          return PersonExternalDto.builder().uuid(UUID.fromString(externalRelationDto.getId()))
+            .build();
+        }
+      };
     }
   }
 }

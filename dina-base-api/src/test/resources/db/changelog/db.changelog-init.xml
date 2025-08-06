@@ -272,6 +272,7 @@
 			<column name="uuid" type="uuid"/>
 			<column name="ac_meta_data_creator" type="uuid"/>
 			<column name="original_author" type="uuid"/>
+			<column name="authors" type="uuid[]"/>
 			<column name="name" type="varchar(255)"/>
 			<column name="alias" type="varchar(255)"/>
 			<column name="task_id" type="integer">

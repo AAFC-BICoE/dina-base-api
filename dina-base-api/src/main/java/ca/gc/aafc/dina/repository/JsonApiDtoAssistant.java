@@ -31,6 +31,18 @@ public class JsonApiDtoAssistant<D> {
   private final Class<D> resourceClass;
 
   public JsonApiDtoAssistant(DinaMappingRegistry dinaMappingRegistry,
+                             Class<D> resourceClass) {
+    this(dinaMappingRegistry, null, resourceClass);
+  }
+
+  /**
+   *
+   * @param dinaMappingRegistry the mapping registry
+   * @param externalRelationDtoToResourceFunction function to convert external relationships.
+   *                                              Required if external relationships are used on the dto.
+   * @param resourceClass dto class
+   */
+  public JsonApiDtoAssistant(DinaMappingRegistry dinaMappingRegistry,
                              Function<ExternalRelationDto, JsonApiExternalResource> externalRelationDtoToResourceFunction,
                              Class<D> resourceClass) {
     this.dinaMappingRegistry = dinaMappingRegistry;
@@ -86,9 +98,15 @@ public class JsonApiDtoAssistant<D> {
       case JsonApiResource ddto -> builder.relationship(name,
         JsonApiDto.RelationshipToOne.builder()
           .included(ddto).build());
-      case ExternalRelationDto erd -> builder.relationship(name,
-        JsonApiDto.RelationshipToOneExternal.builder()
-          .included(externalRelationDtoToResourceFunction.apply(erd)).build());
+      case ExternalRelationDto erd -> {
+        if (externalRelationDtoToResourceFunction != null) {
+          builder.relationship(name,
+            JsonApiDto.RelationshipToOneExternal.builder()
+              .included(externalRelationDtoToResourceFunction.apply(erd)).build());
+        } else {
+          throw new IllegalStateException("No externalRelationDtoToResourceFunction defined");
+        }
+      }
       case null, default -> log.warn("Not an instance of JsonApiResource, ignoring {}", name);
     }
   }
@@ -103,8 +121,13 @@ public class JsonApiDtoAssistant<D> {
       switch (element) {
         case JsonApiExternalResource jaer -> castSafeListExternal.add(jaer);
         case JsonApiResource jar -> castSafeList.add(jar);
-        case ExternalRelationDto erd ->
-          castSafeListExternal.add(externalRelationDtoToResourceFunction.apply(erd));
+        case ExternalRelationDto erd -> {
+          if (externalRelationDtoToResourceFunction != null) {
+            castSafeListExternal.add(externalRelationDtoToResourceFunction.apply(erd));
+          } else {
+            throw new IllegalStateException("No externalRelationDtoToResourceFunction defined");
+          }
+        }
         case null, default -> log.warn("Not an instance of JsonApiResource, ignoring {}", name);
       }
     }
