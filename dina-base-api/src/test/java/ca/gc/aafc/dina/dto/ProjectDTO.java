@@ -55,7 +55,7 @@ public final class ProjectDTO implements ca.gc.aafc.dina.dto.JsonApiResource {
 
   @JsonApiExternalRelation(type = "author")
   @JsonApiRelation
-  @JsonIgnore
+ // @JsonIgnore can be added once migration to v2 is completed
   private ExternalRelationDto originalAuthor;
 
   @JsonApiExternalRelation(type = "author")
