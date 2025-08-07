@@ -2,9 +2,11 @@ grammar SimpleSearchFilter;
 
 simpleFilter: expression ( '&' expression )*;
 
-expression: filter | fields | sort | page | include;
+expression: filter | fiql | fields | sort | page | include;
 
 filter: 'filter' '[' propertyName ']'( '[' comparison ']' )? '=' attributeValue (',' attributeValue)*;
+
+fiql: 'fiql' '=' fiqlPart;
 
 fields: 'fields' '[' fieldName ']' '=' propertyName ( ',' propertyName )*;
 
@@ -20,6 +22,7 @@ namePart: (LETTERS|UNDERSCORE)+ (LETTERS | INT | UNDERSCORE | DOT)*;
 
 propertyName: namePart;
 fieldName: namePart;
+fiqlPart: (COMMA | SEMI | attributeAcceptedValue | EQUALS)+;
 
 // sort property can start with a dash to indicate descending
 sortPropertyName: (DASH)? namePart;
@@ -34,7 +37,8 @@ attributeAcceptedValue: (
   | DOT
   | PERCENTAGE
   | SPACE
-  | FORWARD_SLASH)+;
+  | FORWARD_SLASH
+  | COLON)+;
 
 pageValue: INT;
 
@@ -48,6 +52,11 @@ DOT: [.];
 FORWARD_SLASH: [/];
 SPACE: [ ];
 PERCENTAGE: [%];
+PARENTHESIS: [()];
+COLON: [:];
+COMMA: ',';
+SEMI: ';';
+EQUALS: '=';
 QUOTE: ["];
 
 WS: [\t\r\n]+ -> skip; // Skip whitespace

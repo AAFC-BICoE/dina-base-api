@@ -16,6 +16,7 @@ import lombok.Getter;
 public class QueryComponent {
 
   private final FilterComponent filters;
+  private final String fiql;
   private final Set<String> includes;
   private final List<String> sorts;
 
