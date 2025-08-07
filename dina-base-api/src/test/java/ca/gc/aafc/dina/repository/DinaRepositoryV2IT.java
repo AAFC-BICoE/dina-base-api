@@ -33,7 +33,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.toedter.spring.hateoas.jsonapi.JsonApiConfiguration;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
@@ -211,6 +210,14 @@ public class DinaRepositoryV2IT {
     resultList = repositoryV2.getAll(qc);
     assertEquals(byRoom.getFirst(), resultList.resourceList().getFirst().getDto().getName());
     assertEquals(byRoom.size(), resultList.totalCount());
+
+    // fiql
+    qc = QueryComponent.builder().fiql("(name==b),(name==d)")
+      .sorts(List.of("-name"))
+      .build();
+    resultList = repositoryV2.getAll(qc);
+    assertEquals(2, resultList.resourceList().size());
+    assertEquals("d", resultList.resourceList().getFirst().getDto().getName());
   }
 
   @Test

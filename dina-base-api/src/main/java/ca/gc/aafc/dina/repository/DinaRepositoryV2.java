@@ -26,6 +26,7 @@ import ca.gc.aafc.dina.exception.ResourcesGoneException;
 import ca.gc.aafc.dina.exception.ResourcesNotFoundException;
 import ca.gc.aafc.dina.filter.DinaFilterArgumentParser;
 import ca.gc.aafc.dina.filter.EntityFilterHelper;
+import ca.gc.aafc.dina.filter.FIQLFilterHandler;
 import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
@@ -40,6 +41,7 @@ import ca.gc.aafc.dina.repository.auditlog.AuditSnapshotRepository;
 import ca.gc.aafc.dina.security.TextHtmlSanitizer;
 import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
+import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.util.ReflectionUtils;
 
@@ -432,16 +434,9 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     int pageOffset = toSafePageOffset(queryComponents.getPageOffset());
     int pageLimit = toSafePageLimit(queryComponents.getPageLimit());
 
-    List<E> entities = dinaService.findAll(
-      entityClass,
-      (criteriaBuilder, root, em) -> {
-        EntityFilterHelper.leftJoinSortRelations(root, queryComponents.getSorts(), resourceClass, registry);
-
-        Predicate restriction = SimpleFilterHandlerV2.createPredicate(root, criteriaBuilder, rsqlArgumentParser::parse, em.getMetamodel(), fc);
-        return restriction == null ? null : new Predicate[]{restriction};
-      },
-      (cb, root) -> EntityFilterHelper.getOrders(cb, root, queryComponents.getSorts(), false),
-      pageOffset, pageLimit, includes, relationshipsPath);
+    List<E> entities = queryComponents.getFiql() == null ?
+      loadEntities(queryComponents, pageOffset, pageLimit, includes, relationshipsPath) :
+      loadEntities(queryComponents.getFiql(), pageOffset, pageLimit, queryComponents.getSorts(), includes, relationshipsPath);
 
     List<JsonApiDto<D>> dtos = new ArrayList<>(entities.size());
 
@@ -461,6 +456,52 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
     return new PagedResource<>(pageOffset, pageLimit, resourceCount.intValue(), dtos);
   }
+
+  /**
+   * Load entities using Criteria Builder
+   * @param queryComponents
+   * @param pageOffset
+   * @param pageLimit
+   * @param includes
+   * @param relationshipsPath
+   * @return
+   */
+  private List<E> loadEntities(QueryComponent queryComponents,
+                               int pageOffset, int pageLimit,
+                               Set<String> includes, Set<String> relationshipsPath) {
+    FilterComponent fc = queryComponents.getFilters();
+    return dinaService.findAll(
+      entityClass,
+      (criteriaBuilder, root, em) -> {
+        EntityFilterHelper.leftJoinSortRelations(root, queryComponents.getSorts(), resourceClass, registry);
+
+        Predicate restriction = SimpleFilterHandlerV2.createPredicate(root, criteriaBuilder, rsqlArgumentParser::parse, em.getMetamodel(), fc);
+        return restriction == null ? null : new Predicate[]{restriction};
+      },
+      (cb, root) -> EntityFilterHelper.getOrders(cb, root, queryComponents.getSorts(), false),
+      pageOffset, pageLimit, includes, relationshipsPath);
+  }
+
+  /**
+   * Load entities using FIQL
+   * @param fiql
+   * @param pageOffset
+   * @param pageLimit
+   * @param sorts
+   * @param includes
+   * @param relationshipsPath
+   * @return
+   */
+  private List<E> loadEntities(String fiql,
+                               int pageOffset, int pageLimit,
+                               List<String> sorts,
+                               Set<String> includes, Set<String> relationshipsPath) {
+
+    return ((DefaultDinaService)dinaService).findAll(entityClass,
+      fiql, sorts,
+      pageOffset, pageLimit, includes, relationshipsPath);
+  }
+
 
   private JsonApiDtoMeta buildResourceObjectPermissionMeta(E entity) {
     Set<String> permissions = authorizationService.getPermissionsForObject(entity);

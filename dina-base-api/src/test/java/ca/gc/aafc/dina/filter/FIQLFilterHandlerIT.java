@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -46,7 +47,7 @@ public class FIQLFilterHandlerIT {
 
     // Check that the 2 persons were returned.
     var q = FIQLFilterHandler.criteriaQuery(entityManager, "name==person1,name==person3",
-      Person.class, Person.class);
+      Person.class, Person.class, List.of("name"));
 
     List<Person> personList = entityManager.createQuery(q)
       .getResultList();
