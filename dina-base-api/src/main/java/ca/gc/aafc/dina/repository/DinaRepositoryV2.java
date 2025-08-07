@@ -26,7 +26,6 @@ import ca.gc.aafc.dina.exception.ResourcesGoneException;
 import ca.gc.aafc.dina.exception.ResourcesNotFoundException;
 import ca.gc.aafc.dina.filter.DinaFilterArgumentParser;
 import ca.gc.aafc.dina.filter.EntityFilterHelper;
-import ca.gc.aafc.dina.filter.FIQLFilterHandler;
 import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
@@ -41,7 +40,6 @@ import ca.gc.aafc.dina.repository.auditlog.AuditSnapshotRepository;
 import ca.gc.aafc.dina.security.TextHtmlSanitizer;
 import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
-import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.util.ReflectionUtils;
 
@@ -497,7 +495,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
                                List<String> sorts,
                                Set<String> includes, Set<String> relationshipsPath) {
 
-    return ((DefaultDinaService)dinaService).findAll(entityClass,
+    return dinaService.findAll(entityClass,
       fiql, sorts,
       pageOffset, pageLimit, includes, relationshipsPath);
   }

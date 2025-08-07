@@ -7,7 +7,6 @@ import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import ca.gc.aafc.dina.validation.ValidationErrorsHelper;
 
 import java.util.function.Consumer;
-import javax.persistence.TypedQuery;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 

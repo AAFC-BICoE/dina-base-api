@@ -17,8 +17,11 @@ import org.apache.cxf.jaxrs.ext.search.jpa.JPACriteriaQueryVisitor;
  * FIQL query handling
  * <a href="https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00">...</a>
  */
-public class FIQLFilterHandler {
+public final class FIQLFilterHandler {
 
+  private FIQLFilterHandler() {
+    //utility class
+  }
 
   public static <T, E> CriteriaQuery<E> criteriaQuery(EntityManager em, String fiqlQuery,
                                                       Class<T> clazz, Class<E> clazz2,
@@ -33,12 +36,12 @@ public class FIQLFilterHandler {
       JPACriteriaQueryVisitor<T, E> visitor = new JPACriteriaQueryVisitor<>(em, clazz, clazz2);
       condition.accept(visitor);
 
-      if( orderBy != null && !orderBy.isEmpty()) {
+      if (orderBy != null && !orderBy.isEmpty()) {
         EntityType<T> entityType = em.getMetamodel().entity(clazz);
         List<SingularAttribute<T, ?>> orderByClause = new ArrayList<>();
         // JPACriteriaQueryVisitor only supports 1 asc/desc so we only honor the first one
         boolean asc = true;
-        for(String oderByElement : orderBy) {
+        for (String oderByElement : orderBy) {
           asc = !oderByElement.startsWith(EntityFilterHelper.REVERSE_ORDER_PREFIX);
           SingularAttribute<T, String> orderByAttribute =
             (SingularAttribute<T, String>) entityType.getSingularAttribute(
