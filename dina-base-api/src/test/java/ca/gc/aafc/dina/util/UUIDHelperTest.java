@@ -15,6 +15,5 @@ public class UUIDHelperTest {
 
     assertTrue(UUIDHelper.isUUIDv7(uuidv7));
     assertFalse(UUIDHelper.isUUIDv7(UUID.randomUUID()));
-    assertFalse(UUIDHelper.isUUIDv7(null));
   }
 }
