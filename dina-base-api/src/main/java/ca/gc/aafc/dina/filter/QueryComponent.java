@@ -16,7 +16,9 @@ import lombok.Getter;
 public class QueryComponent {
 
   private final FilterComponent filters;
+  private final String fiql;
   private final Set<String> includes;
+  // must be an ordered list
   private final List<String> sorts;
 
   // Sparse fields set where the key is the type

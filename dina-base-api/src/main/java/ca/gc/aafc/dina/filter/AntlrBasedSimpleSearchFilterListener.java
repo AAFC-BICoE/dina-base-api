@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.Getter;
 
 import com.querydsl.core.types.Ops;
 
@@ -24,7 +25,13 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
   private final Map<String, List<String>> fields = new HashMap<>();
   private final List<String> sortAttributes = new ArrayList<>();
 
+  @Getter
+  private String fiql;
+
+  @Getter
   private Integer pageOffset;
+
+  @Getter
   private Integer pageLimit;
 
   @Override
@@ -77,6 +84,11 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
     }
   }
 
+  @Override
+  public void exitFiql(SimpleSearchFilterParser.FiqlContext ctx) {
+    fiql = ctx.fiqlPart().getText();
+  }
+
   /**
    * Comparison operator is optional, this method will return the default operator
    * if absent.
@@ -116,14 +128,6 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
 
   public List<String> getSort() {
     return sortAttributes;
-  }
-
-  public Integer getPageOffset() {
-    return pageOffset;
-  }
-
-  public Integer getPageLimit() {
-    return pageLimit;
   }
 
   public Ops translateOperator(String op) {

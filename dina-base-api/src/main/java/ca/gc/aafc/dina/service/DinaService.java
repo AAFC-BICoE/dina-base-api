@@ -117,6 +117,16 @@ public interface DinaService<E extends DinaEntity> {
     @NonNull Set<String> relationships
   );
 
+  <T> List<T> findAll(
+    Class<T> entityClass,
+    String fiql,
+    List<String> orderBy,
+    int startIndex,
+    int maxResult,
+    @NonNull Set<String> includes,
+    @NonNull Set<String> relationships
+  );
+
   /**
    * Returns the resource count from a given predicate supplier.
    *
