@@ -32,13 +32,19 @@ public class FIQLFilterHandlerIT {
   @BeforeEach
   public void initEmployees() {
     // Persist 5 test People:
-    Person person1 = Person.builder().uuid(UUID.randomUUID()).name("person1").createdOn(CREATION_DATE_TIME).build();
+    Person person1 = Person.builder().uuid(UUID.randomUUID()).name("person1")
+      .room(1).createdOn(CREATION_DATE_TIME).build();
     entityManager.persist(person1);
-    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person2").createdOn(CREATION_DATE_TIME).build());
-    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person3").createdOn(CREATION_DATE_TIME).build());
-    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person4").createdOn(CREATION_DATE_TIME).build());
-    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person5").createdOn(CREATION_DATE_TIME).build());
-    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("anotherperson6").createdOn(CREATION_DATE_TIME).build());
+    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person2")
+      .room(1).createdOn(CREATION_DATE_TIME).build());
+    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person3")
+      .room(2).createdOn(CREATION_DATE_TIME).build());
+    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person4")
+      .room(2).createdOn(CREATION_DATE_TIME).build());
+    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("person5")
+      .room(3).createdOn(CREATION_DATE_TIME).build());
+    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("anotherperson6")
+      .room(3).createdOn(CREATION_DATE_TIME).build());
   }
 
   @Test
@@ -55,6 +61,15 @@ public class FIQLFilterHandlerIT {
     assertEquals(2, personList.size());
     assertEquals("person1", personList.get(0).getName());
     assertEquals("person3", personList.get(1).getName());
+
+    q = FIQLFilterHandler.criteriaQuery(entityManager, "(name==person1,name==person3);room==2",
+      Person.class, Person.class, null);
+
+    personList = entityManager.createQuery(q)
+      .getResultList();
+
+    assertEquals(1, personList.size());
+    assertEquals("person3", personList.getFirst().getName());
   }
 
   @Test
