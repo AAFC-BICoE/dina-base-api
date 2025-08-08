@@ -4,6 +4,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
 
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -95,6 +96,12 @@ public class JsonApiExceptionControllerAdvice {
   }
 
   @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleInvalidDataAccessApiUsageException(InvalidDataAccessApiUsageException ex) {
+    // unwrap the exception
+    return buildBadRequestResponse(ex.getCause());
+  }
+
+  @ExceptionHandler
   public ResponseEntity<JsonApiErrors> handleValidationException(ValidationException ex) {
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
       JsonApiErrors.create().withError(
@@ -124,7 +131,7 @@ public class JsonApiExceptionControllerAdvice {
       errors);
   }
 
-  private static ResponseEntity<JsonApiErrors> buildBadRequestResponse(Exception ex) {
+  private static ResponseEntity<JsonApiErrors> buildBadRequestResponse(Throwable ex) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
       JsonApiErrors.create().withError(
         JsonApiError.create()

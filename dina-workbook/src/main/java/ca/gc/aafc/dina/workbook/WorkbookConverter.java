@@ -47,9 +47,10 @@ public final class WorkbookConverter {
   public static Map<Integer, WorkbookSheet> convertWorkbook(InputStream in) throws IOException {
     Map<Integer, WorkbookSheet> workbookContent = new HashMap<>();
 
-    XSSFWorkbook book = new XSSFWorkbook(in, false);
-    for (int i = 0; i < book.getNumberOfSheets(); i++) {
-      workbookContent.put(i, convertSheet(book, book.getSheetAt(i)));
+    try (XSSFWorkbook book = new XSSFWorkbook(in, false)) {
+      for (int i = 0; i < book.getNumberOfSheets(); i++) {
+        workbookContent.put(i, convertSheet(book, book.getSheetAt(i)));
+      }
     }
     return workbookContent;
   }
@@ -61,8 +62,11 @@ public final class WorkbookConverter {
    * @return list of all rows or an empty list (never null)
    */
   public static WorkbookSheet convertSheet(InputStream in, int sheetNumber) throws IOException {
-    XSSFWorkbook book = new XSSFWorkbook(in, false);
-    return convertSheet(book, book.getSheetAt(sheetNumber));
+    WorkbookSheet workbookSheet;
+    try (XSSFWorkbook book = new XSSFWorkbook(in, false)) {
+      workbookSheet = convertSheet(book, book.getSheetAt(sheetNumber));
+    }
+    return workbookSheet;
   }
 
   /**

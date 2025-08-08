@@ -127,8 +127,8 @@ public class StorageGridLayout {
     }
 
     return switch (fillDirection) {
-      case BY_ROW -> ((rowNumber - 1) * numberOfColumns) + columnNumber;
-      case BY_COLUMN -> ((columnNumber - 1) * numberOfRows) + rowNumber;
+      case BY_ROW -> Math.addExact(Math.multiplyExact(rowNumber - 1, numberOfColumns), columnNumber);
+      case BY_COLUMN -> Math.addExact(Math.multiplyExact(columnNumber - 1, numberOfRows), rowNumber);
     };
   }
 
