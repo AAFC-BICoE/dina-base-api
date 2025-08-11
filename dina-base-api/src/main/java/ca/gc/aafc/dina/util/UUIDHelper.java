@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.util;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import com.fasterxml.uuid.Generators;
@@ -30,9 +31,7 @@ public final class UUIDHelper {
    * @return is provided UUID version 7. If uuid is null false is returned.
    */
   public static boolean isUUIDv7(UUID uuid) {
-    if (uuid == null) {
-      return false;
-    }
+    Objects.requireNonNull(uuid, "UUID must not be null");
     return uuid.version() == 7;
   }
 
