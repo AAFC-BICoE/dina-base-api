@@ -241,6 +241,12 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
       (criteriaBuilder, root, em) -> predicateSupplier.apply(criteriaBuilder, root));
   }
 
+  @Override
+  public <T> Long getResourceCount(@NonNull Class<T> entityClass, @NonNull String fiql) {
+    return baseDAO.createWithEntityManager(
+      entityManager ->
+        FIQLFilterHandler.count(entityManager, fiql, entityClass));
+  }
 
   @Override
   public <T> T findOne(Object naturalId, Class<T> entityClass) {

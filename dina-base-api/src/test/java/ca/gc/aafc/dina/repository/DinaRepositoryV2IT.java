@@ -240,6 +240,7 @@ public class DinaRepositoryV2IT {
       .build();
     resultList = repositoryV2.getAll(qc);
     assertEquals(5, resultList.resourceList().size());
+    assertEquals(5, resultList.totalCount());
     assertEquals("fiql test name 4", resultList.resourceList().getFirst().getDto().getName());
   }
 

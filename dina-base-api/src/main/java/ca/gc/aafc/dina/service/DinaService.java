@@ -152,6 +152,17 @@ public interface DinaService<E extends DinaEntity> {
   );
 
   /**
+   * Returns the resource count from a FIQL string
+   * @param entityClass
+   * @param fiql
+   * @return resource count
+   */
+  <T> Long getResourceCount(
+    @NonNull Class<T> entityClass,
+    @NonNull String fiql
+  );
+
+  /**
    * Check for the existence of a record by natural id.
    */
   boolean exists(Class<?> entityClass, Object naturalId);

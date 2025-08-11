@@ -26,7 +26,7 @@ public final class FIQLFilterHandler {
   public static <T, E> CriteriaQuery<E> criteriaQuery(EntityManager em, String fiqlQuery,
                                                       Class<T> clazz, Class<E> clazz2,
                                                       List<String> orderBy) {
-    // Create parser for your entity type
+    // Create parser for the entity type
     FiqlParser<T> parser = new FiqlParser<>(clazz);
 
     // Parse FIQL string into SearchCondition
@@ -57,4 +57,23 @@ public final class FIQLFilterHandler {
       throw new IllegalArgumentException(ex);
     }
   }
+
+  public static <T> Long count(EntityManager em, String fiqlQuery,
+                                                      Class<T> clazz) {
+
+    // Create parser for the entity type
+    FiqlParser<T> parser = new FiqlParser<>(clazz);
+    // Parse FIQL string into SearchCondition
+    try {
+      SearchCondition<T> condition = parser.parse(fiqlQuery);
+      // Convert to JPA Predicate using a visitor JPACriteriaQueryVisitor
+      JPACriteriaQueryVisitor<T, Long> visitor = new JPACriteriaQueryVisitor<>(em, clazz, Long.class);
+      condition.accept(visitor);
+
+      return visitor.count();
+    } catch (SearchParseException ex) {
+      throw new IllegalArgumentException(ex);
+    }
+  }
+
 }

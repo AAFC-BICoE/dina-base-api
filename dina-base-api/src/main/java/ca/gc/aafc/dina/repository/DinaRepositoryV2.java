@@ -432,9 +432,11 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     int pageOffset = toSafePageOffset(queryComponents.getPageOffset());
     int pageLimit = toSafePageLimit(queryComponents.getPageLimit());
 
-    List<E> entities = queryComponents.getFiql() == null ?
-      loadEntities(queryComponents, pageOffset, pageLimit, includes, relationshipsPath) :
-      loadEntities(queryComponents.getFiql(), pageOffset, pageLimit, queryComponents.getSorts(), includes, relationshipsPath);
+    boolean isFiqlBased = queryComponents.getFiql() != null;
+
+    List<E> entities = isFiqlBased ?
+      loadEntities(queryComponents.getFiql(), pageOffset, pageLimit, queryComponents.getSorts(), includes, relationshipsPath) :
+      loadEntities(queryComponents, pageOffset, pageLimit, includes, relationshipsPath);
 
     List<JsonApiDto<D>> dtos = new ArrayList<>(entities.size());
 
@@ -446,7 +448,9 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
       dtos.add(jsonApiDtoAssistant.toJsonApiDto(dinaMapper.toDto(e, attributes, null), fields, includes));
     }
 
-    Long resourceCount = dinaService.getResourceCount( entityClass,
+    Long resourceCount = isFiqlBased ?
+      dinaService.getResourceCount(entityClass, queryComponents.getFiql()) :
+      dinaService.getResourceCount( entityClass,
       (criteriaBuilder, root, em) -> {
         Predicate restriction = SimpleFilterHandlerV2.createPredicate(root, criteriaBuilder, rsqlArgumentParser::parse, em.getMetamodel(), fc);
         return restriction == null ? null : new Predicate[]{restriction};
