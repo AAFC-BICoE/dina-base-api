@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.service;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.filter.FIQLFilterHandler;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import ca.gc.aafc.dina.validation.ValidationErrorsHelper;
@@ -188,6 +189,26 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
     return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult, hints);
   }
 
+  public <T> List<T> findAll(
+    Class<T> entityClass,
+    String fiql,
+    List<String> orderBy,
+    int startIndex,
+    int maxResult,
+    @NonNull Set<String> includes,
+    @NonNull Set<String> relationships
+  ) {
+
+    CriteriaQuery<T> criteria = baseDAO.createWithEntityManager(
+      entityManager ->
+        FIQLFilterHandler.criteriaQuery(entityManager, fiql, entityClass,
+        entityClass, orderBy));
+
+
+    //Map<String, Object> hints = relationships.isEmpty() ? null : relationshipPathToLoadHints(entityClass, relationships);
+    return baseDAO.resultListFromCriteria(criteria, startIndex, maxResult);
+  }
+
   /**
    * Returns the resource count from a given predicate supplier.
    *
@@ -220,6 +241,12 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
       (criteriaBuilder, root, em) -> predicateSupplier.apply(criteriaBuilder, root));
   }
 
+  @Override
+  public <T> Long getResourceCount(@NonNull Class<T> entityClass, @NonNull String fiql) {
+    return baseDAO.createWithEntityManager(
+      entityManager ->
+        FIQLFilterHandler.count(entityManager, fiql, entityClass));
+  }
 
   @Override
   public <T> T findOne(Object naturalId, Class<T> entityClass) {

@@ -33,7 +33,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.toedter.spring.hateoas.jsonapi.JsonApiConfiguration;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
-import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
@@ -211,6 +210,38 @@ public class DinaRepositoryV2IT {
     resultList = repositoryV2.getAll(qc);
     assertEquals(byRoom.getFirst(), resultList.resourceList().getFirst().getDto().getName());
     assertEquals(byRoom.size(), resultList.totalCount());
+  }
+
+  @Test
+  public void findAll_fiqlFilter_returnExpectedRecord() {
+
+    for (int i = 0; i < 5; i++) {
+      personService.create(Person.builder()
+        .name("fiql test name " + i)
+        .room(i)
+        .build());
+    }
+
+    personService.create(Person.builder()
+      .name("test name A")
+      .room(6)
+      .build());
+
+    // fiql
+    QueryComponent qc = QueryComponent.builder().fiql("(name==fiql test name 2),(name==fiql test name 4)")
+      .sorts(List.of("-name"))
+      .build();
+    DinaRepositoryV2.PagedResource<JsonApiDto<PersonDTO>> resultList = repositoryV2.getAll(qc);
+    assertEquals(2, resultList.resourceList().size());
+    assertEquals("fiql test name 4", resultList.resourceList().getFirst().getDto().getName());
+
+    qc = QueryComponent.builder().fiql("name==fiql*")
+      .sorts(List.of("-name"))
+      .build();
+    resultList = repositoryV2.getAll(qc);
+    assertEquals(5, resultList.resourceList().size());
+    assertEquals(5, resultList.totalCount());
+    assertEquals("fiql test name 4", resultList.resourceList().getFirst().getDto().getName());
   }
 
   @Test

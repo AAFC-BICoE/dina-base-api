@@ -116,4 +116,32 @@ public class AntlrGrammarTest {
     assertEquals("metadata", ((FilterExpression)fg.getComponents().getFirst()).value());
     assertEquals(Ops.EQ, ((FilterExpression)fg.getComponents().getFirst()).operator());
   }
+
+  @Test
+  public void onFiql_fiqlStringReturned() {
+    String fiql = "updated=lt=2005-01-01T00:00:00Z,updated=lt=2005-01-03T00:00:00Z";
+    String sort = "sort=title";
+    String queryStr = "fiql=" + fiql + "&"+sort;
+
+    QueryComponent queryComponent = QueryStringParser.parse(queryStr);
+    assertEquals(fiql, queryComponent.getFiql());
+    assertEquals("title", queryComponent.getSorts().getFirst());
+
+    fiql = "name==jim*";
+    queryStr = "fiql=" + fiql;
+    queryComponent = QueryStringParser.parse(queryStr);
+    assertEquals(fiql, queryComponent.getFiql());
+
+    fiql = "(email==*test*;displayName==*user 1*),displayName==test user 2";
+    queryStr = "fiql=" + fiql;
+    queryComponent = QueryStringParser.parse(queryStr);
+    assertEquals(fiql, queryComponent.getFiql());
+
+    fiql = "email!=test";
+    queryStr = "fiql=" + fiql;
+    queryComponent = QueryStringParser.parse(queryStr);
+    assertEquals(fiql, queryComponent.getFiql());
+
+  }
+
 }
