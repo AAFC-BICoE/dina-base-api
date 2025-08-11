@@ -57,6 +57,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import javax.persistence.criteria.Predicate;
 import javax.servlet.http.HttpServletRequest;
 import lombok.NonNull;
@@ -232,7 +233,6 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
     JsonApiDto<D> jsonApiDto = getOne(id, queryString, includePermission);
     JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(jsonApiDto);
-
     return ResponseEntity.ok(builder.build());
   }
 
@@ -334,6 +334,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
     // reload dto
     JsonApiDto<D> jsonApiDto = getOne(partialPatchDto.getId(), null);
+
     JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(jsonApiDto);
 
     return ResponseEntity.ok().body(builder.build());
@@ -640,52 +641,81 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
     for (var relationship : relationships.entrySet()) {
       String relName = relationship.getKey();
-
-      // get information about the relationship
-      DinaMappingRegistry.InternalRelation relation = registry.getInternalRelation(entityClass, relName);
-      if (relation == null) {
-        throw new IllegalArgumentException("Unknown relationship [" + relName + "]");
+      try {
+        if (registry.isInternalRelationship(entityClass, relName)) {
+          updateRelationship(entity, relName, relationship.getValue());
+        } else if (registry.isRelationExternal(entityClass, relName)) {
+          updateExternalRelationship(entity, relName, relationship.getValue());
+        } else {
+          throw new IllegalArgumentException("Unknown relationship [" + relName + "]");
+        }
+      } catch (InvocationTargetException | IllegalAccessException e) {
+        throw new RuntimeException(e);
       }
+    }
+  }
 
-      JsonApiDocument.RelationshipObject relObject = relationship.getValue();
-      // we are keeping a (or a list of) Hibernate reference to the relationship instead of a complete object.
-      Object relationshipsReference;
+  private void updateRelationship(E entity, String relationshipName,
+                                          JsonApiDocument.RelationshipObject relationshipObj)
+      throws InvocationTargetException, IllegalAccessException {
 
-      if (!relObject.isNull()) {
-        // to-many
-        if (relObject.isCollection()) {
-          List<Object> relationshipsReferences = new ArrayList<>();
-          for (Object el : relObject.getDataAsCollection()) {
-            var resourceIdentifier = toResourceIdentifier(el);
-            if (resourceIdentifier != null) {
-              relationshipsReferences.add(
-                dinaService.getReferenceByNaturalId(relation.getEntityType(),
-                  resourceIdentifier.getId()));
-            } else {
-              log.warn("Can't convert to ResourceIdentifier list element, ignoring");
-              return;
-            }
-          }
-          relationshipsReference = relationshipsReferences;
-        } else { // to-one
-          var resourceIdentifier = toResourceIdentifier(relObject.getData());
+    // get information about the relationship
+    DinaMappingRegistry.InternalRelation relation = registry.getInternalRelation(entityClass, relationshipName);
+
+    // we are keeping a (or a list of) Hibernate reference to the relationship instead of a complete object.
+    Object relationshipsReference;
+
+    if (!relationshipObj.isNull()) {
+      // to-many
+      if (relationshipObj.isCollection()) {
+        List<Object> relationshipsReferences = new ArrayList<>();
+        for (Object el : relationshipObj.getDataAsCollection()) {
+          var resourceIdentifier = toResourceIdentifier(el);
           if (resourceIdentifier != null) {
-            relationshipsReference = dinaService.getReferenceByNaturalId(relation.getEntityType(),
-              resourceIdentifier.getId());
+            relationshipsReferences.add(
+              dinaService.getReferenceByNaturalId(relation.getEntityType(),
+                resourceIdentifier.getId()));
           } else {
-            log.warn("Can't convert to ResourceIdentifier, ignoring");
+            log.warn("Can't convert to ResourceIdentifier list element, ignoring");
             return;
           }
         }
-      } else {
-        // remove relationship
-        relationshipsReference = null;
+        relationshipsReference = relationshipsReferences;
+      } else { // to-one
+        var resourceIdentifier = toResourceIdentifier(relationshipObj.getData());
+        if (resourceIdentifier != null) {
+          relationshipsReference = dinaService.getReferenceByNaturalId(relation.getEntityType(),
+            resourceIdentifier.getId());
+        } else {
+          log.warn("Can't convert to ResourceIdentifier, ignoring");
+          return;
+        }
       }
+    } else {
+      // remove relationship
+      relationshipsReference = null;
+    }
+    ReflectionUtils.getSetterMethod(relationshipName, entityClass).invoke(entity, relationshipsReference);
+  }
 
-      try {
-        ReflectionUtils.getSetterMethod(relName, entityClass).invoke(entity, relationshipsReference);
-      } catch (IllegalAccessException | InvocationTargetException e) {
-        throw new RuntimeException(e);
+  private void updateExternalRelationship(E entity, String relationshipName,
+                                          JsonApiDocument.RelationshipObject relationshipObj)
+      throws InvocationTargetException, IllegalAccessException {
+
+    if (registry.isRelationExternal(resourceClass, relationshipName)) {
+      if (relationshipObj.getData() == null) {
+        ReflectionUtils.getSetterMethod(relationshipName, entityClass)
+          .invoke(entity, (Object) null);
+      } else if (relationshipObj.isCollection()) { // to-many
+        // Collection is always a list of uuids
+        ReflectionUtils.getSetterMethod(relationshipName, entityClass)
+          .invoke(entity,
+            relationshipObj.getDataAsCollection().stream()
+              .map(r -> toResourceIdentifier(r).getId())
+              .collect(Collectors.toList()));
+      } else { // to-one
+        ReflectionUtils.getSetterMethod(relationshipName, entityClass)
+          .invoke(entity, toResourceIdentifier(relationshipObj.getData()).getId());
       }
     }
   }
