@@ -22,7 +22,7 @@ namePart: (LETTERS|UNDERSCORE)+ (LETTERS | INT | UNDERSCORE | DOT)*;
 
 propertyName: namePart;
 fieldName: namePart;
-fiqlPart: (COMMA | SEMI | attributeAcceptedValue | EQUALS | ASTERISK)+;
+fiqlPart: (COMMA | SEMI | PARENTHESIS | attributeAcceptedValue | EXCL | EQUALS | ASTERISK)+;
 
 // sort property can start with a dash to indicate descending
 sortPropertyName: (DASH)? namePart;
@@ -51,12 +51,13 @@ DASH: [-];
 DOT: [.];
 FORWARD_SLASH: [/];
 SPACE: [ ];
-PERCENTAGE: [%];
 PARENTHESIS: [()];
+PERCENTAGE: '%';
 ASTERISK: '*';
 COLON: ':';
 COMMA: ',';
 SEMI: ';';
+EXCL: '!';
 EQUALS: '=';
 
 WS: [\t\r\n]+ -> skip; // Skip whitespace

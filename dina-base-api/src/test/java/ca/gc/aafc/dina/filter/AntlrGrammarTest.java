@@ -131,6 +131,17 @@ public class AntlrGrammarTest {
     queryStr = "fiql=" + fiql;
     queryComponent = QueryStringParser.parse(queryStr);
     assertEquals(fiql, queryComponent.getFiql());
+
+    fiql = "(email==*test*;displayName==*user 1*),displayName==test user 2";
+    queryStr = "fiql=" + fiql;
+    queryComponent = QueryStringParser.parse(queryStr);
+    assertEquals(fiql, queryComponent.getFiql());
+
+    fiql = "email!=test";
+    queryStr = "fiql=" + fiql;
+    queryComponent = QueryStringParser.parse(queryStr);
+    assertEquals(fiql, queryComponent.getFiql());
+
   }
 
 }
