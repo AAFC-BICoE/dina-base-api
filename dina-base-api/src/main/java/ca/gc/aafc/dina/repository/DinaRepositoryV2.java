@@ -450,11 +450,13 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
     Long resourceCount = isFiqlBased ?
       dinaService.getResourceCount(entityClass, queryComponents.getFiql()) :
-      dinaService.getResourceCount( entityClass,
-      (criteriaBuilder, root, em) -> {
-        Predicate restriction = SimpleFilterHandlerV2.createPredicate(root, criteriaBuilder, rsqlArgumentParser::parse, em.getMetamodel(), fc);
-        return restriction == null ? null : new Predicate[]{restriction};
-      });
+      dinaService.getResourceCount(entityClass,
+        (criteriaBuilder, root, em) -> {
+          Predicate restriction =
+            SimpleFilterHandlerV2.createPredicate(root, criteriaBuilder, rsqlArgumentParser::parse,
+              em.getMetamodel(), fc);
+          return restriction == null ? null : new Predicate[] {restriction};
+        });
 
     return new PagedResource<>(pageOffset, pageLimit, resourceCount.intValue(), dtos);
   }
