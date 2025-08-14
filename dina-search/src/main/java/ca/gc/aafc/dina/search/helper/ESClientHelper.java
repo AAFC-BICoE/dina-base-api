@@ -26,7 +26,7 @@ public final class ESClientHelper {
    *
    */
   public static String openPointInTime(ElasticsearchClient client, String indexName) throws
-    IOException {
+      IOException {
     // create the PIT
     OpenPointInTimeResponse opitResponse =
       client.openPointInTime(b -> b.index(indexName).keepAlive(KEEP_ALIVE));
@@ -34,7 +34,7 @@ public final class ESClientHelper {
   }
 
   public static String openPointInTime(ElasticsearchClient client, List<String> indices) throws
-    IOException {
+      IOException {
     // create the PIT
     OpenPointInTimeResponse opitResponse =
       client.openPointInTime(b -> b.index(indices).keepAlive(KEEP_ALIVE));
