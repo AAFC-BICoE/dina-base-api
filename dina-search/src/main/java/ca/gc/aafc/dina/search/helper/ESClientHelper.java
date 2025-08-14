@@ -7,6 +7,7 @@ import co.elastic.clients.elasticsearch.core.ClosePointInTimeResponse;
 import co.elastic.clients.elasticsearch.core.OpenPointInTimeResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Utility functions for Elasticsearch Client.
@@ -29,6 +30,14 @@ public final class ESClientHelper {
     // create the PIT
     OpenPointInTimeResponse opitResponse =
       client.openPointInTime(b -> b.index(indexName).keepAlive(KEEP_ALIVE));
+    return opitResponse.id();
+  }
+
+  public static String openPointInTime(ElasticsearchClient client, List<String> indices) throws
+    IOException {
+    // create the PIT
+    OpenPointInTimeResponse opitResponse =
+      client.openPointInTime(b -> b.index(indices).keepAlive(KEEP_ALIVE));
     return opitResponse.id();
   }
 
