@@ -36,7 +36,7 @@
 
     <commons-io.version>2.19.0</commons-io.version>
     <commons-csv.version>1.14.0</commons-csv.version>
-    <apache-cxf.version>3.6.9</apache-cxf.version>
+    <apache-cxf.version>3.6.8</apache-cxf.version>
 
     <java-uuid-generator.version>4.3.0</java-uuid-generator.version>
     <spring-hateoas-jsonapi.version>1.6.0</spring-hateoas-jsonapi.version>
