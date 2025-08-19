@@ -40,7 +40,6 @@
         <notes>Not applicable</notes>
         <cve>CVE-2025-22228</cve>
     </suppress>
-
     <suppress>
         <notes>Keycloak Server related</notes>
         <cve>CVE-2023-6787</cve>
@@ -49,5 +48,8 @@
         <notes>Keycloak Server related</notes>
         <cve>CVE-2024-1132</cve>
     </suppress>
-
+    <suppress>
+        <notes>Not applicable</notes>
+        <cve>CVE-2025-41242</cve>
+    </suppress>
 </suppressions>
