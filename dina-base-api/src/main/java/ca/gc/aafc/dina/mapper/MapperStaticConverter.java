@@ -6,6 +6,7 @@ import java.util.UUID;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 
 /**
+ * MapStruct utility class
  * Usage:
  * On class @Mapper( imports = MapperStaticConverter.class)
  *
@@ -18,17 +19,17 @@ public final class MapperStaticConverter {
     // Utility class
   }
 
-  public static ExternalRelationDto uuidToExternalRelation(UUID personUUID, String type) {
-    if (personUUID == null) {
+  public static ExternalRelationDto uuidToExternalRelation(UUID uuid, String type) {
+    if (uuid == null) {
       return null;
     }
-    return ExternalRelationDto.builder().id(personUUID.toString()).type(type).build();
+    return ExternalRelationDto.builder().id(uuid.toString()).type(type).build();
   }
 
-  public static List<ExternalRelationDto> uuidListToExternalRelationsList(List<UUID> metadataUUIDs,
+  public static List<ExternalRelationDto> uuidListToExternalRelationsList(List<UUID> uuids,
                                                                           String type) {
-    return metadataUUIDs == null ? null :
-      metadataUUIDs.stream().map(uuid ->
+    return uuids == null ? null :
+      uuids.stream().map(uuid ->
         ExternalRelationDto.builder().id(uuid.toString()).type(type).build()).toList();
   }
 
