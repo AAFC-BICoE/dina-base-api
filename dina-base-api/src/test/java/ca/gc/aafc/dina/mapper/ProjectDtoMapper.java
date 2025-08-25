@@ -19,14 +19,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-@Mapper
+@Mapper( imports = MapperStaticConverter.class)
 public interface ProjectDtoMapper extends DinaMapperV2<ProjectDTO, Project> {
 
   ProjectDtoMapper INSTANCE = Mappers.getMapper( ProjectDtoMapper.class );
 
-  @Mapping(source = "acMetaDataCreator", target = "acMetaDataCreator", qualifiedByName = "uuidToPersonExternalRelation")
-  @Mapping(source = "originalAuthor", target = "originalAuthor", qualifiedByName = "uuidToPersonExternalRelation")
-  @Mapping(source = "authors", target = "authors", qualifiedByName = "uuidListToPersonExternalRelation")
+  @Mapping(target = "acMetaDataCreator", expression = "java(MapperStaticConverter.uuidToExternalRelation(entity.getAcMetaDataCreator(), \"person\"))")
+  @Mapping(target = "originalAuthor", expression = "java(MapperStaticConverter.uuidToExternalRelation(entity.getOriginalAuthor(), \"person\"))")
+  @Mapping(target = "authors", expression = "java(MapperStaticConverter.uuidListToExternalRelationsList(entity.getAuthors(), \"person\"))")
   @Mapping(target = "randomPeople", ignore = true)
   ProjectDTO toDto(Project entity, @Context Set<String> provided, @Context String scope);
 
@@ -53,16 +53,5 @@ public interface ProjectDtoMapper extends DinaMapperV2<ProjectDTO, Project> {
   // Relationships handling
   Task toTaskEntity(TaskDTO dto, Set<String> provided, String scope);
   TaskDTO toTaskDto(Task entity, Set<String> provided, String scope);
-
-  @Named("uuidListToPersonExternalRelation")
-  static List<ExternalRelationDto> uuidListToPersonExternalRelation(List<UUID> personUUID) {
-    if (personUUID == null) {
-      return null;
-    }
-
-    return personUUID.stream().map(p -> ExternalRelationDto.builder()
-        .id(p.toString()).type("person").build())
-      .toList();
-  }
 
 }

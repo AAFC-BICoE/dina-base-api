@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Condition;
 import org.mapstruct.Context;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.Named;
 import org.mapstruct.SourcePropertyName;
 
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
@@ -114,19 +113,5 @@ public interface DinaMapperV2<D, E> {
     }
     // dealing with nested objects
     return provided.contains(scope + "." + sourcePropertyName);
-  }
-
-  /**
-   * Used to map UUID of type person to {@link ExternalRelationDto} for all legacy classes.
-   * Usage: @Mapping(source = "agent", target = "agent", qualifiedByName = "uuidToPersonExternalRelation")
-   * @param personUUID
-   * @return
-   */
-  @Named("uuidToPersonExternalRelation")
-  static ExternalRelationDto uuidToPersonExternalRelation(UUID personUUID) {
-    if (personUUID == null) {
-      return null;
-    }
-    return ExternalRelationDto.builder().id(personUUID.toString()).type("person").build();
   }
 }
