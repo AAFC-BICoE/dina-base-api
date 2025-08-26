@@ -2,13 +2,15 @@ grammar SimpleSearchFilter;
 
 simpleFilter: expression ( '&' expression )*;
 
-expression: filter | fiql | fields | sort | page | include;
+expression: filter | fiql | fields | optFields | sort | page | include;
 
 filter: 'filter' '[' propertyName ']'( '[' comparison ']' )? '=' attributeValue (',' attributeValue)*;
 
 fiql: 'fiql' '=' fiqlPart;
 
-fields: 'fields' '[' fieldName ']' '=' propertyName ( ',' propertyName )*;
+fields: 'fields' '[' type ']' '=' propertyName ( ',' propertyName )*;
+
+optFields: 'optfields' '[' type ']' '=' propertyName ( ',' propertyName )*;
 
 sort: 'sort' '=' sortPropertyName ( ',' sortPropertyName )*;
 
@@ -22,6 +24,7 @@ namePart: (LETTERS|UNDERSCORE)+ (LETTERS | INT | UNDERSCORE | DOT)*;
 
 propertyName: namePart;
 fieldName: namePart;
+type: (LETTERS|UNDERSCORE)+ (LETTERS | INT | UNDERSCORE)*;
 fiqlPart: (COMMA | SEMI | PARENTHESIS | attributeAcceptedValue | EXCL | EQUALS | ASTERISK)+;
 
 // sort property can start with a dash to indicate descending

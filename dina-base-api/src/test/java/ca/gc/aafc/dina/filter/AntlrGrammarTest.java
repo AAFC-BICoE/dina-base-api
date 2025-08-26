@@ -33,6 +33,16 @@ public class AntlrGrammarTest {
   }
 
   @Test
+  public void onOptionalField_structureReturned() {
+    String content =
+      "filter[type][EQ]=metadata&filter[name][EQ]=drawing.png&optfields[metadata]=md5";
+
+    QueryComponent queryComponent = QueryStringParser.parse(content);
+    List<String> optFields = queryComponent.getOptionalFields().get("metadata");
+    assertTrue(optFields.contains("md5"));
+  }
+
+  @Test
   public void onFilterAsString_structureReturned() {
     String content =
       "filter[name][EQ]=2&filter[position][NEQ]=manager,supervisor&sort=position,-name&page[offset]=5&page[limit]=1&include=author.name";
@@ -142,6 +152,10 @@ public class AntlrGrammarTest {
     queryComponent = QueryStringParser.parse(queryStr);
     assertEquals(fiql, queryComponent.getFiql());
 
+    fiql = "(fileExtension==.jpg,fileExtension==.jpeg);bucket==cnc";
+    queryStr = "fiql=" + fiql;
+    queryComponent = QueryStringParser.parse(queryStr);
+    assertEquals(fiql, queryComponent.getFiql());
   }
 
 }
