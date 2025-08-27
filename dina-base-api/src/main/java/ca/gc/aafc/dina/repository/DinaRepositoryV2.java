@@ -77,7 +77,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
   // default page limit/page size
   private static final int DEFAULT_PAGE_LIMIT = 20;
-  private static final int MAX_PAGE_LIMIT = 100;
+  private static final int MAX_PAGE_LIMIT = 1000;
 
   private final DinaAuthorizationService authorizationService;
   private final AuditService auditService;
