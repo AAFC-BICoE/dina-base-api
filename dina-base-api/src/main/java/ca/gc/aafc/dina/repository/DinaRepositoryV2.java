@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.repository;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -392,6 +393,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     QueryComponent queryComponents = QueryStringParser.parse(queryString);
     Set<String> includes = queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of();
     Map<String, List<String>> fields = queryComponents.getFields();
+    Map<String, List<String>> optionalFields = queryComponents.getOptionalFields();
 
     validateIncludes(includes);
 
@@ -401,6 +403,10 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     handleEntityAuditExceptions(entity, identifier);
 
     authorizationService.authorizeRead(entity);
+
+    if (MapUtils.isNotEmpty(optionalFields)) {
+      dinaService.handleOptionalFields(entity, optionalFields);
+    }
 
     Set<String> attributes = new HashSet<>(registry.getAttributesPerClass().get(entityClass));
     attributes.addAll(includes);
@@ -428,6 +434,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     Set<String> relationshipsPath = EntityFilterHelper.extractRelationships(queryComponents.getIncludes(), resourceClass, registry);
     Set<String> includes = queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of();
     Map<String, List<String>> fields = queryComponents.getFields();
+    Map<String, List<String>> optionalFields = queryComponents.getOptionalFields();
 
     validateIncludes(includes);
     int pageOffset = toSafePageOffset(queryComponents.getPageOffset());
@@ -446,6 +453,9 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     addNestedAttributesFromIncludes(attributes, includes);
 
     for (E e : entities) {
+      if (MapUtils.isNotEmpty(optionalFields)) {
+        dinaService.handleOptionalFields(e, optionalFields);
+      }
       dtos.add(jsonApiDtoAssistant.toJsonApiDto(dinaMapper.toDto(e, attributes, null), fields, includes));
     }
 

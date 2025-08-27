@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.service;
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.jpa.PredicateSupplier;
 
+import java.util.Map;
 import java.util.function.Consumer;
 import lombok.NonNull;
 
@@ -66,6 +67,14 @@ public interface DinaService<E extends DinaEntity> {
    * @return the matched entity or null if not found
    */
   <T> T findOne(Object naturalId, Class<T> entityClass, Set<String> relationships);
+
+  /**
+   * Called after findOne or findAll to load optional fields
+   * @param entity
+   * @param optionalFields optionalFields optional field to load (by type)
+   * @return provided entity with optional field loaded (if supported)
+   */
+  E handleOptionalFields(E entity, Map<String, List<String>> optionalFields);
 
   /**
    * Returns a reference to an entity that should exist without actually loading it. Useful to set

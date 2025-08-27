@@ -55,6 +55,7 @@ public final class QueryStringParser {
       .filters(listener.buildFilterComponent())
       .fiql(listener.getFiql())
       .fields(listener.getFields())
+      .optionalFields(listener.getOptFields())
       .includes(listener.getInclude() != null ? Set.copyOf(listener.getInclude()) : null)
       .sorts(listener.getSort())
       .pageLimit(listener.getPageLimit())

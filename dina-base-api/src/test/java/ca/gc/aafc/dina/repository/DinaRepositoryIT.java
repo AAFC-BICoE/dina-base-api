@@ -51,6 +51,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class DinaRepositoryIT {
 
+  public static final String EXPENSIVE_VALUE_TO_COMPUTE = "$$$$";
+
   @Inject
   private DinaRepository<PersonDTO, Person> dinaRepository;
 
@@ -681,6 +683,14 @@ public class DinaRepositoryIT {
     protected void preCreate(Person entity) {
       entity.setUuid(UUID.randomUUID());
       entity.setGroup(standardizeGroupName(entity));
+    }
+
+    @Override
+    public Person handleOptionalFields(Person entity, Map<String, List<String>> optionalFields) {
+      if(optionalFields.getOrDefault(PersonDTO.TYPE_NAME, List.of()).contains("expensiveToCompute")){
+        entity.setExpensiveToCompute(EXPENSIVE_VALUE_TO_COMPUTE);
+      }
+      return entity;
     }
   }
 }

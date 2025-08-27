@@ -23,6 +23,7 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
   private final List<FilterComponent> components = new ArrayList<>();
   private final List<String> includes = new ArrayList<>();
   private final Map<String, List<String>> fields = new HashMap<>();
+  private final Map<String, List<String>> optFields = new HashMap<>();
   private final List<String> sortAttributes = new ArrayList<>();
 
   @Getter
@@ -77,7 +78,16 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
 
   @Override
   public void exitFields(SimpleSearchFilterParser.FieldsContext ctx) {
-    List<String> fieldsForType = fields.computeIfAbsent(ctx.fieldName().getText(),
+    List<String> fieldsForType = fields.computeIfAbsent(ctx.type().getText(),
+      k -> new ArrayList<>());
+    for (var property : ctx.propertyName()) {
+      fieldsForType.add(property.getText());
+    }
+  }
+
+  @Override
+  public void exitOptFields(SimpleSearchFilterParser.OptFieldsContext ctx) {
+    List<String> fieldsForType = optFields.computeIfAbsent(ctx.type().getText(),
       k -> new ArrayList<>());
     for (var property : ctx.propertyName()) {
       fieldsForType.add(property.getText());
@@ -120,6 +130,10 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
 
   public Map<String, List<String>> getFields() {
     return fields;
+  }
+
+  public Map<String, List<String>> getOptFields() {
+    return optFields;
   }
 
   public List<String> getInclude() {

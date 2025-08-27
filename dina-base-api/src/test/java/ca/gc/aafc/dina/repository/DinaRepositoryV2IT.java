@@ -163,6 +163,25 @@ public class DinaRepositoryV2IT {
   }
 
   @Test
+  public void findOne_onOptionalFields_fieldsIncluded() throws Exception {
+
+    Person person = personService.create(Person.builder()
+      .name(TestableEntityFactory.generateRandomNameLettersOnly(11))
+      .room(39)
+      .build());
+
+    var getResponse = mockMvc.perform(
+        get("/" + RepoV2TestConfig.PATH + "/" + person.getUuid() +
+          "?optfields[person]=expensiveToCompute")
+          .contentType(JSON_API_VALUE)
+      )
+      .andExpect(status().isOk())
+      .andReturn();
+
+    assertTrue(getResponse.getResponse().getContentAsString().contains(DinaRepositoryIT.EXPENSIVE_VALUE_TO_COMPUTE));
+  }
+
+  @Test
   public void findAll_SortingByName_ReturnsSortedCaseSensitiveOrNot() {
 
     List<String> shuffledNames = Arrays.asList("b", "a", "d", "C");

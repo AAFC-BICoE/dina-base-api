@@ -24,6 +24,9 @@ public class QueryComponent {
   // Sparse fields set where the key is the type
   private final Map<String, List<String>> fields;
 
+  // List of optional fields where the key is the type
+  private final Map<String, List<String>> optionalFields;
+
   private final Integer pageOffset;
   private final Integer pageLimit;
 
