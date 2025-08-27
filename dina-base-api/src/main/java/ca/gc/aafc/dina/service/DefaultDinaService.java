@@ -256,7 +256,17 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
   @Override
   public <T> T findOne(Object naturalId, Class<T> entityClass, Set<String> relationships) {
     Map<String, Object> hints = relationships.isEmpty() ? null : relationshipPathToLoadHints(entityClass, relationships);
+
     return baseDAO.findOneByNaturalId(naturalId, entityClass, hints);
+  }
+
+  /**
+   * Override this method to handle optional fields
+   * @param entity
+   * @return
+   */
+  public E handleOptionalFields(E entity, Map<String, List<String>> optionalFields) {
+    return entity;
   }
 
   /**
