@@ -184,6 +184,7 @@ public class BaseRestAssuredTest {
   }
 
   /**
+   * @deprecated to be removed
    * Send a PATCH to the Crnk Operation endpoint.
    * Operation requires all entries to have an id even for POST to uniquely identify them.
    * The id assigned to POST can be any values, it will be changed by the backend.
