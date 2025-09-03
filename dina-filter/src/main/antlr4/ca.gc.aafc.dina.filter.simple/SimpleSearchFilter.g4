@@ -24,7 +24,7 @@ namePart: (LETTERS|UNDERSCORE)+ (LETTERS | INT | UNDERSCORE | DOT)*;
 
 propertyName: namePart;
 fieldName: namePart;
-type: (LETTERS|UNDERSCORE)+ (LETTERS | INT | UNDERSCORE)*;
+type: (LETTERS|UNDERSCORE)+ (LETTERS | INT | UNDERSCORE | DASH)*;
 fiqlPart: (COMMA | SEMI | PARENTHESIS | attributeAcceptedValue | EXCL | EQUALS | ASTERISK)+;
 
 // sort property can start with a dash to indicate descending
@@ -50,7 +50,7 @@ QUOTED_STRING: '"' (~["])* '"';
 INT: [0-9]+;
 LETTERS: [a-zA-Z]+;
 UNDERSCORE: [_];
-DASH: [-];
+DASH: '-';
 DOT: [.];
 FORWARD_SLASH: [/];
 SPACE: [ ];
