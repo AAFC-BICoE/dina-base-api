@@ -35,10 +35,10 @@ public class AntlrGrammarTest {
   @Test
   public void onOptionalField_structureReturned() {
     String content =
-      "filter[type][EQ]=metadata&filter[name][EQ]=drawing.png&optfields[metadata]=md5";
+      "filter[type][EQ]=metadata&filter[name][EQ]=drawing.png&optfields[my-metadata]=md5";
 
     QueryComponent queryComponent = QueryStringParser.parse(content);
-    List<String> optFields = queryComponent.getOptionalFields().get("metadata");
+    List<String> optFields = queryComponent.getOptionalFields().get("my-metadata");
     assertTrue(optFields.contains("md5"));
   }
 
