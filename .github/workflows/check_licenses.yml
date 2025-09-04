@@ -21,4 +21,4 @@ jobs:
         uses: apache/skywalking-eyes/dependency@main
         with:
           config: .licenserc.yaml
-          log-level: debug
+          log: debug
