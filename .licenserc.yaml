@@ -8,3 +8,9 @@ dependency:
       license: Apache-2.0
     - name: com.fasterxml.jackson.datatype:jackson-datatype-jsr310
       license: Apache-2.0
+    - name: com.fasterxml.jackson.module:jackson-module-parameter-names
+      license: Apache-2.0
+    - name: org.keycloak:keycloak-spring-boot-starter
+      license: Apache-2.0
+    - name: org.keycloak:spring-boot-container-bundle
+      license: Apache-2.0
