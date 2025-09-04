@@ -17,8 +17,14 @@ jobs:
         with:
          distribution: temurin
          java-version: '21'
+      - name: List dependencies (resolve)
+        uses: apache/skywalking-eyes/dependency@v0
+        with:
+          log: debug
+          mode: resolve
+          config: ${{ github.workspace }}/.licenserc.yaml
       - name: Check Dependencies' License
         uses: apache/skywalking-eyes/dependency@main
         with:
-          config: .licenserc.yaml
           log: debug
+          config: ${{ github.workspace }}/.licenserc.yaml
