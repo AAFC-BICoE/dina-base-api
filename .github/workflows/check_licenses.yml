@@ -16,3 +16,8 @@ jobs:
          java-version: '21'
       - name: Check Dependencies' License
         uses: apache/skywalking-eyes/dependency@main
+        with:
+          # Ensure the action scans the repo (not the action's own dir)
+          path: ${{ github.workspace }}
+          config: .licenserc.yaml
+          log-level: debug
