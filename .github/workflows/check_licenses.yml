@@ -12,6 +12,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Graphviz (required to compile for now)
+        uses: ts-graphviz/setup-graphviz@v1
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
