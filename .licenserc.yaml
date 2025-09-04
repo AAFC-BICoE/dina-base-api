@@ -14,3 +14,7 @@ dependency:
       license: Apache-2.0
     - name: org.keycloak:spring-boot-container-bundle
       license: Apache-2.0
+    - name: org.slf4j:jul-to-slf4j
+      license: MIT
+    - name: org.slf4j:slf4j-api 
+      license: MIT
