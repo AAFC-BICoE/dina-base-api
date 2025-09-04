@@ -2,6 +2,9 @@ name: Check Dependencies' License
 
 on: [push]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,7 +20,5 @@ jobs:
       - name: Check Dependencies' License
         uses: apache/skywalking-eyes/dependency@main
         with:
-          # Ensure the action scans the repo (not the action's own dir)
-          path: ${{ github.workspace }}
           config: .licenserc.yaml
           log-level: debug
