@@ -57,6 +57,9 @@ public class DinaRepositoryIT {
   private DinaRepository<PersonDTO, Person> dinaRepository;
 
   @Inject
+  private DinaPersonService personService;
+
+  @Inject
   private DinaRepository<DepartmentDto, Department> departmentRepository;
 
   @Inject
@@ -556,6 +559,45 @@ public class DinaRepositoryIT {
 
     personDTO.setDepartment(deptDTO);
     dinaRepository.create(personDTO);
+  }
+
+  @Test
+  public void savingEntityWithoutLoadingLazyRelationship_shouldMaintainRelationship() {
+    // Create a department
+    Department department = createDepartment("name", "location");
+    baseDAO.create(department);
+
+    // Create a person and associate them with the department
+    PersonDTO personDto = PersonDTO.builder()
+            .name("personName1")
+            .department(DepartmentDto.builder().uuid(department.getUuid()).build())
+            .build();
+    personDto = dinaRepository.create(personDto);
+
+    // Fetch the person with the department relationship included
+    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+    querySpec.setIncludedRelations(createIncludeRelationSpecs("department"));
+    PersonDTO foundPerson = dinaRepository.findOne(personDto.getUuid(), querySpec);
+
+    // Assert that the department relationship was set correctly
+    assertEquals(department.getUuid(), foundPerson.getDepartment().getUuid());
+
+    // Flush the cache to mimic what the SPI would do (we would get the update in another request)
+    Person p = personService.findOne(personDto.getUuid(), Person.class);
+    personService.detach(p.getDepartment());
+    personService.detach(p);
+
+    // Reload with no relationship since we don't want to touch it
+    foundPerson = dinaRepository.findOne(personDto.getUuid(), new QuerySpec(PersonDTO.class));
+
+    // Update the name of the person only and save
+    foundPerson.setName("personName2");
+    dinaRepository.save(foundPerson);
+
+    // Fetch the person again and assert that the department relationship was maintained
+    PersonDTO foundUpdatedPerson = dinaRepository.findOne(personDto.getUuid(), querySpec);
+    assertEquals(department.getUuid(), foundUpdatedPerson.getDepartment().getUuid());
+    assertEquals("personName2", foundUpdatedPerson.getName());
   }
 
   @Test
