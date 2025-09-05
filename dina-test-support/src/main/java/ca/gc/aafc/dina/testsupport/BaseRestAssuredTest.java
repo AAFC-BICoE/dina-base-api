@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -17,6 +17,9 @@ import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import java.util.Map;
+
+import ca.gc.aafc.dina.jsonapi.JsonApiBulkDocument;
+import ca.gc.aafc.dina.jsonapi.JsonApiBulkResourceIdentifierDocument;
 
 /**
  * Base class for RestAssured integration tests.
@@ -181,12 +184,14 @@ public class BaseRestAssuredTest {
   }
 
   /**
+   * @deprecated to be removed
    * Send a PATCH to the Crnk Operation endpoint.
    * Operation requires all entries to have an id even for POST to uniquely identify them.
    * The id assigned to POST can be any values, it will be changed by the backend.
    * @param body
    * @return
    */
+  @Deprecated
   protected ValidatableResponse sendOperation(Object body) {
     Response response = newRequest()
         .accept(JSON_PATCH_CONTENT_TYPE)
@@ -206,13 +211,53 @@ public class BaseRestAssuredTest {
    * @param body
    * @return
    */
-  protected ValidatableResponse sendBulkLoad(String path, Object body) {
+  protected ValidatableResponse sendBulkLoad(String path, JsonApiBulkResourceIdentifierDocument body) {
 
     Response response = newRequest()
       .accept(JSON_API_CONTENT_TYPE)
       .contentType(JSON_API_BULK)
       .body(body)
       .post(StringUtils.appendIfMissing(path, "/") + JSON_API_BULK_LOAD_PATH);
+
+    return response.then()
+      .log().ifValidationFails()
+      .statusCode(HttpStatus.OK.value());
+  }
+
+  /**
+   * Send a bulk create to the specified path.
+   * bulk path will be added.
+   * @param path
+   * @param body
+   * @return
+   */
+  protected ValidatableResponse sendBulkCreate(String path, JsonApiBulkDocument body) {
+
+    Response response = newRequest()
+      .accept(JSON_API_CONTENT_TYPE)
+      .contentType(JSON_API_BULK)
+      .body(body)
+      .post(StringUtils.appendIfMissing(path, "/") + JSON_API_BULK_PATH);
+
+    return response.then()
+      .log().ifValidationFails()
+      .statusCode(HttpStatus.OK.value());
+  }
+
+  /**
+   * Send a bulk update to the specified path.
+   * bulk path will be added.
+   * @param path
+   * @param body
+   * @return
+   */
+  protected ValidatableResponse sendBulkUpdate(String path, JsonApiBulkDocument body) {
+
+    Response response = newRequest()
+      .accept(JSON_API_CONTENT_TYPE)
+      .contentType(JSON_API_BULK)
+      .body(body)
+      .patch(StringUtils.appendIfMissing(path, "/") + JSON_API_BULK_PATH);
 
     return response.then()
       .log().ifValidationFails()
