@@ -35,6 +35,7 @@ import ca.gc.aafc.dina.json.JsonDocumentInspector;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkResourceIdentifierDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
+import ca.gc.aafc.dina.jsonapi.JsonApiImmutable;
 import ca.gc.aafc.dina.mapper.DinaMapperV2;
 import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import ca.gc.aafc.dina.repository.auditlog.AuditSnapshotRepository;
@@ -613,7 +614,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
     // apply DTO on entity using the keys from docToCreate but remove all immutable fields (if any)
     Set<String> attributesToConsider = new HashSet<>(registry.getAttributesPerClass().get(resourceClass));
-    attributesToConsider.removeAll(registry.getAttributeImmutableOnCreatePerClass().get(resourceClass));
+    attributesToConsider.removeAll(registry.getImmutableAttributesForClass(resourceClass, JsonApiImmutable.ImmutableOn.CREATE));
 
     E entity = dinaMapper.toEntity(dto, attributesToConsider, null);
 
@@ -665,7 +666,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
     // apply DTO on entity using the keys from patchDto but remove all immutable fields (if any)
     Set<String> attributesToPatch = new HashSet<>(patchDto.getData().getAttributesName());
-    attributesToPatch.removeAll(registry.getAttributeImmutableOnUpdatePerClass().get(resourceClass));
+    attributesToPatch.removeAll(registry.getImmutableAttributesForClass(resourceClass, JsonApiImmutable.ImmutableOn.UPDATE));
     dinaMapper.patchEntity(entity, dto, attributesToPatch, null);
 
     updateRelationships(entity, patchDto.getRelationships());
