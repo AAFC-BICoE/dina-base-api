@@ -14,5 +14,5 @@ public @interface JsonApiImmutable {
 
   enum ImmutableOn { CREATE, UPDATE }
 
-  ImmutableOn value();
+  ImmutableOn[] value() default {};
 }
