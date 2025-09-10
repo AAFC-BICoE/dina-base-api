@@ -100,9 +100,10 @@ public interface DinaMapperV2<D, E> {
 
   /**
    * Used by MapStruct to control which field to set.
+   *
    * @param sourcePropertyName
    * @param provided
-    @param scope used to check provided properties within nested properties
+   * @param scope              used to check provided properties within nested properties
    * @return
    */
   @Condition
@@ -113,5 +114,18 @@ public interface DinaMapperV2<D, E> {
     }
     // dealing with nested objects
     return provided.contains(scope + "." + sourcePropertyName);
+  }
+
+  /**
+   * Used by MapStruct to control which field to set with specific scope.
+   *
+   * @param sourcePropertyName
+   * @param provided
+   * @param scope              used to check provided properties within nested properties
+   * @return
+   */
+  @Condition
+  default boolean isPropertyProvidedInScope(@SourcePropertyName String sourcePropertyName, Set<String> provided, String scope) {
+    return StringUtils.isBlank(scope) ? provided.contains(sourcePropertyName) : provided.contains(scope + "." + sourcePropertyName);
   }
 }
