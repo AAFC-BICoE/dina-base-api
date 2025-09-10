@@ -5,19 +5,15 @@ import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.factory.Mappers;
 
-import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.ProjectDTO;
 import ca.gc.aafc.dina.dto.TaskDTO;
 import ca.gc.aafc.dina.entity.Project;
 import ca.gc.aafc.dina.entity.Task;
 
-import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Mapper( imports = MapperStaticConverter.class)
 public interface ProjectDtoMapper extends DinaMapperV2<ProjectDTO, Project> {
@@ -43,11 +39,11 @@ public interface ProjectDtoMapper extends DinaMapperV2<ProjectDTO, Project> {
   void patchEntity(@MappingTarget Project entity, ProjectDTO dto, @Context Set<String> provided, @Context String scope);
 
   default Task toEntity(TaskDTO dto, @Context Set<String> provided, @Context String scope) {
-    return toTaskEntity(dto, provided, "task");
+    return dto == null ? null : toTaskEntity(dto, provided, "task");
   }
 
-  default TaskDTO toDto(Task dto, @Context Set<String> provided, @Context String scope) {
-    return toTaskDto(dto, provided, "task");
+  default TaskDTO toDto(Task entity, @Context Set<String> provided, @Context String scope) {
+    return entity == null ? null : toTaskDto(entity, provided, "task");
   }
 
   // Relationships handling
