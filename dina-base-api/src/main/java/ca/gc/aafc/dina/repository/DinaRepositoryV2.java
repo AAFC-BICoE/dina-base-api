@@ -154,12 +154,12 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
   /**
    * Used to provide mapping between {@link ExternalRelationDto} and new JsonApiExternalResource instances.
-   * By default, this method returns null since the supported types are unknown.
+   * By default, this method will throw IllegalStateException since the supported types are unknown.
    * @param externalRelationDto
    * @return
    */
   protected JsonApiExternalResource externalRelationDtoToJsonApiExternalResource(ExternalRelationDto externalRelationDto) {
-    return null;
+    throw new IllegalStateException("External relationship found without configuration for JsonApiExternalResource");
   }
 
   /**
