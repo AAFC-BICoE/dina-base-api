@@ -1,15 +1,20 @@
 package ca.gc.aafc.dina.entity;
 
+import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.NaturalIdCache;
+import org.hibernate.annotations.Type;
+
+import ca.gc.aafc.dina.i18n.MultilingualDescription;
+import ca.gc.aafc.dina.i18n.MultilingualTitle;
+import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
+
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -19,14 +24,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-
-import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.NaturalIdCache;
-import org.hibernate.annotations.Type;
-
-import ca.gc.aafc.dina.i18n.MultilingualDescription;
-import ca.gc.aafc.dina.i18n.MultilingualTitle;
-import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
 @MappedSuperclass
 @Getter

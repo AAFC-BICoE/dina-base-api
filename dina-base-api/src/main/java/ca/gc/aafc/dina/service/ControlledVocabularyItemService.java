@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.validation.SmartValidator;
 
-import ca.gc.aafc.dina.entity.ControlledVocabulary;
 import ca.gc.aafc.dina.entity.ControlledVocabularyItem;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.util.UUIDHelper;
@@ -14,7 +13,7 @@ import java.util.List;
 import lombok.NonNull;
 
 /**
- * Base ControlledVocabulary Service that takes care of the generation of the key.
+ * Base ControlledVocabularyItem Service that takes care of the generation of the key.
  *
  * @param <T>
  */
