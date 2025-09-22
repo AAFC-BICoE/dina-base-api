@@ -80,6 +80,9 @@ public class ControlledVocabularyServiceIT {
 
     controlledVocabularyItem.setControlledVocabulary(controlledVocabulary);
     controlledVocabularyItemService.update(controlledVocabularyItem);
+    MyControlledVocabularyItem foundItem = controlledVocabularyItemService.findOneByKey(controlledVocabularyItem.getKey(), controlledVocabulary.getUuid());
+    assertNotNull(foundItem);
+    assertEquals(controlledVocabularyItem.getUuid(), foundItem.getUuid());
   }
 
   @TestConfiguration

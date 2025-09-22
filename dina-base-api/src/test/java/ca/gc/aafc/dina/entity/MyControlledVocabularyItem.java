@@ -15,7 +15,7 @@ import lombok.experimental.SuperBuilder;
 public class MyControlledVocabularyItem extends ControlledVocabularyItem {
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = TYPE_COLUMN_NAME)
+  @JoinColumn(name = CONTROLLED_VOCABULARY_COL_NAME)
   private MyControlledVocabulary controlledVocabulary;
 
 }

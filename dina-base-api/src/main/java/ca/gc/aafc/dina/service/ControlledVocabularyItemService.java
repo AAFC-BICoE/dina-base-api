@@ -1,15 +1,20 @@
 package ca.gc.aafc.dina.service;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.validation.SmartValidator;
 
+import ca.gc.aafc.dina.entity.ControlledVocabulary;
 import ca.gc.aafc.dina.entity.ControlledVocabularyItem;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.util.UUIDHelper;
 import ca.gc.aafc.dina.vocabulary.VocabularyKeyHelper;
 
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
 import lombok.NonNull;
 
 /**
@@ -42,17 +47,35 @@ public abstract class ControlledVocabularyItemService<T extends ControlledVocabu
     throw new UnsupportedOperationException("DELETE");
   }
 
-  public T findOneByKey(String key) {
-    return findOneByProperty(clazz, ControlledVocabularyItem.KEY_ATTRIBUTE_NAME, key);
-  }
-
   /**
-   * Find a managed attribute by key and another property that is part of the unique constraint.
-   * @param key
-   * @param andClause clause that should be added to
-   * @return
+   * Retrieves vocabulary item matching both a specific key and controlled vocabulary UUID.
+   *
+   * @param key The key value to match
+   * @param controlledVocabularyUuid The UUID of the associated ControlledVocabulary
+   * @return The matching item, null if not found
+   * @throws IllegalStateException if key and controlledVocabularyUuid returns more than one result
    */
-  public T findOneByKeyAnd(String key, Pair<String, Object> andClause) {
-    return findOneByProperties(clazz, List.of(Pair.of(ControlledVocabularyItem.KEY_ATTRIBUTE_NAME, key), andClause));
+  public T findOneByKey(String key, UUID controlledVocabularyUuid) {
+
+    List<T> results = findAll(
+      clazz,
+      (criteriaBuilder, root, em) -> {
+        Join<T, ControlledVocabulary> vocabularyJoin = root.join("controlledVocabulary", JoinType.INNER);
+        Predicate keyPredicate = criteriaBuilder.equal(root.get(ControlledVocabularyItem.KEY_ATTRIBUTE_NAME), key);
+        Predicate uuidPredicate = criteriaBuilder.equal(vocabularyJoin.get("uuid"), controlledVocabularyUuid);
+        return new Predicate[]{keyPredicate, uuidPredicate};
+      },
+      null, 0, 2, Set.of(), Set.of());
+
+    if (results.size() > 1) {
+      throw new IllegalStateException(
+        "ControlledVocabularyItem key expected to be unique per ControlledVocabulary: " + key);
+    }
+
+    if(results.isEmpty()) {
+      return null;
+    }
+
+    return results.getFirst();
   }
 }
