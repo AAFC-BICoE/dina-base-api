@@ -365,7 +365,7 @@
 			<column name="type" type="controlled_vocabulary_type">
 				<constraints nullable="false"/>
 			</column>
-			<column name="_class" type="controlled_vocabulary_class">
+			<column name="vocab_class" type="controlled_vocabulary_class">
 				<constraints nullable="false"/>
 			</column>
 			<column name="key" type="varchar(255)">

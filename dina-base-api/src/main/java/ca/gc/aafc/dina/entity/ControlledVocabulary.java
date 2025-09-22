@@ -66,9 +66,7 @@ public abstract class ControlledVocabulary implements DinaEntity {
   /**
    * Immutable and stable key representing the vocabulary.
    * Used as stable identifier within the system boundaries.
-   *
    * The key is mandatory and can't contain a dot (.).
-   *
    */
   @NotBlank
   @Pattern(regexp = "^[^.]+$")
