@@ -341,6 +341,73 @@
 		</createTable>
 	</changeSet>
 
+	<changeSet context="schema-change" id="init_test_controlled_vocabulary" author="cgendreau">
+		<sql>
+			CREATE TYPE controlled_vocabulary_type AS ENUM (
+			'MANAGED_ATTRIBUTE',
+			'SYSTEM'
+			);
+		</sql>
+		<sql>
+			CREATE TYPE controlled_vocabulary_class AS ENUM (
+			'CONTROLLED_TERM',
+			'QUALIFIED_VALUE'
+			);
+		</sql>
+		<createTable tableName="test_controlled_vocabulary">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_test_controlled_vocabulary_id" />
+			</column>
+			<column name="uuid" type="uuid">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="name" type="varchar(255)"/>
+			<column name="type" type="controlled_vocabulary_type">
+				<constraints nullable="false"/>
+			</column>
+			<column name="vocab_class" type="controlled_vocabulary_class">
+				<constraints nullable="false"/>
+			</column>
+			<column name="key" type="varchar(255)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="term" type="varchar(255)"/>
+			<column name="version" type="varchar(255)"/>
+			<column name="multilingual_title" type="jsonb"/>
+			<column name="multilingual_description" type="jsonb"/>
+
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+		</createTable>
+		<createTable tableName="test_controlled_vocabulary_item">
+			<column autoIncrement="true" name="id" type="SERIAL">
+				<constraints primaryKey="true" primaryKeyName="pk_test_controlled_vocabulary_item_id" />
+			</column>
+
+			<column name="controlled_vocabulary_id" type="integer">
+				<constraints foreignKeyName="fk_controlled_vocabulary_id" references="test_controlled_vocabulary(id)"/>
+			</column>
+
+			<column name="uuid" type="uuid">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="name" type="varchar(255)"/>
+			<column name="key" type="varchar(255)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="term" type="varchar(255)"/>
+			<column name="accepted_values" type="text[]"/>
+			<column name="vocabulary_element_type" type="varchar(50)"/>
+			<column name="unit" type="varchar(50)"/>
+			<column name="dina_component" type="varchar(255)"/>
+			<column name="multilingual_title" type="jsonb"/>
+			<column name="multilingual_description" type="jsonb"/>
+
+			<column name="created_by" type="varchar(255)"/>
+			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+		</createTable>
+	</changeSet>
+
 	<changeSet id="javers-1" author="cgendreau">
 		<createSequence sequenceName="jv_commit_pk_seq"/>
 	</changeSet>
