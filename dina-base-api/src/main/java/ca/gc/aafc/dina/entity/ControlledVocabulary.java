@@ -36,7 +36,11 @@ public abstract class ControlledVocabulary implements DinaEntity {
 
   public static final String KEY_ATTRIBUTE_NAME = "key";
 
-  public enum ControlledVocabularyType {MANAGED_ATTRIBUTE, SYSTEM}
+  public enum ControlledVocabularyType { MANAGED_ATTRIBUTE, SYSTEM }
+
+  // QUALIFIED_VALUE: Defined set of named term (URI). In its usage, a typed literal is stored with the term. (e.g., pH: 7.2, depth: 12.5 m).
+  // CONTROLLED_TERM: Defined set of named term (URI). In its usage there is no separate literal value.; Numbers (if any) are labels. (e.g., coordinateSystem: EPSG:4326; species: Homo sapiens; riskLevel: low/medium/high).
+  public enum ControlledVocabularyClass { QUALIFIED_VALUE, CONTROLLED_TERM }
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,6 +57,11 @@ public abstract class ControlledVocabulary implements DinaEntity {
   @Enumerated(EnumType.STRING)
   @NotNull
   private ControlledVocabularyType type;
+
+  @Type(type = "pgsql_enum")
+  @Enumerated(EnumType.STRING)
+  @NotNull
+  private ControlledVocabularyClass vocabClass;
 
   /**
    * Immutable and stable key representing the vocabulary.

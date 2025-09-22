@@ -348,6 +348,12 @@
 			'SYSTEM'
 			);
 		</sql>
+		<sql>
+			CREATE TYPE controlled_vocabulary_class AS ENUM (
+			'CONTROLLED_TERM',
+			'QUALIFIED_VALUE'
+			);
+		</sql>
 		<createTable tableName="test_controlled_vocabulary">
 			<column autoIncrement="true" name="id" type="SERIAL">
 				<constraints primaryKey="true" primaryKeyName="pk_test_controlled_vocabulary_id" />
@@ -357,6 +363,9 @@
 			</column>
 			<column name="name" type="varchar(255)"/>
 			<column name="type" type="controlled_vocabulary_type">
+				<constraints nullable="false"/>
+			</column>
+			<column name="_class" type="controlled_vocabulary_class">
 				<constraints nullable="false"/>
 			</column>
 			<column name="key" type="varchar(255)">

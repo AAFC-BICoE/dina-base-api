@@ -40,6 +40,7 @@ public class ControlledVocabularyServiceIT {
       .create(MyControlledVocabulary.builder()
         .uuid(UUID.randomUUID())
         .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
+        .vocabClass(ControlledVocabulary.ControlledVocabularyClass.QUALIFIED_VALUE)
         .name("Protocol Data Element").build());
 
     assertEquals("protocol_data_element", managedAttribute.getKey());
@@ -51,11 +52,13 @@ public class ControlledVocabularyServiceIT {
       .createAndFlush(MyControlledVocabulary.builder()
         .uuid(UUID.randomUUID())
         .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
+        .vocabClass(ControlledVocabulary.ControlledVocabularyClass.CONTROLLED_TERM)
         .name("vocab 1").build());
     controlledVocabularyService
       .createAndFlush(MyControlledVocabulary.builder()
         .uuid(UUID.randomUUID())
         .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
+        .vocabClass(ControlledVocabulary.ControlledVocabularyClass.CONTROLLED_TERM)
         .name("vocab 2").build());
 
     MyControlledVocabulary vocab = controlledVocabularyService.findOneByKey(vocab1.getKey());
@@ -76,6 +79,7 @@ public class ControlledVocabularyServiceIT {
       .create(MyControlledVocabulary.builder()
         .uuid(UUID.randomUUID())
         .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
+        .vocabClass(ControlledVocabulary.ControlledVocabularyClass.QUALIFIED_VALUE)
         .name("Protocol Data Element").build());
 
     controlledVocabularyItem.setControlledVocabulary(controlledVocabulary);

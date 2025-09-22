@@ -72,7 +72,7 @@ public abstract class ControlledVocabularyItemService<T extends ControlledVocabu
         "ControlledVocabularyItem key expected to be unique per ControlledVocabulary: " + key);
     }
 
-    if(results.isEmpty()) {
+    if (results.isEmpty()) {
       return null;
     }
 
