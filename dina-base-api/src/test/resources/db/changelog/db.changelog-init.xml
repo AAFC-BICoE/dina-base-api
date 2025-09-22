@@ -371,6 +371,7 @@
 			<column name="key" type="varchar(255)">
 				<constraints nullable="false"/>
 			</column>
+			<column name="term" type="varchar(255)"/>
 			<column name="version" type="varchar(255)"/>
 			<column name="multilingual_title" type="jsonb"/>
 			<column name="multilingual_description" type="jsonb"/>
@@ -394,7 +395,7 @@
 			<column name="key" type="varchar(255)">
 				<constraints nullable="false"/>
 			</column>
-
+			<column name="term" type="varchar(255)"/>
 			<column name="accepted_values" type="text[]"/>
 			<column name="vocabulary_element_type" type="varchar(50)"/>
 			<column name="unit" type="varchar(50)"/>

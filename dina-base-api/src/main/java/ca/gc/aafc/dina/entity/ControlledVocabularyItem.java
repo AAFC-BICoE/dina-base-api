@@ -58,6 +58,9 @@ public abstract class ControlledVocabularyItem implements DinaEntity {
   @Size(max = 255)
   private String key;
 
+  @Size(max = 255)
+  private String term;
+
   @Type(type = "jsonb")
   private MultilingualTitle multilingualTitle;
 
