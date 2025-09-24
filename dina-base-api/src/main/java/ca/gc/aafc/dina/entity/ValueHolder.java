@@ -10,7 +10,7 @@ public sealed interface ValueHolder<T> {
   record Defined<T>(T value) implements ValueHolder<T> {
 
     /**
-     * Casts a Defined<?> to Defined<T> without changing the instance.
+     * Casts a {@literal Defined<?>} to {@literal Defined<T>} without changing the instance.
      * Unchecked due to type erasure; safe only when the caller knows the value of T.
      */
     @SuppressWarnings("unchecked")
@@ -27,7 +27,7 @@ public sealed interface ValueHolder<T> {
 
   /**
    * Returns this ValueHolder as a Defined, if it is one.
-   * @return an Optional containing this as Defined<T> if this is a Defined; otherwise Optional.empty()
+   * @return an Optional containing this as {@literal Defined<T>} if this is a Defined; otherwise Optional.empty()
    */
   default Optional<Defined<T>> asDefined() {
     return (this instanceof Defined<?> d) ? Optional.of(Defined.cast(d)) : Optional.empty();
