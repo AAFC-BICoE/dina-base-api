@@ -8,24 +8,26 @@ import ca.gc.aafc.dina.i18n.MultilingualTitle;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import lombok.Data;
 
+@Data
 public abstract class BaseControlledVocabularyDto implements JsonApiResource {
 
   public static final String TYPENAME = "controlled-vocabulary";
 
-  private UUID uuid;
-  private String name;
-  private String key;
+  protected UUID uuid;
+  protected String name;
+  protected String key;
 
-  private ControlledVocabulary.ControlledVocabularyType type;
-  private ControlledVocabulary.ControlledVocabularyClass vocabClass;
+  protected ControlledVocabulary.ControlledVocabularyType type;
+  protected ControlledVocabulary.ControlledVocabularyClass vocabClass;
 
-  private String term;
-  private String version;
-  private MultilingualTitle multilingualTitle;
-  private MultilingualDescription multilingualDescription;
-  private String createdBy;
-  private OffsetDateTime createdOn;
+  protected String term;
+  protected String version;
+  protected MultilingualTitle multilingualTitle;
+  protected MultilingualDescription multilingualDescription;
+  protected String createdBy;
+  protected OffsetDateTime createdOn;
 
   @Override
   @JsonIgnore

@@ -8,29 +8,31 @@ import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import lombok.Data;
 
+@Data
 public abstract class BaseControlledVocabularyItemDto implements JsonApiResource {
 
   public static final String TYPENAME = "controlled-vocabulary-item";
 
-  private UUID uuid;
+  protected UUID uuid;
 
-  private String name;
-  private String key;
-  private String term;
+  protected String name;
+  protected String key;
+  protected String term;
 
-  private MultilingualTitle multilingualTitle;
-  private MultilingualDescription multilingualDescription;
+  protected MultilingualTitle multilingualTitle;
+  protected MultilingualDescription multilingualDescription;
 
-  private TypedVocabularyElement.VocabularyElementType vocabularyElementType;
-  private String[] acceptedValues;
+  protected TypedVocabularyElement.VocabularyElementType vocabularyElementType;
+  protected String[] acceptedValues;
 
-  private String unit;
+  protected String unit;
 
-  private String dinaComponent;
-  
-  private String createdBy;
-  private OffsetDateTime createdOn;
+  protected String dinaComponent;
+
+  protected String createdBy;
+  protected OffsetDateTime createdOn;
 
   public abstract <T extends BaseControlledVocabularyDto> T getControlledVocabulary();
 
