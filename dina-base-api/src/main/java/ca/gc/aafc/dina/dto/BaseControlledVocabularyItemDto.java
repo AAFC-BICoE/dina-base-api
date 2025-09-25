@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public abstract class BaseControlledVocabularyItemDto implements JsonApiResource {
 
-  public static final String TYPENAME = "managed-attribute-item";
+  public static final String TYPENAME = "controlled-vocabulary-item";
 
   private UUID uuid;
 

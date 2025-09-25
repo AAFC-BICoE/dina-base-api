@@ -7,6 +7,7 @@ import ca.gc.aafc.dina.entity.ControlledVocabulary;
 import ca.gc.aafc.dina.entity.ControlledVocabularyItem;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.util.UUIDHelper;
+import ca.gc.aafc.dina.validation.ControlledVocabularyItemValidator;
 import ca.gc.aafc.dina.vocabulary.VocabularyKeyHelper;
 
 import java.util.List;
@@ -25,10 +26,14 @@ import lombok.NonNull;
 public abstract class ControlledVocabularyItemService<T extends ControlledVocabularyItem> extends DefaultDinaService<T> {
 
   private final Class<T> clazz;
+  private final ControlledVocabularyItemValidator itemValidator;
 
-  public ControlledVocabularyItemService(BaseDAO baseDAO, SmartValidator smartValidator, @NonNull Class<T> clazz) {
+  public ControlledVocabularyItemService(BaseDAO baseDAO, SmartValidator smartValidator,
+                                         @NonNull Class<T> clazz,
+                                         ControlledVocabularyItemValidator itemValidator) {
     super(baseDAO, smartValidator);
     this.clazz = clazz;
+    this.itemValidator = itemValidator;
   }
 
   @Override
@@ -45,6 +50,11 @@ public abstract class ControlledVocabularyItemService<T extends ControlledVocabu
   @Override
   protected void preDelete(ControlledVocabularyItem entity) {
     throw new UnsupportedOperationException("DELETE");
+  }
+
+  @Override
+  public void validateBusinessRules(T entity) {
+    applyBusinessRule(entity, itemValidator);
   }
 
   /**

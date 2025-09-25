@@ -3,6 +3,8 @@ package ca.gc.aafc.dina.service;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
@@ -14,12 +16,14 @@ import ca.gc.aafc.dina.entity.MyControlledVocabulary;
 import ca.gc.aafc.dina.entity.MyControlledVocabularyItem;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import ca.gc.aafc.dina.validation.ControlledVocabularyItemValidator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.UUID;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.transaction.Transactional;
 
 @Transactional
@@ -101,9 +105,16 @@ public class ControlledVocabularyServiceIT {
 
     @Service
     public static class MyControlledVocabularyItemService extends ControlledVocabularyItemService<MyControlledVocabularyItem> {
-      public MyControlledVocabularyItemService(BaseDAO baseDAO, SmartValidator smartValidator) {
-        super(baseDAO, smartValidator, MyControlledVocabularyItem.class);
+      public MyControlledVocabularyItemService(BaseDAO baseDAO, SmartValidator smartValidator, ControlledVocabularyItemValidator validator) {
+        super(baseDAO, smartValidator, MyControlledVocabularyItem.class, validator);
       }
     }
+
+    @Bean
+    public ControlledVocabularyItemValidator myControlledVocabularyItemValidator(
+      @Named("validationMessageSource") MessageSource messageSource) {
+      return new ControlledVocabularyItemValidator(messageSource);
+    }
+
   }
 }
