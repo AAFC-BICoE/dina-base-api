@@ -89,8 +89,10 @@ public abstract class ControlledVocabularyItemService<T extends ControlledVocabu
         predicates.add(criteriaBuilder.equal(root.get(ControlledVocabularyItem.KEY_ATTRIBUTE_NAME), key));
         predicates.add(criteriaBuilder.equal(vocabularyJoin.get("uuid"), controlledVocabularyUuid));
 
-        if(dinaComponent != null) {
-          predicates.add(criteriaBuilder.equal(root.get(ControlledVocabularyItem.DINA_COMPONENT_NAME), dinaComponent));
+        if (dinaComponent != null) {
+          predicates.add(
+            criteriaBuilder.equal(root.get(ControlledVocabularyItem.DINA_COMPONENT_NAME),
+              dinaComponent));
         }
         return predicates.toArray(new Predicate[0]);
       },
