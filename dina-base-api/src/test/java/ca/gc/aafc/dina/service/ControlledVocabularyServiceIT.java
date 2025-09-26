@@ -76,6 +76,7 @@ public class ControlledVocabularyServiceIT {
     MyControlledVocabularyItem controlledVocabularyItem = controlledVocabularyItemService
       .create(MyControlledVocabularyItem.builder()
         .uuid(UUID.randomUUID())
+        .group("grp")
         .name("Protocol Data Element 1").build());
     assertEquals("protocol_data_element_1", controlledVocabularyItem.getKey());
 

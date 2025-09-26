@@ -11,7 +11,7 @@ import java.util.UUID;
 import lombok.Data;
 
 @Data
-public abstract class BaseControlledVocabularyItemDto implements JsonApiResource {
+public abstract class BaseControlledVocabularyItemDto <T extends BaseControlledVocabularyDto> implements JsonApiResource {
 
   public static final String TYPENAME = "controlled-vocabulary-item";
 
@@ -19,6 +19,7 @@ public abstract class BaseControlledVocabularyItemDto implements JsonApiResource
 
   protected String name;
   protected String key;
+  protected String group;
   protected String term;
 
   protected MultilingualTitle multilingualTitle;
@@ -34,7 +35,7 @@ public abstract class BaseControlledVocabularyItemDto implements JsonApiResource
   protected String createdBy;
   protected OffsetDateTime createdOn;
 
-  public abstract <T extends BaseControlledVocabularyDto> T getControlledVocabulary();
+  public abstract T getControlledVocabulary();
 
   @Override
   @JsonIgnore
