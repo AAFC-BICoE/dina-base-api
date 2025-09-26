@@ -36,6 +36,7 @@ import lombok.experimental.SuperBuilder;
 public abstract class ControlledVocabularyItem implements DinaEntity {
 
   public static final String KEY_ATTRIBUTE_NAME = "key";
+  public static final String DINA_COMPONENT_NAME = "dinaComponent";
   public static final String CONTROLLED_VOCABULARY_COL_NAME = "controlled_vocabulary_id";
 
   @Id
