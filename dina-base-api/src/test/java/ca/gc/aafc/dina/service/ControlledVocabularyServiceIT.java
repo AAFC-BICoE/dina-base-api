@@ -16,7 +16,9 @@ import ca.gc.aafc.dina.entity.MyControlledVocabulary;
 import ca.gc.aafc.dina.entity.MyControlledVocabularyItem;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import ca.gc.aafc.dina.util.UUIDHelper;
 import ca.gc.aafc.dina.validation.ControlledVocabularyItemValidator;
+import ca.gc.aafc.dina.validation.ControlledVocabularyValueValidator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -31,6 +33,8 @@ import javax.transaction.Transactional;
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 @Import(ControlledVocabularyServiceIT.MyControlledVocabularyServiceTestConfig.class)
 public class ControlledVocabularyServiceIT {
+
+  public static final UUID CONTROLLED_VOCAB_UUID = UUIDHelper.generateUUIDv7();
 
   @Inject
   private ControlledVocabularyService<MyControlledVocabulary> controlledVocabularyService;
@@ -95,7 +99,7 @@ public class ControlledVocabularyServiceIT {
   }
 
   @TestConfiguration
-  static class MyControlledVocabularyServiceTestConfig {
+  public static class MyControlledVocabularyServiceTestConfig {
 
     @Service
     public static class MyControlledVocabularyService extends ControlledVocabularyService<MyControlledVocabulary> {
@@ -108,6 +112,23 @@ public class ControlledVocabularyServiceIT {
     public static class MyControlledVocabularyItemService extends ControlledVocabularyItemService<MyControlledVocabularyItem> {
       public MyControlledVocabularyItemService(BaseDAO baseDAO, SmartValidator smartValidator, ControlledVocabularyItemValidator validator) {
         super(baseDAO, smartValidator, MyControlledVocabularyItem.class, validator);
+      }
+    }
+
+    @Service
+    public static class MyControlledVocabularyValueValidator extends ControlledVocabularyValueValidator<MyControlledVocabularyItem> {
+      public MyControlledVocabularyValueValidator(@Named("validationMessageSource") MessageSource messageSource, ControlledVocabularyItemService<MyControlledVocabularyItem> vocabItemService) {
+        super(messageSource, vocabItemService);
+      }
+
+      @Override
+      public UUID getControlledVocabularyUuid() {
+        return CONTROLLED_VOCAB_UUID;
+      }
+
+      @Override
+      public String getDinaComponent() {
+        return null;
       }
     }
 
