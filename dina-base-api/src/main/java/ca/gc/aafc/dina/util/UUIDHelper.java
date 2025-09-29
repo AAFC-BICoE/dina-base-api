@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.util;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.fasterxml.uuid.Generators;
@@ -35,4 +36,20 @@ public final class UUIDHelper {
     return uuid.version() == 7;
   }
 
+  /**
+   * Tries to convert the string argument to uuid.
+   * If not possible {@link Optional#empty()} is returned. No exception is thrown.
+   * @param possibleUUID
+   * @return
+   */
+  public static Optional<UUID> toUUID(String possibleUUID) {
+    if (possibleUUID == null || possibleUUID.length() != 36) {
+      return Optional.empty();
+    }
+    try {
+      return Optional.of(UUID.fromString(possibleUUID));
+    } catch (IllegalArgumentException iaEx) {
+      return Optional.empty();
+    }
+  }
 }

@@ -10,6 +10,7 @@ import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
@@ -35,6 +36,7 @@ import lombok.experimental.SuperBuilder;
 public abstract class ControlledVocabularyItem implements DinaEntity {
 
   public static final String KEY_ATTRIBUTE_NAME = "key";
+  public static final String DINA_COMPONENT_NAME = "dinaComponent";
   public static final String CONTROLLED_VOCABULARY_COL_NAME = "controlled_vocabulary_id";
 
   @Id
@@ -44,8 +46,14 @@ public abstract class ControlledVocabularyItem implements DinaEntity {
   @NaturalId
   private UUID uuid;
 
+  @NotBlank
   @Size(max = 255)
   private String name;
+
+  @NotBlank
+  @Size(max = 50)
+  @Column(name = "_group")
+  private String group;
 
   /**
    * Immutable and stable key representing the vocabulary.

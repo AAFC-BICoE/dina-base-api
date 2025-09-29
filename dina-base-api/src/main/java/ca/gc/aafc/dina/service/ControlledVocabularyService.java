@@ -21,7 +21,8 @@ public abstract class ControlledVocabularyService<T extends ControlledVocabulary
 
   private final Class<T> clazz;
 
-  public ControlledVocabularyService(BaseDAO baseDAO, SmartValidator smartValidator, @NonNull Class<T> clazz) {
+  public ControlledVocabularyService(BaseDAO baseDAO, SmartValidator smartValidator,
+                                     @NonNull Class<T> clazz) {
     super(baseDAO, smartValidator);
     this.clazz = clazz;
   }
