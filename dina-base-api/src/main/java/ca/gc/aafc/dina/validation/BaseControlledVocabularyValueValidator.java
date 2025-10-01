@@ -9,7 +9,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.Errors;
 
 import ca.gc.aafc.dina.entity.ControlledVocabularyItem;
-import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.service.ControlledVocabularyItemService;
 import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
@@ -33,6 +32,7 @@ public abstract class BaseControlledVocabularyValueValidator<E extends Controlle
   private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
 
   protected static final String CONTROLLED_VOCABULARY_INVALID_KEY = "controlledVocabulary.key.invalid";
+  protected static final String CONTROLLED_VOCABULARY_ITEM_INVALID_KEY = "controlledVocabularyItem.key.invalid";
   protected static final String CONTROLLED_VOCABULARY_INVALID_VALUE = "controlledVocabulary.value.invalid";
 
   protected final ControlledVocabularyItemService<E> vocabItemService;
@@ -44,6 +44,15 @@ public abstract class BaseControlledVocabularyValueValidator<E extends Controlle
   ) {
     this.messageSource = messageSource;
     this.vocabItemService = vocabItemService;
+  }
+
+  protected void validateKey(String key, Supplier<E> supplyItem, Errors errors) {
+    E vocabItem = supplyItem.get();
+    if (vocabItem == null) {
+      errors.reject(CONTROLLED_VOCABULARY_INVALID_KEY,
+        getMessageForKey(CONTROLLED_VOCABULARY_INVALID_KEY, key));
+      ValidationErrorsHelper.errorsToValidationException(errors);
+    }
   }
 
   protected void validateItems(Map<String, String> keysAndValues, Supplier<List<E>> supplyItems, Errors errors) {
@@ -91,27 +100,6 @@ public abstract class BaseControlledVocabularyValueValidator<E extends Controlle
       ControlledVocabularyItem::getKey,
       vi -> vi
     ));
-  }
-
-  /**
-   * Validate the key of a {@link ControlledVocabularyItem} and standardized it on return.
-   * Standardization will only return the stored key (vs the provided key that is case-insensitive)
-   * @param entity
-   * @param key
-   * @param supplyItem
-   * @return
-   */
-  protected <D extends DinaEntity> String validateKeyAndStandardize(D entity, String key, Supplier<E> supplyItem) {
-    E vocabItem = supplyItem.get();
-    Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
-    if (vocabItem == null) {
-      errors.reject(CONTROLLED_VOCABULARY_INVALID_KEY,
-        getMessageForKey(CONTROLLED_VOCABULARY_INVALID_KEY, key));
-      ValidationErrorsHelper.errorsToValidationException(errors);
-      return null;
-    }
-    // standardize (return key)
-    return vocabItem.getKey();
   }
 
   private void rejectInvalidValue(Errors errors, String key, String assignedValue) {

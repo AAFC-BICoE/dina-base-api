@@ -20,6 +20,7 @@ import ca.gc.aafc.dina.util.UUIDHelper;
 import ca.gc.aafc.dina.validation.ControlledTermValueValidator;
 import ca.gc.aafc.dina.validation.ControlledVocabularyItemValidator;
 import ca.gc.aafc.dina.validation.ManagedAttributeValueValidatorV2;
+import ca.gc.aafc.dina.validation.QualifiedValueValidator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -118,8 +119,7 @@ public class ControlledVocabularyServiceIT {
     }
 
     @Service
-    public static class MyManagedAttributeValueValidator extends
-      ManagedAttributeValueValidatorV2<MyControlledVocabularyItem> {
+    public static class MyManagedAttributeValueValidator extends ManagedAttributeValueValidatorV2<MyControlledVocabularyItem> {
 
       // mutable to ease testing only
       @Setter
@@ -127,7 +127,9 @@ public class ControlledVocabularyServiceIT {
       @Setter
       private String dinaComponent;
 
-      public MyManagedAttributeValueValidator(@Named("validationMessageSource") MessageSource messageSource, ControlledVocabularyItemService<MyControlledVocabularyItem> vocabItemService) {
+      public MyManagedAttributeValueValidator(
+        @Named("validationMessageSource") MessageSource messageSource,
+        ControlledVocabularyItemService<MyControlledVocabularyItem> vocabItemService) {
         super(messageSource, vocabItemService);
       }
 
@@ -143,10 +145,19 @@ public class ControlledVocabularyServiceIT {
     }
 
     @Service
-    public static class MyControlledTermValueValidator extends
-      ControlledTermValueValidator<MyControlledVocabulary, MyControlledVocabularyItem> {
+    public static class MyControlledTermValueValidator extends ControlledTermValueValidator<MyControlledVocabulary, MyControlledVocabularyItem> {
 
       public MyControlledTermValueValidator(@Named("validationMessageSource") MessageSource messageSource,
+                                            ControlledVocabularyService<MyControlledVocabulary> vocabService,
+                                            ControlledVocabularyItemService<MyControlledVocabularyItem> vocabItemService) {
+        super(messageSource, vocabService, vocabItemService);
+      }
+    }
+
+    @Service
+    public static class MyQualifiedValueValidator extends QualifiedValueValidator<MyControlledVocabulary, MyControlledVocabularyItem> {
+
+      public MyQualifiedValueValidator(@Named("validationMessageSource") MessageSource messageSource,
                                             ControlledVocabularyService<MyControlledVocabulary> vocabService,
                                             ControlledVocabularyItemService<MyControlledVocabularyItem> vocabItemService) {
         super(messageSource, vocabService, vocabItemService);

@@ -17,7 +17,6 @@ import ca.gc.aafc.dina.service.ControlledVocabularyServiceIT;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Map;
@@ -39,11 +38,13 @@ public class ControlledVocabularyValueValidatorIT {
   private ControlledVocabularyItemService<MyControlledVocabularyItem> controlledVocabularyItemService;
 
   @Inject
-  private ManagedAttributeValueValidatorV2<MyControlledVocabularyItem>
-    myControlledVocabularyValueValidator;
+  private ManagedAttributeValueValidatorV2<MyControlledVocabularyItem> myControlledVocabularyValueValidator;
 
   @Inject
   private ControlledTermValueValidator<MyControlledVocabulary, MyControlledVocabularyItem> myControlledTermValueValidator;
+
+  @Inject
+  private QualifiedValueValidator<MyControlledVocabulary, MyControlledVocabularyItem> myQualifiedValueValidator;
 
   @Test
   void test_managedAttribute() {
@@ -71,6 +72,7 @@ public class ControlledVocabularyValueValidatorIT {
       .build();
     myControlledVocabularyValueValidator.validate(ma, ma.getManagedAttributes());
 
+    // try invalid value
     ma.setManagedAttributes(Map.of("managed_attribute_1", "xy"));
     assertThrows(
       ValidationException.class, () -> myControlledVocabularyValueValidator.validate(ma, ma.getManagedAttributes()));
@@ -139,7 +141,39 @@ public class ControlledVocabularyValueValidatorIT {
     controlledVocabularyItemService.update(managedAttributeItem);
 
     Person p = Person.builder().build();
-    assertEquals(managedAttributeItem.getKey(), myControlledTermValueValidator.validateAndStandardize(p, "controlled_term", "Controlled_Term_1"));
+    myControlledTermValueValidator.validate(p, "controlled_term", "Controlled_Term_1");
+
+    // try invalid key
+    assertThrows(
+      ValidationException.class, () -> myControlledTermValueValidator.validate(p, "controlled_term", "Controlled_Term_Invalid"));
+  }
+
+  @Test
+  void test_qualifiedValueValidator() {
+    UUID controlledVocabularyUuid = UUID.randomUUID();
+
+    MyControlledVocabulary managedAttribute = controlledVocabularyService
+      .create(MyControlledVocabulary.builder()
+        .uuid(controlledVocabularyUuid)
+        .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
+        .vocabClass(ControlledVocabulary.ControlledVocabularyClass.QUALIFIED_VALUE)
+        .name("Controlled Vocabulary With Values").build());
+
+    MyControlledVocabularyItem managedAttributeItem = controlledVocabularyItemService
+      .create(MyControlledVocabularyItem.builder()
+        .uuid(UUID.randomUUID())
+        .group("grp")
+        .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.DATE)
+        .name("the date").build());
+    managedAttributeItem.setControlledVocabulary(managedAttribute);
+    controlledVocabularyItemService.update(managedAttributeItem);
+
+    Person p = Person.builder().build();
+    myQualifiedValueValidator.validate(p, "controlled_vocabulary_with_values", "the_date", "2025-06-01");
+
+    // try invalid value
+    assertThrows(
+      ValidationException.class, () -> myQualifiedValueValidator.validate(p, "controlled_vocabulary_with_values", "the_date", "abc"));
   }
 
 }

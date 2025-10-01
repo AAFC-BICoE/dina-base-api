@@ -30,16 +30,17 @@ public abstract class ControlledTermValueValidator<T extends ControlledVocabular
     this.vocabService = vocabService;
   }
 
-  public <D extends DinaEntity> String validateAndStandardize(D entity, String vocabKey, String vocabItemKey) {
+  public <D extends DinaEntity> void validate(D entity, String vocabKey, String vocabItemKey) {
 
     T vocab = vocabService.findOneByKey(vocabKey);
+    Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
     if (vocab == null || CONTROLLED_TERM != vocab.getVocabClass()) {
-      Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
       errors.reject(CONTROLLED_VOCABULARY_INVALID_KEY,
         getMessageForKey(CONTROLLED_VOCABULARY_INVALID_KEY, vocabKey));
       ValidationErrorsHelper.errorsToValidationException(errors);
     }
 
-    return validateKeyAndStandardize(entity, vocabItemKey, () -> vocabItemService.findOneByKey(vocabItemKey.toLowerCase(), vocab.getUuid(), null));
+    validateKey(vocabItemKey, () -> vocabItemService.findOneByKey(vocabItemKey.toLowerCase(), vocab.getUuid(), null), errors);
+    ValidationErrorsHelper.errorsToValidationException(errors);
   }
 }

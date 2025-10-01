@@ -32,9 +32,8 @@ public class QualifiedValueValidator<T extends ControlledVocabulary, E extends C
 
   public <D extends DinaEntity> void validate(D entity, String vocabKey, String vocabItemKey, String value) {
     T vocab = vocabService.findOneByKey(vocabKey);
-
+    Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
     if (vocab == null || QUALIFIED_VALUE != vocab.getVocabClass()) {
-      Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
       errors.reject(CONTROLLED_VOCABULARY_INVALID_KEY,
         getMessageForKey(CONTROLLED_VOCABULARY_INVALID_KEY, vocabKey));
       ValidationErrorsHelper.errorsToValidationException(errors);
@@ -42,8 +41,13 @@ public class QualifiedValueValidator<T extends ControlledVocabulary, E extends C
 
     E vocabItem = vocabItemService.findOneByKey(vocabItemKey, vocab.getUuid(), null);
 
-    Errors errors = ValidationErrorsHelper.newErrorsObject(entity);
+    if(vocabItem == null) {
+      errors.reject(CONTROLLED_VOCABULARY_ITEM_INVALID_KEY,
+        getMessageForKey(CONTROLLED_VOCABULARY_ITEM_INVALID_KEY, vocabItemKey, vocabKey));
+      ValidationErrorsHelper.errorsToValidationException(errors);
+    }
     validateItem(vocabItem, value, errors);
 
+    ValidationErrorsHelper.errorsToValidationException(errors);
   }
 }

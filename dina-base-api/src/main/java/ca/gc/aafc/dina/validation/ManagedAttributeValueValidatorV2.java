@@ -38,52 +38,24 @@ public abstract class ManagedAttributeValueValidatorV2<E extends ControlledVocab
    */
   public abstract String getDinaComponent();
 
-  /**
-   * Same as {@link #validate(DinaEntity, Map, ValidationContext)} but without a {@link ValidationContext}.
-   * @param entity
-   * @param managedAttributes
-   * @param <D>
-   */
+
   public <D extends DinaEntity> void validate(D entity, Map<String, String> managedAttributes) {
-  //  validate(entity, keyAndAssignedValue, null);
     validate(managedAttributes, ValidationErrorsHelper.newErrorsObject(entity));
   }
 
-  /**
-   * Validates the managedAttributes attached to the provided object using a {@link ValidationContext}.
-   * @param objIdentifier an identifier used in the error message to identify the target
-   * @param target
-   * @param managedAttributes
-   * @param validationContext will be used to call preValidateValue
-   * @throws javax.validation.ValidationException
-   */
   public void validate(String objIdentifier, Object target, Map<String, String> managedAttributes) {
     Objects.requireNonNull(target);
-    Errors errors = ValidationErrorsHelper.newErrorsObject(objIdentifier, target);
-    validate(managedAttributes, errors);
+    validate(managedAttributes, ValidationErrorsHelper.newErrorsObject(objIdentifier, target));
   }
 
   /**
-   * Internal validate method that is using {@link ValidationContext}
+   * Internal validate method that is throwing {@link javax.validation.ValidationException} if there is
+   * any errors
    * @param managedAttributes
    * @param errors
-   * @param validationContext
    */
   private void validate(Map<String, String> managedAttributes, Errors errors) {
     validateItems(managedAttributes, ()->  vocabItemService.findAllByKeys(managedAttributes.keySet(), getControlledVocabularyUuid(), getDinaComponent()), errors);
     ValidationErrorsHelper.errorsToValidationException(errors);
   }
-
-  /**
-   * Override this method to add additional validation before a value is validated for a specific managed attribute.
-   * @param managedAttributeDefinition
-   * @param value
-   * @param errors
-   * @param validationContext optional, can be null. The ValidationContext is simply the one provided to validate method
-   * @return true if the validation of the value should proceed or false if it should not since there is already an error
-   */
-  protected boolean preValidateValue(E managedAttributeDefinition, String value, Errors errors) {
-    return true;
-  }
-
 }
