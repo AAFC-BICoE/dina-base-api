@@ -17,8 +17,9 @@ import ca.gc.aafc.dina.entity.MyControlledVocabularyItem;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.util.UUIDHelper;
+import ca.gc.aafc.dina.validation.ControlledTermValueValidator;
 import ca.gc.aafc.dina.validation.ControlledVocabularyItemValidator;
-import ca.gc.aafc.dina.validation.ControlledVocabularyValueValidator;
+import ca.gc.aafc.dina.validation.ManagedAttributeValueValidatorV2;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -27,6 +28,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.transaction.Transactional;
+import lombok.Setter;
 
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class)
@@ -116,19 +118,38 @@ public class ControlledVocabularyServiceIT {
     }
 
     @Service
-    public static class MyControlledVocabularyValueValidator extends ControlledVocabularyValueValidator<MyControlledVocabularyItem> {
-      public MyControlledVocabularyValueValidator(@Named("validationMessageSource") MessageSource messageSource, ControlledVocabularyItemService<MyControlledVocabularyItem> vocabItemService) {
+    public static class MyManagedAttributeValueValidator extends
+      ManagedAttributeValueValidatorV2<MyControlledVocabularyItem> {
+
+      // mutable to ease testing only
+      @Setter
+      private UUID controlledVocabularyUuid;
+      @Setter
+      private String dinaComponent;
+
+      public MyManagedAttributeValueValidator(@Named("validationMessageSource") MessageSource messageSource, ControlledVocabularyItemService<MyControlledVocabularyItem> vocabItemService) {
         super(messageSource, vocabItemService);
       }
 
       @Override
       public UUID getControlledVocabularyUuid() {
-        return CONTROLLED_VOCAB_UUID;
+        return controlledVocabularyUuid;
       }
 
       @Override
       public String getDinaComponent() {
-        return null;
+        return dinaComponent;
+      }
+    }
+
+    @Service
+    public static class MyControlledTermValueValidator extends
+      ControlledTermValueValidator<MyControlledVocabulary, MyControlledVocabularyItem> {
+
+      public MyControlledTermValueValidator(@Named("validationMessageSource") MessageSource messageSource,
+                                            ControlledVocabularyService<MyControlledVocabulary> vocabService,
+                                            ControlledVocabularyItemService<MyControlledVocabularyItem> vocabItemService) {
+        super(messageSource, vocabService, vocabItemService);
       }
     }
 
