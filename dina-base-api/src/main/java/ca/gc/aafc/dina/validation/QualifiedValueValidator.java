@@ -37,17 +37,16 @@ public class QualifiedValueValidator<T extends ControlledVocabulary, E extends C
       errors.reject(CONTROLLED_VOCABULARY_INVALID_KEY,
         getMessageForKey(CONTROLLED_VOCABULARY_INVALID_KEY, vocabKey));
       ValidationErrorsHelper.errorsToValidationException(errors);
+      return;
     }
 
     E vocabItem = vocabItemService.findOneByKey(vocabItemKey, vocab.getUuid(), null);
-
-    if(vocabItem == null) {
+    if (vocabItem != null) {
+      validateItem(vocabItem, value, errors);
+    } else {
       errors.reject(CONTROLLED_VOCABULARY_ITEM_INVALID_KEY,
         getMessageForKey(CONTROLLED_VOCABULARY_ITEM_INVALID_KEY, vocabItemKey, vocabKey));
-      ValidationErrorsHelper.errorsToValidationException(errors);
     }
-    validateItem(vocabItem, value, errors);
-
     ValidationErrorsHelper.errorsToValidationException(errors);
   }
 }
