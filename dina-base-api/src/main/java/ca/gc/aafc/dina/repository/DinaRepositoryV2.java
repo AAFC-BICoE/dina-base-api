@@ -428,8 +428,9 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     return getAll(queryComponents);
   }
 
-  public PagedResource<JsonApiDto<D>> getAll(QueryComponent queryComponents) {
+  public PagedResource<JsonApiDto<D>> getAll(QueryComponent qc) {
 
+    QueryComponent queryComponents = transformQueryComponent(qc);
     FilterComponent fc = queryComponents.getFilters();
 
     Set<String> relationshipsPath = EntityFilterHelper.extractRelationships(queryComponents.getIncludes(), resourceClass, registry);
@@ -471,6 +472,15 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
         });
 
     return new PagedResource<>(pageOffset, pageLimit, resourceCount.intValue(), dtos);
+  }
+
+  /**
+   * Override this method to, optionally, transform the query component.
+   * @param queryComponents
+   * @return
+   */
+  protected QueryComponent transformQueryComponent(QueryComponent queryComponents) {
+    return queryComponents;
   }
 
   /**

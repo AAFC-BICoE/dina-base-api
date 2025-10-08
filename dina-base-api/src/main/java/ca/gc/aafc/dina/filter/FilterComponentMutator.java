@@ -10,7 +10,7 @@ import java.util.function.Predicate;
  * maintaining immutability by creating new instances.</p>
  *
  * <pre>{@code
- * QueryComponent result = FilterTransformer.transform(
+ * QueryComponent result = FilterComponentMutator.mutate(
  *   originalQuery,
  *   component -> component instanceof FilterExpression expr && "userId".equals(expr.attribute()),
  *   component -> FilterGroup.builder().component(...).build()
