@@ -247,5 +247,69 @@ public class SimpleFilterHandlerV2IT extends BasePostgresItContext {
       Arrays.asList(person1.getCreatedOn(), person2.getCreatedOn()),
       personDtos.resourceList().stream().map( m -> m.getDto().getCreatedOn()).collect(Collectors.toList())
     );
+
+    // try with greater or equals (goe)
+    qc = QueryComponent.builder()
+      .filters(new FilterExpression("createdOn", Ops.GOE, creationDateTime.toString()))
+      .build();
+
+    personDtos = this.personRepository.getAll(qc);
+    assertEquals(
+      Arrays.asList(person1.getCreatedOn(), person2.getCreatedOn()),
+      personDtos.resourceList().stream().map( m -> m.getDto().getCreatedOn()).collect(Collectors.toList())
+    );
+  }
+
+  @Test
+  public void findAllQueryComponent_whenComparable_filtersApplied() {
+
+    Person person1 = Person.builder().uuid(UUID.randomUUID()).name("person1").room(1).build();
+    Person person2 = Person.builder().uuid(UUID.randomUUID()).name("person2").room(2).build();
+    Person person3 = Person.builder().uuid(UUID.randomUUID()).name("person3").room(3).build();
+
+    entityManager.persist(person1);
+    entityManager.persist(person2);
+    entityManager.persist(person3);
+
+    // Filter by offsetDateTime:
+    QueryComponent qc = QueryComponent.builder()
+      .filters(new FilterExpression("room", Ops.LT, "3"))
+      .build();
+
+    var personDtos = this.personRepository.getAll(qc);
+    assertEquals(
+      Arrays.asList(1, 2),
+      personDtos.resourceList().stream().map( m -> m.getDto().getRoom()).collect(Collectors.toList())
+    );
+
+    qc = QueryComponent.builder()
+      .filters(new FilterExpression("room", Ops.GT, "2"))
+      .build();
+
+    personDtos = this.personRepository.getAll(qc);
+    assertEquals(
+      List.of(3),
+      personDtos.resourceList().stream().map( m -> m.getDto().getRoom()).collect(Collectors.toList())
+    );
+
+    qc = QueryComponent.builder()
+      .filters(new FilterExpression("room", Ops.GOE, "2"))
+      .build();
+
+    personDtos = this.personRepository.getAll(qc);
+    assertEquals(
+      List.of(2, 3),
+      personDtos.resourceList().stream().map( m -> m.getDto().getRoom()).collect(Collectors.toList())
+    );
+
+    qc = QueryComponent.builder()
+      .filters(new FilterExpression("room", Ops.LOE, "2"))
+      .build();
+
+    personDtos = this.personRepository.getAll(qc);
+    assertEquals(
+      List.of(1, 2),
+      personDtos.resourceList().stream().map( m -> m.getDto().getRoom()).collect(Collectors.toList())
+    );
   }
 }
