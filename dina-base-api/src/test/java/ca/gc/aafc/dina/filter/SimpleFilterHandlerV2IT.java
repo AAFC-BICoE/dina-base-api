@@ -271,14 +271,14 @@ public class SimpleFilterHandlerV2IT extends BasePostgresItContext {
     entityManager.persist(person2);
     entityManager.persist(person3);
 
-    // Filter by offsetDateTime:
+    // try filtering by the different operators (LT, LOE, GT, GOE)
     QueryComponent qc = QueryComponent.builder()
       .filters(new FilterExpression("room", Ops.LT, "3"))
       .build();
 
     var personDtos = this.personRepository.getAll(qc);
     assertEquals(
-      Arrays.asList(1, 2),
+      List.of(1, 2),
       personDtos.resourceList().stream().map( m -> m.getDto().getRoom()).collect(Collectors.toList())
     );
 
