@@ -149,7 +149,9 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
       case "EQ" -> Ops.EQ;
       case "NEQ" -> Ops.NE;
       case "LT" -> Ops.LT;
+      case "LOE" -> Ops.LOE;
       case "GT" -> Ops.GT;
+      case "GOE" -> Ops.GOE;
       case "LIKE" -> Ops.LIKE;
       case "ILIKE" -> Ops.LIKE_IC;
       case "IN" -> Ops.IN;
