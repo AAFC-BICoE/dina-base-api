@@ -146,6 +146,7 @@ public final class SimpleFilterHandlerV2 {
       // lower case. Could have performance impact on very large tables
       case LIKE_IC -> ctx.cb().like(ctx.cb().lower((Path<String>) path), value.toLowerCase());
       case IN -> generateInPredicate(ctx, path, value);
+      case LT, LOE, GT, GOE -> generateComparablePredicate(ctx.cb(), path, operator, ctx.parser().apply(value, path.getJavaType()));
       default -> {
         log.warn("Unhandled operator: {}", operator);
         yield null;
@@ -210,6 +211,44 @@ public final class SimpleFilterHandlerV2 {
       }
     }
     return null;
+  }
+
+  /**
+   * Generates a predicate for the given attribute and value for operators LT, LOE, GT, GOE
+   *
+   * @param criteriaBuilder The CriteriaBuilder instance
+   * @param path The path to the entity attribute
+   * @param operator the operator
+   * @param value The value to compare (as Object)
+   * @return Predicate representing the operation
+   * @throws IllegalArgumentException if the value type or operator is not comparable
+   */
+  public static Predicate generateComparablePredicate(CriteriaBuilder criteriaBuilder,
+                                   Path<?> path, Ops operator, Object value) {
+
+    if (value == null) {
+      throw new IllegalArgumentException("Value cannot be null");
+    }
+
+    if (!(value instanceof Comparable)) {
+      throw new IllegalArgumentException(
+        "Value must implement Comparable. Type: " + value.getClass().getName()
+      );
+    }
+
+    @SuppressWarnings("unchecked")
+    Path<Comparable<Object>> comparablePath = (Path<Comparable<Object>>) path;
+
+    @SuppressWarnings("unchecked")
+    Comparable<Object> comparableValue = (Comparable<Object>) value;
+
+    return switch (operator) {
+      case LT -> criteriaBuilder.lessThan(comparablePath, comparableValue);
+      case LOE -> criteriaBuilder.lessThanOrEqualTo(comparablePath, comparableValue);
+      case GT -> criteriaBuilder.greaterThan(comparablePath, comparableValue);
+      case GOE ->  criteriaBuilder.greaterThanOrEqualTo(comparablePath, comparableValue);
+      default -> throw new IllegalArgumentException("Not a supported operator: " + operator);
+    };
   }
 
   /**
