@@ -127,6 +127,8 @@ public class ISODateTime {
    * <p>
    * This returns the latest possible moment that still matches
    * the original input. For fully specified dates, this returns the same value as the start.
+   *
+   * Precision is limited to milliseconds (3 decimal places) for database compatibility.
    * </p>
    *
    * <h3>Examples:</h3>
@@ -148,16 +150,16 @@ public class ISODateTime {
     switch (format) {
       case YYYY:
         return YearMonth.from(start).withMonth(12).atEndOfMonth()
-          .atTime(23, 59, 59, 999_999_999);
+          .atTime(23, 59, 59, 999_000_000);  // 999 milliseconds
       case YYYY_MM:
         return YearMonth.from(start).atEndOfMonth()
-          .atTime(23, 59, 59, 999_999_999);
+          .atTime(23, 59, 59, 999_000_000);
       case YYYY_MM_DD:
-        return start.toLocalDate().atTime(23, 59, 59, 999_999_999);
+        return start.toLocalDate().atTime(23, 59, 59, 999_000_000);
       case YYYY_MM_DD_HH_MM:
-        return start.withSecond(59).withNano(999_999_999);
+        return start.withSecond(59).withNano(999_000_000);
       case YYYY_MM_DD_HH_MM_SS:
-        return start.withNano(999_999_999);
+        return start.withNano(999_000_000);
       case YYYY_MM_DD_HH_MM_SS_MMM:
         return start;
       default:
