@@ -18,7 +18,7 @@ page: 'page' '[' ( 'limit' | 'offset' ) ']' '=' pageValue;
 
 include: 'include' '=' propertyName ( ',' propertyName )*;
 
-comparison: 'EQ' | 'NEQ' | 'GT' | 'LT' | 'LIKE' | 'ILIKE' | 'IN';
+comparison: 'EQ' | 'NEQ' | 'GT' | 'GOE' | 'LT' | 'LOE' | 'LIKE' | 'ILIKE' | 'IN';
 
 namePart: (LETTERS|UNDERSCORE)+ (LETTERS | INT | UNDERSCORE | DOT)*;
 
