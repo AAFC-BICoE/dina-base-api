@@ -34,7 +34,7 @@ public class ISODateTimeTest {
     ISODateTime result = ISODateTime.parse("2004");
     assertEquals(LocalDateTime.of(2004, 1, 1, 0, 0, 0, 0),
       result.getLocalDateTime());
-    assertEquals(LocalDateTime.of(2004, 12, 31, 23, 59, 59, 999_999_999),
+    assertEquals(LocalDateTime.of(2004, 12, 31, 23, 59, 59, 999_000_000),
       result.getLocalEndDateTime());
     assertEquals(ISODateTime.Format.YYYY, result.getFormat());
   }
@@ -44,7 +44,7 @@ public class ISODateTimeTest {
     ISODateTime result = ISODateTime.parse("2004-06");
     assertEquals(LocalDateTime.of(2004, 6, 1, 0, 0, 0, 0),
       result.getLocalDateTime());
-    assertEquals(LocalDateTime.of(2004, 6, 30, 23, 59, 59, 999_999_999),
+    assertEquals(LocalDateTime.of(2004, 6, 30, 23, 59, 59, 999_000_000),
       result.getLocalEndDateTime());
     assertEquals(ISODateTime.Format.YYYY_MM, result.getFormat());
   }
@@ -55,7 +55,7 @@ public class ISODateTimeTest {
 
     assertEquals(LocalDateTime.of(2004, 6, 15, 0, 0, 0, 0),
       result.getLocalDateTime());
-    assertEquals(LocalDateTime.of(2004, 6, 15, 23, 59, 59, 999_999_999),
+    assertEquals(LocalDateTime.of(2004, 6, 15, 23, 59, 59, 999_000_000),
       result.getLocalEndDateTime());
     assertEquals(ISODateTime.Format.YYYY_MM_DD, result.getFormat());
   }
@@ -66,7 +66,7 @@ public class ISODateTimeTest {
 
     assertEquals(LocalDateTime.of(2004, 6, 15, 14, 30, 0, 0),
       result.getLocalDateTime());
-    assertEquals(LocalDateTime.of(2004, 6, 15, 14, 30, 59, 999_999_999),
+    assertEquals(LocalDateTime.of(2004, 6, 15, 14, 30, 59, 999_000_000),
       result.getLocalEndDateTime());
     assertEquals(ISODateTime.Format.YYYY_MM_DD_HH_MM, result.getFormat());
   }
@@ -77,7 +77,7 @@ public class ISODateTimeTest {
 
     assertEquals(LocalDateTime.of(2004, 6, 15, 14, 30, 45, 0),
       result.getLocalDateTime());
-    assertEquals(LocalDateTime.of(2004, 6, 15, 14, 30, 45, 999_999_999),
+    assertEquals(LocalDateTime.of(2004, 6, 15, 14, 30, 45, 999_000_000),
       result.getLocalEndDateTime());
     assertEquals(ISODateTime.Format.YYYY_MM_DD_HH_MM_SS, result.getFormat());
   }
