@@ -17,6 +17,10 @@ import java.util.regex.Pattern;
 /**
  * ISO DateTime representation with support for partial dates.
  * This class is immutable.
+ *
+ * localDateTime represents the earliest possible moment matching the input (e.g., "2004" → 2004-01-01T00:00:00),
+ * while localEndDateTime represents the latest possible moment (e.g., "2004" → 2004-12-31T23:59:59.999999999).
+ * Together, they define the full temporal range of a partial date, with both values being equal when the date is fully specified.
  */
 @AllArgsConstructor
 @Builder
@@ -174,9 +178,7 @@ public class ISODateTime {
       case YYYY_MM_DD_HH_MM_SS_MMM:
         return localDateTime.toString();
       default:
-        break;
+        throw new IllegalStateException("Unexpected format: " + format);
     }
-    return "";
   }
-
 }
