@@ -17,6 +17,10 @@ import java.util.regex.Pattern;
 /**
  * ISO DateTime representation with support for partial dates.
  * This class is immutable.
+ *
+ * localDateTime represents the earliest possible moment matching the input (e.g., "2004" → 2004-01-01T00:00:00),
+ * while localEndDateTime represents the latest possible moment (e.g., "2004" → 2004-12-31T23:59:59.999999999).
+ * Together, they define the full temporal range of a partial date, with both values being equal when the date is fully specified.
  */
 @AllArgsConstructor
 @Builder
@@ -79,6 +83,7 @@ public class ISODateTime {
   }
 
   private final LocalDateTime localDateTime;
+  private final LocalDateTime localEndDateTime;
   private final Format format;
 
   /**
@@ -114,7 +119,52 @@ public class ISODateTime {
       default:
         break;
     }
-    return new ISODateTime(parsedLocalDateTime, format);
+    return new ISODateTime(parsedLocalDateTime, calculateAmbiguityEndDateTime(parsedLocalDateTime, format), format);
+  }
+
+  /**
+   * Calculates the end date-time of the ambiguity range of date/time based on the format precision.
+   * <p>
+   * This returns the latest possible moment that still matches
+   * the original input. For fully specified dates, this returns the same value as the start.
+   *
+   * Precision is limited to milliseconds (3 decimal places) for database compatibility.
+   * </p>
+   *
+   * <h3>Examples:</h3>
+   * <ul>
+   *   <li>YYYY (2004) → 2004-12-31T23:59:59.999</li>
+   *   <li>YYYY_MM (2004-06) → 2004-06-30T23:59:59.999</li>
+   *   <li>YYYY_MM_DD (2004-06-15) → 2004-06-15T23:59:59.999999999</li>
+   *   <li>YYYY_MM_DD_HH_MM (2004-06-15T14:30) → 2004-06-15T14:30:59.9999</li>
+   *   <li>YYYY_MM_DD_HH_MM_SS (2004-06-15T14:30:45) → 2004-06-15T14:30:45.999</li>
+   *   <li>YYYY_MM_DD_HH_MM_SS_MMM (2004-06-15T14:30:45.123) → 2004-06-15T14:30:45.123 (no change)</li>
+   * </ul>
+   *
+   * @param start the start date-time (earliest possible interpretation)
+   * @param format the precision format of the original input
+   * @return the end date-time representing the latest possible moment in the ambiguous range
+   * @throws IllegalStateException if an unexpected format is provided
+   */
+  private static LocalDateTime calculateAmbiguityEndDateTime(LocalDateTime start, Format format) {
+    switch (format) {
+      case YYYY:
+        return YearMonth.from(start).withMonth(12).atEndOfMonth()
+          .atTime(23, 59, 59, 999_000_000);  // 999 milliseconds
+      case YYYY_MM:
+        return YearMonth.from(start).atEndOfMonth()
+          .atTime(23, 59, 59, 999_000_000);
+      case YYYY_MM_DD:
+        return start.toLocalDate().atTime(23, 59, 59, 999_000_000);
+      case YYYY_MM_DD_HH_MM:
+        return start.withSecond(59).withNano(999_000_000);
+      case YYYY_MM_DD_HH_MM_SS:
+        return start.withNano(999_000_000);
+      case YYYY_MM_DD_HH_MM_SS_MMM:
+        return start;
+      default:
+        throw new IllegalStateException("Unexpected format: " + format);
+    }
   }
 
   public String toString() {
@@ -130,9 +180,7 @@ public class ISODateTime {
       case YYYY_MM_DD_HH_MM_SS_MMM:
         return localDateTime.toString();
       default:
-        break;
+        throw new IllegalStateException("Unexpected format: " + format);
     }
-    return "";
   }
-
 }
