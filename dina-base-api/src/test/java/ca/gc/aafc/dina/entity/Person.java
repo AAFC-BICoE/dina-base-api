@@ -52,6 +52,10 @@ public class Person implements DinaEntityIdentifiableByName {
   @Transient
   private String expensiveToCompute;
 
+  // Simulates a calculated field
+  @Transient
+  private String augmentedData;
+
   private String createdBy;
 
   private OffsetDateTime createdOn;

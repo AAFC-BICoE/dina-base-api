@@ -178,7 +178,10 @@ public class DinaRepositoryV2IT {
       .andExpect(status().isOk())
       .andReturn();
 
-    assertTrue(getResponse.getResponse().getContentAsString().contains(DinaRepositoryIT.EXPENSIVE_VALUE_TO_COMPUTE));
+    String responseAsString = getResponse.getResponse().getContentAsString();
+
+    assertTrue(responseAsString.contains(DinaRepositoryIT.EXPENSIVE_VALUE_TO_COMPUTE));
+    assertTrue(responseAsString.contains(DinaRepositoryIT.AUGMENTED_DATA_VALUE));
   }
 
   @Test

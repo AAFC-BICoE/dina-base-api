@@ -19,6 +19,7 @@ import io.crnk.core.queryspec.SortSpec;
 import io.crnk.core.resource.list.ResourceList;
 import io.crnk.core.resource.meta.PagedMetaInformation;
 import java.util.Comparator;
+import java.util.Set;
 import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -52,6 +53,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DinaRepositoryIT {
 
   public static final String EXPENSIVE_VALUE_TO_COMPUTE = "$$$$";
+  public static final String AUGMENTED_DATA_VALUE = "VR Augmented";
 
   @Inject
   private DinaRepository<PersonDTO, Person> dinaRepository;
@@ -154,7 +156,7 @@ public class DinaRepositoryIT {
 
     // Starting the query from the personDto, try to retrieve the ownerDto using nested includes.
     List<PersonDTO> result = dinaRepository.findAll(List.of(personDto.getUuid()), querySpec);
-    assertEquals(ownerDto.getName(), result.get(0).getDepartment().getDepartmentOwner().getName());
+    assertEquals(ownerDto.getName(), result.getFirst().getDepartment().getDepartmentOwner().getName());
   }
 
   @Test
@@ -235,7 +237,7 @@ public class DinaRepositoryIT {
 
     List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
     assertEquals(1, resultList.size());
-    assertEqualsPersonDtos(expected, resultList.get(0), false);
+    assertEqualsPersonDtos(expected, resultList.getFirst(), false);
   }
 
   @Test
@@ -246,13 +248,13 @@ public class DinaRepositoryIT {
     }
 
     QuerySpec querySpec = new QuerySpec(PersonDTO.class);
-    PersonDTO expected = persited.get(0);
+    PersonDTO expected = persited.getFirst();
     querySpec.addFilter(
       PathSpec.of("customField").filter(FilterOperator.EQ, expected.getCustomField()));
 
     List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
     assertEquals(1, resultList.size());
-    assertEquals(expected.getUuid(), resultList.get(0).getUuid());
+    assertEquals(expected.getUuid(), resultList.getFirst().getUuid());
   }
 
   @Test
@@ -276,7 +278,7 @@ public class DinaRepositoryIT {
 
     List<PersonDTO> resultList = dinaRepository.findAll(null, querySpec);
     assertEquals(1, resultList.size());
-    assertEquals(expected.getUuid(), resultList.get(0).getUuid());
+    assertEquals(expected.getUuid(), resultList.getFirst().getUuid());
   }
 
   @Test
@@ -691,6 +693,11 @@ public class DinaRepositoryIT {
         entity.setExpensiveToCompute(EXPENSIVE_VALUE_TO_COMPUTE);
       }
       return entity;
+    }
+
+    @Override
+    public void augmentEntity(Person entity, Set<String> relationships) {
+      entity.setAugmentedData(AUGMENTED_DATA_VALUE);
     }
   }
 }
