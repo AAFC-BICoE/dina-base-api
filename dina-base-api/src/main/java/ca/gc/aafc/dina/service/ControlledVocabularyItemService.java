@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
@@ -108,5 +109,34 @@ public abstract class ControlledVocabularyItemService<T extends ControlledVocabu
     }
 
     return results.getFirst();
+  }
+
+  /**
+   * Retrieves all vocabulary items matching both specific keys and controlled vocabulary UUID.
+   * @param keys
+   * @param controlledVocabularyUuid
+   * @param dinaComponent
+   * @return
+   */
+  public List<T> findAllByKeys(Set<String> keys, UUID controlledVocabularyUuid, String dinaComponent) {
+    return findAll(
+      clazz,
+      (criteriaBuilder, root, em) -> {
+        Join<T, ControlledVocabulary> vocabularyJoin = root.join("controlledVocabulary", JoinType.INNER);
+
+        List<Predicate> predicates = new ArrayList<>();
+        CriteriaBuilder.In<String> in = criteriaBuilder.in(root.get(ControlledVocabularyItem.KEY_ATTRIBUTE_NAME));
+        keys.forEach(in::value);
+        predicates.add(in);
+        predicates.add(criteriaBuilder.equal(vocabularyJoin.get("uuid"), controlledVocabularyUuid));
+
+        if (dinaComponent != null) {
+          predicates.add(
+            criteriaBuilder.equal(root.get(ControlledVocabularyItem.DINA_COMPONENT_NAME),
+              dinaComponent));
+        }
+        return predicates.toArray(new Predicate[0]);
+      },
+      null, 0, BaseDAO.DEFAULT_LIMIT, Set.of(), Set.of());
   }
 }
