@@ -262,11 +262,23 @@ public class DefaultDinaService<E extends DinaEntity> implements DinaService<E> 
 
   /**
    * Override this method to handle optional fields
+   * {@inheritDoc}
    * @param entity
-   * @return
+   * @param optionalFields
    */
+  @Override
   public E handleOptionalFields(E entity, Map<String, List<String>> optionalFields) {
     return entity;
+  }
+
+  /**
+   * Override this method to augment entity data.
+   * {@inheritDoc}
+   * @param entity
+   * @param relationships
+   */
+  @Override
+  public void augmentEntity(E entity, Set<String> relationships) {
   }
 
   /**

@@ -77,6 +77,13 @@ public interface DinaService<E extends DinaEntity> {
   E handleOptionalFields(E entity, Map<String, List<String>> optionalFields);
 
   /**
+   * Used to compute or provide additional data after the entity is loaded.
+   * @param entity
+   * @param relationships
+   */
+  void augmentEntity(E entity, Set<String> relationships);
+
+  /**
    * Returns a reference to an entity that should exist without actually loading it. Useful to set
    * relationships without loading the entity instead of findOne.
    *

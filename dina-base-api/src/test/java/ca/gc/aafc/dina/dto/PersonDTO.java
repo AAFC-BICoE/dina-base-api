@@ -71,6 +71,8 @@ public class PersonDTO implements ca.gc.aafc.dina.dto.JsonApiResource {
 
   private String expensiveToCompute;
 
+  private String augmentedData;
+
   @JsonIgnore
   public UUID getJsonApiId() {
     return uuid;

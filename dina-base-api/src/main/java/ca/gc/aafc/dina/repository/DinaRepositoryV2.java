@@ -409,6 +409,8 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
       dinaService.handleOptionalFields(entity, optionalFields);
     }
 
+    dinaService.augmentEntity(entity, includes);
+
     Set<String> attributes = new HashSet<>(registry.getAttributesPerClass().get(entityClass));
     attributes.addAll(includes);
     addNestedAttributesFromIncludes(attributes, includes);
@@ -458,6 +460,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
       if (MapUtils.isNotEmpty(optionalFields)) {
         dinaService.handleOptionalFields(e, optionalFields);
       }
+      dinaService.augmentEntity(e, includes);
       dtos.add(jsonApiDtoAssistant.toJsonApiDto(dinaMapper.toDto(e, attributes, null), fields, includes));
     }
 
