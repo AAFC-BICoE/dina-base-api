@@ -27,8 +27,6 @@ include::messaging.adoc[]
 
 include::validation.adoc[]
 
-include::validationEndpoint.adoc[]
-
 include::auditing.adoc[]
 
 include::lazy_logging.adoc[]
