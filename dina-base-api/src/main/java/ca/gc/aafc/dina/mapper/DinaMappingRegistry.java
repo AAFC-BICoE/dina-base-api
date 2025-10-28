@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.mapper;
 
+import ca.gc.aafc.dina.dto.JsonApiCalculatedAttribute;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.jsonapi.JsonApiImmutable;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
@@ -112,6 +113,7 @@ public class DinaMappingRegistry {
     boolean ignoreNonMatchingAttributeType
   ) {
     Set<DinaAttribute> attributes = new HashSet<>();
+    Set<String> calculatedAttributes = new HashSet<>();
     Set<InternalRelation> internalRelations = new HashSet<>();
 
     for (Field dtoField : getAllFields(resourceClass)) {
@@ -120,7 +122,10 @@ public class DinaMappingRegistry {
         internalRelations.add(mapToInternalRelation(dtoField));
         graph.putAll(initGraph(parseGenericTypeForField(dtoField), visited, ignoreNonMatchingAttributeType));
       } else if (isFieldConsideredAnAttribute(resourceClass, entityClass, dtoField)) {
-        if (fieldHasSameDataType(entityClass, dtoField)) {
+        if (isCalculatedAttribute(dtoField)) {
+          calculatedAttributes.add(dtoField.getName());
+        }
+        else if (fieldHasSameDataType(entityClass, dtoField)) {
           // Unmarked dtoField with same data type considered attribute
           attributes.add(new DinaAttribute(dtoField.getName(), extractJsonApiImmutable(dtoField)));
         } else {
@@ -139,7 +144,7 @@ public class DinaMappingRegistry {
         }
       }
     }
-    return buildResourceEntry(resourceClass, entityClass, attributes, internalRelations);
+    return buildResourceEntry(resourceClass, entityClass, attributes, calculatedAttributes, internalRelations);
   }
 
   /**
@@ -161,6 +166,10 @@ public class DinaMappingRegistry {
    */
   public Set<String> getAttributesForClass(Class<?> clazz) {
     return attributesPerClass.get(clazz);
+  }
+
+  public Set<String> getCalculatedAttributesForClass(Class<?> clazz) {
+    return this.resourceGraph.get(clazz).getCalculatedAttributes();
   }
 
   /**
@@ -400,6 +409,11 @@ public class DinaMappingRegistry {
       && fieldExistsInBothClasses(dto, entity, dtoRelationField.getName());
   }
 
+  private static boolean isCalculatedAttribute(Field dtoField) {
+    return dtoField.isAnnotationPresent(JsonApiCalculatedAttribute.class);
+  }
+
+
   private static boolean fieldExistsInBothClasses(Class<?> dtoClass, Class<?> entityClass, String fieldName) {
     return getAllFields(dtoClass).stream().anyMatch(field -> fieldName.equals(field.getName()))
       && getAllFields(entityClass).stream().anyMatch(field -> fieldName.equals(field.getName()));
@@ -449,6 +463,7 @@ public class DinaMappingRegistry {
     Class<?> resourceClass,
     Class<?> entityClass,
     Set<DinaAttribute> attributes,
+    Set<String> calculatedAttributes,
     Set<InternalRelation> internalRelations
   ) {
     return DinaResourceEntry.builder()
@@ -456,6 +471,7 @@ public class DinaMappingRegistry {
       .entityClass(entityClass)
       .externalNameToTypeMap(parseExternalRelationNamesToType(resourceClass))
       .attributes(attributes)
+      .calculatedAttributes(calculatedAttributes)
       .internalRelations(internalRelations)
       .jsonIdFieldName(parseJsonIdFieldName(resourceClass))
       .fieldAdapterHandler(new DinaFieldAdapterHandler<>(resourceClass))
@@ -513,6 +529,7 @@ public class DinaMappingRegistry {
     private String jsonIdFieldName;
 
     private Set<DinaAttribute> attributes;
+    private Set<String> calculatedAttributes;
 
     private Set<InternalRelation> internalRelations;
     private Map<String, String> externalNameToTypeMap;

@@ -413,6 +413,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
     Set<String> attributes = new HashSet<>(registry.getAttributesPerClass().get(entityClass));
     attributes.addAll(includes);
+    addCalculatedAttributes(attributes, optionalFields);
     addNestedAttributesFromIncludes(attributes, includes);
 
     D dto = dinaMapper.toDto(entity, attributes, null);
@@ -454,6 +455,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
     Set<String> attributes = new HashSet<>(registry.getAttributesPerClass().get(entityClass));
     attributes.addAll(queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of());
+    addCalculatedAttributes(attributes, optionalFields);
     addNestedAttributesFromIncludes(attributes, includes);
 
     for (E e : entities) {
@@ -586,6 +588,27 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
             attributes.add(inc + "." + cal);
           }
         }
+      }
+    }
+  }
+
+  /**
+   * Calculated attributes are not added by default. They need to be requested.
+   * @param attributes
+   * @param optionalFields
+   */
+  private void addCalculatedAttributes(Set<String> attributes,
+                                       Map<String, List<String>> optionalFields) {
+    if (MapUtils.isEmpty(optionalFields) || !optionalFields.containsKey(jsonApiType)) {
+      return;
+    }
+
+    // for now we are only accepting our own jsonApiType
+    for (String optField : optionalFields.getOrDefault(jsonApiType, List.of())) {
+      if (registry.getCalculatedAttributesForClass(resourceClass).contains(optField)) {
+        attributes.add(optField);
+      } else {
+        log.debug("Unknown calculated field {}", optField);
       }
     }
   }

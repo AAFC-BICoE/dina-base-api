@@ -69,6 +69,7 @@ public class PersonDTO implements ca.gc.aafc.dina.dto.JsonApiResource {
   @IgnoreDinaMapping(reason = "derived from name + / + group")
   private String customField;
 
+  @JsonApiCalculatedAttribute
   private String expensiveToCompute;
 
   private String augmentedData;
