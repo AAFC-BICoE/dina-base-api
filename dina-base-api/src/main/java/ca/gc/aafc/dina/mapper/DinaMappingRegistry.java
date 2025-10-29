@@ -124,8 +124,7 @@ public class DinaMappingRegistry {
       } else if (isFieldConsideredAnAttribute(resourceClass, entityClass, dtoField)) {
         if (isCalculatedAttribute(dtoField)) {
           calculatedAttributes.add(dtoField.getName());
-        }
-        else if (fieldHasSameDataType(entityClass, dtoField)) {
+        } else if (fieldHasSameDataType(entityClass, dtoField)) {
           // Unmarked dtoField with same data type considered attribute
           attributes.add(new DinaAttribute(dtoField.getName(), extractJsonApiImmutable(dtoField)));
         } else {
