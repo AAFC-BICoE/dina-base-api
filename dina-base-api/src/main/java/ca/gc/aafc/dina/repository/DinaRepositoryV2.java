@@ -676,7 +676,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
   /**
    * Update the resource defined by the id in {@link JsonApiDocument} with the provided
-   * attributes adn/relationships
+   * attributes and/or relationships
    * @param patchDto
    * @return freshly reloaded dto of the updated resource
    */
