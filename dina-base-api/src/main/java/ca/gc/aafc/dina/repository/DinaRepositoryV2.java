@@ -653,20 +653,17 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
   /**
    * Update the resource defined by the id in {@link JsonApiDocument} with the provided
-   * attributes.
+   * attributes adn/relationships
    * @param patchDto
    * @return freshly reloaded dto of the updated resource
    */
   public JsonApiDto<D> update(JsonApiDocument patchDto)
       throws ResourceNotFoundException, ResourceGoneException {
 
-    // make sure data is safe to manipulate
-    checkSubmittedData(patchDto.getAttributes());
-    // We need to use Jackson for now here since MapStruct doesn't support setting
-    // values from Map<String, Object> yet.
-    // Reflection can't really be used since we won't know the type of the source
-    // and how to convert it.
-    D dto = objMapper.convertValue(patchDto.getAttributes(), resourceClass);
+    // make sure data is safe to manipulate (if data is provided)
+    if (patchDto.getAttributes() != null) {
+      checkSubmittedData(patchDto.getAttributes());
+    }
 
     // load entity
     E entity = dinaService.findOne(patchDto.getId(), entityClass);
@@ -677,10 +674,19 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     // Check for authorization on the entity
     authorizationService.authorizeUpdate(entity);
 
-    // apply DTO on entity using the keys from patchDto but remove all immutable fields (if any)
-    Set<String> attributesToPatch = new HashSet<>(patchDto.getData().getAttributesName());
-    attributesToPatch.removeAll(registry.getImmutableAttributesForClass(resourceClass, JsonApiImmutable.ImmutableOn.UPDATE));
-    dinaMapper.patchEntity(entity, dto, attributesToPatch, null);
+    // We need to use Jackson for now here since MapStruct doesn't support setting
+    // values from Map<String, Object> yet.
+    // Reflection can't really be used since we won't know the type of the source
+    // and how to convert it.
+    if (patchDto.getAttributes() != null) {
+      D dto = objMapper.convertValue(patchDto.getAttributes(), resourceClass);
+
+      // apply DTO on entity using the keys from patchDto but remove all immutable fields (if any)
+      Set<String> attributesToPatch = new HashSet<>(patchDto.getData().getAttributesName());
+      attributesToPatch.removeAll(registry.getImmutableAttributesForClass(resourceClass,
+        JsonApiImmutable.ImmutableOn.UPDATE));
+      dinaMapper.patchEntity(entity, dto, attributesToPatch, null);
+    }
 
     updateRelationships(entity, patchDto.getRelationships());
 
