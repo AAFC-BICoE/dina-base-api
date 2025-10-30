@@ -308,6 +308,28 @@ public class DinaRepositoryV2IT {
   }
 
   @Test
+  public void onUpdate_relationshipOnly_noException() throws Exception {
+
+    PersonDTO personDto = PersonDTO.builder()
+      .name("Bob Bulk Rel")
+      .build();
+
+    JsonApiDocument doc = JsonApiDocuments.createJsonApiDocument(null, PersonDTO.TYPE_NAME,
+      JsonAPITestHelper.toAttributeMap(personDto));
+    var created = repositoryV2.handleCreate(doc, null);
+    UUID assignedId = JsonApiModelAssistant.extractUUIDFromRepresentationModelLink(created);
+
+    JsonApiDocument docToUpdate =
+      JsonApiDocument.builder().data(JsonApiDocument.ResourceObject.builder()
+        .id(assignedId)
+        .type(PersonDTO.TYPE_NAME)
+        .relationships(
+          Map.of("department", JsonApiDocument.RelationshipObject.builder().data(null).build()))
+        .build()).build();
+    repositoryV2.handleUpdate(docToUpdate, assignedId);
+  }
+  
+  @Test
   public void onBulk_noException() throws Exception {
     PersonDTO personDto1 = PersonDTO.builder()
       .name("Bob 1 Bulk")
