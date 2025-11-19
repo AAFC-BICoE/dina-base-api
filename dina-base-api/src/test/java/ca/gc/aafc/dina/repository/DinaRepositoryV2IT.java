@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.repository;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +32,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.toedter.spring.hateoas.jsonapi.JsonApiConfiguration;
+import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.dto.ApiInfoDto;
 import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
@@ -57,6 +60,7 @@ import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 
 import static ca.gc.aafc.dina.repository.DinaRepository.IT_OM_TYPE_REF;
+import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiModel;
 import static com.toedter.spring.hateoas.jsonapi.MediaTypes.JSON_API_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -467,6 +471,16 @@ public class DinaRepositoryV2IT {
   }
 
   @Test
+  public void onApiInfo_infoReturned() throws Exception {
+    var response = mockMvc.perform(
+        get("/" + ApiInfoDto.TYPE_NAME)
+          .contentType(JSON_API_VALUE))
+      .andExpect(status().isOk())
+      .andReturn();
+    assertTrue(StringUtils.isNotBlank(response.getResponse().getContentAsString()));
+  }
+
+  @Test
   public void create_unsafePayload_ExceptionThrown() {
     PersonDTO personDto1 = PersonDTO.builder()
       .name("abc<iframe src=javascript:alert(32311)>")
@@ -502,6 +516,17 @@ public class DinaRepositoryV2IT {
       @Override
       protected void preCreate(Department entity) {
         entity.setUuid(UUID.randomUUID());
+      }
+    }
+
+    @RestController
+    @RequestMapping(produces = JSON_API_VALUE)
+    static class ApiInfoRepository {
+      @GetMapping(ApiInfoDto.TYPE_NAME)
+      public ResponseEntity<RepresentationModel<?>> onApiInfo() {
+        ApiInfoDto infoDto = new ApiInfoDto();
+        infoDto.setModuleVersion("test-1");
+        return ResponseEntity.ok(jsonApiModel().model(RepresentationModel.of(infoDto)).build());
       }
     }
 
