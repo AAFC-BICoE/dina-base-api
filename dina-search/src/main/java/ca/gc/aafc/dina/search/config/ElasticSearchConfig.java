@@ -1,33 +1,29 @@
 package ca.gc.aafc.dina.search.config;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.KeyStore;
-import java.security.SecureRandom;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import javax.net.ssl.SSLContext;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import javax.net.ssl.TrustManagerFactory;
-import lombok.extern.log4j.Log4j2;
-
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.security.KeyStore;
+import java.security.SecureRandom;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import lombok.extern.log4j.Log4j2;
 
 @Configuration
 @Log4j2
@@ -55,7 +51,7 @@ public class ElasticSearchConfig {
         new UsernamePasswordCredentials(esProps.getUsername(), esProps.getPassword()));
     }
 
-    if( StringUtils.isNotBlank(esProps.getCertPath())) {
+    if (StringUtils.isNotBlank(esProps.getCertPath())) {
       sslContext = createSSLContext(esProps.getCertPath());
     }
     return createElasticsearchClient(restClientBuilder, credentialsProvider, sslContext);
