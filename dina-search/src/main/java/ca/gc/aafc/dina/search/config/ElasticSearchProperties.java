@@ -26,4 +26,8 @@ public class ElasticSearchProperties {
    */
   private int port;
 
+  private String certPath;
+
+  private String username;
+  private String password;
 }
