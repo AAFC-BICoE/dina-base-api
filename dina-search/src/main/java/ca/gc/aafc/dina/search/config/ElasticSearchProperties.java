@@ -21,6 +21,8 @@ public class ElasticSearchProperties {
   @NotBlank
   private String host;
 
+  private String scheme = "https";
+
   /**
    * If not provided the value will be 0
    */

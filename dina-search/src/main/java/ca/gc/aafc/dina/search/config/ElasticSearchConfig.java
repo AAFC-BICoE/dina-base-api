@@ -38,7 +38,7 @@ public class ElasticSearchConfig {
     log.debug("Configuring Elasticsearch client for {}:{}", esProps.getHost(), port);
 
     var restClientBuilder = RestClient.builder(
-      new HttpHost(esProps.getHost(), port)
+      new HttpHost(esProps.getHost(), port, esProps.getScheme())
     );
 
     // Optional
