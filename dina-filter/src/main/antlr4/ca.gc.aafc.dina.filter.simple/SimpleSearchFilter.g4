@@ -4,13 +4,13 @@ simpleFilter: expression ( '&' expression )*;
 
 expression: filter | fiql | fields | optFields | sort | page | include;
 
-filter: 'filter' '[' propertyName ']'( '[' comparison ']' )? '=' attributeValue (',' attributeValue)*;
+filter: FILTER_KW '[' propertyName ']'( '[' comparison ']' )? '=' attributeValue (',' attributeValue)*;
 
 fiql: 'fiql' '=' fiqlPart;
 
-fields: 'fields' '[' type ']' '=' propertyName ( ',' propertyName )*;
+fields: FIELDS_KW '[' type ']' '=' propertyName ( ',' propertyName )*;
 
-optFields: 'optfields' '[' type ']' '=' propertyName ( ',' propertyName )*;
+optFields: OPT_FIELDS_KW '[' type ']' '=' propertyName ( ',' propertyName )*;
 
 sort: 'sort' '=' sortPropertyName ( ',' sortPropertyName )*;
 
@@ -20,7 +20,8 @@ include: 'include' '=' propertyName ( ',' propertyName )*;
 
 comparison: 'EQ' | 'NEQ' | 'GT' | 'GOE' | 'LT' | 'LOE' | 'LIKE' | 'ILIKE' | 'IN';
 
-namePart: (LETTERS|UNDERSCORE)+ (LETTERS | INT | UNDERSCORE | DOT)*;
+namePart: (LETTERS|UNDERSCORE)+ (LETTERS | INT | UNDERSCORE | DOT |
+  FIELDS_KW | FILTER_KW)*;
 
 propertyName: namePart;
 fieldName: namePart;
@@ -41,9 +42,16 @@ attributeAcceptedValue: (
   | PERCENTAGE
   | SPACE
   | FORWARD_SLASH
-  | COLON)+;
+  | COLON
+  | FILTER_KW
+  | FIELDS_KW)+;
 
 pageValue: INT;
+
+// Keywords
+FIELDS_KW: 'fields';
+OPT_FIELDS_KW: 'optfields';
+FILTER_KW: 'filter';
 
 // lexer rules in order
 QUOTED_STRING: '"' (~["])* '"';
@@ -51,10 +59,10 @@ INT: [0-9]+;
 LETTERS: [a-zA-Z]+;
 UNDERSCORE: [_];
 DASH: '-';
-DOT: [.];
 FORWARD_SLASH: [/];
 SPACE: [ ];
 PARENTHESIS: [()];
+DOT: '.';
 PERCENTAGE: '%';
 ASTERISK: '*';
 COLON: ':';
