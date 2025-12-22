@@ -12,7 +12,6 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import io.restassured.http.Header;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
@@ -43,9 +42,6 @@ public class BaseRestAssuredTest {
   public static final String JSON_PATCH_CONTENT_TYPE = "application/json-patch+json";
   public static final String JSON_API_BULK = "application/vnd.api+json; ext=bulk";
 
-  protected static final Header CRNK_HEADER = new Header("crnk-compact", "true");
-  private static final String CRNK_OPERATION_ENDPOINT = "operations";
-
   public static final String JSON_API_BULK_PATH = "bulk";
   public static final String JSON_API_BULK_LOAD_PATH = "bulk-load";
 
@@ -71,7 +67,6 @@ public class BaseRestAssuredTest {
    */
   private RequestSpecification newRequest() {
     return given()
-      .header(CRNK_HEADER)
       .config(RestAssured.config()
         .encoderConfig(EncoderConfig.encoderConfig()
           .defaultCharsetForContentType("UTF-8", JSON_API_CONTENT_TYPE)
@@ -181,27 +176,6 @@ public class BaseRestAssuredTest {
       .delete(StringUtils.appendIfMissing(path, "/") + "{id}", id);
     
     response.then().statusCode(expectedReturnCode);
-  }
-
-  /**
-   * @deprecated to be removed
-   * Send a PATCH to the Crnk Operation endpoint.
-   * Operation requires all entries to have an id even for POST to uniquely identify them.
-   * The id assigned to POST can be any values, it will be changed by the backend.
-   * @param body
-   * @return
-   */
-  @Deprecated
-  protected ValidatableResponse sendOperation(Object body) {
-    Response response = newRequest()
-        .accept(JSON_PATCH_CONTENT_TYPE)
-        .contentType(JSON_PATCH_CONTENT_TYPE)
-        .body(body)
-        .patch(CRNK_OPERATION_ENDPOINT);
-
-    return response.then()
-        .log().ifValidationFails()
-        .statusCode(HttpStatus.OK.value());
   }
 
   /**
