@@ -244,7 +244,7 @@ public final class SimpleObjectFilterHandlerV2 {
    *
    * @param o the object from which we want to extract the property
    * @param path the path of the property
-   * @return a Comparable<Object> representation of the property, or null if the property itself is null.
+   * @return a {Comparable<Object>} representation of the property, or null if the property itself is null.
    * @throws UnsupportedOperationException if the path resolves to a Collection.
    */
   private static Comparable<Object> propertyAsComparable(Object o, String path) {
@@ -260,7 +260,7 @@ public final class SimpleObjectFilterHandlerV2 {
     }
 
     if (obj instanceof Comparable<?> comp) {
-      return (other) -> {
+      return other -> {
         try {
           return ((Comparable<Object>) comp).compareTo(other);
         } catch (ClassCastException e) {
@@ -271,7 +271,7 @@ public final class SimpleObjectFilterHandlerV2 {
       };
     }
     final String stringRepresentation = obj.toString();
-    return (other) -> stringRepresentation.compareTo(Objects.toString(other, ""));
+    return other -> stringRepresentation.compareTo(Objects.toString(other, ""));
   }
 
   private static <T> Predicate<T> generatePredicate(String path, Ops operator, String value) {
