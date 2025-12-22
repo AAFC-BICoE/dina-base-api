@@ -55,7 +55,7 @@ public final class SimpleObjectFilterHandlerV2 {
       }
       case FilterExpression fEx ->
         predicate = buildPredicate(fEx);
-      default -> throw new IllegalStateException("Unexpected value: " + fc);dina-base-api/src/main/java/ca/gc/aafc/dina/filter/SimpleObjectFilterHandlerV2.java
+      default -> throw new IllegalStateException("Unexpected value: " + fc);
     }
 
     return predicate;
@@ -145,7 +145,7 @@ public final class SimpleObjectFilterHandlerV2 {
             comparator.thenComparing(generateComparator(sort));
         }
       }
-    }dina-base-api/src/main/java/ca/gc/aafc/dina/filter/SimpleObjectFilterHandlerV2.java
+    }
     return comparator;
   }
 
