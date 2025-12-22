@@ -244,7 +244,7 @@ public final class SimpleObjectFilterHandlerV2 {
    *
    * @param o the object from which we want to extract the property
    * @param path the path of the property
-   * @return a {Comparable<Object>} representation of the property, or null if the property itself is null.
+   * @return a {@code Comparable<Object>} representation of the property, or null if the property itself is null.
    * @throws UnsupportedOperationException if the path resolves to a Collection.
    */
   private static Comparable<Object> propertyAsComparable(Object o, String path) {
