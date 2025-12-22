@@ -39,8 +39,8 @@
     <crnk.version>3.2.20200419165537</crnk.version>
 
     <!-- Build plugin properties -->
-    <maven-checkstyle-plugin.version>3.4.0</maven-checkstyle-plugin.version>
-    <checkstyle.version>10.17.0</checkstyle.version>
+    <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+    <checkstyle.version>10.26.1</checkstyle.version>
     
     <spotbugs-maven-plugin.version>4.9.3.0</spotbugs-maven-plugin.version>
     <spotbugs.version>4.9.3</spotbugs.version>

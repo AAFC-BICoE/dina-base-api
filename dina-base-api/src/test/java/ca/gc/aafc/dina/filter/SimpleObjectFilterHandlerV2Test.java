@@ -138,8 +138,28 @@ public class SimpleObjectFilterHandlerV2Test {
   }
 
   @Test
-  public void generateComparator_onSort_expectedOrder() {
+  public void getRestriction_onFilterOnNestedList_predicateCreated() {
 
+    String content = "filter[aliases.name][EQ]=alf";
+    QueryComponent queryComponent = QueryStringParser.parse(content);
+
+    Predicate<DepartmentDto> p = SimpleObjectFilterHandlerV2.createPredicate(queryComponent.getFilters());
+
+    DepartmentDto dep = new DepartmentDto();
+    dep.setName("jim");
+    dep.setAliases(List.of(new Department.DepartmentAlias("alf")));
+
+    DepartmentDto dep2 = new DepartmentDto();
+    dep2.setName("jimbo");
+    dep2.setAliases(List.of(new Department.DepartmentAlias("elf")));
+
+    assertTrue(p.test(dep));
+    assertFalse(p.test(dep2));
+    dep.setName("jam");
+  }
+
+  @Test
+  public void generateComparator_onSort_expectedOrder() {
     DepartmentDto dep = new DepartmentDto();
     dep.setName("Jim");
     DepartmentDto dep1 = new DepartmentDto();
@@ -158,9 +178,10 @@ public class SimpleObjectFilterHandlerV2Test {
 
     // reverse sort
     deps.sort(SimpleObjectFilterHandlerV2.generateComparator("-name"));
-    assertEquals("Jim2", deps.getFirst().getName());
-    // null last
-    assertNull(deps.getLast().getName());
+    // null first (since it is reversed)
+    assertNull(deps.getFirst().getName());
+
+    assertEquals("Jim2", deps.get(1).getName());
   }
 
   @Test
