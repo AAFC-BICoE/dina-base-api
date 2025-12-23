@@ -2,20 +2,20 @@ package ca.gc.aafc.dina.dto;
 
 import ca.gc.aafc.dina.entity.Chain;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiRelation;
-import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.Data;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import com.toedter.spring.hateoas.jsonapi.JsonApiId;
+import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
+
 @Data
-@JsonApiResource(type = "chain")
-@SuppressFBWarnings(value = "EI_EXPOSE_REP")
+@JsonApiTypeForClass(ChainDto.TYPENAME)
 @RelatedEntity(Chain.class)
 public class ChainDto {
+
+  public static final String TYPENAME = "chain";
 
   @JsonApiId
   private UUID uuid;
@@ -27,10 +27,8 @@ public class ChainDto {
 
   private String name;
 
-  @JsonApiRelation
   private ChainTemplateDto chainTemplate;
 
-  @JsonApiRelation
   @JsonApiExternalRelation(type = "agent")
   private ExternalRelationDto agent;
 
