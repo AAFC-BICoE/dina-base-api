@@ -60,6 +60,7 @@ import lombok.Getter;
 public class DinaRepositoryV2IT extends BaseRestAssuredTest {
 
   private static final String PATH = "repo2";
+  private static final String PROJECT_PATH = PATH + "/" + ProjectDTO.RESOURCE_TYPE;
 
   protected DinaRepositoryV2IT() {
     super("");
@@ -70,7 +71,7 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
     // Create a project
     ProjectDTO project = ProjectDTO.builder().build();
     UUID projectUuid = UUID.randomUUID();
-    sendPost(PATH + "/" + ProjectDTO.RESOURCE_TYPE, JsonAPITestHelper.toJsonAPIMap(
+    sendPost(PROJECT_PATH, JsonAPITestHelper.toJsonAPIMap(
       ProjectDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(project), null, projectUuid.toString()));
 
     // Create a task
@@ -80,7 +81,7 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
       TaskDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(task), null, taskUuid.toString()));
 
     // Patch the project to set the task
-    int returnCode = sendPatch(PATH + "/" + ProjectDTO.RESOURCE_TYPE , projectUuid.toString(), JsonAPITestHelper.toJsonAPIMap(
+    int returnCode = sendPatch(PROJECT_PATH , projectUuid.toString(), JsonAPITestHelper.toJsonAPIMap(
       ProjectDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(project),
       JsonAPITestHelper.toRelationshipMap(JsonAPIRelationship.of("task", TaskDTO.RESOURCE_TYPE, taskUuid.toString()))
       , projectUuid.toString()))
@@ -164,6 +165,55 @@ public class DinaRepositoryV2IT extends BaseRestAssuredTest {
       .extract().response().getStatusCode();
 
     assertEquals(200, returnCode);
+  }
+
+  @Test
+  void partialUpdate_EmptyPatch_NothingChanges() {
+    ProjectDTO project = ProjectDTO.builder()
+      .alias("my project alias")
+      .name("my project name")
+      .build();
+    UUID projectUuid = UUID.randomUUID();
+    sendPost(PROJECT_PATH, JsonAPITestHelper.toJsonAPIMap(
+      ProjectDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(project), null, projectUuid.toString()));
+
+    //Assert correct state
+    var getResponse = sendGet(PROJECT_PATH, projectUuid.toString());
+    assertEquals("my project alias", getResponse.extract().jsonPath().getString("data.attributes.alias"));
+
+    // Send empty patch
+    sendPatch(PROJECT_PATH, projectUuid.toString(),
+      JsonAPITestHelper.toJsonAPIMap(ProjectDTO.RESOURCE_TYPE, Map.of(), projectUuid.toString()));
+
+    // Assert that attributes are still there
+    getResponse = sendGet(PROJECT_PATH, projectUuid.toString());
+    assertEquals("my project name", getResponse.extract().jsonPath().getString("data.attributes.name"));
+    assertEquals("my project alias", getResponse.extract().jsonPath().getString("data.attributes.alias"));
+  }
+
+  @Test
+  void partialUpdate_SingleFieldPatch_Only1FieldChanged() {
+    // Create a project
+    ProjectDTO project = ProjectDTO.builder()
+      .alias("my project alias")
+      .name("my project name")
+      .build();
+    UUID projectUuid = UUID.randomUUID();
+    sendPost(PROJECT_PATH, JsonAPITestHelper.toJsonAPIMap(
+      ProjectDTO.RESOURCE_TYPE, JsonAPITestHelper.toAttributeMap(project), null, projectUuid.toString()));
+
+    //Assert correct state
+    var getResponse = sendGet(PROJECT_PATH, projectUuid.toString());
+    assertEquals("my project alias", getResponse.extract().jsonPath().getString("data.attributes.alias"));
+
+    // Patch a single field
+    sendPatch(PROJECT_PATH, projectUuid.toString(),
+      JsonAPITestHelper.toJsonAPIMap(ProjectDTO.RESOURCE_TYPE, Map.of("name", "changedName" ), projectUuid.toString()));
+
+    // Assert that Alias hasn't Changed
+    getResponse = sendGet(PROJECT_PATH, projectUuid.toString());
+    assertEquals("changedName", getResponse.extract().jsonPath().getString("data.attributes.name"));
+    assertEquals("my project alias", getResponse.extract().jsonPath().getString("data.attributes.alias"));
   }
 
   /**
