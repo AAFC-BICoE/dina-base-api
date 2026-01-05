@@ -24,7 +24,6 @@ import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.jsonapi.DinaRepoEagerLoadingIT;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
@@ -38,7 +37,7 @@ import ca.gc.aafc.dina.service.DefaultDinaServiceTest.DinaServiceTestImplementat
  */
 @SpringBootApplication
 @EntityScan(basePackageClasses = Department.class)
-@Import(DinaRepoEagerLoadingIT.TestConfig.class)
+@Import(ExternalResourceProviderImplementation.class)
 public class TestDinaBaseApp {
 
   @Inject

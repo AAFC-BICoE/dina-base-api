@@ -12,16 +12,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.validation.SmartValidator;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.toedter.spring.hateoas.jsonapi.JsonApiId;
-import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.CarDriverDto;
 import ca.gc.aafc.dina.dto.JsonbCarDto;
 import ca.gc.aafc.dina.dto.JsonbMethodDto;
-import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.CarDriver;
 import ca.gc.aafc.dina.entity.JsonbCar;
 import ca.gc.aafc.dina.entity.JsonbMethod;
