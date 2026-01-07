@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.security.auth;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.info.BuildProperties;
@@ -50,7 +49,7 @@ public class DinaAdminOnlyAuthTest {
 
   @Inject
   private DinaRepositoryV2<ItemDto, Item> testRepo;
-  
+
   private Item persistItem() {
     Item persisted = Item.builder().uuid(UUID.randomUUID()).group("group").build();
     defaultService.create(persisted);
