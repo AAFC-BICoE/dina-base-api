@@ -87,7 +87,8 @@ public class JsonApiExceptionControllerAdvice {
 
   @ExceptionHandler
   public ResponseEntity<JsonApiErrors> handleUnknownAttributeException(UnknownAttributeException ex) {
-    return buildBadRequestResponse(ex);
+    // unwrap the exception (if there is a known cause)
+    return buildBadRequestResponse(ex.getCause() != null ? ex.getCause() : ex);
   }
 
   @ExceptionHandler
