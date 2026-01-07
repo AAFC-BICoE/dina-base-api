@@ -1,11 +1,12 @@
 package ca.gc.aafc.dina.service;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.Import;
 
 import ca.gc.aafc.dina.BasePostgresItContext;
+import ca.gc.aafc.dina.config.PersonTestConfig;
 import ca.gc.aafc.dina.jpa.DinaObjectSummary;
 import ca.gc.aafc.dina.entity.Person;
-import ca.gc.aafc.dina.repository.DinaRepositoryIT;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -15,10 +16,11 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 @Transactional
+@Import(PersonTestConfig.class)
 public class DinaObjectSummaryServiceIT extends BasePostgresItContext {
 
   @Inject
-  private DinaRepositoryIT.DinaPersonService personService;
+  private PersonTestConfig.DinaPersonService personService;
 
   @Inject
   private DinaObjectSummaryService summaryService;

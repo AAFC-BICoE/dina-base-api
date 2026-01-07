@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.dto;
 
 import org.javers.core.metamodel.annotation.PropertyName;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.toedter.spring.hateoas.jsonapi.JsonApiId;
 import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
 
@@ -34,11 +35,13 @@ public class ItemDto implements JsonApiResource {
   private OffsetDateTime createdOn;
 
   @Override
+  @JsonIgnore
   public String getJsonApiType() {
     return TYPE_NAME;
   }
 
   @Override
+  @JsonIgnore
   public UUID getJsonApiId() {
     return uuid;
   }
