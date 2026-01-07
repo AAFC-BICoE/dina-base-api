@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.157</version>
+  <version>0.158-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
