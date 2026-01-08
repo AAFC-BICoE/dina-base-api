@@ -107,6 +107,14 @@ public class PersonTestConfig {
         Department.class,
         buildProperties, objMapper);
     }
+
+    @PostMapping(path = DepartmentDto.TYPE_NAME)
+    @Transactional
+    public ResponseEntity<RepresentationModel<?>> onCreate(
+      @RequestBody JsonApiDocument postedDocument) {
+      return handleCreate(postedDocument, null);
+    }
+
   }
 
   @RestController
@@ -145,10 +153,10 @@ public class PersonTestConfig {
       return handleFindAll(req);
     }
 
-    @PostMapping(path = PATH, consumes = JSON_API_BULK)
+    @PostMapping(path = PATH + "/" + DinaRepositoryV2.JSON_API_BULK_PATH, consumes = JSON_API_BULK)
     @Transactional
-    public ResponseEntity<RepresentationModel<?>> onBulkCreate(
-      @RequestBody JsonApiBulkDocument jsonApiBulkDocument) {
+    public ResponseEntity<RepresentationModel<?>> onBulkCreate(@RequestBody
+                                                               JsonApiBulkDocument jsonApiBulkDocument) {
       return handleBulkCreate(jsonApiBulkDocument, null);
     }
 
@@ -163,7 +171,6 @@ public class PersonTestConfig {
     @Transactional
     public ResponseEntity<RepresentationModel<?>> onCreate(
       @RequestBody JsonApiDocument postedDocument) {
-
       return handleCreate(postedDocument, null);
     }
 
@@ -175,15 +182,15 @@ public class PersonTestConfig {
       return handleUpdate(partialPatchDto, id);
     }
 
-    @PatchMapping(path = PATH, produces = JSON_API_BULK)
+    @PatchMapping(path = PATH + "/" + DinaRepositoryV2.JSON_API_BULK_PATH, consumes = JSON_API_BULK)
     @Transactional
     public ResponseEntity<RepresentationModel<?>> onBulkUpdate(
       @RequestBody JsonApiBulkDocument jsonApiBulkDocument)
       throws ResourceNotFoundException, ResourceGoneException {
       return handleBulkUpdate(jsonApiBulkDocument);
     }
-
-    @DeleteMapping(path = PATH, produces = JSON_API_BULK)
+    
+    @DeleteMapping(path = PATH + "/" + DinaRepositoryV2.JSON_API_BULK_PATH, consumes = JSON_API_BULK)
     @Transactional
     public ResponseEntity<RepresentationModel<?>> onBulkDelete(@RequestBody
                                                                JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument)
