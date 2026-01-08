@@ -1,7 +1,6 @@
 package ca.gc.aafc.dina.dto;
 
 import ca.gc.aafc.dina.entity.Task;
-import io.crnk.core.resource.annotations.JsonApiId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +13,6 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
-@io.crnk.core.resource.annotations.JsonApiResource(type = TaskDTO.RESOURCE_TYPE)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,7 +23,6 @@ public final class TaskDTO implements JsonApiResource {
   public static final String RESOURCE_TYPE = "Task";
 
   @com.toedter.spring.hateoas.jsonapi.JsonApiId
-  @JsonApiId
   @org.javers.core.metamodel.annotation.Id
   @PropertyName("id")
   private UUID uuid;

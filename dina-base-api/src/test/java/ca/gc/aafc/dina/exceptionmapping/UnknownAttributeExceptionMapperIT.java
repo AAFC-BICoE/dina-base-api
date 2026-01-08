@@ -30,10 +30,6 @@ public class UnknownAttributeExceptionMapperIT extends BasePostgresItContext {
   @Inject
   private DinaRepositoryV2<PersonDTO, Person> dinaRepository;
 
-  @Inject
-  private ConstraintViolationExceptionMapper constraintViolationExceptionMapper;
-
-  
   @Test
   public void findAll_FilterWithFIQL_FiltersOnNonExistantfield_ErrorMessages() {
     try {

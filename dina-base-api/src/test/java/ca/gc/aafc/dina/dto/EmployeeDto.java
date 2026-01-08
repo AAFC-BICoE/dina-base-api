@@ -7,16 +7,13 @@ import org.javers.core.metamodel.annotation.TypeName;
 
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.mapper.IgnoreDinaMapping;
-import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiRelation;
-import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@JsonApiResource(type = EmployeeDto.TYPENAME)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,7 +23,6 @@ public class EmployeeDto {
 
   public static final String TYPENAME = "employee";
 
-  @JsonApiId
   @Id
   @PropertyName("id")
   private Integer id;

@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 
@@ -32,9 +31,6 @@ import javax.validation.ConstraintViolationException;
 public class ConstraintViolationExceptionMapperIT extends BasePostgresItContext {
 
   private final JsonApiExceptionControllerAdvice exceptionControllerAdvice = new JsonApiExceptionControllerAdvice();
-
-  @Inject
-  private ConstraintViolationExceptionMapper constraintViolationExceptionMapper;
 
   @Autowired
   private DinaRepositoryV2<PersonDTO, Person> personRepository;
