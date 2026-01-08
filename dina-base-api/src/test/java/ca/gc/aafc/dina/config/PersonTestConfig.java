@@ -27,7 +27,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import ca.gc.aafc.dina.DinaUserConfig;
+import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
+import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
@@ -37,6 +40,7 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkResourceIdentifierDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
+import ca.gc.aafc.dina.mapper.DepartmentMapper;
 import ca.gc.aafc.dina.mapper.PersonMapper;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
 import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
@@ -49,7 +53,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
- * Configures Person repository and service.
+ * Configures Person and Department repository and service.
  */
 @TestConfiguration
 public class PersonTestConfig {
@@ -83,6 +87,25 @@ public class PersonTestConfig {
     @Override
     public void augmentEntity(Person entity, Set<String> relationships) {
       entity.setAugmentedData(AUGMENTED_DATA_VALUE);
+    }
+  }
+
+  @RestController
+  @RequestMapping(produces = JSON_API_VALUE)
+  static class DepartmentTestRepositoryV2 extends DinaRepositoryV2<DepartmentDto, Department> {
+    public DepartmentTestRepositoryV2(DinaUserConfig.DepartmentDinaService departmentDinaService,
+                                      BuildProperties buildProperties,
+                                      Optional<AuditService> auditService,
+                                      ObjectMapper objMapper
+    ) {
+      super(
+        departmentDinaService,
+        new AllowAllAuthorizationService(),
+        auditService,
+        DepartmentMapper.INSTANCE,
+        DepartmentDto.class,
+        Department.class,
+        buildProperties, objMapper);
     }
   }
 
