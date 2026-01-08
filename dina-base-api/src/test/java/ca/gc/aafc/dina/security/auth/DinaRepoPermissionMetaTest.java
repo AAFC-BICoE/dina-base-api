@@ -6,7 +6,6 @@ import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.Item;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
-import ca.gc.aafc.dina.repository.meta.AttributeMetaInfoProvider;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;

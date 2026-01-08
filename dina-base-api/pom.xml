@@ -124,11 +124,6 @@
       <artifactId>crnk-data-jpa</artifactId>
       <version>${crnk.version}</version>
     </dependency>
-    <dependency>
-      <groupId>io.crnk</groupId>
-      <artifactId>crnk-operations</artifactId>
-      <version>${crnk.version}</version>
-    </dependency>
 
     <!-- RSQL -->
     <dependency>

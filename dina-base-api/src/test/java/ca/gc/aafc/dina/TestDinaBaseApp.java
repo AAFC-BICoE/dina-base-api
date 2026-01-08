@@ -17,12 +17,15 @@ import ca.gc.aafc.dina.service.DefaultDinaServiceTest.DinaServiceTestImplementat
 import java.util.List;
 import javax.inject.Inject;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.toedter.spring.hateoas.jsonapi.JsonApiConfiguration;
+
 /**
  * Small test application running on dina-base-api
  */
 @SpringBootApplication
 @EntityScan(basePackageClasses = Department.class)
-@Import(ExternalResourceProviderImplementation.class)
 public class TestDinaBaseApp {
 
   @Inject
@@ -31,6 +34,16 @@ public class TestDinaBaseApp {
   @Inject
   private GroupAuthorizationService groupAuthService;
 
+//  @Bean
+//  public JsonApiConfiguration jsonApiConfiguration() {
+//    return new JsonApiConfiguration()
+//      .withPluralizedTypeRendered(false)
+//      .withPageMetaAutomaticallyCreated(false)
+//      .withObjectMapperCustomizer(objectMapper -> {
+//        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+//        objectMapper.registerModule(new JavaTimeModule());
+//      });
+//  }
 
   @Bean
   public DinaServiceTestImplementation serviceUnderTest(BaseDAO baseDAO, SmartValidator sv) {

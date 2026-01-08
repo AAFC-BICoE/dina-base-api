@@ -2,8 +2,6 @@ package ca.gc.aafc.dina;
 
 import io.crnk.core.engine.transaction.TransactionRunner;
 import io.crnk.core.queryspec.mapper.DefaultQuerySpecUrlMapper;
-import io.crnk.operations.server.OperationsModule;
-import io.crnk.operations.server.TransactionOperationFilter;
 import io.crnk.spring.jpa.SpringTransactionRunner;
 
 import io.micrometer.core.aop.TimedAspect;
@@ -44,18 +42,6 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
     // Disables Crnk's behavior of splitting up query params that contain commas into HashSets.
     // This will allow RSQL 'OR' filters like "name==primer2,name==primer4".
     mapper.setAllowCommaSeparatedValue(false);
-  }
-
-  /**
-   * Registers the transaction filter that executes a transaction around bulk jsonpatch operations.
-   *
-   * @param module the Crnk operations module.
-   */
-  @Inject
-  public void initTransactionOperationFilter(OperationsModule module) {
-    module.addFilter(new TransactionOperationFilter());
-    module.setIncludeChangedRelationships(false);
-    module.setResumeOnError(true);
   }
 
   /**
