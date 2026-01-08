@@ -116,12 +116,7 @@
     <!-- crnk (Must be installed locally, see legacy-libs/README) -->
     <dependency>
       <groupId>io.crnk</groupId>
-      <artifactId>crnk-setup-spring-boot2</artifactId>
-      <version>${crnk.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.crnk</groupId>
-      <artifactId>crnk-data-jpa</artifactId>
+      <artifactId>crnk-core</artifactId>
       <version>${crnk.version}</version>
     </dependency>
 
