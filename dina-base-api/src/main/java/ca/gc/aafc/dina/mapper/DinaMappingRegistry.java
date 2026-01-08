@@ -288,29 +288,6 @@ public class DinaMappingRegistry {
   }
 
   /**
-   * Returns the Dina field adapter for a given class or optional empty if it does not exist.
-   *
-   * @param cls - class of the {@link DinaFieldAdapterHandler}
-   * @return the {@link DinaFieldAdapterHandler} for a given class
-   */
-  public Optional<DinaFieldAdapterHandler<?>> findFieldAdapterForClass(Class<?> cls) {
-    if (!this.resourceGraph.containsKey(cls)) {
-      return Optional.empty();
-    }
-    return Optional.ofNullable(this.resourceGraph.get(cls).getFieldAdapterHandler());
-  }
-
-  /**
-   * Returns true if the registry is tracking a registered field adapter.
-   *
-   * @return true if the registry is tracking a registered field adapter.
-   */
-  public boolean hasFieldAdapters() {
-    return this.resourceGraph.values().stream()
-      .map(DinaResourceEntry::getFieldAdapterHandler).findFirst().isPresent();
-  }
-
-  /**
    * Returns the nested resource type from a given base resource type and attribute path. The deepest nested
    * resource that can be resolved will be returned. The original resource is returned if a nested resource is
    * not present in the attribute path, or the resources are not tracked by the registry.
@@ -473,7 +450,6 @@ public class DinaMappingRegistry {
       .calculatedAttributes(calculatedAttributes)
       .internalRelations(internalRelations)
       .jsonIdFieldName(parseJsonIdFieldName(resourceClass))
-      .fieldAdapterHandler(new DinaFieldAdapterHandler<>(resourceClass))
       .build();
   }
 
@@ -532,7 +508,6 @@ public class DinaMappingRegistry {
 
     private Set<InternalRelation> internalRelations;
     private Map<String, String> externalNameToTypeMap;
-    private DinaFieldAdapterHandler<?> fieldAdapterHandler;
 
     public InternalRelation getInternalRelationByName(String name) {
       return internalRelations.stream()
