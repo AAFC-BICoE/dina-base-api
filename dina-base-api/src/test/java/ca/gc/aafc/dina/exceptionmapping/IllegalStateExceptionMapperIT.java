@@ -32,8 +32,7 @@ public class IllegalStateExceptionMapperIT extends BasePostgresItContext {
     // Assert correct error message, status and title
     assertEquals("this is an illegal state", errors.get(0).getDetail());
     assertEquals("400", errors.get(0).getStatus());
-    assertEquals("Bad Request", errors.get(0).getTitle());
+    assertEquals("BAD_REQUEST", errors.get(0).getTitle());
 
   }
-
 }

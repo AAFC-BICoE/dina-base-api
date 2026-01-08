@@ -376,7 +376,7 @@ public class DinaRepositoryV2IT {
 
     // bulk create the 2 documents
     var createResponse = mockMvc.perform(
-        post("/" + RepoV2TestConfig.PATH)
+        post("/" + RepoV2TestConfig.PATH + "/" + DinaRepositoryV2.JSON_API_BULK_PATH)
           .contentType(DinaRepositoryV2.JSON_API_BULK)
           .content(objMapper.writeValueAsString(bulkCreateDocument))
       )
@@ -403,7 +403,7 @@ public class DinaRepositoryV2IT {
 
     // bulk update the 2 documents
     var updateResponse = mockMvc.perform(
-        patch("/" + RepoV2TestConfig.PATH)
+        patch("/" + RepoV2TestConfig.PATH + "/" + DinaRepositoryV2.JSON_API_BULK_PATH)
           .contentType(DinaRepositoryV2.JSON_API_BULK)
           .content(objMapper.writeValueAsString(bulkUpdateDocument.build()))
       )
@@ -431,7 +431,7 @@ public class DinaRepositoryV2IT {
       .andReturn();
 
     var bulkDeleteResponse = mockMvc.perform(
-        delete("/" + RepoV2TestConfig.PATH)
+        delete("/" + RepoV2TestConfig.PATH + "/" + DinaRepositoryV2.JSON_API_BULK_PATH)
           .contentType(DinaRepositoryV2.JSON_API_BULK)
           .content(objMapper.writeValueAsString(bulkLoadDocument.build()))
       )
