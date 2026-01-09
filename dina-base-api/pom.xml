@@ -13,7 +13,7 @@
 
   <artifactId>dina-base-api</artifactId>
   <name>dina-base-api</name>
-  <description>Base DINA API package for Java built on SpringBoot and Crnk</description>
+  <description>Base DINA API package for Java built on SpringBoot</description>
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <properties>
@@ -285,27 +285,6 @@
         </executions>
       </plugin>
 
-<!--      <plugin>-->
-<!--        <groupId>org.apache.maven.plugins</groupId>-->
-<!--        <artifactId>maven-shade-plugin</artifactId>-->
-<!--        <executions>-->
-<!--          <execution>-->
-<!--            <phase>package</phase>-->
-<!--            <goals>-->
-<!--              <goal>shade</goal>-->
-<!--            </goals>-->
-<!--            <configuration>-->
-<!--              <artifactSet>-->
-<!--                <includes>-->
-<!--                  <include>io.crnk:*</include>-->
-<!--                </includes>-->
-<!--              </artifactSet>-->
-<!--              <useDependencyReducedPomInJar>true</useDependencyReducedPomInJar>-->
-<!--            </configuration>-->
-<!--          </execution>-->
-<!--        </executions>-->
-<!--      </plugin>-->
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -322,8 +301,6 @@
           <excludes>
             <exclude>**/*Config.*</exclude>
             <exclude>**/*AutoConfiguration.*</exclude>
-
-            <exclude>**/PatchedCrnkErrorController.*</exclude>
           </excludes>
         </configuration>
         <executions>
