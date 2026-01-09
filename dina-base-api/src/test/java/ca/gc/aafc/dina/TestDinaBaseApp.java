@@ -1,10 +1,5 @@
 package ca.gc.aafc.dina;
 
-import java.util.List;
-import java.util.Optional;
-import javax.inject.Inject;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,30 +9,23 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.validation.SmartValidator;
 
-import ca.gc.aafc.dina.DinaUserConfig.DepartmentDinaService;
-import ca.gc.aafc.dina.DinaUserConfig.EmployeeDinaService;
-import ca.gc.aafc.dina.dto.DepartmentDto;
-import ca.gc.aafc.dina.dto.EmployeeDto;
-import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
-import ca.gc.aafc.dina.entity.Employee;
-import ca.gc.aafc.dina.entity.Person;
-import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.mapper.DinaMapper;
-import ca.gc.aafc.dina.repository.DinaRepository;
-import ca.gc.aafc.dina.repository.DinaRepositoryIT.DinaPersonService;
-import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
 import ca.gc.aafc.dina.security.auth.GroupAuthorizationService;
-import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaServiceTest.DinaServiceTestImplementation;
+
+import java.util.List;
+import javax.inject.Inject;
+
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.toedter.spring.hateoas.jsonapi.JsonApiConfiguration;
 
 /**
  * Small test application running on dina-base-api
  */
 @SpringBootApplication
 @EntityScan(basePackageClasses = Department.class)
-@Import(ExternalResourceProviderImplementation.class)
 public class TestDinaBaseApp {
 
   @Inject
@@ -46,66 +34,22 @@ public class TestDinaBaseApp {
   @Inject
   private GroupAuthorizationService groupAuthService;
 
-  @Bean
-  public DinaRepository<DepartmentDto, Department> departmentRepository(BaseDAO baseDAO,
-                                                                        DepartmentDinaService departmentDinaService,
-                                                                        ObjectMapper objMapper
-  ) {
-    return new DinaRepository<>(
-      departmentDinaService,
-      new AllowAllAuthorizationService(),
-      Optional.empty(),
-      new DinaMapper<>(DepartmentDto.class),
-      DepartmentDto.class,
-      Department.class,
-      null,
-      null,
-      dinaTestBuildProperties, objMapper);
-  }
-
-  @Bean
-  public DinaRepository<EmployeeDto, Employee> employeeRepository(BaseDAO baseDAO, EmployeeDinaService employeeDinaService,
-                                                                  ObjectMapper objMapper) {
-    return new DinaRepository<>(
-      employeeDinaService,
-      new AllowAllAuthorizationService(),
-      Optional.empty(),
-      new DinaMapper<>(EmployeeDto.class),
-      EmployeeDto.class,
-      Employee.class,
-      null,
-      null,
-      dinaTestBuildProperties, objMapper);
-  }
+//  @Bean
+//  public JsonApiConfiguration jsonApiConfiguration() {
+//    return new JsonApiConfiguration()
+//      .withPluralizedTypeRendered(false)
+//      .withPageMetaAutomaticallyCreated(false)
+//      .withObjectMapperCustomizer(objectMapper -> {
+//        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+//        objectMapper.registerModule(new JavaTimeModule());
+//      });
+//  }
 
   @Bean
   public DinaServiceTestImplementation serviceUnderTest(BaseDAO baseDAO, SmartValidator sv) {
     return new DinaServiceTestImplementation(baseDAO, sv);
   }
 
-  @Bean
-  public DinaPersonService personService(BaseDAO baseDAO, SmartValidator sv) {
-    return new DinaPersonService(baseDAO, sv);
-  }
-
-  @Bean
-  public DinaRepository<PersonDTO, Person> dinaRepository(
-    DinaPersonService service,
-    Optional<AuditService> auditService,
-    ObjectMapper objMapper
-  ) {
-    DinaMapper<PersonDTO, Person> dinaMapper = new DinaMapper<>(PersonDTO.class);
-    return new DinaRepository<>(
-      service,
-      groupAuthService,
-      auditService,
-      dinaMapper,
-      PersonDTO.class,
-      Person.class,
-      new DinaFilterResolver(new PersonRsqlAdapter()),
-      null,
-      dinaTestBuildProperties, objMapper);
-  }
 
   /**
    * Mocks a given token to return a agent identifier and list of given groups.

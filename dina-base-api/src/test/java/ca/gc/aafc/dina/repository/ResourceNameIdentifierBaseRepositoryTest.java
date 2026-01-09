@@ -2,9 +2,11 @@ package ca.gc.aafc.dina.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.config.PersonTestConfig;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.security.auth.GroupWithReadAuthorizationService;
 import ca.gc.aafc.dina.service.NameUUIDPair;
@@ -24,10 +26,11 @@ import javax.transaction.Transactional;
 @Transactional
 @SpringBootTest(classes = TestDinaBaseApp.class)
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
+@Import(PersonTestConfig.class)
 public class ResourceNameIdentifierBaseRepositoryTest {
 
   @Inject
-  private DinaRepositoryIT.DinaPersonService personService;
+  private PersonTestConfig.DinaPersonService personService;
 
   @Inject
   private GroupWithReadAuthorizationService authorizationService;

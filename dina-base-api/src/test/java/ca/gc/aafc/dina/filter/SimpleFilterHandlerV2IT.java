@@ -8,6 +8,7 @@ import com.querydsl.core.types.Ops;
 
 import ca.gc.aafc.dina.BasePostgresItContext;
 import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.config.PersonTestConfig;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.exception.UnknownAttributeException;
@@ -28,7 +29,8 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
-@SpringBootTest(classes = {TestDinaBaseApp.class, DinaRepositoryV2IT.RepoV2TestConfig.class})
+@SpringBootTest(classes = {TestDinaBaseApp.class, DinaRepositoryV2IT.RepoV2TestConfig.class,
+  PersonTestConfig.class})
 @Transactional
 public class SimpleFilterHandlerV2IT extends BasePostgresItContext {
 
