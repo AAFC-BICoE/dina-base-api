@@ -10,7 +10,6 @@ import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.mapper.IgnoreDinaMapping;
 
-import io.crnk.core.resource.annotations.JsonApiRelation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -42,13 +41,13 @@ public class DepartmentDto implements ca.gc.aafc.dina.dto.JsonApiResource {
   @IgnoreDinaMapping
   private Integer employeeCount;
 
-  @JsonApiRelation(mappedBy = "department")
+  @JsonApiRelation
   private List<EmployeeDto> employees;
 
   @IgnoreDinaMapping()
   private PersonDTO departmentHead;
 
-  @JsonApiRelation(mappedBy = "department")
+  @JsonApiRelation
   private PersonDTO departmentOwner;
 
   @IgnoreDinaMapping(reason = "simply derived from location")

@@ -11,7 +11,6 @@ import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.entity.Inherited;
 import ca.gc.aafc.dina.entity.Person;
-import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -172,7 +171,6 @@ public class DinaMappingRegistryTest {
   }
 
   @Data
-  @JsonApiResource(type = ProjectDTO.RESOURCE_TYPE)
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
@@ -190,7 +188,6 @@ public class DinaMappingRegistryTest {
   }
 
   @Data
-  @JsonApiResource(type = ProjectDTO.RESOURCE_TYPE)
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor

@@ -113,13 +113,6 @@
       <version>${javax.activation.version}</version>
     </dependency>
 
-    <!-- crnk (Must be installed locally, see legacy-libs/README) -->
-    <dependency>
-      <groupId>io.crnk</groupId>
-      <artifactId>crnk-core</artifactId>
-      <version>${crnk.version}</version>
-    </dependency>
-
     <!-- RSQL -->
     <dependency>
       <groupId>com.github.tennaito</groupId>
@@ -292,26 +285,26 @@
         </executions>
       </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <artifactSet>
-                <includes>
-                  <include>io.crnk:*</include>
-                </includes>
-              </artifactSet>
-              <useDependencyReducedPomInJar>true</useDependencyReducedPomInJar>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+<!--      <plugin>-->
+<!--        <groupId>org.apache.maven.plugins</groupId>-->
+<!--        <artifactId>maven-shade-plugin</artifactId>-->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <phase>package</phase>-->
+<!--            <goals>-->
+<!--              <goal>shade</goal>-->
+<!--            </goals>-->
+<!--            <configuration>-->
+<!--              <artifactSet>-->
+<!--                <includes>-->
+<!--                  <include>io.crnk:*</include>-->
+<!--                </includes>-->
+<!--              </artifactSet>-->
+<!--              <useDependencyReducedPomInJar>true</useDependencyReducedPomInJar>-->
+<!--            </configuration>-->
+<!--          </execution>-->
+<!--        </executions>-->
+<!--      </plugin>-->
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

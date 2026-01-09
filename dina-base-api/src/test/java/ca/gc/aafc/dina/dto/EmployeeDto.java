@@ -7,7 +7,6 @@ import org.javers.core.metamodel.annotation.TypeName;
 
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.mapper.IgnoreDinaMapping;
-import io.crnk.core.resource.annotations.JsonApiRelation;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

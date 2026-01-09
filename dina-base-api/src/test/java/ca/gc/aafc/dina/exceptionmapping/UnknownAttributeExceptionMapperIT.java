@@ -75,7 +75,7 @@ public class UnknownAttributeExceptionMapperIT extends BasePostgresItContext {
       assertEquals(1, errors.size());
 
       // Assert correct error message, status and title
-      assertEquals("Unable to locate Attribute  with the the given name [nonExistant] on this ManagedType [ca.gc.aafc.dina.entity.Person]", errors.getFirst().getDetail());
+      assertEquals("Unable to locate Attribute with the the given name [nonExistant] on this ManagedType [ca.gc.aafc.dina.entity.Person]", errors.getFirst().getDetail());
       assertEquals("400", errors.getFirst().getCode());
       assertEquals("Bad Request", errors.getFirst().getTitle());
     }

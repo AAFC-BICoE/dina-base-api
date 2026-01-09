@@ -2,37 +2,41 @@ package ca.gc.aafc.dina.exceptionmapping;
 
 import org.junit.jupiter.api.Test;
 
-import ca.gc.aafc.dina.BasePostgresItContext;
+import com.toedter.spring.hateoas.jsonapi.JsonApiError;
+import com.toedter.spring.hateoas.jsonapi.JsonApiErrors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.crnk.core.engine.document.ErrorData;
-import io.crnk.core.engine.error.ErrorResponse;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import javax.inject.Inject;
 
-public class IllegalStateExceptionMapperIT extends BasePostgresItContext {
+public class IllegalStateExceptionMapperIT {
 
-  @Inject
-  private IllegalStateExceptionMapper illegalStateExceptionMapper;
+  private final JsonApiExceptionControllerAdvice exceptionControllerAdvice = new JsonApiExceptionControllerAdvice();
 
   @Test
-  public void dtr() {
+  public void testIllegalStateException() {
 
-    ErrorResponse errorResponse = illegalStateExceptionMapper.toErrorResponse(new IllegalStateException("this is an illegal state"));
+    try {
+      throw new IllegalStateException("this is an illegal state");
+    } catch (IllegalStateException exception) {
 
-    // Assert correct http status.
-    assertEquals(400, errorResponse.getHttpStatus());
+      JsonApiErrors
+        apiErrors = exceptionControllerAdvice.handleIllegalStateException(exception).getBody();
+      // Assert correct http status.
+      assertEquals("400", apiErrors.getErrors().getFirst().getCode());
 
-    List<ErrorData> errors = new ArrayList<>(errorResponse.getErrors());
+      // Get the errors sorted by detail. The default error order is not consistent.
+      List<JsonApiError> errors = apiErrors.getErrors()
+        .stream()
+        .sorted(Comparator.comparing(JsonApiError::getDetail))
+        .toList();
 
-    assertEquals(1, errors.size());
-
-    // Assert correct error message, status and title
-    assertEquals("this is an illegal state", errors.get(0).getDetail());
-    assertEquals("400", errors.get(0).getStatus());
-    assertEquals("BAD_REQUEST", errors.get(0).getTitle());
-
+      assertEquals(1, errors.size());
+      // Assert correct error message, status and title
+      assertEquals("this is an illegal state", errors.getFirst().getDetail());
+      assertEquals("400", errors.getFirst().getCode());
+      assertEquals("Bad Request", errors.getFirst().getTitle());
+    }
   }
 }

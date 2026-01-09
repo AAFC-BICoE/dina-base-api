@@ -1,11 +1,10 @@
 package ca.gc.aafc.dina.mapper;
 
 import ca.gc.aafc.dina.dto.JsonApiCalculatedAttribute;
+import ca.gc.aafc.dina.dto.JsonApiRelation;
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.jsonapi.JsonApiImmutable;
 import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiRelation;
 import java.util.EnumSet;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,6 +26,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.toedter.spring.hateoas.jsonapi.JsonApiId;
 
 /**
  * Registry to track information regarding a given resource class. Useful to obtain certain meta information

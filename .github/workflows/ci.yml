@@ -20,9 +20,6 @@ jobs:
       - name: Setup Graphviz
         uses: ts-graphviz/setup-graphviz@v1
 
-      - name: Setup legacy dependencies
-        run: |
-          mvn install:install-file -Dfile=legacy-libs/crnk/crnk-core/crnk-core-3.2.20200419165537.jar -DpomFile=legacy-libs/crnk/crnk-core/crnk-core-3.2.20200419165537.pom -DgroupId=io.crnk -DartifactId=crnk-core -Dversion=3.2.20200419165537 -Dpackaging=jar
       - name: Build with Maven
         run: mvn -B -q install
 
