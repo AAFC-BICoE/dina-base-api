@@ -5,10 +5,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
+import ca.gc.aafc.dina.entity.ControlledVocabulary;
+import ca.gc.aafc.dina.entity.MyControlledVocabulary;
+import ca.gc.aafc.dina.entity.MyControlledVocabularyItem;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -84,6 +89,88 @@ public class FIQLFilterHandlerIT {
       .getResultList();
 
     assertEquals(5, personList.size());
+  }
+
+  /**
+   * This test attempts FIQL nested/relationship filtering.
+   * 
+   * The simple filter format (filter[controlledVocabulary.uuid][EQ]=...) works,
+   * but the equivalent FIQL format (fiql=controlledVocabulary.uuid==...) fails
+   */
+  @Test
+  @Transactional
+  public void fiqlFilterHandler_whenFilteringOnNestedAttribute_demonstratesLimitation() {
+    // Create a controlled vocabulary with all required fields
+    MyControlledVocabulary vocab = MyControlledVocabulary.builder()
+      .uuid(UUID.randomUUID())
+      .name("Test Coordinate System")
+      .key("test_coordinate_system")
+      .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
+      .vocabClass(ControlledVocabulary.ControlledVocabularyClass.CONTROLLED_TERM)
+      .build();
+    entityManager.persist(vocab);
+
+    // Create controlled vocabulary items linked to this vocabulary
+    MyControlledVocabularyItem item1 = MyControlledVocabularyItem.builder()
+      .uuid(UUID.randomUUID())
+      .name("degrees decimal minutes")
+      .key("degrees_decimal_minutes")
+      .group("system")
+      .controlledVocabulary(vocab)
+      .build();
+    entityManager.persist(item1);
+
+    MyControlledVocabularyItem item2 = MyControlledVocabularyItem.builder()
+      .uuid(UUID.randomUUID())
+      .name("degrees minutes seconds")
+      .key("degrees_minutes_seconds")
+      .group("system")
+      .controlledVocabulary(vocab)
+      .build();
+    entityManager.persist(item2);
+
+    // Create another vocabulary with different items
+    MyControlledVocabulary otherVocab = MyControlledVocabulary.builder()
+      .uuid(UUID.randomUUID())
+      .name("Other Vocabulary")
+      .key("other_vocabulary")
+      .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
+      .vocabClass(ControlledVocabulary.ControlledVocabularyClass.CONTROLLED_TERM)
+      .build();
+    entityManager.persist(otherVocab);
+
+    MyControlledVocabularyItem item3 = MyControlledVocabularyItem.builder()
+      .uuid(UUID.randomUUID())
+      .name("some other item")
+      .key("some_other_item")
+      .group("system")
+      .controlledVocabulary(otherVocab)
+      .build();
+    entityManager.persist(item3);
+
+    entityManager.flush();
+
+    // Attempting to filter on nested attribute (controlledVocabulary.id)
+    String fiqlWithNestedAttribute = "controlledVocabulary.id==" + vocab.getId();
+    
+    // The FIQL parser will throw an exception
+    Exception exception = assertThrows(Exception.class, () -> {
+      var q = FIQLFilterHandler.criteriaQuery(
+        entityManager,
+        fiqlWithNestedAttribute,
+        MyControlledVocabularyItem.class,
+        MyControlledVocabularyItem.class,
+        null
+      );
+      entityManager.createQuery(q).getResultList();
+    });
+
+    // Verify expected failure 
+    assertTrue(
+      exception.getMessage().contains("controlledVocabulary") || 
+      exception.getCause() != null,
+      "Expected exception related to nested attribute handling"
+    );
   }
 
 }
