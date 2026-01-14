@@ -4,6 +4,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import ca.gc.aafc.dina.exception.ResourcesNotFoundException;
 import ca.gc.aafc.dina.exception.UnknownAttributeException;
 import ca.gc.aafc.dina.jsonapi.JSONApiDocumentStructure;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
+import ca.gc.aafc.dina.security.TextHtmlSanitizer;
 
 /**
  * Exception handling for {@link DinaRepositoryV2}
@@ -87,11 +89,17 @@ public class JsonApiExceptionControllerAdvice {
 
   @ExceptionHandler
   public ResponseEntity<JsonApiErrors> handleUnknownAttributeException(UnknownAttributeException ex) {
-    return buildBadRequestResponse(ex);
+    // unwrap the exception (if there is a known cause)
+    return buildBadRequestResponse(ex.getCause() != null ? ex.getCause() : ex);
   }
 
   @ExceptionHandler
   public ResponseEntity<JsonApiErrors> handleIllegalArgumentException(IllegalArgumentException ex) {
+    return buildBadRequestResponse(ex);
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleIllegalStateException(IllegalStateException ex) {
     return buildBadRequestResponse(ex);
   }
 
@@ -103,14 +111,12 @@ public class JsonApiExceptionControllerAdvice {
 
   @ExceptionHandler
   public ResponseEntity<JsonApiErrors> handleValidationException(ValidationException ex) {
-    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-      JsonApiErrors.create().withError(
-        JsonApiError.create()
-          .withCode(Integer.toString(HttpStatus.UNPROCESSABLE_ENTITY.value()))
-          .withStatus(HttpStatus.UNPROCESSABLE_ENTITY.toString())
-          .withTitle("Validation error")
-          .withDetail(ex.getMessage()))
-    );
+    return buildUnprocessableEntityResponse(ex);
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+    return buildUnprocessableEntityResponse(ex);
   }
 
   @ExceptionHandler
@@ -131,6 +137,27 @@ public class JsonApiExceptionControllerAdvice {
       errors);
   }
 
+  /**
+   * Build an HTTP 422 Unprocessable Entity response
+   * @param ex
+   * @return
+   */
+  private static ResponseEntity<JsonApiErrors> buildUnprocessableEntityResponse(Throwable ex) {
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+      JsonApiErrors.create().withError(
+        JsonApiError.create()
+          .withCode(Integer.toString(HttpStatus.UNPROCESSABLE_ENTITY.value()))
+          .withStatus(HttpStatus.UNPROCESSABLE_ENTITY.toString())
+          .withTitle("Unprocessable Entity")
+          .withDetail(TextHtmlSanitizer.sanitizeText(ex.getMessage())))
+    );
+  }
+
+  /**
+   * Build an HTTP 400 Bad Request response
+   * @param ex
+   * @return
+   */
   private static ResponseEntity<JsonApiErrors> buildBadRequestResponse(Throwable ex) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
       JsonApiErrors.create().withError(
@@ -138,7 +165,7 @@ public class JsonApiExceptionControllerAdvice {
           .withCode(Integer.toString(HttpStatus.BAD_REQUEST.value()))
           .withStatus(HttpStatus.BAD_REQUEST.toString())
           .withTitle("Bad Request")
-          .withDetail(ex.getMessage()))
+          .withDetail(TextHtmlSanitizer.sanitizeText(ex.getMessage())))
     );
   }
 

@@ -5,11 +5,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.hateoas.Link;
+import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +17,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.SmartValidator;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
@@ -32,9 +26,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.toedter.spring.hateoas.jsonapi.JsonApiConfiguration;
-import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
+import ca.gc.aafc.dina.config.PersonTestConfig;
 import ca.gc.aafc.dina.dto.ApiInfoDto;
 import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
@@ -42,24 +36,20 @@ import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
-import ca.gc.aafc.dina.exception.ResourcesGoneException;
-import ca.gc.aafc.dina.exception.ResourcesNotFoundException;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkResourceIdentifierDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocuments;
-import ca.gc.aafc.dina.mapper.PersonMapper;
-import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
-import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
-import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.factories.TestableEntityFactory;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 
-import static ca.gc.aafc.dina.repository.DinaRepository.IT_OM_TYPE_REF;
+import static ca.gc.aafc.dina.repository.DinaRepositoryV2.IT_OM_TYPE_REF;
+import static ca.gc.aafc.dina.repository.DinaRepositoryV2IT.RepoV2TestConfig.AUGMENTED_DATA_VALUE;
+import static ca.gc.aafc.dina.repository.DinaRepositoryV2IT.RepoV2TestConfig.EXPENSIVE_VALUE_TO_COMPUTE;
 import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiModel;
 import static com.toedter.spring.hateoas.jsonapi.MediaTypes.JSON_API_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -67,12 +57,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.OffsetDateTime;
@@ -82,11 +70,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import lombok.NonNull;
 
@@ -94,13 +80,14 @@ import lombok.NonNull;
 @SpringBootTest(classes = {TestDinaBaseApp.class, DinaRepositoryV2IT.RepoV2TestConfig.class},
   properties = "dina.auditing.enabled = true")
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
+@Import(PersonTestConfig.class)
 public class DinaRepositoryV2IT {
 
   @Autowired
   private DinaRepositoryV2<PersonDTO, Person> repositoryV2;
 
   @Inject
-  private DinaRepositoryIT.DinaPersonService personService;
+  private PersonTestConfig.DinaPersonService personService;
 
   @Inject
   private DinaRepositoryV2IT.RepoV2TestConfig.DinaDepartmentService departmentService;
@@ -166,6 +153,41 @@ public class DinaRepositoryV2IT {
     assertFalse(getResponse.getResponse().getContentAsString().contains("location"));
   }
 
+//  @Test
+//  public void findAll_whenPageLimitIsSet_ReturnsTotalCount() {
+//    long pageLimit = 10;
+//    long totalResouceCount = pageLimit * 2;
+//
+//    for (int i = 0; i < totalResouceCount; i++) {
+//      persistPerson();
+//    }
+//
+//    QuerySpec querySpec = new QuerySpec(PersonDTO.class);
+//    querySpec.setLimit(pageLimit);
+//
+//    ResourceList<PersonDTO> result = dinaRepository.findAll(null, querySpec);
+//    PagedMetaInformation metadata = (PagedMetaInformation) result.getMeta();
+//    assertEquals(totalResouceCount, metadata.getTotalResourceCount());
+//  }
+
+  /** test warnings
+   *   public static final String KEY = "duplicate_found";
+   *   public static final String VALUE = "A record with title Rails is Omakase already exists";
+   *
+   *   protected AttributeMetaInfoProviderRestIT() {
+   *     super("thing");
+   *   }
+   *
+   *   @Test
+   *   void metaInfo_ReturnedInResponse() {
+   *     ThingDTO dto = ThingDTO.builder().group("new name").build();
+   *     ValidatableResponse response = sendPost(JsonAPITestHelper.toJsonAPIMap(
+   *       "thing", JsonAPITestHelper.toAttributeMap(dto), null, null));
+   *     response.body("data.meta.warnings", Matchers.hasEntry(KEY, VALUE));
+   *   }
+   * @throws Exception
+   */
+
   @Test
   public void findOne_onOptionalFields_fieldsIncluded() throws Exception {
 
@@ -184,8 +206,8 @@ public class DinaRepositoryV2IT {
 
     String responseAsString = getResponse.getResponse().getContentAsString();
 
-    assertTrue(responseAsString.contains(DinaRepositoryIT.EXPENSIVE_VALUE_TO_COMPUTE));
-    assertTrue(responseAsString.contains(DinaRepositoryIT.AUGMENTED_DATA_VALUE));
+    assertTrue(responseAsString.contains(EXPENSIVE_VALUE_TO_COMPUTE));
+    assertTrue(responseAsString.contains(AUGMENTED_DATA_VALUE));
   }
 
   @Test
@@ -354,7 +376,7 @@ public class DinaRepositoryV2IT {
 
     // bulk create the 2 documents
     var createResponse = mockMvc.perform(
-        post("/" + RepoV2TestConfig.PATH)
+        post("/" + RepoV2TestConfig.PATH + "/" + DinaRepositoryV2.JSON_API_BULK_PATH)
           .contentType(DinaRepositoryV2.JSON_API_BULK)
           .content(objMapper.writeValueAsString(bulkCreateDocument))
       )
@@ -381,7 +403,7 @@ public class DinaRepositoryV2IT {
 
     // bulk update the 2 documents
     var updateResponse = mockMvc.perform(
-        patch("/" + RepoV2TestConfig.PATH)
+        patch("/" + RepoV2TestConfig.PATH + "/" + DinaRepositoryV2.JSON_API_BULK_PATH)
           .contentType(DinaRepositoryV2.JSON_API_BULK)
           .content(objMapper.writeValueAsString(bulkUpdateDocument.build()))
       )
@@ -409,7 +431,7 @@ public class DinaRepositoryV2IT {
       .andReturn();
 
     var bulkDeleteResponse = mockMvc.perform(
-        delete("/" + RepoV2TestConfig.PATH)
+        delete("/" + RepoV2TestConfig.PATH + "/" + DinaRepositoryV2.JSON_API_BULK_PATH)
           .contentType(DinaRepositoryV2.JSON_API_BULK)
           .content(objMapper.writeValueAsString(bulkLoadDocument.build()))
       )
@@ -494,6 +516,8 @@ public class DinaRepositoryV2IT {
   public static class RepoV2TestConfig {
 
     public static final String PATH = PersonDTO.TYPE_NAME + "v2";
+    public static final String EXPENSIVE_VALUE_TO_COMPUTE = "$$$$";
+    public static final String AUGMENTED_DATA_VALUE = "VR Augmented";
 
     @Bean
     public JsonApiConfiguration jsonApiConfiguration() {
@@ -530,94 +554,5 @@ public class DinaRepositoryV2IT {
       }
     }
 
-    @RestController
-    @RequestMapping(produces = JSON_API_VALUE)
-    static class PersonDinaTestRepositoryV2 extends DinaRepositoryV2<PersonDTO, Person> {
-      public PersonDinaTestRepositoryV2(
-        DinaService<Person> dinaService,
-        BuildProperties buildProperties,
-        Optional<AuditService> auditService,
-        ObjectMapper objMapper
-      ) {
-        super(dinaService, new AllowAllAuthorizationService(),
-          auditService, PersonMapper.INSTANCE, PersonDTO.class, Person.class,
-          buildProperties, objMapper);
-      }
-
-      @Override
-      protected Link generateLinkToResource(PersonDTO dto) {
-        try {
-          return linkTo(
-            methodOn(PersonDinaTestRepositoryV2.class).onFindOne(dto.getUuid(), null)).withSelfRel();
-        } catch (ResourceNotFoundException | ResourceGoneException e) {
-          throw new RuntimeException(e);
-        }
-      }
-
-      @GetMapping(PATH + "/{id}")
-      public ResponseEntity<RepresentationModel<?>> onFindOne(@PathVariable UUID id,
-                                                              HttpServletRequest req)
-        throws ResourceNotFoundException, ResourceGoneException {
-        return handleFindOne(id, req);
-      }
-
-      @GetMapping(PATH)
-      public ResponseEntity<RepresentationModel<?>> onFindAll(HttpServletRequest req) {
-        return handleFindAll(req);
-      }
-
-      @PostMapping(path = PATH, consumes = JSON_API_BULK)
-      @Transactional
-      public ResponseEntity<RepresentationModel<?>> onBulkCreate(
-        @RequestBody JsonApiBulkDocument jsonApiBulkDocument) {
-        return handleBulkCreate(jsonApiBulkDocument, null);
-      }
-
-      @PostMapping(path = PATH + "/" + JSON_API_BULK_LOAD_PATH, consumes = JSON_API_BULK)
-      public ResponseEntity<RepresentationModel<?>> onBulkLoad(
-        @RequestBody JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument, HttpServletRequest req)
-        throws ResourcesNotFoundException, ResourcesGoneException {
-        return handleBulkLoad(jsonApiBulkDocument, req);
-      }
-
-      @PostMapping(path = PATH)
-      @Transactional
-      public ResponseEntity<RepresentationModel<?>> onCreate(
-        @RequestBody JsonApiDocument postedDocument) {
-
-        return handleCreate(postedDocument, null);
-      }
-
-      @PatchMapping(PATH + "/{id}")
-      @Transactional
-      public ResponseEntity<RepresentationModel<?>> onUpdate(
-        @RequestBody JsonApiDocument partialPatchDto,
-        @PathVariable UUID id) throws ResourceNotFoundException, ResourceGoneException {
-        return handleUpdate(partialPatchDto, id);
-      }
-
-      @PatchMapping(path = PATH, produces = JSON_API_BULK)
-      @Transactional
-      public ResponseEntity<RepresentationModel<?>> onBulkUpdate(
-        @RequestBody JsonApiBulkDocument jsonApiBulkDocument)
-        throws ResourceNotFoundException, ResourceGoneException {
-        return handleBulkUpdate(jsonApiBulkDocument);
-      }
-
-      @DeleteMapping(path = PATH, produces = JSON_API_BULK)
-      @Transactional
-      public ResponseEntity<RepresentationModel<?>> onBulkDelete(@RequestBody
-                                                                 JsonApiBulkResourceIdentifierDocument jsonApiBulkDocument)
-        throws ResourceNotFoundException, ResourceGoneException {
-        return handleBulkDelete(jsonApiBulkDocument);
-      }
-
-      @DeleteMapping(PATH + "/{id}")
-      @Transactional
-      public ResponseEntity<RepresentationModel<?>> onDelete(@PathVariable UUID id)
-        throws ResourceNotFoundException, ResourceGoneException {
-        return handleDelete(id);
-      }
-    }
   }
 }
