@@ -523,18 +523,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </li>
 <li><a href="#_releasing_dina_base_api">15. Releasing dina-base-api</a></li>
-<li><a href="#_field_adapters">16. Field adapters</a>
-<ul class="sectlevel2">
-<li><a href="#_implement_a_dina_field_adapter_for_the_field">16.1. Implement a Dina Field Adapter for the field.</a></li>
-<li><a href="#_annotate_your_field_with_ignoredinamapping">16.2. Annotate your field with IgnoreDinaMapping</a></li>
-<li><a href="#_annotate_your_class_with_customfieldadapter">16.3. Annotate your class with CustomFieldAdapter</a></li>
-</ul>
-</li>
-<li><a href="#_custom_rsql_filtering">17. Custom Rsql Filtering</a>
-<ul class="sectlevel2">
-<li><a href="#_current_specs">17.1. Current Specs</a></li>
-</ul>
-</li>
 </ul>
 </div>
 </div>
@@ -572,10 +560,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Processes incoming HTTP requests for the API endpoint to send the appropriate response.</p>
 </li>
 <li>
-<p>Processing of incoming HTTP request is mostly handled automatically by the underlying Crnk framework. Crnk will process the incoming request and send it to the appropriate method while mapping the request body and parameters to the required method parameters.</p>
-</li>
-<li>
-<p>The repository layer is where most of the Crnk related processing should happen for example processing the filters of the query spec.</p>
+<p>Processing of incoming HTTP request.</p>
 </li>
 <li>
 <p>Communication to the service layer is usually done through the use of entity classes, and communication to the HTTP layer is usually done through the use of DTO&#8217;s which have been mapped from their database backed entity representations.</p>
@@ -1777,135 +1762,10 @@ public class ExternalResourceProviderImplementation implements ExternalResourceP
 </div>
 </div>
 </div>
-<div class="sect1">
-<h2 id="_field_adapters">16. Field adapters</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Field adapters allow you to provide custom mappings between fields.</p>
-</div>
-<div class="paragraph">
-<p>We have a field in a DTO that is of type Integer that we want to map between an entity where the field is of type string.</p>
-</div>
-<div class="paragraph">
-<p>We will need to provide a custom mapping.</p>
-</div>
-<div class="sect2">
-<h3 id="_implement_a_dina_field_adapter_for_the_field">16.1. Implement a Dina Field Adapter for the field.</h3>
-<div class="paragraph">
-<p>Example Implementation:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-java" data-lang="java">class CustomFieldAdapterImpl implements DinaFieldAdapter&lt;CarDto, Car, Integer, String&gt; {
-
-    //No args constructor required
-    public CustomFieldAdapterImpl() {
-    }
-
-    @Override
-    public Integer toDTO(String s) {
-      return Integer.valueOf(s);
-    }
-
-    @Override
-    public String toEntity(Integer integer) {
-      return Integer.toString(integer);
-    }
-
-    @Override
-    public Consumer&lt;String&gt; entityApplyMethod(Car dtoRef) {
-      return dtoRef::setCustomField;
-    }
-
-    @Override
-    public Consumer&lt;Integer&gt; dtoApplyMethod(CarDto entityRef) {
-      return entityRef::setCustomField;
-    }
-  }</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The <code>toDTO</code> and <code>toEntity</code> methods provide the logic to convert the field value from DTO to Entity and vice versa. The <code>entityApplyMethod</code> and <code>dtoApplyMethod</code> methods allow you to supply the method that will apply the converted values to the appropriate field. In this example we use the base Setters as the methods that will apply the converted values.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_annotate_your_field_with_ignoredinamapping">16.2. Annotate your field with IgnoreDinaMapping</h3>
-<div class="ulist">
-<ul>
-<li>
-<p>Mark your field in your DTO with the <code>IgnoreDinaMapping</code> annotation.</p>
-</li>
-</ul>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-java" data-lang="java">    @IgnoreDinaMapping(reason = "Custom resolved field")
-    private String customField;</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_annotate_your_class_with_customfieldadapter">16.3. Annotate your class with CustomFieldAdapter</h3>
-<div class="ulist">
-<ul>
-<li>
-<p>Mark your DTO with the <code>CustomFieldAdapter</code> annotation and give it the adapter you created in step one.</p>
-</li>
-</ul>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-java" data-lang="java">  @CustomFieldAdapter(adapters = CustomFieldAdapterImp.class)
-  public static final class StudentDto {</code></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_custom_rsql_filtering">17. Custom Rsql Filtering</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_current_specs">17.1. Current Specs</h3>
-<div class="paragraph">
-<p>You can add custom rsql filtering for your resource in order to manipulate how Rsql filters will be processed.</p>
-</div>
-<div class="sect3">
-<h4 id="_step_1_create_a_rsqlfilteradapter_for_your_class">17.1.1. Step 1: Create a RsqlFilterAdapter for your class.</h4>
-<div class="paragraph">
-<p>This is a simple Functional interface which will provide the entry point to run your business logic to process the Rsql filters.</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>Node process(Node node);</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The process method will receive the root node of the rsql filters and will return the final rsql node to be used in the filtering process.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_step_2_pass_your_filter_adapter_to_the_dina_filter_resolver">17.1.2. Step 2: Pass your filter adapter to the Dina filter resolver.</h4>
-<div class="paragraph">
-<p>The DinaFilterResolver will allow you to pass your adapter to the resolver in the constructor.</p>
-</div>
-<div class="paragraph">
-<p>You can do this during the creation of your repository for the resource.</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>DinaFilterResolver(RsqlFilterAdapter rsqlFilterAdapter)</pre>
-</div>
-</div>
-<hr>
-</div>
-</div>
-</div>
-</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-01-06 16:20:12 UTC
+Last updated 2026-01-14 20:18:56 UTC
 </div>
 </div>
 </body>
