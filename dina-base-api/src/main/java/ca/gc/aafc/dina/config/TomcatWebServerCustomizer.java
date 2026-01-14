@@ -10,9 +10,9 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer;
  */
 @Named
 public class TomcatWebServerCustomizer implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
-    @Override
-    public void customize(TomcatServletWebServerFactory factory) {
-      // Allow square brackets in URLs because they are often used in JSONAPI requests.
-      factory.addConnectorCustomizers(connector -> connector.setProperty("relaxedQueryChars", "[]"));
-    }
+  @Override
+  public void customize(TomcatServletWebServerFactory factory) {
+    // Allow square brackets in URLs because they are often used in JSONAPI requests.
+    factory.addConnectorCustomizers(connector -> connector.setProperty("relaxedQueryChars", "[]"));
   }
+}
