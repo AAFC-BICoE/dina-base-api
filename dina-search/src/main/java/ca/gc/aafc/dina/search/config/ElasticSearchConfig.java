@@ -17,8 +17,13 @@ import co.elastic.clients.transport.rest_client.RestClientTransport;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.KeyManagementException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import javax.net.ssl.SSLContext;
@@ -32,7 +37,7 @@ public class ElasticSearchConfig {
   public static final int DEFAULT_PORT = 9200;
 
   @Bean
-  public ElasticsearchClient provideClient(ElasticSearchProperties esProps) throws Exception {
+  public ElasticsearchClient provideClient(ElasticSearchProperties esProps) throws IOException {
     int port = esProps.getPort() <= 0 ? DEFAULT_PORT : esProps.getPort();
 
     log.debug("Configuring Elasticsearch client for {}:{}", esProps.getHost(), port);
@@ -57,6 +62,13 @@ public class ElasticSearchConfig {
     return createElasticsearchClient(restClientBuilder, credentialsProvider, sslContext);
   }
 
+  /**
+   * Allow to create an {@link ElasticsearchClient} programmatically with a specific SSLContext
+   * @param restClientBuilder
+   * @param credentialsProvider
+   * @param sslContext
+   * @return
+   */
   public static ElasticsearchClient createElasticsearchClient(RestClientBuilder restClientBuilder,
                                                        CredentialsProvider credentialsProvider,
                                                        SSLContext sslContext) {
@@ -78,7 +90,7 @@ public class ElasticSearchConfig {
     );
   }
 
-  private SSLContext createSSLContext(String certPath) throws Exception {
+  private SSLContext createSSLContext(String certPath) throws IOException {
     File certFile = new File(certPath);
     if (!certFile.exists()) {
       throw new FileNotFoundException("Certificate file not found: " + certFile.getAbsolutePath());
@@ -101,6 +113,9 @@ public class ElasticSearchConfig {
 
       log.debug("✅ SSL Context loaded successfully");
       return sslContext;
+    } catch (CertificateException | KeyStoreException | NoSuchAlgorithmException |
+             KeyManagementException e) {
+      throw new RuntimeException(e);
     }
   }
 }
