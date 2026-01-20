@@ -8,10 +8,13 @@ import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.SingularAttribute;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.jaxrs.ext.search.PropertyNotFoundException;
 import org.apache.cxf.jaxrs.ext.search.SearchCondition;
 import org.apache.cxf.jaxrs.ext.search.SearchParseException;
 import org.apache.cxf.jaxrs.ext.search.fiql.FiqlParser;
 import org.apache.cxf.jaxrs.ext.search.jpa.JPACriteriaQueryVisitor;
+
+import ca.gc.aafc.dina.exception.UnknownAttributeException;
 
 /**
  * FIQL query handling
@@ -52,7 +55,9 @@ public final class FIQLFilterHandler {
       }
 
       return visitor.getQuery();
-
+    } catch (PropertyNotFoundException ex) {
+      // getMessage of PropertyNotFoundException is null so we need to construct one
+      throw new UnknownAttributeException(ex.getName());
     } catch (SearchParseException ex) {
       throw new IllegalArgumentException(ex);
     }

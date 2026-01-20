@@ -4,7 +4,6 @@ import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
-import io.restassured.http.Header;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
@@ -22,8 +21,6 @@ import static io.restassured.RestAssured.given;
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
 public class DinaRepoSoftDeleteRestIt extends BaseRestAssuredTest {
 
-  private static final Header CRNK_HEADER = new Header("crnk-compact", "true");
-
   protected DinaRepoSoftDeleteRestIt() {
     super("/" + PersonDTO.TYPE_NAME);
   }
@@ -39,7 +36,7 @@ public class DinaRepoSoftDeleteRestIt extends BaseRestAssuredTest {
     String auditRepoLink = sendGet("", id, HttpStatus.SC_GONE).extract()
       .body().jsonPath().getString("errors.links.about[0]");
     // Assert the returned audit repo url is valid
-    given().header(CRNK_HEADER).port(testPort).get(auditRepoLink)
+    given().port(testPort).get(auditRepoLink)
       .then().statusCode(200);
   }
 
@@ -53,5 +50,4 @@ public class DinaRepoSoftDeleteRestIt extends BaseRestAssuredTest {
       .nickNames(Arrays.asList("d", "z", "q").toArray(new String[0]))
       .name("DinaRepoSoftDeleteRestIt_" + RandomStringUtils.random(4)).build();
   }
-
 }

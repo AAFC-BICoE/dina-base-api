@@ -2,6 +2,7 @@ package ca.gc.aafc.dina.entity;
 
 import io.hypersistence.utils.hibernate.type.array.StringArrayType;
 import javax.persistence.Transient;
+import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -39,6 +40,7 @@ public class Person implements DinaEntityIdentifiableByName {
 
   private Integer room;
 
+  @Size(max = 50)
   private String name;
 
   @Column(name = "group_name")

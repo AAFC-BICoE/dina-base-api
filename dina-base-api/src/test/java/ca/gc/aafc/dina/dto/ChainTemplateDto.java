@@ -1,18 +1,22 @@
 package ca.gc.aafc.dina.dto;
 
 import ca.gc.aafc.dina.entity.ChainTemplate;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiResource;
+
 import lombok.Data;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import com.toedter.spring.hateoas.jsonapi.JsonApiId;
+import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
+
 @Data
-@JsonApiResource(type = "chainTemplate")
+@JsonApiTypeForClass(ChainTemplateDto.TYPENAME)
 @RelatedEntity(ChainTemplate.class)
 public class ChainTemplateDto {
-  
+
+  public static final String TYPENAME = "chainTemplate";
+
   @JsonApiId
   private UUID uuid;
 

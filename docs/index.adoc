@@ -34,7 +34,3 @@ include::lazy_logging.adoc[]
 include::externalTypes.adoc[]
 
 include::release.adoc[]
-
-include::fieldAdapters.adoc[]
-
-include::CustomRsqlFilters.adoc[]

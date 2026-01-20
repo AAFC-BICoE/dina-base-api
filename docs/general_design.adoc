@@ -16,8 +16,7 @@ include::layers.plantuml[]
 * Communicates to the service layer for access to database resources but never contacts the database directly.
 * Communicates to the mapping layer to process entities into DTO's and vise versa.
 * Processes incoming HTTP requests for the API endpoint to send the appropriate response.
-* Processing of incoming HTTP request is mostly handled automatically by the underlying Crnk framework. Crnk will process the incoming request and send it to the appropriate method while mapping the request body and parameters to the required method parameters.
-* The repository layer is where most of the Crnk related processing should happen for example processing the filters of the query spec. 
+* Processing of incoming HTTP request.
 * Communication to the service layer is usually done through the use of entity classes, and communication to the HTTP layer is usually done through the use of DTO's which have been mapped from their database backed entity representations.
 * Each repository requires a specific database service class implementation and a mapper.
 

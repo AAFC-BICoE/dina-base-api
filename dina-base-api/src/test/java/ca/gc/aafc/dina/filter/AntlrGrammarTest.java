@@ -43,6 +43,17 @@ public class AntlrGrammarTest {
   }
 
   @Test
+  public void onReservedWord_structureReturned() {
+    String content =
+      "filter[extension.fields.dinaComponent]=filter";
+
+    QueryComponent queryComponent = QueryStringParser.parse(content);
+    FilterExpression fEx = queryComponent.getFilterExpression().get();
+    assertEquals("extension.fields.dinaComponent", fEx.attribute());
+    assertEquals("filter", fEx.value());
+  }
+
+  @Test
   public void onFilterAsString_structureReturned() {
     String content =
       "filter[name][EQ]=2&filter[position][NEQ]=manager,supervisor&sort=position,-name&page[offset]=5&page[limit]=1&include=author.name";

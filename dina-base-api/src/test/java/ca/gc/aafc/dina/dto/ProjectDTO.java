@@ -6,9 +6,6 @@ import ca.gc.aafc.dina.repository.meta.JsonApiExternalRelation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiRelation;
-import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,7 +18,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-@JsonApiResource(type = ProjectDTO.RESOURCE_TYPE)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -32,7 +28,6 @@ public final class ProjectDTO implements ca.gc.aafc.dina.dto.JsonApiResource {
   public static final String RESOURCE_TYPE = "Project";
 
   @com.toedter.spring.hateoas.jsonapi.JsonApiId
-  @JsonApiId
   @org.javers.core.metamodel.annotation.Id
   @PropertyName("id")
   private UUID uuid;
