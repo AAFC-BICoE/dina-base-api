@@ -66,7 +66,7 @@
     <xml-unit.version>2.10.0</xml-unit.version>
 
     <elasticsearch.version>8.19.8</elasticsearch.version>
-    <testcontainers.version>1.17.3</testcontainers.version>
+    <testcontainers.version>1.19.8</testcontainers.version>
   </properties>
 
   <!-- Common sub module dependencies -->
