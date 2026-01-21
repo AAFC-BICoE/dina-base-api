@@ -16,7 +16,7 @@ import java.io.StringReader;
  */
 public final class ElasticSearchTestUtils {
 
-  public enum ActionOnExists {DROP, IGNORE, FAIL}
+  public enum ActionOnExists { DROP, IGNORE, FAIL }
 
   private ElasticSearchTestUtils() {
     // utility class
