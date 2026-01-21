@@ -41,6 +41,13 @@ public class ElasticSearchTestUtilsIT {
         }""";
       ElasticSearchTestUtils.indexDocument(esClient, "agent_index",
         "9df388de-71b5-45be-9613-b70674439773", jsonDocument);
+
+      ElasticSearchTestUtils.createIndex(esClient, "agent_index",
+        "elasticsearch/agent_schema.json", ElasticSearchTestUtils.ActionOnExists.DROP);
+
+      ElasticSearchTestUtils.createIndex(esClient, "agent_index",
+        "elasticsearch/agent_schema.json", ElasticSearchTestUtils.ActionOnExists.IGNORE);
+
     } catch (IOException e) {
       fail(e);
     }
