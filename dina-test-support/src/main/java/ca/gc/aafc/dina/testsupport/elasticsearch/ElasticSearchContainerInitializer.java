@@ -5,14 +5,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import org.apache.commons.lang3.BooleanUtils;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
+import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * Initializes the ElasticSearch TestContainer.
@@ -23,6 +26,8 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
  *
  * ElasticSearchConfig can then be created from a ElasticSearchProperties since this initializer
  * will inject the data in properties.
+ *
+ * Note that the ICU plugin is always installed.
  */
 public class ElasticSearchContainerInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
@@ -44,7 +49,7 @@ public class ElasticSearchContainerInitializer implements ApplicationContextInit
 
     synchronized (LOCK) {
       if (esContainer == null) {
-        esContainer = createContainer(env);
+        esContainer = createContainer();
         esContainer.start();
       }
     }
@@ -78,22 +83,33 @@ public class ElasticSearchContainerInitializer implements ApplicationContextInit
     }
   }
 
-  private static ElasticsearchContainer createContainer(ConfigurableEnvironment env) {
-    ElasticsearchContainer container = new ElasticsearchContainer(ES_IMAGE)
+  @SuppressWarnings("resource")
+  private static ElasticsearchContainer createContainer() {
+
+    DockerImageName imageIdentifier = buildImageWithICUPlugin();
+
+    return new ElasticsearchContainer(imageIdentifier)
       .withPassword(ES_TEST_PASSWORD)
       .withEnv(CLUSTER_NAME, ELASTIC_SEARCH)
+      .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("elasticsearch")))
       .waitingFor(Wait.forLogMessage(".*started.*", 1));
+  }
 
-    // Install plugins BEFORE starting
-    if (BooleanUtils.toBoolean(env.getProperty("elasticsearch.icu.enabled", "false"))) {
-      container.withCommand(
-        "/bin/bash",
-        "-c",
-        "elasticsearch-plugin install --batch analysis-icu && " +
-          "/usr/local/bin/docker-entrypoint.sh elasticsearch"
+  private static DockerImageName buildImageWithICUPlugin() {
+    ImageFromDockerfile image = new ImageFromDockerfile()
+      .withDockerfileFromBuilder(builder ->
+        builder
+          .from(ES_IMAGE)
+          .run("bin/elasticsearch-plugin install --batch analysis-icu")
+          .build()
       );
-    }
-    return container;
+
+    // Get the image ID (this builds the image)
+    String imageId = image.get();
+
+    // Convert to DockerImageName and declare compatibility
+    return DockerImageName.parse(imageId)
+      .asCompatibleSubstituteFor(ES_IMAGE);
   }
 
   private static void extractCertificate() {
