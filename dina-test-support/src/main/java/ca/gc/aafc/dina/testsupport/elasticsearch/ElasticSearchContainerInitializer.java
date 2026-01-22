@@ -52,8 +52,9 @@ public class ElasticSearchContainerInitializer implements ApplicationContextInit
         esContainer = createContainer();
         esContainer.start();
       }
-      extractCertificate();
     }
+
+    extractCertificate();
 
     TestPropertyValues.of(
       "elasticsearch.host=" + esContainer.getHost(),
@@ -112,18 +113,20 @@ public class ElasticSearchContainerInitializer implements ApplicationContextInit
   }
 
   private static void extractCertificate() {
-    try {
-      if (tmpCertFile == null) {
-        tmpCertFile = Files.createTempFile("escert", ".crt");
-        Optional<byte[]> cert = esContainer.caCertAsBytes();
-        if (cert.isPresent()) {
-          Files.write(tmpCertFile, cert.get());
-        } else {
-          throw new RuntimeException("Failed to extract ES certificate");
+    synchronized (LOCK) {
+      try {
+        if (tmpCertFile == null) {
+          tmpCertFile = Files.createTempFile("escert", ".crt");
+          Optional<byte[]> cert = esContainer.caCertAsBytes();
+          if (cert.isPresent()) {
+            Files.write(tmpCertFile, cert.get());
+          } else {
+            throw new RuntimeException("Failed to extract ES certificate");
+          }
         }
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to handle certificate file", e);
       }
-    } catch (IOException e) {
-      throw new RuntimeException("Failed to handle certificate file", e);
     }
   }
 
