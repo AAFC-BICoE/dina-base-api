@@ -129,12 +129,8 @@ public class ElasticSearchContainerInitializer implements ApplicationContextInit
   }
 
   private static void cleanup() {
-    try {
-      if (esContainer != null && esContainer.isRunning()) {
-        esContainer.stop();
-      }
-    } catch (Exception e) {
-      System.err.println("Failed to stop ES container: " + e.getMessage());
+    if (esContainer != null && esContainer.isRunning()) {
+      esContainer.stop();
     }
 
     try {
