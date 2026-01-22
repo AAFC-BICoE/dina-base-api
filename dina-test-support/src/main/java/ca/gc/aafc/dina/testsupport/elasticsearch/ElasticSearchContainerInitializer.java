@@ -52,9 +52,8 @@ public class ElasticSearchContainerInitializer implements ApplicationContextInit
         esContainer = createContainer();
         esContainer.start();
       }
+      extractCertificate();
     }
-
-    extractCertificate();
 
     TestPropertyValues.of(
       "elasticsearch.host=" + esContainer.getHost(),
