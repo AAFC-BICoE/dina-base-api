@@ -65,7 +65,7 @@
     <eclipse-parsson.version>1.0.5</eclipse-parsson.version>
     <xml-unit.version>2.10.0</xml-unit.version>
 
-    <testcontainers.version>1.17.3</testcontainers.version>
+    <testcontainers.version>1.21.4</testcontainers.version>
   </properties>
 
   <!-- Common sub module dependencies -->
