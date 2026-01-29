@@ -7,5 +7,5 @@ package ca.gc.aafc.dina.messaging.message;
  * @param value the string value of the parameter
  */
 public record MessageParam(MessageParamType type, String value) {
-  public enum MessageParamType {TEXT, URL}
+  public enum MessageParamType { TEXT, URL }
 }
