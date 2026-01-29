@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.messaging.message;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import com.fasterxml.jackson.annotation.JsonTypeId;
 
@@ -21,6 +22,7 @@ public class DocumentOperationNotification implements DinaMessage {
   public static final String NOT_DEFINED = "Not-Defined";
 
   @JsonTypeId
+  @EqualsAndHashCode.Exclude
   private String type = TYPE;
 
   private final boolean dryRun;

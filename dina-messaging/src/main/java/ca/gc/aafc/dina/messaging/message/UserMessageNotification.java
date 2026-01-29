@@ -7,6 +7,7 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import com.fasterxml.jackson.annotation.JsonTypeId;
@@ -21,6 +22,7 @@ public class UserMessageNotification implements DinaMessage {
   public static final String TYPE = "UserNotification";
 
   @JsonTypeId
+  @EqualsAndHashCode.Exclude
   private String type = TYPE;
 
   private UUID userIdentifier;
