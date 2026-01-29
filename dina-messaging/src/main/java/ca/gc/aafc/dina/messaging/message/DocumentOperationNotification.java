@@ -1,7 +1,10 @@
 package ca.gc.aafc.dina.messaging.message;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+
+import com.fasterxml.jackson.annotation.JsonTypeId;
 
 import ca.gc.aafc.dina.messaging.DinaMessage;
 
@@ -9,12 +12,16 @@ import ca.gc.aafc.dina.messaging.DinaMessage;
  * Class representing a message to indicate a change on a document (JSON document)
  *
  */
-@Getter
+@Data
+@AllArgsConstructor
+@Builder
 public class DocumentOperationNotification implements DinaMessage {
 
   public static final String TYPE = "DocumentOperationNotification";
-
   public static final String NOT_DEFINED = "Not-Defined";
+
+  @JsonTypeId
+  private String type = TYPE;
 
   private final boolean dryRun;
   private final String documentId;
@@ -26,24 +33,6 @@ public class DocumentOperationNotification implements DinaMessage {
     this.documentId = NOT_DEFINED;
     this.documentType = NOT_DEFINED;
     this.operationType = DocumentOperationType.NOT_DEFINED;
-  }
-
-  /**
-   * Document operation notification.
-   *
-   * @param dryRun flag denoting if the operation/processing associated with the message should be
-   * bypassed.
-   * @param documentType DINA document type (metadata, person, organization, etc...)
-   * @param documentId The document UUID
-   * @param operationType Operation type as defined by the enumerated type.
-   */
-  @Builder
-  public DocumentOperationNotification(boolean dryRun, String documentType, String documentId,
-                                       DocumentOperationType operationType) {
-    this.dryRun = dryRun;
-    this.documentId = documentId;
-    this.documentType = documentType;
-    this.operationType = operationType;
   }
 
   @Override
