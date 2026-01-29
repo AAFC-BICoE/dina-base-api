@@ -10,7 +10,7 @@ import ca.gc.aafc.dina.messaging.DinaMessage;
  *
  */
 @Getter
-public class DocumentOperationNotification extends DinaMessage {
+public class DocumentOperationNotification implements DinaMessage {
 
   public static final String TYPE = "DocumentOperationNotification";
 
@@ -22,7 +22,6 @@ public class DocumentOperationNotification extends DinaMessage {
   private final DocumentOperationType operationType;
 
   public DocumentOperationNotification() {
-    super(TYPE);
     this.dryRun = false;
     this.documentId = NOT_DEFINED;
     this.documentType = NOT_DEFINED;
@@ -41,11 +40,15 @@ public class DocumentOperationNotification extends DinaMessage {
   @Builder
   public DocumentOperationNotification(boolean dryRun, String documentType, String documentId,
                                        DocumentOperationType operationType) {
-    super(TYPE);
     this.dryRun = dryRun;
     this.documentId = documentId;
     this.documentType = documentType;
     this.operationType = operationType;
+  }
+
+  @Override
+  public String getType() {
+    return TYPE;
   }
 
   @Override
