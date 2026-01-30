@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import ca.gc.aafc.dina.messaging.message.DocumentOperationNotification;
 import ca.gc.aafc.dina.messaging.message.ObjectExportNotification;
 import ca.gc.aafc.dina.messaging.message.ReportTemplateUploadNotification;
+import ca.gc.aafc.dina.messaging.message.UserMessageNotification;
 
 /**
  * Marker interface to identify messages in Dina
@@ -19,17 +20,9 @@ import ca.gc.aafc.dina.messaging.message.ReportTemplateUploadNotification;
 @JsonSubTypes({
   @JsonSubTypes.Type(value = DocumentOperationNotification.class, name = DocumentOperationNotification.TYPE),
   @JsonSubTypes.Type(value = ReportTemplateUploadNotification.class, name = ReportTemplateUploadNotification.TYPE),
-  @JsonSubTypes.Type(value = ObjectExportNotification.class, name = ObjectExportNotification.TYPE)
+  @JsonSubTypes.Type(value = ObjectExportNotification.class, name = ObjectExportNotification.TYPE),
+  @JsonSubTypes.Type(value = UserMessageNotification.class, name = UserMessageNotification.TYPE)
 })
-public abstract class DinaMessage implements Serializable {
-
-  private final String type;
-
-  public DinaMessage(String type) {
-    this.type = type;
-  }
-
-  public String getType() {
-    return type;
-  }
+public interface DinaMessage extends Serializable {
+  String getType();
 }

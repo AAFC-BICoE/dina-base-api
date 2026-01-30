@@ -3,28 +3,25 @@ package ca.gc.aafc.dina.messaging.message;
 import ca.gc.aafc.dina.messaging.DinaMessage;
 
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
-@Builder
+import com.fasterxml.jackson.annotation.JsonTypeId;
+
 @Data
-@Getter
-public class ObjectExportNotification extends DinaMessage {
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class ObjectExportNotification implements DinaMessage {
 
   public static final String TYPE = "ObjectExportNotification";
 
-  public ObjectExportNotification() {
-    super(TYPE);
-  }
-
-  public ObjectExportNotification(UUID uuid, String username, String name, String toa) {
-    super(TYPE);
-    this.uuid = uuid;
-    this.username = username;
-    this.name = name;
-    this.toa = toa;
-  }
+  @JsonTypeId
+  @EqualsAndHashCode.Exclude
+  private String type = TYPE;
 
   // uuid generated for the export
   private UUID uuid;
@@ -37,4 +34,8 @@ public class ObjectExportNotification extends DinaMessage {
   // temporary object access
   private String toa;
 
+  @Override
+  public String getType() {
+    return TYPE;
+  }
 }
