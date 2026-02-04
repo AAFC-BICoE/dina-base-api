@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.159-SNAPSHOT</version>
+  <version>0.160-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
@@ -64,9 +64,9 @@
     <snakeyaml.version>1.33</snakeyaml.version>
     <eclipse-parsson.version>1.0.5</eclipse-parsson.version>
     <xml-unit.version>2.10.0</xml-unit.version>
-
+    
     <elasticsearch.version>8.19.8</elasticsearch.version>
-    <testcontainers.version>1.19.8</testcontainers.version>
+    <testcontainers.version>1.21.4</testcontainers.version>
   </properties>
 
   <!-- Common sub module dependencies -->
