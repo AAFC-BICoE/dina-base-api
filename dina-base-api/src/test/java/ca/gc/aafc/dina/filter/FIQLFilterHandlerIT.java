@@ -14,8 +14,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 
 /**
  * Tests for {@link FIQLFilterHandler}

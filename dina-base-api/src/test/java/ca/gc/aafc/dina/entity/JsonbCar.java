@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.entity;
 
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,7 +7,6 @@ import lombok.NoArgsConstructor;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.TypeDef;
 import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
@@ -27,7 +25,6 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class JsonbCar implements DinaEntity {
 
   @Id

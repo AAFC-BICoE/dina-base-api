@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.7.18</version>
+    <version>3.0.13</version>
   </parent>
 
   <modules>
@@ -57,11 +57,7 @@
     <jakarta.json-api.version>2.0.2</jakarta.json-api.version>
 
     <!-- Versions override-->
-    <spring-framework.version>5.3.39</spring-framework.version>
-    <org.springframework.security.version>5.7.12</org.springframework.security.version>
     <jackson-bom.version>2.15.4</jackson-bom.version>
-    <tomcat.version>9.0.109</tomcat.version>
-    <snakeyaml.version>1.33</snakeyaml.version>
     <eclipse-parsson.version>1.0.5</eclipse-parsson.version>
     <xml-unit.version>2.10.0</xml-unit.version>
 
@@ -99,10 +95,10 @@
       <artifactId>javax.inject</artifactId>
       <version>${javax.inject.version}</version>
     </dependency>
-    <dependency>
-      <groupId>javax.persistence</groupId>
-      <artifactId>javax.persistence-api</artifactId>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>javax.persistence</groupId>-->
+<!--      <artifactId>javax.persistence-api</artifactId>-->
+<!--    </dependency>-->
 
     <!--Util -->
     <dependency>
