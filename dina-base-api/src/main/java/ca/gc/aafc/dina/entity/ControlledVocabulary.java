@@ -1,26 +1,30 @@
 package ca.gc.aafc.dina.entity;
 
+import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
+import jakarta.persistence.Column;
 import java.time.OffsetDateTime;
 import java.util.UUID;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.NaturalIdCache;
 import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
 
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
@@ -53,13 +57,15 @@ public abstract class ControlledVocabulary implements DinaEntity {
   @Size(max = 255)
   private String name;
 
-  @Type(type = "pgsql_enum")
   @Enumerated(EnumType.STRING)
+  @Type(PostgreSQLEnumType.class)
+  @Column(columnDefinition = "controlled_vocabulary_type")
   @NotNull
   private ControlledVocabularyType type;
 
-  @Type(type = "pgsql_enum")
   @Enumerated(EnumType.STRING)
+  @Type(PostgreSQLEnumType.class)
+  @Column(columnDefinition = "controlled_vocabulary_class")
   @NotNull
   private ControlledVocabularyClass vocabClass;
 
@@ -79,10 +85,10 @@ public abstract class ControlledVocabulary implements DinaEntity {
   @Size(max = 255)
   private String version;
 
-  @Type(type = "jsonb")
+  @JdbcTypeCode(SqlTypes.JSON)
   private MultilingualTitle multilingualTitle;
 
-  @Type(type = "jsonb")
+  @JdbcTypeCode(SqlTypes.JSON)
   private MultilingualDescription multilingualDescription;
 
   private String createdBy;

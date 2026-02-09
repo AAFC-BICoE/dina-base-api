@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.util.UUID;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import lombok.Setter;
 
 @Transactional

@@ -1,28 +1,27 @@
 package ca.gc.aafc.dina.entity;
 
 import io.hypersistence.utils.hibernate.type.array.ListArrayType;
-import javax.persistence.Column;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
+import jakarta.persistence.Column;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.validator.constraints.UniqueElements;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Transient;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Transient;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -67,7 +66,7 @@ public final class Project implements DinaEntity {
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<ComplexObject> nameTranslations;
 
-  @Type(type = "list-array")
+  //@Type(type = "list-array")
   @Column(name = "authors", columnDefinition = "uuid[]")
   @UniqueElements
   private List<UUID> authors;
