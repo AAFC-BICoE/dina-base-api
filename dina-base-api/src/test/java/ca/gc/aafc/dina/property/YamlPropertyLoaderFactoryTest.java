@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.ConstructorBinding;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Configuration;
@@ -41,7 +40,6 @@ public class YamlPropertyLoaderFactoryTest {
     private YamlConfig yaml;
   }
 
-  @ConstructorBinding
   @RequiredArgsConstructor
   @Getter
   static class YamlConfig {

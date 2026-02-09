@@ -39,7 +39,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 @SpringBootTest(classes = {
   TestDinaBaseApp.class, SimpleFilterResolverJsonbV2IT.DinaFilterResolverJsonbITConfig.class})

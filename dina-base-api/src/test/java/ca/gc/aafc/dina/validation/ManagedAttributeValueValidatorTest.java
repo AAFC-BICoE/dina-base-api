@@ -20,8 +20,8 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
 import javax.inject.Inject;
-import javax.transaction.Transactional;
-import javax.validation.ValidationException;
+import jakarta.transaction.Transactional;
+import jakarta.validation.ValidationException;
 
 import com.google.common.collect.ImmutableList;
 

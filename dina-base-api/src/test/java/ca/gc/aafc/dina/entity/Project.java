@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.entity;
 
-import io.hypersistence.utils.hibernate.type.array.ListArrayType;
 import jakarta.persistence.Column;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -9,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.TypeDef;
 import org.hibernate.validator.constraints.UniqueElements;
 
 import jakarta.persistence.CascadeType;
@@ -31,7 +29,6 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeDef(name = "list-array", typeClass = ListArrayType.class)
 public final class Project implements DinaEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.validation.ValidationException;
+import jakarta.validation.ValidationException;
 
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.junit.jupiter.api.Test;

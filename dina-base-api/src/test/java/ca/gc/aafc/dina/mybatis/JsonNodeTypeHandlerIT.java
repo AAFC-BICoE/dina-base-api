@@ -26,6 +26,6 @@ public class JsonNodeTypeHandlerIT {
   public void testJsonNodeTypeHandler () {
     List<TestTableData> testData = dao.loadData(1);
     assertFalse(testData.isEmpty());
-    assertEquals("val_01", testData.get(0).getJdata().getAttr_01());
+    assertEquals("val_01", testData.getFirst().getJdata().getAttr_01());
   }
 }

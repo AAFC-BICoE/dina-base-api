@@ -19,13 +19,13 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.transaction.Transactional;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validation;
-import javax.validation.ValidationException;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidationException;
 
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.apache.commons.lang3.RandomStringUtils;
