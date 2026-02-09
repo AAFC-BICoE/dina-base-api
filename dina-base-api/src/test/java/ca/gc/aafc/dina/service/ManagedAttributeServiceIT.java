@@ -21,7 +21,7 @@ import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;

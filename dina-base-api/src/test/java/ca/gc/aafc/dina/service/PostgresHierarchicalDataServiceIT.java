@@ -1,16 +1,15 @@
 package ca.gc.aafc.dina.service;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+
+import ca.gc.aafc.dina.BasePostgresItContext;
+import ca.gc.aafc.dina.dto.HierarchicalObject;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.sql.SQLException;
 import java.util.List;
-
 import javax.inject.Inject;
-
-import ca.gc.aafc.dina.BasePostgresItContext;
-import org.junit.jupiter.api.Test;
-
-import ca.gc.aafc.dina.dto.HierarchicalObject;
 
 public class PostgresHierarchicalDataServiceIT extends BasePostgresItContext {
 
@@ -22,7 +21,7 @@ public class PostgresHierarchicalDataServiceIT extends BasePostgresItContext {
     List<HierarchicalObject> hierarchy = postgresHierarchicalDataService
         .getHierarchy(5, "hierarchy_test_table", "id", "uuid", "parent_identifier", "name");
         
-    assertEquals("Hierarchy should have three elements", 3, hierarchy.size());
+    assertEquals(3, hierarchy.size(), "Hierarchy should have three elements");
 
     HierarchicalObject first = hierarchy.get(0);
     HierarchicalObject second = hierarchy.get(1);
@@ -46,7 +45,7 @@ public class PostgresHierarchicalDataServiceIT extends BasePostgresItContext {
         .getHierarchyWithType(5, "hierarchy_test_table", "id", "uuid", "parent_identifier",
             "name", "type_uuid");
 
-    assertEquals("Hierarchy should have three elements", 3, hierarchy.size());
+    assertEquals(3, hierarchy.size(), "Hierarchy should have three elements");
 
     HierarchicalObject first = hierarchy.get(0);
     HierarchicalObject second = hierarchy.get(1);
