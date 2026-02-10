@@ -25,8 +25,8 @@
     <commons.beanutils.version>1.11.0</commons.beanutils.version>
 
     <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
-    <javers.version>6.13.0</javers.version>
-    <mybatis.version>2.2.2</mybatis.version>
+    <javers.version>7.0.3</javers.version>
+    <mybatis.version>3.0.5</mybatis.version>
     <hypersistence-utils-hibernate-60.version>3.9.4</hypersistence-utils-hibernate-60.version>
 
     <jsoup.version>1.22.1</jsoup.version>

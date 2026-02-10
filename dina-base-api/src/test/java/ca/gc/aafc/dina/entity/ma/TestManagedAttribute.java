@@ -5,21 +5,20 @@ import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
 import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
-import io.hypersistence.utils.hibernate.type.array.StringArrayType;
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import lombok.Builder;
 import lombok.Data;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -31,8 +30,6 @@ import java.util.UUID;
 @Data
 @Builder
 @Entity
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-@TypeDef(name = "string-array", typeClass = StringArrayType.class)
 public class TestManagedAttribute implements ManagedAttribute {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,7 +43,7 @@ public class TestManagedAttribute implements ManagedAttribute {
   @Enumerated(EnumType.STRING)
   private TypedVocabularyElement.VocabularyElementType vocabularyElementType;
 
-  @Type(type = "string-array")
+  //@Type(type = "string-array")
   private String[] acceptedValues;
 
   private String createdBy;
@@ -54,7 +51,7 @@ public class TestManagedAttribute implements ManagedAttribute {
   //for testing purpose
   private boolean failValidateValue;
 
-  @Type(type = "jsonb")
+  @JdbcTypeCode(SqlTypes.JSON)
   @Column(columnDefinition = "jsonb")
   private MultilingualDescription multilingualDescription;
 

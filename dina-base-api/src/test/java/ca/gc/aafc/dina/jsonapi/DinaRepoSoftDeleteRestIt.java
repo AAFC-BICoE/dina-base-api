@@ -30,6 +30,7 @@ public class DinaRepoSoftDeleteRestIt extends BaseRestAssuredTest {
     final String id = sendPost(JsonAPITestHelper.toJsonAPIMap(
       PersonDTO.TYPE_NAME,
       createPersonDto())).extract().body().jsonPath().getString("data.id");
+
     sendGet(id);
     sendDelete(id);
 

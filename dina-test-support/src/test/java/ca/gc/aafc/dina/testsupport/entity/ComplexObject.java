@@ -1,8 +1,8 @@
 package ca.gc.aafc.dina.testsupport.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
