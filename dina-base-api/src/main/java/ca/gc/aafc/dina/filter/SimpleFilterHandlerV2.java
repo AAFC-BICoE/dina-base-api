@@ -318,14 +318,14 @@ public final class SimpleFilterHandlerV2 {
 
     // Check field for annotation.
     AccessibleObject ao = safeGetDeclaredField(clazz, attribute.getName());
-    if (ao != null && ao.isAnnotationPresent(Type.class) &&
+    if (ao != null && ao.isAnnotationPresent(JdbcTypeCode.class) &&
         ao.getAnnotation(JdbcTypeCode.class).value() == SqlTypes.JSON) {
       return true;
     }
 
     // If no annotation is present on the field, check the method instead.
     ao = safeGetDeclaredMethod(clazz, attribute.getJavaMember().getName());
-    if (ao != null && ao.isAnnotationPresent(Type.class) &&
+    if (ao != null && ao.isAnnotationPresent(JdbcTypeCode.class) &&
         ao.getAnnotation(JdbcTypeCode.class).value() == SqlTypes.JSON) {
       return true;
     }
