@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.entity;
 
 import io.hypersistence.utils.hibernate.type.array.StringArrayType;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -16,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToOne;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -59,7 +61,7 @@ public class Person implements DinaEntityIdentifiableByName {
 
   private OffsetDateTime createdOn;
 
-  @OneToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "department_id")
   private Department department;
 

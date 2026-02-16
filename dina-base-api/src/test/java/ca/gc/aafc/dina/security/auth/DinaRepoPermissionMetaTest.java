@@ -36,7 +36,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
 
 import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;

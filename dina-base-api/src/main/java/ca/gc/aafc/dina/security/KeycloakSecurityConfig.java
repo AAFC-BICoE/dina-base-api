@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.security;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -16,6 +17,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.context.annotation.RequestScope;
 
@@ -25,24 +27,28 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import lombok.extern.log4j.Log4j2;
 
-// WORK-IN-PROGRESS ----
+import ca.gc.aafc.dina.security.oauth2.DinaAuthenticationToken;
+
+import static ca.gc.aafc.dina.security.KeycloakClaimParser.AGENT_IDENTIFIER_CLAIM_KEY;
+import static ca.gc.aafc.dina.security.KeycloakClaimParser.GROUPS_CLAIM_KEY;
+import static ca.gc.aafc.dina.security.KeycloakClaimParser.IS_SERVICE_ACCOUNT_CLAIM_KEY;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(
   securedEnabled = true,
   jsr250Enabled = true
 )
+@ConditionalOnProperty(value = "keycloak.enabled", matchIfMissing = true)
+@Log4j2
 public class KeycloakSecurityConfig {
-
-  private static final String AGENT_IDENTIFIER_CLAIM_KEY = "agent-identifier";
-  private static final String IS_SERVICE_ACCOUNT_CLAIM_KEY = "is-service-account";
-  private static final String GROUPS_CLAIM_KEY = "groups";
-
 
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    return http
+    log.info("Creating SecurityFilterChain bean");
+    SecurityFilterChain chain = http
       .authorizeHttpRequests(authz -> authz
         .anyRequest().authenticated()
       )
@@ -59,30 +65,27 @@ public class KeycloakSecurityConfig {
       .formLogin(AbstractHttpConfigurer::disable)
       .httpBasic(AbstractHttpConfigurer::disable)
       .build();
+    log.info("SecurityFilterChain bean created successfully");
+    return chain;
   }
 
   @Bean
   public Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
+    return new Converter<>() {
+      @Override
+      public AbstractAuthenticationToken convert(Jwt jwt) {
 
-    return jwt -> {
-      // Extract everything once
-      DinaAuthenticatedUser user = DinaAuthenticatedUser.builder()
-        .username(jwt.getClaimAsString("preferred_username"))
-        .internalIdentifier(jwt.getSubject())
-        .agentIdentifier((String) jwt.getClaims().get(AGENT_IDENTIFIER_CLAIM_KEY))
-        .isServiceAccount(extractIsServiceAccount(jwt))
-        .rolesPerGroup(extractRolesPerGroup(jwt))
-        .adminRoles(extractAdminRoles(jwt))
-        .build();
+        log.debug("Converting JWT to AbstractAuthenticationToken for user: {}",
+          jwt.getClaimAsString("preferred_username"));
 
-      // Store in a custom authentication token
-      DinaAuthenticationToken token = new DinaAuthenticationToken(
-        jwt,
-        user,
-        convertToGrantedAuthorities(user)
-      );
-
-      return token;
+        DinaAuthenticatedUser user = jwtToDinaAuthenticatedUser(jwt);
+        // Store in a custom authentication token
+        return new DinaAuthenticationToken(
+          jwt,
+          user,
+          convertToGrantedAuthorities(user)
+        );
+      }
     };
   }
 
@@ -90,12 +93,25 @@ public class KeycloakSecurityConfig {
   @RequestScope
   public DinaAuthenticatedUser currentUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
     if (authentication instanceof DinaAuthenticationToken) {
       return ((DinaAuthenticationToken) authentication).getUser();
+    } else if ( authentication instanceof JwtAuthenticationToken jat) {
+      return jwtToDinaAuthenticatedUser(jat.getToken());
     }
-
+    log.warn("Could not resolve DinaAuthenticatedUser from authentication: {}",
+      authentication != null ? authentication.getClass() : "null");
     return null;
+  }
+
+  private static DinaAuthenticatedUser jwtToDinaAuthenticatedUser(Jwt jwt) {
+    return DinaAuthenticatedUser.builder()
+      .username(jwt.getClaimAsString("preferred_username"))
+      .internalIdentifier(jwt.getSubject())
+      .agentIdentifier((String) jwt.getClaims().get(AGENT_IDENTIFIER_CLAIM_KEY))
+      .isServiceAccount(extractIsServiceAccount(jwt))
+      .rolesPerGroup(extractRolesPerGroup(jwt))
+      .adminRoles(extractAdminRoles(jwt))
+      .build();
   }
 
   private Collection<? extends GrantedAuthority> convertToGrantedAuthorities(
@@ -121,40 +137,12 @@ public class KeycloakSecurityConfig {
     return authorities;
   }
 
-  // Custom authentication token
-  static class DinaAuthenticationToken extends AbstractAuthenticationToken {
-    private final Jwt jwt;
-    private final DinaAuthenticatedUser user;
-
-    public DinaAuthenticationToken(Jwt jwt, DinaAuthenticatedUser user,
-                                   Collection<? extends GrantedAuthority> authorities) {
-      super(authorities);
-      this.jwt = jwt;
-      this.user = user;
-      setAuthenticated(true);
-    }
-
-    public DinaAuthenticatedUser getUser() {
-      return user;
-    }
-
-    @Override
-    public Object getCredentials() {
-      return jwt.getTokenValue();
-    }
-
-    @Override
-    public Object getPrincipal() {
-      return user.getUsername();
-    }
-  }
-
-  private boolean extractIsServiceAccount(Jwt jwt) {
+  private static boolean extractIsServiceAccount(Jwt jwt) {
     Object value = jwt.getClaims().get(IS_SERVICE_ACCOUNT_CLAIM_KEY);
     return BooleanUtils.toBoolean(Objects.toString(value));
   }
 
-  private Map<String, Set<DinaRole>> extractRolesPerGroup(Jwt jwt) {
+  private static Map<String, Set<DinaRole>> extractRolesPerGroup(Jwt jwt) {
     Object groupClaim = jwt.getClaims().get(GROUPS_CLAIM_KEY);
 
     if (groupClaim instanceof Collection) {
@@ -165,7 +153,7 @@ public class KeycloakSecurityConfig {
     return null;
   }
 
-  private Set<DinaRole> extractAdminRoles(Jwt jwt) {
+  private static Set<DinaRole> extractAdminRoles(Jwt jwt) {
     Map<String, Object> realmAccess =
       (Map<String, Object>) jwt.getClaims().get("realm_access");
 

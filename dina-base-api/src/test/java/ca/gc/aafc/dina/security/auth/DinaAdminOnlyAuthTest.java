@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Optional;
 import java.util.UUID;
 import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, DinaAdminOnlyAuthTest.DinaAdminOnlyTestConfig.class},
