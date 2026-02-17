@@ -213,7 +213,7 @@ public class BaseDAOIT extends BasePostgresItContext {
     final Department dep = Department.builder().name("depToBeRefreshed").uuid(UUID.randomUUID()).location("dep location").build();
 
     // add an entity in another transaction so it exists in the database outside of the test's transaction
-    dbSupport.runInNewTransaction( em -> em.persist(dep));
+    dbSupport.runInNewTransaction(em -> em.persist(dep));
     Integer depId = dep.getId();
     assertNotNull(depId);
 
@@ -236,6 +236,11 @@ public class BaseDAOIT extends BasePostgresItContext {
     // this is what refresh will do
     baseDAO.refresh(departmentUnderTest);
     assertEquals("depChanged", departmentUnderTest.getName());
+
+    // cleanup
+    dbSupport.runInNewTransaction( (em -> {
+      em.remove(em.find(Department.class, depId));
+    }));
   }
 
   @Test
@@ -266,6 +271,11 @@ public class BaseDAOIT extends BasePostgresItContext {
     // then find will reload it from the database
     departmentUnderTest = baseDAO.findOneByDatabaseId(depId, Department.class);
     assertEquals("depChanged", departmentUnderTest.getName());
+
+    // cleanup
+    dbSupport.runInNewTransaction( (em -> {
+      em.remove(em.find(Department.class, depId));
+    }));
   }
 
   @Test

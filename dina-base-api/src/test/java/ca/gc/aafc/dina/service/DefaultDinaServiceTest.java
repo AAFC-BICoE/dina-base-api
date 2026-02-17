@@ -18,7 +18,7 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -104,7 +104,8 @@ public class DefaultDinaServiceTest {
     }
 
     Set<UUID> resultIds = serviceUnderTest
-      .findAll(Department.class, (cb, root) -> new Predicate[] {}, null, 0, 100)
+      .findAll(Department.class, (cb, root) -> new Predicate[] {},
+        (cb, root) -> List.of(cb.asc(root.get("id"))), 0, 100)
       .stream()
       .map(Department::getUuid)
       .collect(Collectors.toSet());
@@ -172,7 +173,8 @@ public class DefaultDinaServiceTest {
     expecteUuids = expecteUuids.subList(skip, expecteUuids.size());
 
     List<UUID> resultIds = serviceUnderTest
-      .findAll(Department.class, (cb, root) -> new Predicate[] {}, null, skip, 100)
+      .findAll(Department.class, (cb, root) -> new Predicate[] {},
+        (cb, root) -> List.of(cb.asc(root.get("id"))), skip, 100)
       .stream()
       .map(Department::getUuid)
       .collect(Collectors.toList());

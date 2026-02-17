@@ -10,7 +10,7 @@ import ca.gc.aafc.dina.service.ControlledVocabularyItemService;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import javax.inject.Named;
+import jakarta.inject.Named;
 import lombok.NonNull;
 
 /**

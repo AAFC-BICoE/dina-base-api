@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import ca.gc.aafc.dina.search.config.ElasticSearchProperties;
 
