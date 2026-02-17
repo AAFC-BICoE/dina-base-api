@@ -1,6 +1,6 @@
 package ca.gc.aafc.dina.locale;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.hamcrest.MatcherAssert;

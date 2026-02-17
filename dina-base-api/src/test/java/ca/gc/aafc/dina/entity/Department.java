@@ -53,11 +53,11 @@ public class Department implements DinaEntity {
   @NotNull(message = "{test.key.location}")
   private String location;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "department_head_id")
   private Person departmentHead;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "department_owner_id")
   private Person departmentOwner;
 

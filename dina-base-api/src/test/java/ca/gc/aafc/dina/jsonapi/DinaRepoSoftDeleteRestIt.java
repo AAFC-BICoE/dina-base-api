@@ -1,6 +1,8 @@
 package ca.gc.aafc.dina.jsonapi;
 
+import ca.gc.aafc.dina.config.PersonTestConfig;
 import ca.gc.aafc.dina.dto.PersonDTO;
+import ca.gc.aafc.dina.repository.AuditSnapshotRepositoryIT;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
@@ -8,6 +10,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;
@@ -19,10 +22,11 @@ import static io.restassured.RestAssured.given;
   properties = {"dev-user.enabled: true", "keycloak.enabled: false", "dina.auditing.enabled = true"},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
+@Import( {PersonTestConfig.class, AuditSnapshotRepositoryIT.JsonApiConfigurationTestConfig.class})
 public class DinaRepoSoftDeleteRestIt extends BaseRestAssuredTest {
 
   protected DinaRepoSoftDeleteRestIt() {
-    super("/" + PersonDTO.TYPE_NAME);
+    super(PersonTestConfig.PATH);
   }
 
   @Test

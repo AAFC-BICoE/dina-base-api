@@ -38,7 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @SpringBootTest(classes = {TestDinaBaseApp.class, AuditSnapshotRepositoryIT.JsonApiConfigurationTestConfig.class}, properties = "dina.auditing.enabled = true")
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
@@ -150,7 +150,7 @@ public class AuditSnapshotRepositoryIT {
   }
 
   @TestConfiguration
-  static class JsonApiConfigurationTestConfig {
+  public static class JsonApiConfigurationTestConfig {
     @Bean
     public JsonApiConfiguration jsonApiConfiguration() {
       return new JsonApiConfiguration()

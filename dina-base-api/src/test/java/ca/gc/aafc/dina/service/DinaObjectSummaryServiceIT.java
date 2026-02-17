@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.UUID;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 @Transactional
