@@ -1,6 +1,6 @@
 package ca.gc.aafc.dina.validation;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 import ca.gc.aafc.dina.entity.StorageGridLayout;
 import ca.gc.aafc.dina.translator.NumberLetterTranslator;

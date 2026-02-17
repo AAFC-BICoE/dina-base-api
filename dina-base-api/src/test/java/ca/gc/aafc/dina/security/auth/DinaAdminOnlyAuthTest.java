@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Optional;
 import java.util.UUID;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 @Transactional
