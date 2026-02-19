@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
 
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false", "dina.auditing.enabled = true"},
@@ -40,9 +41,12 @@ public class DinaRepoSoftDeleteRestIt extends BaseRestAssuredTest {
 
     String auditRepoLink = sendGet("", id, HttpStatus.SC_GONE).extract()
       .body().jsonPath().getString("errors.links.about[0]");
-    // Assert the returned audit repo url is valid
+
+    // Assert the returned audit repo url is valid and the count is 2
     given().port(testPort).get(auditRepoLink)
-      .then().statusCode(200);
+      .then()
+      .statusCode(200)
+      .body("meta.totalResourceCount", equalTo(2));
   }
 
   @Test
