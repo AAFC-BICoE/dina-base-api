@@ -6,7 +6,6 @@ import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.service.AuditService.AuditInstance;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.javers.core.Javers;
 import org.javers.core.metamodel.object.CdoSnapshot;
 import org.javers.core.metamodel.object.SnapshotType;
@@ -20,6 +19,7 @@ import org.springframework.test.context.ContextConfiguration;
 import jakarta.inject.Inject;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -39,7 +39,7 @@ public class AuditServiceIT {
 
   private static final String AUTHOR = "dina_user";
   private static final String TYPE = EmployeeDto.TYPENAME;
-  private static final Integer INSTANCE_ID = RandomUtils.nextInt();
+  private static final UUID INSTANCE_ID = UUID.randomUUID();
 
   /**
    * Persists 6 snap shots in total for each test. Total expected commits for
@@ -63,7 +63,7 @@ public class AuditServiceIT {
 
     // Has Author With specific instance id 2 commits
     EmployeeDto withInstanceID = createDto();
-    withInstanceID.setId(INSTANCE_ID);
+    withInstanceID.setUuid(INSTANCE_ID);
     javers.commit(AUTHOR, withInstanceID);
     withInstanceID.setName("update");
     javers.commit(AUTHOR, withInstanceID);
@@ -79,13 +79,13 @@ public class AuditServiceIT {
   public void findAll_whenFilteredByInstance_snapshotsFiltered() {
     AuditInstance instance = AuditInstance.builder()
       .type(TYPE)
-      .id(Integer.toString(INSTANCE_ID))
+      .id(INSTANCE_ID.toString())
       .build();
     List<CdoSnapshot> results = serviceUnderTest.findAll(instance, null, 10, 0);
     assertEquals(2, results.size());
     results.forEach(shot -> 
       assertEquals(
-        String.join("/", TYPE, Integer.toString(INSTANCE_ID)),
+        String.join("/", TYPE, INSTANCE_ID.toString()),
         shot.getGlobalId().toString()));
   }
 
@@ -124,7 +124,7 @@ public class AuditServiceIT {
   public void getResouceCount_InstanceFilter_ReturnsFilteredCount() {
     AuditInstance instance = AuditInstance.builder()
       .type(TYPE)
-      .id(Integer.toString(INSTANCE_ID))
+      .id(INSTANCE_ID.toString())
       .build();
     Long expected = serviceUnderTest.getResouceCount(null, instance);
     assertEquals(Long.valueOf(2), expected);
@@ -135,7 +135,7 @@ public class AuditServiceIT {
     EmployeeDto dto = createDto();
     serviceUnderTest.audit(dto);
 
-    CdoSnapshot result = javers.getLatestSnapshot(dto.getId(), EmployeeDto.class).orElse(null);
+    CdoSnapshot result = javers.getLatestSnapshot(dto.getUuid(), EmployeeDto.class).orElse(null);
     assertNotNull(result);
     assertEquals(DinaUserConfig.AUTH_USER_NAME, result.getCommitMetadata().getAuthor());
   }
@@ -146,7 +146,7 @@ public class AuditServiceIT {
     serviceUnderTest.audit(dto);
     serviceUnderTest.auditDeleteEvent(dto);
 
-    CdoSnapshot result = javers.getLatestSnapshot(dto.getId(), EmployeeDto.class).orElse(null);
+    CdoSnapshot result = javers.getLatestSnapshot(dto.getUuid(), EmployeeDto.class).orElse(null);
     assertNotNull(result);
     assertEquals(SnapshotType.TERMINAL, result.getType());
     assertEquals(DinaUserConfig.AUTH_USER_NAME, result.getCommitMetadata().getAuthor());
@@ -160,7 +160,7 @@ public class AuditServiceIT {
     serviceUnderTest.audit(dto);
     AuditInstance instance = AuditInstance.builder()
       .type(TYPE)
-      .id(Integer.toString(dto.getId()))
+      .id(dto.getUuid().toString())
       .build();
 
     Assertions.assertEquals(2, serviceUnderTest.findAll(instance, null, 100, 0).size());
@@ -169,13 +169,13 @@ public class AuditServiceIT {
 
     Assertions.assertEquals(0, serviceUnderTest.findAll(instance, null, 100, 0).size());
     Assertions.assertTrue(
-      javers.getLatestSnapshot(dto.getId(), EmployeeDto.class).isEmpty(),
+      javers.getLatestSnapshot(dto.getUuid(), EmployeeDto.class).isEmpty(),
       "There should be no more snapshots for this object");
   }
 
   private static EmployeeDto createDto() {
     EmployeeDto dto = new EmployeeDto();
-    dto.setId(RandomUtils.nextInt());
+    dto.setUuid(UUID.randomUUID());
     return dto;
   }
 
