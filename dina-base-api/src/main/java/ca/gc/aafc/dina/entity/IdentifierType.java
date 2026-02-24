@@ -5,7 +5,7 @@ import java.util.List;
 import ca.gc.aafc.dina.vocabulary.VocabularyElement;
 
 /**
- * Replaced by ControlledVocabularyItem
+ * @deprecated Replaced by ControlledVocabularyItem
  */
 @Deprecated
 public interface IdentifierType extends VocabularyElement, DinaEntity {
