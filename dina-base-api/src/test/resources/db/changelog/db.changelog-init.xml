@@ -402,6 +402,7 @@
 			<column name="_group" type="varchar(50)">
 				<constraints nullable="false"/>
 			</column>
+			<column name="uri_template" type="varchar(255)"/>
 			<column name="term" type="varchar(255)"/>
 			<column name="accepted_values" type="text[]"/>
 			<column name="vocabulary_element_type" type="varchar(50)"/>

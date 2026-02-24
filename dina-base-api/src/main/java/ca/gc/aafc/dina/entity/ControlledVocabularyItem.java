@@ -78,6 +78,12 @@ public abstract class ControlledVocabularyItem implements DinaEntity {
   @Enumerated(EnumType.STRING)
   private TypedVocabularyElement.VocabularyElementType vocabularyElementType;
 
+  /**
+   * Like wikidata. A URI template where "$1" can be automatically replaced with the value
+   * assigned to the identifier.
+   */
+  private String uriTemplate;
+
   @Type(type = "string-array")
   private String[] acceptedValues;
 

@@ -176,4 +176,24 @@ public class ControlledVocabularyValueValidatorIT {
       ValidationException.class, () -> myQualifiedValueValidator.validate(p, "controlled_vocabulary_with_values", "the_date", "abc"));
   }
 
+  @Test
+  void test_IdentifierType() {
+    UUID controlledVocabularyUuid = UUID.randomUUID();
+
+    MyControlledVocabulary identifierType = controlledVocabularyService
+      .create(MyControlledVocabulary.builder()
+        .uuid(controlledVocabularyUuid)
+        .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
+        .vocabClass(ControlledVocabulary.ControlledVocabularyClass.CONTROLLED_TERM)
+        .name("Identifier Type").build());
+
+    MyControlledVocabularyItem identifierTypeItem = controlledVocabularyItemService
+      .create(MyControlledVocabularyItem.builder()
+        .uuid(UUID.randomUUID())
+        .uriTemplate("https://abc.abc/$1")
+        .group("system")
+        .name("ABC Identifier").build());
+    identifierTypeItem.setControlledVocabulary(identifierType);
+    controlledVocabularyItemService.update(identifierTypeItem);
+  }
 }

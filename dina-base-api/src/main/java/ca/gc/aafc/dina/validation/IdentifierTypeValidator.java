@@ -8,6 +8,10 @@ import org.springframework.validation.Errors;
 
 import ca.gc.aafc.dina.entity.IdentifierType;
 
+/**
+ * Replaced by ControlledVocabularyItem
+ */
+@Deprecated
 public class IdentifierTypeValidator extends DinaBaseValidator<IdentifierType> {
 
   private static final String MISSING_PLACEHOLDER_KEY = "identifierType.uriTemplate.missingPlaceholder";
