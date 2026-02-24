@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.json;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import com.fasterxml.jackson.core.JsonPointer;
@@ -29,11 +30,17 @@ public final class JsonHelper {
    * @return True if the field exists and its text value matches the expected value, false otherwise.
    */
   public static boolean safeTextEquals(JsonNode node, String fieldName, String expectedValue) {
-    if (node == null || expectedValue == null) {
+    Objects.requireNonNull(node, "node must not be null");
+    Objects.requireNonNull(fieldName, "fieldName must not be null");
+    Objects.requireNonNull(expectedValue, "expectedValue must not be null");
+    
+    JsonNode fieldNode = node.get(fieldName);
+    // Return false if field doesn't exist or is JSON null
+    if (fieldNode == null || fieldNode.isNull()) {
       return false;
     }
-    JsonNode fieldNode = node.get(fieldName);
-    return fieldNode != null && !fieldNode.isNull() && fieldNode.asText().equals(expectedValue);
+    
+    return fieldNode.asText().equals(expectedValue);
   }
 
   /**
