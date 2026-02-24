@@ -20,6 +20,23 @@ public final class JsonHelper {
   }
 
   /**
+   * Safely compares the text value of a field in a JSON node with an expected value.
+   * Returns false if the node is null, the field doesn't exist, the field is null, or the values don't match.
+   *
+   * @param node The JSON node to check.
+   * @param fieldName The name of the field to check.
+   * @param expectedValue The expected text value.
+   * @return True if the field exists and its text value matches the expected value, false otherwise.
+   */
+  public static boolean safeTextEquals(JsonNode node, String fieldName, String expectedValue) {
+    if (node == null || expectedValue == null) {
+      return false;
+    }
+    JsonNode fieldNode = node.get(fieldName);
+    return fieldNode != null && !fieldNode.isNull() && fieldNode.asText().equals(expectedValue);
+  }
+
+  /**
    * Checks if a JSON node has a specific field and if that field's value is an array.
    *
    * @param node The JSON node to check.
