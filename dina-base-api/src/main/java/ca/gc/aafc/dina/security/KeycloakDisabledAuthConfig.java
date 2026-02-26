@@ -31,7 +31,7 @@ public class KeycloakDisabledAuthConfig {
   @Bean
   public SecurityFilterChain configure(HttpSecurity http) throws Exception {
     http
-      .authorizeHttpRequests((authz) -> authz
+      .authorizeHttpRequests(authz -> authz
         .anyRequest().permitAll()
       )
       .httpBasic(withDefaults());
@@ -40,7 +40,7 @@ public class KeycloakDisabledAuthConfig {
 
   @Bean
   public WebSecurityCustomizer webSecurityCustomizer() {
-    return (web) -> web
+    return web -> web
       .ignoring()
       .anyRequest();
   }

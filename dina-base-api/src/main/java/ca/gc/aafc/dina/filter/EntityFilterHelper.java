@@ -128,7 +128,7 @@ public final class EntityFilterHelper {
         //  if attribute of the given name does not exist
 
         // unwrap exception if possible
-        if(iaEx.getCause() != null) {
+        if (iaEx.getCause() != null) {
           throw new UnknownAttributeException(iaEx.getCause());
         }
         throw new UnknownAttributeException(iaEx);
