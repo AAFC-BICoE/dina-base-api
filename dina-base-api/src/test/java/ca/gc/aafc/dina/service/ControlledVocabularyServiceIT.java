@@ -100,12 +100,14 @@ public class ControlledVocabularyServiceIT {
         .vocabClass(ControlledVocabulary.ControlledVocabularyClass.QUALIFIED_VALUE)
         .name("Protocol Data Element")
         .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
+    assertNotNull(controlledVocabulary.getCreatedOn());
 
     controlledVocabularyItem.setControlledVocabulary(controlledVocabulary);
     controlledVocabularyItemService.update(controlledVocabularyItem);
     MyControlledVocabularyItem foundItem = controlledVocabularyItemService.findOneByKey(controlledVocabularyItem.getKey(), controlledVocabulary.getUuid());
     assertNotNull(foundItem);
     assertEquals(controlledVocabularyItem.getUuid(), foundItem.getUuid());
+    assertNotNull(foundItem.getCreatedOn());
   }
 
   @TestConfiguration
