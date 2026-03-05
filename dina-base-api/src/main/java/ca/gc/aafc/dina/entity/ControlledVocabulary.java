@@ -2,6 +2,8 @@ package ca.gc.aafc.dina.entity;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
+
+import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
@@ -18,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.NaturalIdCache;
 import org.hibernate.annotations.Type;
@@ -85,8 +89,13 @@ public abstract class ControlledVocabulary implements DinaEntity {
   @Type(type = "jsonb")
   private MultilingualDescription multilingualDescription;
 
+  @NotBlank
+  @Column(name = "created_by", updatable = false)
+  @Size(max = 255)
   private String createdBy;
 
+  @Column(name = "created_on", insertable = false, updatable = false)
+  @Generated(value = GenerationTime.INSERT)
   private OffsetDateTime createdOn;
 
 }
