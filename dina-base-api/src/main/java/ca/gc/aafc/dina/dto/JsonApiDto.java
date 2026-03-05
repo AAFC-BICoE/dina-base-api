@@ -37,6 +37,7 @@ public class JsonApiDto<D> {
   @Builder
   @Getter
   public static final class RelationshipToOne implements RelationshipBase {
+    private JsonApiResource relationship;
     private JsonApiResource included;
   }
 
@@ -44,6 +45,7 @@ public class JsonApiDto<D> {
   @Builder
   @Getter
   public static final class RelationshipToMany implements RelationshipBase {
+    private List<JsonApiResource> relationships;
     private List<JsonApiResource> included;
   }
 

@@ -2,7 +2,7 @@ grammar SimpleSearchFilter;
 
 simpleFilter: expression ( '&' expression )*;
 
-expression: filter | fiql | fields | optFields | sort | page | include;
+expression: filter | fiql | fields | optFields | sort | page | include | relationship;
 
 filter: FILTER_KW '[' propertyName ']'( '[' comparison ']' )? '=' attributeValue (',' attributeValue)*;
 
@@ -18,10 +18,12 @@ page: PAGE_KW '[' ( 'limit' | 'offset' ) ']' '=' pageValue;
 
 include: INCLUDE_KW '=' propertyName ( ',' propertyName )*;
 
+relationship: REL_KW '=' propertyName ( ',' propertyName )*;
+
 comparison: 'EQ' | 'NEQ' | 'GT' | 'GOE' | 'LT' | 'LOE' | 'LIKE' | 'ILIKE' | 'IN';
 
 namePart: (LETTERS|UNDERSCORE)+ (LETTERS | INT | UNDERSCORE | DOT |
-  FIELDS_KW | FILTER_KW | SORT_KW | PAGE_KW | INCLUDE_KW)*;
+  FIELDS_KW | FILTER_KW | SORT_KW | PAGE_KW | INCLUDE_KW | REL_KW)*;
 
 propertyName: namePart;
 fieldName: namePart;
@@ -43,7 +45,7 @@ attributeAcceptedValue: (
   | SPACE
   | FORWARD_SLASH
   | COLON
-  | FILTER_KW | FIELDS_KW | SORT_KW | PAGE_KW | INCLUDE_KW)+;
+  | FILTER_KW | FIELDS_KW | SORT_KW | PAGE_KW | INCLUDE_KW | REL_KW)+;
 
 pageValue: INT;
 
@@ -55,6 +57,7 @@ FIQL_KW: 'fiql';
 SORT_KW: 'sort';
 PAGE_KW: 'page';
 INCLUDE_KW: 'include';
+REL_KW: 'relationship';
 
 // lexer rules in order
 QUOTED_STRING: '"' (~["])* '"';

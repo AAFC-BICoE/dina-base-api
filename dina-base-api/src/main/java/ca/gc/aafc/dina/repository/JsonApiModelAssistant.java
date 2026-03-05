@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.extern.log4j.Log4j2;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.CollectionModel;
@@ -141,6 +142,11 @@ public class JsonApiModelAssistant <D extends JsonApiResource> {
       // builder.relationship(relationshipName, (Object) null);
       log.warn("Ignoring null value for toOne internal relationship {}", relationshipName);
     }
+
+    // relationships that are not in the included block
+    if (toOne.getRelationship() != null) {
+      builder.relationship(relationshipName, toOne.getRelationship());
+    }
   }
 
   /**
@@ -163,6 +169,11 @@ public class JsonApiModelAssistant <D extends JsonApiResource> {
       // requires spring-hateoas-jsonapi 2.x
       // builder.relationship(relationshipName, (Object) null);
       log.warn("Ignoring null value for toMany internal relationship {}", relationshipName);
+    }
+
+    // relationships that are not in the included block
+    if (CollectionUtils.isNotEmpty(toMany.getRelationships())) {
+      builder.relationship(relationshipName, toMany.getRelationships());
     }
   }
 

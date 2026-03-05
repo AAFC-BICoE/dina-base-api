@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.filter;
 
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +41,17 @@ public class AntlrGrammarTest {
     QueryComponent queryComponent = QueryStringParser.parse(content);
     List<String> optFields = queryComponent.getOptionalFields().get("my-metadata");
     assertTrue(optFields.contains("md5"));
+  }
+
+  @Test
+  public void onRelationship_structureReturned() {
+    String content =
+      "filter[type][EQ]=metadata&relationship=derivative,author";
+
+    QueryComponent queryComponent = QueryStringParser.parse(content);
+    Set<String> rels = queryComponent.getRelationships();
+    assertTrue(rels.contains("derivative"));
+    assertTrue(rels.contains("author"));
   }
 
   @Test

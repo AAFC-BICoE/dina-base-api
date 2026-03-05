@@ -390,8 +390,9 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
   public JsonApiDto<D> getOne(UUID identifier, String queryString, boolean includePermissions) throws ResourceNotFoundException,
       ResourceGoneException {
 
-    // the only parts of QueryComponent that can be used on getOne is "includes" and "fields"
+    // the only parts of QueryComponent that can be used on getOne is "relationships", "includes" and "fields"
     QueryComponent queryComponents = QueryStringParser.parse(queryString);
+    Set<String> relationships = queryComponents.getRelationships() != null ? queryComponents.getRelationships() : Set.of();
     Set<String> includes = queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of();
     Map<String, List<String>> fields = queryComponents.getFields();
     Map<String, List<String>> optionalFields = queryComponents.getOptionalFields();
@@ -420,10 +421,10 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
     if (includePermissions) {
       return jsonApiDtoAssistant.toJsonApiDto(dto, buildResourceObjectPermissionMeta(entity),
-        fields, includes);
+        fields, relationships, includes);
     }
 
-    return jsonApiDtoAssistant.toJsonApiDto(dto, fields, includes);
+    return jsonApiDtoAssistant.toJsonApiDto(dto, fields, relationships, includes);
   }
 
   public PagedResource<JsonApiDto<D>> getAll(String queryString) {
@@ -437,6 +438,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     FilterComponent fc = queryComponents.getFilters();
 
     Set<String> relationshipsPath = EntityFilterHelper.extractRelationships(queryComponents.getIncludes(), resourceClass, registry);
+    Set<String> relationships = queryComponents.getRelationships() != null ? queryComponents.getRelationships() : Set.of();
     Set<String> includes = queryComponents.getIncludes() != null ? queryComponents.getIncludes() : Set.of();
     Map<String, List<String>> fields = queryComponents.getFields();
     Map<String, List<String>> optionalFields = queryComponents.getOptionalFields();
@@ -463,7 +465,8 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
         dinaService.handleOptionalFields(e, optionalFields);
       }
       dinaService.augmentEntity(e, includes);
-      dtos.add(jsonApiDtoAssistant.toJsonApiDto(dinaMapper.toDto(e, attributes, null), fields, includes));
+      dtos.add(jsonApiDtoAssistant.toJsonApiDto(dinaMapper.toDto(e, attributes, null), fields,
+        relationships, includes));
     }
 
     Long resourceCount = isFiqlBased ?

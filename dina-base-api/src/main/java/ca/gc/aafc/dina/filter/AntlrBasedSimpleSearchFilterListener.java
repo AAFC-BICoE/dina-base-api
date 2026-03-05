@@ -21,10 +21,15 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
   private static final String DEFAULT_OP = "EQ";
 
   private final List<FilterComponent> components = new ArrayList<>();
-  private final List<String> includes = new ArrayList<>();
   private final Map<String, List<String>> fields = new HashMap<>();
   private final Map<String, List<String>> optFields = new HashMap<>();
   private final List<String> sortAttributes = new ArrayList<>();
+
+  @Getter
+  private final List<String> relationship = new ArrayList<>();
+
+  @Getter
+  private final List<String> include = new ArrayList<>();
 
   @Getter
   private String fiql;
@@ -56,7 +61,14 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
   @Override
   public void exitInclude(SimpleSearchFilterParser.IncludeContext ctx) {
     for (var attribute :  ctx.propertyName()) {
-      includes.add(attribute.getText());
+      include.add(attribute.getText());
+    }
+  }
+
+  @Override
+  public void exitRelationship(SimpleSearchFilterParser.RelationshipContext ctx) {
+    for (var attribute :  ctx.propertyName()) {
+      relationship.add(attribute.getText());
     }
   }
 
@@ -134,10 +146,6 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
 
   public Map<String, List<String>> getOptFields() {
     return optFields;
-  }
-
-  public List<String> getInclude() {
-    return includes;
   }
 
   public List<String> getSort() {

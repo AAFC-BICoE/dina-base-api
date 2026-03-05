@@ -57,6 +57,7 @@ public final class QueryStringParser {
       .fields(listener.getFields())
       .optionalFields(listener.getOptFields())
       .includes(listener.getInclude() != null ? Set.copyOf(listener.getInclude()) : null)
+      .relationships(listener.getRelationship() != null ? Set.copyOf(listener.getRelationship()) : null)
       .sorts(listener.getSort())
       .pageLimit(listener.getPageLimit())
       .pageOffset(listener.getPageOffset())

@@ -53,8 +53,8 @@ public class JsonApiDtoAssistant<D> {
   /**
    * see {@link #toJsonApiDto(Object, JsonApiDtoMeta, Map, Set)}
    */
-  public JsonApiDto<D> toJsonApiDto(D dto, Map<String, List<String>> fields, Set<String> includes) {
-    return toJsonApiDto(dto, null, fields, includes);
+  public JsonApiDto<D> toJsonApiDto(D dto, Map<String, List<String>> fields, Set<String> relationships, Set<String> includes) {
+    return toJsonApiDto(dto, null, fields, relationships, includes);
   }
 
   /**
@@ -67,7 +67,7 @@ public class JsonApiDtoAssistant<D> {
    * @return
    */
   public JsonApiDto<D> toJsonApiDto(D dto, JsonApiDtoMeta meta, Map<String, List<String>> fields,
-                                    Set<String> includes) {
+                                    Set<String> relationships, Set<String> includes) {
     JsonApiDto.JsonApiDtoBuilder<D> jsonApiDtoBuilder = JsonApiDto.builder();
     jsonApiDtoBuilder.meta(meta);
     jsonApiDtoBuilder.fields(fields);
