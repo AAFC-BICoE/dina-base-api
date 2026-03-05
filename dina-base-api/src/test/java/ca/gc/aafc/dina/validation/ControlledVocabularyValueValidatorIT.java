@@ -31,6 +31,8 @@ import javax.validation.ValidationException;
 @Transactional
 public class ControlledVocabularyValueValidatorIT {
 
+  public static final String CONTROLLED_VOCAB_CREATED_BY = "system";
+
   @Inject
   private ControlledVocabularyService<MyControlledVocabulary> controlledVocabularyService;
 
@@ -55,7 +57,7 @@ public class ControlledVocabularyValueValidatorIT {
         .type(ControlledVocabulary.ControlledVocabularyType.MANAGED_ATTRIBUTE)
         .vocabClass(ControlledVocabulary.ControlledVocabularyClass.QUALIFIED_VALUE)
         .name("Managed Attribute")
-        .createdBy("system").build());
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
 
     MyControlledVocabularyItem managedAttributeItem = controlledVocabularyItemService
       .create(MyControlledVocabularyItem.builder()
@@ -63,7 +65,7 @@ public class ControlledVocabularyValueValidatorIT {
         .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.INTEGER)
         .group("grp")
         .name("managed attribute 1")
-        .createdBy("system").build());
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
     managedAttributeItem.setControlledVocabulary(managedAttribute);
     controlledVocabularyItemService.update(managedAttributeItem);
 
@@ -89,7 +91,7 @@ public class ControlledVocabularyValueValidatorIT {
         .type(ControlledVocabulary.ControlledVocabularyType.MANAGED_ATTRIBUTE)
         .vocabClass(ControlledVocabulary.ControlledVocabularyClass.QUALIFIED_VALUE)
         .name("Managed Attribute")
-        .createdBy("system").build());
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
 
     MyControlledVocabularyItem item1 = controlledVocabularyItemService
       .create(MyControlledVocabularyItem.builder()
@@ -98,7 +100,7 @@ public class ControlledVocabularyValueValidatorIT {
         .dinaComponent("Context1")
         .group("grp")
         .name("vocab1")
-        .createdBy("system").build());
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
     item1.setControlledVocabulary(managedAttribute);
     controlledVocabularyItemService.update(item1);
 
@@ -109,7 +111,7 @@ public class ControlledVocabularyValueValidatorIT {
         .dinaComponent("Context2")
         .group("grp")
         .name("vocab1")
-        .createdBy("system").build());
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
     item2.setControlledVocabulary(managedAttribute);
     controlledVocabularyItemService.update(item2);
 
@@ -136,14 +138,14 @@ public class ControlledVocabularyValueValidatorIT {
         .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
         .vocabClass(ControlledVocabulary.ControlledVocabularyClass.CONTROLLED_TERM)
         .name("Controlled Term")
-        .createdBy("system").build());
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
 
     MyControlledVocabularyItem managedAttributeItem = controlledVocabularyItemService
       .create(MyControlledVocabularyItem.builder()
         .uuid(UUID.randomUUID())
         .group("grp")
         .name("controlled term 1")
-        .createdBy("system").build());
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
     managedAttributeItem.setControlledVocabulary(managedAttribute);
     controlledVocabularyItemService.update(managedAttributeItem);
 
@@ -165,7 +167,7 @@ public class ControlledVocabularyValueValidatorIT {
         .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
         .vocabClass(ControlledVocabulary.ControlledVocabularyClass.QUALIFIED_VALUE)
         .name("Controlled Vocabulary With Values")
-        .createdBy("system").build());
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
 
     MyControlledVocabularyItem managedAttributeItem = controlledVocabularyItemService
       .create(MyControlledVocabularyItem.builder()
@@ -173,7 +175,7 @@ public class ControlledVocabularyValueValidatorIT {
         .group("grp")
         .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.DATE)
         .name("the date")
-        .createdBy("system").build());
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
     managedAttributeItem.setControlledVocabulary(managedAttribute);
     controlledVocabularyItemService.update(managedAttributeItem);
 
@@ -195,15 +197,15 @@ public class ControlledVocabularyValueValidatorIT {
         .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
         .vocabClass(ControlledVocabulary.ControlledVocabularyClass.CONTROLLED_TERM)
         .name("Identifier Type")
-        .createdBy("system").build());
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
 
     MyControlledVocabularyItem identifierTypeItem = controlledVocabularyItemService
       .create(MyControlledVocabularyItem.builder()
         .uuid(UUID.randomUUID())
         .uriTemplate("https://abc.abc/$1")
-        .group("system")
+        .group(CONTROLLED_VOCAB_CREATED_BY)
         .name("ABC Identifier")
-        .createdBy("system").build());
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
     identifierTypeItem.setControlledVocabulary(identifierType);
     controlledVocabularyItemService.update(identifierTypeItem);
   }
