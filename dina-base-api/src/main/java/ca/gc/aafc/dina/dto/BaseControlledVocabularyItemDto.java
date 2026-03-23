@@ -29,6 +29,7 @@ public abstract class BaseControlledVocabularyItemDto <T extends BaseControlledV
   protected String[] acceptedValues;
 
   protected String unit;
+  private String uriTemplate;
 
   protected String dinaComponent;
 
