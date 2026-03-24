@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.search.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
@@ -11,6 +12,7 @@ import lombok.Setter;
 /**
  * Loaded from application.yml
  */
+@ConditionalOnProperty(prefix = "elasticsearch", name = "host")
 @ConfigurationProperties(prefix = "elasticsearch")
 @Component
 @Getter
@@ -21,9 +23,15 @@ public class ElasticSearchProperties {
   @NotBlank
   private String host;
 
+  private String scheme = "https";
+
   /**
    * If not provided the value will be 0
    */
   private int port;
 
+  private String certPath;
+
+  private String username;
+  private String password;
 }

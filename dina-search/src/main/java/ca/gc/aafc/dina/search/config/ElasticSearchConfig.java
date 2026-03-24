@@ -1,32 +1,123 @@
 package ca.gc.aafc.dina.search.config;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import lombok.extern.log4j.Log4j2;
+
+@ConditionalOnProperty(prefix = "elasticsearch", name = "host")
 @Configuration
+@Log4j2
 public class ElasticSearchConfig {
 
   public static final int DEFAULT_PORT = 9200;
 
   @Bean
-  public ElasticsearchClient provideClient(ElasticSearchProperties esProps) {
+  public ElasticsearchClient provideClient(ElasticSearchProperties esProps) throws IOException {
     int port = esProps.getPort() <= 0 ? DEFAULT_PORT : esProps.getPort();
-    RestClient restClient = RestClient.builder(
-      new HttpHost(esProps.getHost(), port)
-    ).build();
 
-    // Create the elastic search transport using Jackson and the low level rest client.
-    ElasticsearchTransport transport = new RestClientTransport(
-      restClient, new JacksonJsonpMapper());
+    log.debug("Configuring Elasticsearch client for {}:{}", esProps.getHost(), port);
 
-    // Create the elastic search client.
-    return new ElasticsearchClient(transport);
+    var restClientBuilder = RestClient.builder(
+      new HttpHost(esProps.getHost(), port, esProps.getScheme())
+    );
+
+    // Optional
+    CredentialsProvider credentialsProvider = null;
+    SSLContext sslContext = null;
+
+    if (StringUtils.isNotBlank(esProps.getUsername())) {
+      credentialsProvider = new BasicCredentialsProvider();
+      credentialsProvider.setCredentials(AuthScope.ANY,
+        new UsernamePasswordCredentials(esProps.getUsername(), esProps.getPassword()));
+    }
+
+    if (StringUtils.isNotBlank(esProps.getCertPath())) {
+      sslContext = createSSLContext(esProps.getCertPath());
+    }
+    return createElasticsearchClient(restClientBuilder, credentialsProvider, sslContext);
+  }
+
+  /**
+   * Allow to create an {@link ElasticsearchClient} programmatically with a specific SSLContext
+   * @param restClientBuilder
+   * @param credentialsProvider
+   * @param sslContext
+   * @return
+   */
+  public static ElasticsearchClient createElasticsearchClient(RestClientBuilder restClientBuilder,
+                                                       CredentialsProvider credentialsProvider,
+                                                       SSLContext sslContext) {
+    RestClient restClient =
+      restClientBuilder
+        .setHttpClientConfigCallback(httpClientBuilder -> {
+          if (credentialsProvider != null) {
+            httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+          }
+          if (sslContext != null) {
+            httpClientBuilder.setSSLContext(sslContext);
+          }
+          return httpClientBuilder;
+        })
+        .build();
+
+    return new ElasticsearchClient(
+      new RestClientTransport(restClient, new JacksonJsonpMapper())
+    );
+  }
+
+  private SSLContext createSSLContext(String certPath) throws IOException {
+    File certFile = new File(certPath);
+    if (!certFile.exists()) {
+      throw new FileNotFoundException("Certificate file not found: " + certFile.getAbsolutePath());
+    }
+
+    try (FileInputStream fis = new FileInputStream(certFile)) {
+      CertificateFactory cf = CertificateFactory.getInstance("X.509");
+      X509Certificate cert = (X509Certificate) cf.generateCertificate(fis);
+
+      KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+      keyStore.load(null, null);
+      keyStore.setCertificateEntry("elasticsearch", cert);
+
+      TrustManagerFactory tmf = TrustManagerFactory
+        .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+      tmf.init(keyStore);
+
+      SSLContext sslContext = SSLContext.getInstance("TLS");
+      sslContext.init(null, tmf.getTrustManagers(), new SecureRandom());
+
+      log.debug("✅ SSL Context loaded successfully");
+      return sslContext;
+    } catch (CertificateException | KeyStoreException | NoSuchAlgorithmException |
+             KeyManagementException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

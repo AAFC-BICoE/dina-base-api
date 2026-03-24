@@ -31,6 +31,12 @@
     </dependency>
 
     <dependency>
+      <groupId>io.github.aafc-bicoe</groupId>
+      <artifactId>dina-search</artifactId>
+      <version>0.160-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.eclipse.parsson</groupId>
       <artifactId>parsson</artifactId>
       <version>${eclipse-parsson.version}</version>
