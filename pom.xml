@@ -64,6 +64,7 @@
     <snakeyaml.version>1.33</snakeyaml.version>
     <eclipse-parsson.version>1.0.5</eclipse-parsson.version>
     <xml-unit.version>2.10.0</xml-unit.version>
+    <assertj.version>3.27.7</assertj.version>
 
     <testcontainers.version>1.21.4</testcontainers.version>
   </properties>
