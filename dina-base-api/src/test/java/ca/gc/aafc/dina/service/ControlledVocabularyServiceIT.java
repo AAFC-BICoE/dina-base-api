@@ -39,6 +39,8 @@ public class ControlledVocabularyServiceIT {
 
   public static final UUID CONTROLLED_VOCAB_UUID = UUIDHelper.generateUUIDv7();
 
+  public static final String CONTROLLED_VOCAB_CREATED_BY = "system";
+
   @Inject
   private ControlledVocabularyService<MyControlledVocabulary> controlledVocabularyService;
 
@@ -52,7 +54,8 @@ public class ControlledVocabularyServiceIT {
         .uuid(UUID.randomUUID())
         .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
         .vocabClass(ControlledVocabulary.ControlledVocabularyClass.QUALIFIED_VALUE)
-        .name("Protocol Data Element").build());
+        .name("Protocol Data Element")
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
 
     assertEquals("protocol_data_element", managedAttribute.getKey());
   }
@@ -64,13 +67,15 @@ public class ControlledVocabularyServiceIT {
         .uuid(UUID.randomUUID())
         .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
         .vocabClass(ControlledVocabulary.ControlledVocabularyClass.CONTROLLED_TERM)
-        .name("vocab 1").build());
+        .name("vocab 1")
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
     controlledVocabularyService
       .createAndFlush(MyControlledVocabulary.builder()
         .uuid(UUID.randomUUID())
         .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
         .vocabClass(ControlledVocabulary.ControlledVocabularyClass.CONTROLLED_TERM)
-        .name("vocab 2").build());
+        .name("vocab 2")
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
 
     MyControlledVocabulary vocab = controlledVocabularyService.findOneByKey(vocab1.getKey());
 
@@ -84,7 +89,8 @@ public class ControlledVocabularyServiceIT {
       .create(MyControlledVocabularyItem.builder()
         .uuid(UUID.randomUUID())
         .group("grp")
-        .name("Protocol Data Element 1").build());
+        .name("Protocol Data Element 1")
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
     assertEquals("protocol_data_element_1", controlledVocabularyItem.getKey());
 
     MyControlledVocabulary controlledVocabulary = controlledVocabularyService
@@ -92,13 +98,16 @@ public class ControlledVocabularyServiceIT {
         .uuid(UUID.randomUUID())
         .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
         .vocabClass(ControlledVocabulary.ControlledVocabularyClass.QUALIFIED_VALUE)
-        .name("Protocol Data Element").build());
+        .name("Protocol Data Element")
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
+    assertNotNull(controlledVocabulary.getCreatedOn());
 
     controlledVocabularyItem.setControlledVocabulary(controlledVocabulary);
     controlledVocabularyItemService.update(controlledVocabularyItem);
     MyControlledVocabularyItem foundItem = controlledVocabularyItemService.findOneByKey(controlledVocabularyItem.getKey(), controlledVocabulary.getUuid());
     assertNotNull(foundItem);
     assertEquals(controlledVocabularyItem.getUuid(), foundItem.getUuid());
+    assertNotNull(foundItem.getCreatedOn());
   }
 
   @TestConfiguration
