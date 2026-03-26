@@ -41,5 +41,10 @@ public class JsonHelperTest {
     assertTrue(JsonHelper.hasFieldAndIsArray(attributeNode.get(), "attribute3"));
     assertFalse(JsonHelper.hasFieldAndIsArray(attributeNode.get(), "attributeXYZ"));
     assertFalse(JsonHelper.hasFieldAndIsArray(attributeNode.get(), "attribute1"));
+
+    // safeTextEquals
+    assertTrue(JsonHelper.safeTextEquals(attributeNode.get(), "attribute1", "value1"));
+    assertFalse(JsonHelper.safeTextEquals(attributeNode.get(), "attribute1", "wrongValue"));
+    assertFalse(JsonHelper.safeTextEquals(attributeNode.get(), "attributeXYZ", "value1"));
   }
 }

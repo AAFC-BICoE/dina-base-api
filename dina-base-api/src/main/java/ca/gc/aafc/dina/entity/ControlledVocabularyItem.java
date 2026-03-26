@@ -1,6 +1,8 @@
 package ca.gc.aafc.dina.entity;
 
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.NaturalIdCache;
 import org.hibernate.type.SqlTypes;
@@ -79,6 +81,13 @@ public abstract class ControlledVocabularyItem implements DinaEntity {
   @Enumerated(EnumType.STRING)
   private TypedVocabularyElement.VocabularyElementType vocabularyElementType;
 
+
+  /**
+   * Like wikidata. A URI template where "$1" can be automatically replaced with the value
+   * assigned to the identifier.
+   */
+  private String uriTemplate;
+
   @JdbcTypeCode(SqlTypes.ARRAY)
   private String[] acceptedValues;
 
@@ -88,9 +97,13 @@ public abstract class ControlledVocabularyItem implements DinaEntity {
   @Size(max = 250)
   private String dinaComponent;
 
+  @NotBlank
+  @Column(name = "created_by", updatable = false)
   @Size(max = 255)
   private String createdBy;
 
+  @Column(name = "created_on", insertable = false, updatable = false)
+  @Generated(value = GenerationTime.INSERT)
   private OffsetDateTime createdOn;
 
   public abstract <T extends ControlledVocabulary> T getControlledVocabulary();

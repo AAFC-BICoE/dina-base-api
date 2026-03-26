@@ -8,6 +8,7 @@ import com.querydsl.core.types.Ops;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AntlrGrammarTest {
@@ -19,6 +20,14 @@ public class AntlrGrammarTest {
 
     QueryComponent queryComponent = QueryStringParser.parse(content);
     queryComponent.getFilterExpression();
+  }
+
+  @Test
+  public void onFilterWithInvalidIntValue_structureReturned2() {
+    String content =
+      "filter[name]=aafc&page[limit]=99999999999999999999";
+
+    assertThrows(IllegalArgumentException.class, () -> QueryStringParser.parse(content));
   }
 
   @Test

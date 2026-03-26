@@ -69,10 +69,14 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
 
   @Override
   public void exitPage(SimpleSearchFilterParser.PageContext ctx) {
-    if (ctx.getText().contains("offset")) {
-      pageOffset = Integer.valueOf(ctx.pageValue().getText());
-    } else if (ctx.getText().contains("limit")) {
-      pageLimit = Integer.valueOf(ctx.pageValue().getText());
+    try {
+      if (ctx.getText().contains("offset")) {
+        pageOffset = Integer.valueOf(ctx.pageValue().getText());
+      } else if (ctx.getText().contains("limit")) {
+        pageLimit = Integer.valueOf(ctx.pageValue().getText());
+      }
+    } catch (NumberFormatException ex) {
+      throw new IllegalArgumentException(ex);
     }
   }
 
