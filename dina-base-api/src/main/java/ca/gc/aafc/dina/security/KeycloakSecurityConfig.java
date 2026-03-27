@@ -45,12 +45,18 @@ import static ca.gc.aafc.dina.security.KeycloakClaimParser.IS_SERVICE_ACCOUNT_CL
 @Log4j2
 public class KeycloakSecurityConfig {
 
+  public static final String REALM_ACCESS_CLAIM_KEY = "realm_access";
+  public static final String ROLES_KEY = "roles";
+  public static final String USERNAME_KEY = "preferred_username";
+  public static final String REALM_USER_ROLE = "dina-realm-user";
+
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     log.info("Creating SecurityFilterChain bean");
     SecurityFilterChain chain = http
       .authorizeHttpRequests(authz -> authz
-        .anyRequest().authenticated()
+        // Require dina-realm-user role for all paths
+        .anyRequest().hasRole(REALM_USER_ROLE)
       )
       .sessionManagement(session -> session
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -76,15 +82,19 @@ public class KeycloakSecurityConfig {
       public AbstractAuthenticationToken convert(Jwt jwt) {
 
         log.debug("Converting JWT to AbstractAuthenticationToken for user: {}",
-          jwt.getClaimAsString("preferred_username"));
+          jwt.getClaimAsString(USERNAME_KEY));
 
         DinaAuthenticatedUser user = jwtToDinaAuthenticatedUser(jwt);
+
+        // Create a new mutable HashSet
+        Collection<GrantedAuthority> authorities = new HashSet<>(convertToGrantedAuthorities(user));
+        Set<String> roles = extractRolesFromJwt(jwt);
+        if(roles.contains(REALM_USER_ROLE)) {
+          authorities.add(new SimpleGrantedAuthority("ROLE_" + REALM_USER_ROLE));
+        }
+
         // Store in a custom authentication token
-        return new DinaAuthenticationToken(
-          jwt,
-          user,
-          convertToGrantedAuthorities(user)
-        );
+        return new DinaAuthenticationToken(jwt, user, authorities);
       }
     };
   }
@@ -105,7 +115,7 @@ public class KeycloakSecurityConfig {
 
   private static DinaAuthenticatedUser jwtToDinaAuthenticatedUser(Jwt jwt) {
     return DinaAuthenticatedUser.builder()
-      .username(jwt.getClaimAsString("preferred_username"))
+      .username(jwt.getClaimAsString(USERNAME_KEY))
       .internalIdentifier(jwt.getSubject())
       .agentIdentifier((String) jwt.getClaims().get(AGENT_IDENTIFIER_CLAIM_KEY))
       .isServiceAccount(extractIsServiceAccount(jwt))
@@ -114,11 +124,15 @@ public class KeycloakSecurityConfig {
       .build();
   }
 
-  private Collection<? extends GrantedAuthority> convertToGrantedAuthorities(
+  /**
+   *
+   * @param user
+   * @return immutable set of {@link GrantedAuthority}
+   */
+  private Collection<GrantedAuthority> convertToGrantedAuthorities(
     DinaAuthenticatedUser user) {
 
     Set<GrantedAuthority> authorities = new HashSet<>();
-
     // Convert admin roles
     if (user.getAdminRoles() != null) {
       user.getAdminRoles().stream()
@@ -133,8 +147,7 @@ public class KeycloakSecurityConfig {
         .map(dinaRole -> new SimpleGrantedAuthority("ROLE_" + dinaRole.name()))
         .forEach(authorities::add);
     }
-
-    return authorities;
+    return Set.copyOf(authorities);
   }
 
   private static boolean extractIsServiceAccount(Jwt jwt) {
@@ -154,15 +167,19 @@ public class KeycloakSecurityConfig {
   }
 
   private static Set<DinaRole> extractAdminRoles(Jwt jwt) {
-    Map<String, Object> realmAccess =
-      (Map<String, Object>) jwt.getClaims().get("realm_access");
-
-    if (realmAccess != null && realmAccess.get("roles") instanceof Collection) {
-      @SuppressWarnings("unchecked")
-      Collection<String> roles = (Collection<String>) realmAccess.get("roles");
-      return KeycloakClaimParser.parseAdminRoles(new HashSet<>(roles));
+    Set<String> roles = extractRolesFromJwt(jwt);
+    if (!roles.isEmpty()) {
+      return KeycloakClaimParser.parseAdminRoles(roles);
     }
+    return Collections.emptySet();
+  }
 
+  private static Set<String> extractRolesFromJwt(Jwt jwt) {
+    Map<String, Object> realmAccess =
+      (Map<String, Object>) jwt.getClaims().get(REALM_ACCESS_CLAIM_KEY);
+    if (realmAccess != null && realmAccess.get(ROLES_KEY) instanceof Collection) {
+      return Set.copyOf((Collection<String>) realmAccess.get(ROLES_KEY));
+    }
     return Collections.emptySet();
   }
 }
