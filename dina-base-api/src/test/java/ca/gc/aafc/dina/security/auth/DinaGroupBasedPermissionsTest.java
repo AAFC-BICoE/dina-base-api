@@ -169,7 +169,7 @@ public class DinaGroupBasedPermissionsTest {
   }
 
   @TestConfiguration
-  @EntityScan(basePackageClasses = DinaAdminOnlyAuthTest.class)
+  @EntityScan(basePackageClasses = DinaAdminCUDAuthTest.class)
   static class GroupBasedTestConfig {
 
     // we can't use the repo from ItemTestConfig since we need GroupAuthorizationService
