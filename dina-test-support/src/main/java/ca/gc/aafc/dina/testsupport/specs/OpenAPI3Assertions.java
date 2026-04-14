@@ -69,7 +69,7 @@ public final class OpenAPI3Assertions {
     if (!Boolean.valueOf(System.getProperty(SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY))) {
       assertSchema(specsUrl, schemaName, apiResponse, options);
     } else {
-      log.warn("Skipping schema validation." + "System property testing.skip-remote-schema-validation set to true.");
+      log.warn("Skipping schema validation. System property testing.skip-remote-schema-validation set to true.");
     }
   }
 
