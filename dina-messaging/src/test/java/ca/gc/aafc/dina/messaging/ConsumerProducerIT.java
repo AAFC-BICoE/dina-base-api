@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.messaging;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
@@ -68,7 +70,10 @@ public class ConsumerProducerIT {
 
   @Test
   public void producer_onMessageSent_receiverReceives() throws InterruptedException {
-    DinaTestMessage myMessage = DinaTestMessage.builder().name("test-message Queue 1").build();
+    DinaTestMessage myMessage = DinaTestMessage.builder()
+      .name("test-message Queue 1")
+      .createdOn(LocalDateTime.now().atZone(ZoneId.systemDefault()).toOffsetDateTime())
+      .build();
     DinaTestMessage myMessageQueue2 = DinaTestMessage.builder().name("test-message Queue 2").build();
 
     rabbitMQTestProducer.send(myMessage);
