@@ -36,10 +36,10 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 @Transactional
-@SpringBootTest(classes = {TestDinaBaseApp.class, DinaAdminOnlyAuthTest.DinaAdminOnlyTestConfig.class},
+@SpringBootTest(classes = {TestDinaBaseApp.class, DinaAdminCUDAuthTest.DinaAdminOnlyTestConfig.class},
   properties = "keycloak.enabled: true")
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
-public class DinaAdminOnlyAuthTest {
+public class DinaAdminCUDAuthTest {
 
   @Inject
   private DefaultDinaService<Item> defaultService;
@@ -121,7 +121,7 @@ public class DinaAdminOnlyAuthTest {
   }
 
   @TestConfiguration
-  @EntityScan(basePackageClasses = DinaAdminOnlyAuthTest.class)
+  @EntityScan(basePackageClasses = DinaAdminCUDAuthTest.class)
   static class DinaAdminOnlyTestConfig {
 
     // we can't use the repo from ItemTestConfig since we need DinaAdminCUDAuthorizationService
