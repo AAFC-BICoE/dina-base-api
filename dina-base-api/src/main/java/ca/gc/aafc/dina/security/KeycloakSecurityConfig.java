@@ -89,7 +89,7 @@ public class KeycloakSecurityConfig {
         // Create a new mutable HashSet
         Collection<GrantedAuthority> authorities = new HashSet<>(convertToGrantedAuthorities(user));
         Set<String> roles = extractRolesFromJwt(jwt);
-        if(roles.contains(REALM_USER_ROLE)) {
+        if (roles.contains(REALM_USER_ROLE)) {
           authorities.add(new SimpleGrantedAuthority("ROLE_" + REALM_USER_ROLE));
         }
 
