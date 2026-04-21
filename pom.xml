@@ -57,6 +57,7 @@
     <jakarta.json-api.version>2.0.2</jakarta.json-api.version>
 
     <!-- Versions override-->
+    <spring-framework.version>6.0.18</spring-framework.version>
     <jackson-bom.version>2.15.4</jackson-bom.version>
     <eclipse-parsson.version>1.0.5</eclipse-parsson.version>
     <xml-unit.version>2.10.0</xml-unit.version>
