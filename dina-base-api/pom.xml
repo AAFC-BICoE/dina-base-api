@@ -41,7 +41,6 @@
     <spring-hateoas-jsonapi.version>2.2.0</spring-hateoas-jsonapi.version>
 
     <!-- Versions override-->
-    <tomcat.version>10.1.53</tomcat.version>
     <postgresql.version>42.4.4</postgresql.version>
   </properties>
 

@@ -58,6 +58,8 @@
 
     <!-- Versions override-->
     <spring-framework.version>6.0.18</spring-framework.version>
+    <tomcat.version>10.1.53</tomcat.version>
+
     <jackson-bom.version>2.15.4</jackson-bom.version>
     <eclipse-parsson.version>1.0.5</eclipse-parsson.version>
     <xml-unit.version>2.10.0</xml-unit.version>
