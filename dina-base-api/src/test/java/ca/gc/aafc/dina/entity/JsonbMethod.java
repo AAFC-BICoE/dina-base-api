@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.entity;
 
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -7,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
@@ -49,7 +52,7 @@ public class JsonbMethod implements DinaEntity {
     this.uuid = uuid;
   }
 
-  @JdbcTypeCode(SqlTypes.JSON)
+  @Type(JsonType.class)
   @Column(columnDefinition = "jsonb")
   public Map<String, Object> getJsonData() {
     return jsonData;

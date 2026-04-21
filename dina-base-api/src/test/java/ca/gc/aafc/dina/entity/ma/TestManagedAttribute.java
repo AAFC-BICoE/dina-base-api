@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.entity.ma;
 
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+
 import ca.gc.aafc.dina.entity.ManagedAttribute;
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
@@ -9,6 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
@@ -51,7 +54,7 @@ public class TestManagedAttribute implements ManagedAttribute {
   //for testing purpose
   private boolean failValidateValue;
 
-  @JdbcTypeCode(SqlTypes.JSON)
+  @Type(JsonType.class)
   @Column(columnDefinition = "jsonb")
   private MultilingualDescription multilingualDescription;
 

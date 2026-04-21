@@ -1,6 +1,9 @@
 package ca.gc.aafc.dina.service;
 
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -87,7 +90,7 @@ public class IdentifierTypeServiceIT {
     private String name;
     private String term;
 
-    @JdbcTypeCode(SqlTypes.JSON)
+    @Type(JsonType.class)
     private MultilingualTitle multilingualTitle;
 
     //@Type(type = "list-array")

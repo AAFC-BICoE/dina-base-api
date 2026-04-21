@@ -1,10 +1,13 @@
 package ca.gc.aafc.dina.entity;
 
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.NaturalIdCache;
+import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
@@ -72,10 +75,10 @@ public abstract class ControlledVocabularyItem implements DinaEntity {
   @Size(max = 255)
   private String term;
 
-  @JdbcTypeCode(SqlTypes.JSON)
+  @Type(JsonType.class)
   private MultilingualTitle multilingualTitle;
 
-  @JdbcTypeCode(SqlTypes.JSON)
+  @Type(JsonType.class)
   private MultilingualDescription multilingualDescription;
 
   @Enumerated(EnumType.STRING)

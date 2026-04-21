@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.entity;
 
 import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -91,10 +92,10 @@ public abstract class ControlledVocabulary implements DinaEntity {
   @Size(max = 255)
   private String version;
 
-  @JdbcTypeCode(SqlTypes.JSON)
+  @Type(JsonType.class)
   private MultilingualTitle multilingualTitle;
 
-  @JdbcTypeCode(SqlTypes.JSON)
+  @Type(JsonType.class)
   private MultilingualDescription multilingualDescription;
 
   @NotBlank
