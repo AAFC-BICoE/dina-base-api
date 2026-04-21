@@ -5,6 +5,7 @@ import ca.gc.aafc.dina.jpa.JsonbKeyValuePredicate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.querydsl.core.types.Ops;
 
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import java.lang.reflect.AccessibleObject;
 import java.util.Set;
 import lombok.NonNull;
@@ -12,6 +13,7 @@ import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -317,20 +319,28 @@ public final class SimpleFilterHandlerV2 {
 
     // Check field for annotation.
     AccessibleObject ao = safeGetDeclaredField(clazz, attribute.getName());
-    if (ao != null && ao.isAnnotationPresent(JdbcTypeCode.class) &&
-        ao.getAnnotation(JdbcTypeCode.class).value() == SqlTypes.JSON) {
+    if (isJdbcTypeCodeJson(ao) || isHibernateTypeJson(ao)) {
       return true;
     }
 
     // If no annotation is present on the field, check the method instead.
     ao = safeGetDeclaredMethod(clazz, attribute.getJavaMember().getName());
-    if (ao != null && ao.isAnnotationPresent(JdbcTypeCode.class) &&
-        ao.getAnnotation(JdbcTypeCode.class).value() == SqlTypes.JSON) {
+    if (isJdbcTypeCodeJson(ao) || isHibernateTypeJson(ao)) {
       return true;
     }
 
     // Could not find the annotation, not detected as jsonb.
     return false;
+  }
+
+  private static boolean isJdbcTypeCodeJson(AccessibleObject ao) {
+    return ao != null && ao.isAnnotationPresent(JdbcTypeCode.class) &&
+      ao.getAnnotation(JdbcTypeCode.class).value() == SqlTypes.JSON;
+  }
+
+  private static boolean isHibernateTypeJson(AccessibleObject ao) {
+    return ao != null && ao.isAnnotationPresent(Type.class) &&
+      ao.getAnnotation(Type.class).value() == JsonType.class;
   }
 
   private static Predicate handleConjunction(PredicateContext ctx, Root<?> root,
