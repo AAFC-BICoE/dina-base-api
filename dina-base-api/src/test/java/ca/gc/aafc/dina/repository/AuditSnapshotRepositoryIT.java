@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.repository;
 
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.javers.core.Javers;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +37,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.inject.Inject;
+import java.util.UUID;
+
+import jakarta.inject.Inject;
 
 @SpringBootTest(classes = {TestDinaBaseApp.class, AuditSnapshotRepositoryIT.JsonApiConfigurationTestConfig.class}, properties = "dina.auditing.enabled = true")
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
@@ -66,7 +67,7 @@ public class AuditSnapshotRepositoryIT {
 
   private static final String AUTHOR = "dina_user";
   private static final String TYPE = EmployeeDto.TYPENAME;
-  private static final Integer INSTANCE_ID = RandomUtils.nextInt();
+  private static final UUID INSTANCE_ID = UUID.randomUUID();
   private static final String ANONYMOUS = "Anonymous";
 
   @BeforeEach
@@ -88,7 +89,7 @@ public class AuditSnapshotRepositoryIT {
 
     // Has Author With specific instance id 2 commits
     EmployeeDto withInstanceID = createDto();
-    withInstanceID.setId(INSTANCE_ID);
+    withInstanceID.setUuid(INSTANCE_ID);
     javers.commit(AUTHOR, withInstanceID);
     withInstanceID.setName("update");
     javers.commit(AUTHOR, withInstanceID);
@@ -140,7 +141,7 @@ public class AuditSnapshotRepositoryIT {
 
   private static EmployeeDto createDto() {
     EmployeeDto dto = new EmployeeDto();
-    dto.setId(RandomUtils.nextInt());
+    dto.setUuid(UUID.randomUUID());
     return dto;
   }
 
@@ -150,7 +151,7 @@ public class AuditSnapshotRepositoryIT {
   }
 
   @TestConfiguration
-  static class JsonApiConfigurationTestConfig {
+  public static class JsonApiConfigurationTestConfig {
     @Bean
     public JsonApiConfiguration jsonApiConfiguration() {
       return new JsonApiConfiguration()

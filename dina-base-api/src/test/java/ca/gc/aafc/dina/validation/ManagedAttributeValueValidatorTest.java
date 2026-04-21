@@ -19,13 +19,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-import javax.validation.ValidationException;
-
-import com.google.common.collect.ImmutableList;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.validation.ValidationException;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -292,7 +291,7 @@ public class ManagedAttributeValueValidatorTest {
         .component(ManagedAttributeServiceIT.XYZValidationContext.X.toString())
         .unit(RandomStringUtils.randomAlphabetic(3))
         .multilingualDescription(MultilingualDescription.builder()
-            .descriptions(ImmutableList.of(
+            .descriptions(List.of(
                 MultilingualDescription.MultilingualPair.of("en", "test"))
             )
             .build())

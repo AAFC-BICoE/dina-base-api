@@ -16,10 +16,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import java.util.UUID;
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

@@ -1,6 +1,8 @@
 package ca.gc.aafc.dina.jsonapi;
 
+import ca.gc.aafc.dina.config.PersonTestConfig;
 import ca.gc.aafc.dina.dto.PersonDTO;
+import ca.gc.aafc.dina.repository.AuditSnapshotRepositoryIT;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
@@ -8,21 +10,24 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
 
 @SpringBootTest(
   properties = {"dev-user.enabled: true", "keycloak.enabled: false", "dina.auditing.enabled = true"},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(initializers = { PostgresTestContainerInitializer.class })
+@Import( {PersonTestConfig.class, AuditSnapshotRepositoryIT.JsonApiConfigurationTestConfig.class})
 public class DinaRepoSoftDeleteRestIt extends BaseRestAssuredTest {
 
   protected DinaRepoSoftDeleteRestIt() {
-    super("/" + PersonDTO.TYPE_NAME);
+    super(PersonTestConfig.PATH);
   }
 
   @Test
@@ -30,14 +35,18 @@ public class DinaRepoSoftDeleteRestIt extends BaseRestAssuredTest {
     final String id = sendPost(JsonAPITestHelper.toJsonAPIMap(
       PersonDTO.TYPE_NAME,
       createPersonDto())).extract().body().jsonPath().getString("data.id");
+
     sendGet(id);
     sendDelete(id);
 
     String auditRepoLink = sendGet("", id, HttpStatus.SC_GONE).extract()
       .body().jsonPath().getString("errors.links.about[0]");
-    // Assert the returned audit repo url is valid
+
+    // Assert the returned audit repo url is valid and the count is 2
     given().port(testPort).get(auditRepoLink)
-      .then().statusCode(200);
+      .then()
+      .statusCode(200)
+      .body("meta.totalResourceCount", equalTo(2));
   }
 
   @Test

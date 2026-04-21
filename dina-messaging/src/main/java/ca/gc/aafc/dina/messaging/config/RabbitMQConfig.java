@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Optional;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import lombok.extern.log4j.Log4j2;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;

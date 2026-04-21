@@ -4,7 +4,6 @@ import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.EmployeeDto;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.javers.core.Javers;
 import org.javers.core.metamodel.object.CdoSnapshot;
 import org.javers.repository.jql.QueryBuilder;
@@ -15,9 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @SpringBootTest(classes = TestDinaBaseApp.class, properties = "dina.auditing.enabled = true")
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 class JaversDataServiceIT {
 
   private static final String AUTHOR = "dina_user";
-  private static final Integer INSTANCE_ID = RandomUtils.nextInt();
+  private static final UUID INSTANCE_ID = UUID.randomUUID();
   private static final String TYPE = EmployeeDto.TYPENAME;
 
   @Inject
@@ -55,7 +55,7 @@ class JaversDataServiceIT {
 
     // Has Author With specific instance id 2 commits
     EmployeeDto withInstanceID = createDto();
-    withInstanceID.setId(INSTANCE_ID);
+    withInstanceID.setUuid(INSTANCE_ID);
     javers.commit(AUTHOR, withInstanceID);
     withInstanceID.setName("update");
     javers.commit(AUTHOR, withInstanceID);
@@ -68,7 +68,7 @@ class JaversDataServiceIT {
 
   @Test
   void getResourceCount_FilterByInstanceId() {
-    Assertions.assertEquals(2, javersDataService.getResourceCount(Integer.toString(INSTANCE_ID), TYPE, null));
+    Assertions.assertEquals(2, javersDataService.getResourceCount(INSTANCE_ID.toString(), TYPE, null));
   }
 
   @Test
@@ -82,7 +82,7 @@ class JaversDataServiceIT {
     javers.commit(AUTHOR, dto);
     dto.setName(RandomStringUtils.randomAlphabetic(4));
     javers.commit(AUTHOR, dto);
-    String id = Integer.toString(dto.getId());
+    String id = dto.getUuid().toString();
 
     List<CdoSnapshot> snapshots = javers.findSnapshots(QueryBuilder.byInstanceId(id, TYPE).build());
     Assertions.assertEquals(2, snapshots.size());
@@ -95,7 +95,7 @@ class JaversDataServiceIT {
       0,
       javers.findSnapshots(QueryBuilder.byInstanceId(id, TYPE).build()).size());
     Assertions.assertTrue(
-      javers.getLatestSnapshot(dto.getId(), EmployeeDto.class).isEmpty(),
+      javers.getLatestSnapshot(dto.getUuid(), EmployeeDto.class).isEmpty(),
       "There should be no more snapshots for this object");
   }
 
@@ -106,7 +106,7 @@ class JaversDataServiceIT {
 
   private static EmployeeDto createDto() {
     EmployeeDto dto = new EmployeeDto();
-    dto.setId(RandomUtils.nextInt());
+    dto.setUuid(UUID.randomUUID());
     return dto;
   }
 

@@ -12,12 +12,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import java.util.stream.Stream;
-import javax.inject.Inject;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.transaction.Transactional;
 
 import ca.gc.aafc.dina.BasePostgresItContext;
 import ca.gc.aafc.dina.entity.Employee;
@@ -213,7 +213,7 @@ public class BaseDAOIT extends BasePostgresItContext {
     final Department dep = Department.builder().name("depToBeRefreshed").uuid(UUID.randomUUID()).location("dep location").build();
 
     // add an entity in another transaction so it exists in the database outside of the test's transaction
-    dbSupport.runInNewTransaction( em -> em.persist(dep));
+    dbSupport.runInNewTransaction(em -> em.persist(dep));
     Integer depId = dep.getId();
     assertNotNull(depId);
 
@@ -236,6 +236,11 @@ public class BaseDAOIT extends BasePostgresItContext {
     // this is what refresh will do
     baseDAO.refresh(departmentUnderTest);
     assertEquals("depChanged", departmentUnderTest.getName());
+
+    // cleanup
+    dbSupport.runInNewTransaction( (em -> {
+      em.remove(em.find(Department.class, depId));
+    }));
   }
 
   @Test
@@ -266,6 +271,11 @@ public class BaseDAOIT extends BasePostgresItContext {
     // then find will reload it from the database
     departmentUnderTest = baseDAO.findOneByDatabaseId(depId, Department.class);
     assertEquals("depChanged", departmentUnderTest.getName());
+
+    // cleanup
+    dbSupport.runInNewTransaction( (em -> {
+      em.remove(em.find(Department.class, depId));
+    }));
   }
 
   @Test

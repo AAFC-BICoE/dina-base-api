@@ -1,8 +1,8 @@
 package ca.gc.aafc.dina.validation;
 
 import java.util.List;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.context.MessageSource;

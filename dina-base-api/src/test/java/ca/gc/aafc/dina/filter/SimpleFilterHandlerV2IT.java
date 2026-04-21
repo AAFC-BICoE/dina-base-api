@@ -25,9 +25,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 
 @SpringBootTest(classes = {TestDinaBaseApp.class, DinaRepositoryV2IT.RepoV2TestConfig.class,
   PersonTestConfig.class})

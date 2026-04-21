@@ -30,6 +30,7 @@ import ca.gc.aafc.dina.jsonapi.JsonApiDocuments;
 import ca.gc.aafc.dina.mapper.PersonMapper;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
 import ca.gc.aafc.dina.security.DinaRole;
+import ca.gc.aafc.dina.security.oauth2.DinaAuthenticationToken;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
@@ -43,8 +44,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, DinaGroupBasedPermissionsTest.GroupBasedTestConfig.class},
@@ -66,8 +67,8 @@ public class DinaGroupBasedPermissionsTest {
   }
 
   private static void setupMockToken(String group, DinaRole role) {
-    KeycloakAuthenticationToken mockToken = Mockito.mock(
-            KeycloakAuthenticationToken.class,
+    DinaAuthenticationToken mockToken = Mockito.mock(
+      DinaAuthenticationToken.class,
             Answers.RETURNS_DEEP_STUBS);
     TestDinaBaseApp.mockToken(List.of("/" + group + "/" + role), mockToken);
 

@@ -3,7 +3,7 @@ package ca.gc.aafc.dina.entity;
 import lombok.Builder;
 import lombok.Data;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 
 /**
  * Generic representation of an address (physical address).

@@ -6,8 +6,8 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
-import javax.validation.Validation;
-import javax.validation.ValidatorFactory;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidatorFactory;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;

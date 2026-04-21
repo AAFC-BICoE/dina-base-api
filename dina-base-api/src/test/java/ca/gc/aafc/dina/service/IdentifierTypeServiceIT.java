@@ -1,6 +1,10 @@
 package ca.gc.aafc.dina.service;
 
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,11 +26,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
@@ -86,10 +90,10 @@ public class IdentifierTypeServiceIT {
     private String name;
     private String term;
 
-    @Type(type = "jsonb")
+    @Type(JsonType.class)
     private MultilingualTitle multilingualTitle;
 
-    @Type(type = "list-array")
+    //@Type(type = "list-array")
     private List<String> dinaComponents;
 
     private String uriTemplate;

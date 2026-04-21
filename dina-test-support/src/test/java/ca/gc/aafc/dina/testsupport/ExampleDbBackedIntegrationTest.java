@@ -2,10 +2,8 @@ package ca.gc.aafc.dina.testsupport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.math.BigInteger;
-
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,7 +23,7 @@ public class ExampleDbBackedIntegrationTest {
         .createNativeQuery("select count(*) from pg_catalog.pg_type where typname = 'int2';")
         .getSingleResult();
 
-    assertEquals(BigInteger.valueOf(1), oneCount);
+    assertEquals(1L, oneCount);
   }
 
 }

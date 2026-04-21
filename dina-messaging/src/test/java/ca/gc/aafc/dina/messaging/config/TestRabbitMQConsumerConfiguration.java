@@ -13,14 +13,12 @@ public class TestRabbitMQConsumerConfiguration extends RabbitMQConsumerConfigura
   }
 
   @Bean("queue1")
-  @Override
-  public Queue createQueue() {
-    return super.createQueue();
+  public Queue createQueue1() {
+    return createQueue();
   }
 
   @Bean("dlq1")
-  @Override
-  public Queue createDeadLetterQueue() {
-    return super.createDeadLetterQueue();
+  public Queue createDeadLetterQueue1() {
+    return createDeadLetterQueue();
   }
 }

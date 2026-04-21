@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;

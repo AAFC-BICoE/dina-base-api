@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,6 +26,6 @@ public class JsonNodeTypeHandlerIT {
   public void testJsonNodeTypeHandler () {
     List<TestTableData> testData = dao.loadData(1);
     assertFalse(testData.isEmpty());
-    assertEquals("val_01", testData.get(0).getJdata().getAttr_01());
+    assertEquals("val_01", testData.getFirst().getJdata().getAttr_01());
   }
 }

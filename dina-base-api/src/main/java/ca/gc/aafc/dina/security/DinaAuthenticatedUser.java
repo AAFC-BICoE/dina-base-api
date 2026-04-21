@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.security;
 
+import java.io.Serializable;
 import lombok.Builder;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
  * Represent an authenticated user in the context of a DINA Module. This class is immutable.
  */
 @Getter
-public class DinaAuthenticatedUser {
+public class DinaAuthenticatedUser implements Serializable {
 
   private final String internalIdentifier;
   private final String agentIdentifier;

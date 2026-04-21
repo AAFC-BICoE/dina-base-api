@@ -1,9 +1,13 @@
 package ca.gc.aafc.dina.dto;
 
+import java.util.UUID;
+
 import org.javers.core.metamodel.annotation.DiffIgnore;
 import org.javers.core.metamodel.annotation.Id;
 import org.javers.core.metamodel.annotation.PropertyName;
 import org.javers.core.metamodel.annotation.TypeName;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import ca.gc.aafc.dina.entity.Employee;
 import ca.gc.aafc.dina.mapper.IgnoreDinaMapping;
@@ -18,13 +22,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @RelatedEntity(Employee.class)
 @TypeName(EmployeeDto.TYPENAME)
-public class EmployeeDto {
+public class EmployeeDto implements ca.gc.aafc.dina.dto.JsonApiResource {
 
   public static final String TYPENAME = "employee";
 
+  @com.toedter.spring.hateoas.jsonapi.JsonApiId
   @Id
   @PropertyName("id")
-  private Integer id;
+  private UUID uuid;
 
   private String name;
 
@@ -43,4 +48,16 @@ public class EmployeeDto {
 
   @JsonApiRelation
   private PersonDTO manager;
+
+  @Override
+  @JsonIgnore
+  public String getJsonApiType() {
+    return TYPENAME;
+  }
+
+  @Override
+  @JsonIgnore
+  public UUID getJsonApiId() {
+    return uuid;
+  }
 }

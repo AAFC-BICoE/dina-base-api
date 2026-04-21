@@ -1,6 +1,6 @@
 package ca.gc.aafc.dina.entity;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 import lombok.experimental.SuperBuilder;
 
 /**

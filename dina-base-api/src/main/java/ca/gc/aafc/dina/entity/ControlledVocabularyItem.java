@@ -1,10 +1,14 @@
 package ca.gc.aafc.dina.entity;
 
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.NaturalIdCache;
 import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
 
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
@@ -12,16 +16,16 @@ import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
-import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -71,14 +75,15 @@ public abstract class ControlledVocabularyItem implements DinaEntity {
   @Size(max = 255)
   private String term;
 
-  @Type(type = "jsonb")
+  @Type(JsonType.class)
   private MultilingualTitle multilingualTitle;
 
-  @Type(type = "jsonb")
+  @Type(JsonType.class)
   private MultilingualDescription multilingualDescription;
 
   @Enumerated(EnumType.STRING)
   private TypedVocabularyElement.VocabularyElementType vocabularyElementType;
+
 
   /**
    * Like wikidata. A URI template where "$1" can be automatically replaced with the value
@@ -86,7 +91,7 @@ public abstract class ControlledVocabularyItem implements DinaEntity {
    */
   private String uriTemplate;
 
-  @Type(type = "string-array")
+  @JdbcTypeCode(SqlTypes.ARRAY)
   private String[] acceptedValues;
 
   @Size(max = 50)
