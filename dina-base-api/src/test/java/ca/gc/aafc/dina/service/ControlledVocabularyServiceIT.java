@@ -90,6 +90,7 @@ public class ControlledVocabularyServiceIT {
         .uuid(UUID.randomUUID())
         .group("grp")
         .name("Protocol Data Element 1")
+        .acceptedValues(new String[] {"a", "b"})
         .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
     assertEquals("protocol_data_element_1", controlledVocabularyItem.getKey());
 

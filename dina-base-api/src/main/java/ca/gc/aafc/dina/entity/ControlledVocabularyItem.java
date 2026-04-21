@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.entity;
 
+import io.hypersistence.utils.hibernate.type.array.StringArrayType;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 
 import org.hibernate.annotations.JdbcTypeCode;
@@ -91,7 +92,8 @@ public abstract class ControlledVocabularyItem implements DinaEntity {
    */
   private String uriTemplate;
 
-  @JdbcTypeCode(SqlTypes.ARRAY)
+  @Type(StringArrayType.class)
+  @Column(columnDefinition = "text[]")
   private String[] acceptedValues;
 
   @Size(max = 50)
