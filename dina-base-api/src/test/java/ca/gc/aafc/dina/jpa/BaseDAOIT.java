@@ -209,6 +209,13 @@ public class BaseDAOIT extends BasePostgresItContext {
 //  }
 
   @Test
+  public void referenceByNaturalId_onNullOrNotFound_nullReturned() {
+    // we are making sure not exception if thrown
+    assertNull(baseDAO.getReferenceByNaturalId(Department.class, null));
+    assertNull(baseDAO.getReferenceByNaturalId(Department.class, UUID.randomUUID()));
+  }
+
+  @Test
   public void refresh_OnRefresh_EntityReloaded() {
     final Department dep = Department.builder().name("depToBeRefreshed").uuid(UUID.randomUUID()).location("dep location").build();
 
