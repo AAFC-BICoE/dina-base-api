@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.165</version>
+  <version>0.166</version>
 
   <packaging>pom</packaging>
 
@@ -40,8 +40,8 @@
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
     <checkstyle.version>10.26.1</checkstyle.version>
     
-    <spotbugs-maven-plugin.version>4.9.3.0</spotbugs-maven-plugin.version>
-    <spotbugs.version>4.9.3</spotbugs.version>
+    <spotbugs-maven-plugin.version>4.9.8.3</spotbugs-maven-plugin.version>
+    <spotbugs.version>4.9.8</spotbugs.version>
 
     <asciidoctor-maven-plugin.version>2.1.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.1.0</asciidoctorj.diagram.version>
