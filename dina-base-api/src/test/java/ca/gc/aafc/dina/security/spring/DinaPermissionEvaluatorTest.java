@@ -4,6 +4,8 @@ import ca.gc.aafc.dina.entity.Item;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import ca.gc.aafc.dina.security.DinaRole;
+import ca.gc.aafc.dina.security.oauth2.DinaAuthenticationToken;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.Assertions;
@@ -12,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.mockito.Answers;
 import org.mockito.Mockito;
 
@@ -34,8 +35,8 @@ class DinaPermissionEvaluatorTest {
 
   @BeforeEach
   void setUp() {
-    KeycloakAuthenticationToken mockToken = Mockito.mock(
-      KeycloakAuthenticationToken.class, Answers.RETURNS_DEEP_STUBS);
+    DinaAuthenticationToken mockToken = Mockito.mock(
+      DinaAuthenticationToken.class, Answers.RETURNS_DEEP_STUBS);
     evaluator = new DinaPermissionEvaluator(mockToken);
   }
 
