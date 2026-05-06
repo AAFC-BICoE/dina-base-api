@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.166</version>
+  <version>0.167</version>
 
   <packaging>pom</packaging>
 
@@ -52,7 +52,6 @@
 
     <!-- Common sub-module dependency properties -->
     <jakarta.inject.version>2.0.1</jakarta.inject.version>
-    <keycloak-starter.version>21.1.0</keycloak-starter.version>
     <antlr4.version>4.13.0</antlr4.version>
     <jakarta.json-api.version>2.0.2</jakarta.json-api.version>
 
@@ -85,14 +84,7 @@
 	    <groupId>org.springframework.boot</groupId>
 	    <artifactId>spring-boot-starter-log4j2</artifactId>
 	</dependency>
-    
-    <!-- keycloak identity oauth2 -->
-    <dependency>
-      <groupId>org.keycloak</groupId>
-      <artifactId>keycloak-spring-boot-starter</artifactId>
-      <version>${keycloak-starter.version}</version>
-    </dependency>
-    
+
     <!-- Java standard extensions -->
     <dependency>
       <groupId>jakarta.inject</groupId>

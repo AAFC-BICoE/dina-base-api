@@ -65,7 +65,7 @@ public class BaseRestAssuredTest {
    * Prepare a new, fresh, request ready to be used.
    * @return
    */
-  private RequestSpecification newRequest() {
+  protected RequestSpecification newRequest() {
     return given()
       .config(RestAssured.config()
         .encoderConfig(EncoderConfig.encoderConfig()
@@ -90,6 +90,11 @@ public class BaseRestAssuredTest {
   }
 
   protected ValidatableResponse sendGet(String path, String id, int expectedReturnCode) {
+
+    if (StringUtils.isBlank(id)) {
+      return newRequest().get(path).then().statusCode(expectedReturnCode);
+    }
+
     Response response = newRequest()
       .get(StringUtils.appendIfMissing(path, "/") + "{id}", id);
 
@@ -102,6 +107,10 @@ public class BaseRestAssuredTest {
     var request = newRequest();
     if (queryParams != null) {
       request = request.queryParams(queryParams);
+    }
+
+    if (StringUtils.isBlank(id)) {
+      return request.get(path).then().statusCode(expectedReturnCode);
     }
 
     Response response = request.get(StringUtils.appendIfMissing(path, "/") + "{id}", id);
