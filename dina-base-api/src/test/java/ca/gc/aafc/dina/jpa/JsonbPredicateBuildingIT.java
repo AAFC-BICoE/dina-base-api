@@ -6,12 +6,12 @@ import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.inject.Inject;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -46,8 +46,8 @@ public class JsonbPredicateBuildingIT extends BasePostgresItContext {
     List<JsonbCar> resultList = baseDAO.resultListFromCriteria(criteria, 0, 20);
 
     Assertions.assertEquals(1, resultList.size());
-    Assertions.assertEquals(tank.getUuid(), resultList.get(0).getUuid());
-    Assertions.assertEquals(expectedValue, resultList.get(0).getJsonData().get(KEY));
+    Assertions.assertEquals(tank.getUuid(), resultList.getFirst().getUuid());
+    Assertions.assertEquals(expectedValue, resultList.getFirst().getJsonData().get(KEY));
   }
 
   private void persistCar(String expectedValue, JsonbCar car) {

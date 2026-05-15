@@ -1,20 +1,22 @@
 package ca.gc.aafc.dina.testsupport.security;
 
 import org.apache.commons.lang3.StringUtils;
-import org.keycloak.KeycloakPrincipal;
-import org.keycloak.adapters.OidcKeycloakAccount;
-import org.keycloak.adapters.RefreshableKeycloakSecurityContext;
-import org.keycloak.adapters.springsecurity.account.SimpleKeycloakAccount;
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
-import org.keycloak.representations.AccessToken;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
 
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -26,46 +28,77 @@ public class WithMockKeycloakSecurityContextFactory
   // In production, keys (and claims) are set by Keycloak
   private static final String GROUPS_CLAIM_KEY = "groups";
   private static final String AGENT_IDENTIFIER_CLAIM_KEY = "agent-identifier";
+  private static final String REALM_ACCESS_CLAIM_KEY = "realm_access";
+  private static final String ROLES_CLAIM_KEY = "roles";
 
   @Override
   public SecurityContext createSecurityContext(WithMockKeycloakUser mockKeycloakUser) {
     SecurityContext context = SecurityContextHolder.createEmptyContext();
 
-    // Create a Keycloak AccessToken with the groups in otherClaims
-    AccessToken accessToken = new AccessToken();
-    accessToken.setRealmAccess(new AccessToken.Access());
+    // Build claims map
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("sub", StringUtils.isNotBlank(mockKeycloakUser.internalIdentifier())
+      ? mockKeycloakUser.internalIdentifier()
+      : "default-subject");
+    claims.put("preferred_username", mockKeycloakUser.username());
 
+    // Add groups claim
     if (mockKeycloakUser.groupRole() != null && mockKeycloakUser.groupRole().length > 0 &&
       StringUtils.isNotBlank(mockKeycloakUser.groupRole()[0])) {
       List<String> groupRoles = Arrays.stream(mockKeycloakUser.groupRole())
         .map(gr -> convertToKeycloakNotation(gr, mockKeycloakUser.failOnInvalidNotation()))
         .collect(Collectors.toList());
-      accessToken.setOtherClaims(GROUPS_CLAIM_KEY, groupRoles);
+      claims.put(GROUPS_CLAIM_KEY, groupRoles);
     }
 
+    // Add agent identifier claim
     if (StringUtils.isNotBlank(mockKeycloakUser.agentIdentifier())) {
-      accessToken.setOtherClaims(AGENT_IDENTIFIER_CLAIM_KEY, mockKeycloakUser.agentIdentifier());
-    }
-    if (StringUtils.isNotBlank(mockKeycloakUser.internalIdentifier())) {
-      accessToken.setSubject(mockKeycloakUser.internalIdentifier());
+      claims.put(AGENT_IDENTIFIER_CLAIM_KEY, mockKeycloakUser.agentIdentifier());
     }
 
-    if (mockKeycloakUser.adminRole() != null) {
-      Arrays.stream(mockKeycloakUser.adminRole())
-        .forEach(r -> accessToken.getRealmAccess().addRole(r));
+    // Add realm_access roles
+    if (mockKeycloakUser.adminRole() != null && mockKeycloakUser.adminRole().length > 0) {
+      Map<String, Object> realmAccess = new HashMap<>();
+      realmAccess.put(ROLES_CLAIM_KEY, Arrays.asList(mockKeycloakUser.adminRole()));
+      claims.put(REALM_ACCESS_CLAIM_KEY, realmAccess);
     }
 
-    RefreshableKeycloakSecurityContext ctx = new RefreshableKeycloakSecurityContext(null, null,
-        null, accessToken, null, null, null);
+    // Create JWT token
+    Jwt jwt = createJwt(mockKeycloakUser.username(), claims);
 
-    KeycloakPrincipal<RefreshableKeycloakSecurityContext> principal = new KeycloakPrincipal<>(
-        mockKeycloakUser.username(), ctx);
+    // Extract authorities from roles
+    Collection<GrantedAuthority> authorities = extractAuthorities(mockKeycloakUser.adminRole());
 
-    OidcKeycloakAccount account = new SimpleKeycloakAccount(principal, Collections.emptySet(), ctx);
-
-    Authentication auth = new KeycloakAuthenticationToken(account, false);
+    // Create authentication token
+    Authentication auth = new JwtAuthenticationToken(jwt, authorities, "preferred_username");
     context.setAuthentication(auth);
     return context;
+  }
+
+  /**
+   * Create a Jwt token with the given subject and claims
+   */
+  private Jwt createJwt(String username, Map<String, Object> claims) {
+    Instant now = Instant.now();
+    return new Jwt(
+      "mock-token",                    // tokenValue
+      now,                             // issuedAt
+      now.plusSeconds(3600),           // expiresAt
+      Collections.singletonMap("alg", "none"),  // headers
+      claims                           // claims
+    );
+  }
+
+  /**
+   * Extract GrantedAuthorities from admin roles, prefixing with ROLE_
+   */
+  private Collection<GrantedAuthority> extractAuthorities(String[] adminRoles) {
+    if (adminRoles == null || adminRoles.length == 0) {
+      return Collections.emptyList();
+    }
+    return Arrays.stream(adminRoles)
+      .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
+      .collect(Collectors.toList());
   }
 
   /**

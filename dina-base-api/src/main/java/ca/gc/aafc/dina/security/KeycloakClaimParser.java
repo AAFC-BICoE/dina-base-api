@@ -19,6 +19,10 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public final class KeycloakClaimParser {
 
+  public static final String AGENT_IDENTIFIER_CLAIM_KEY = "agent-identifier";
+  public static final String IS_SERVICE_ACCOUNT_CLAIM_KEY = "is-service-account";
+  public static final String GROUPS_CLAIM_KEY = "groups";
+
   private KeycloakClaimParser() {
   }
 

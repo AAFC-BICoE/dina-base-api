@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 

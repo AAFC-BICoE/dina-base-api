@@ -78,15 +78,15 @@ public class DinaMappingRegistry {
   public DinaMappingRegistry(@NonNull Class<?> resourceClass, boolean ignoreNonMatchingAttributeType) {
     resourceGraph = initGraph(resourceClass, new HashSet<>(), ignoreNonMatchingAttributeType);
 
-    Map<Class<?>, Set<String>> attributesPerClass = new HashMap<>();
+    Map<Class<?>, Set<String>> localAttributesPerClass = new HashMap<>();
 
     for (var entry : resourceGraph.entrySet()) {
-      attributesPerClass.put(entry.getKey(), entry.getValue().getAttributes()
+      localAttributesPerClass.put(entry.getKey(), entry.getValue().getAttributes()
         .stream().map(DinaAttribute::attributeName).collect(Collectors.toSet()));
     }
 
     // keep immutable structures
-    this.attributesPerClass = Map.copyOf(attributesPerClass);
+    this.attributesPerClass = Map.copyOf(localAttributesPerClass);
   }
 
   private static Map<Class<?>, DinaResourceEntry> initGraph(Class<?> resourceClass,

@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.messaging;
 
+import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +14,7 @@ public class DinaTestMessage implements DinaMessage {
 
   public static final String TYPE =  "DinaTestMessage";
   private String name;
+  private OffsetDateTime createdOn;
 
   @Override
   public String getType() {

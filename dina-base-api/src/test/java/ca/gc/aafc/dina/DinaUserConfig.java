@@ -27,7 +27,7 @@ public class DinaUserConfig {
   }
 
   @Service
-  public class DepartmentDinaService extends DefaultDinaService<Department> {
+  public static class DepartmentDinaService extends DefaultDinaService<Department> {
 
     public DepartmentDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
       super(baseDAO, sv);
@@ -45,7 +45,7 @@ public class DinaUserConfig {
   }
 
   @Service
-  public class EmployeeDinaService extends DefaultDinaService<Employee> {
+  public static class EmployeeDinaService extends DefaultDinaService<Employee> {
     public EmployeeDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
       super(baseDAO, sv);
     }
@@ -57,7 +57,7 @@ public class DinaUserConfig {
   }
 
   @Service
-  public class VocabularyDinaService extends DefaultDinaService<Vocabulary> {
+  public static class VocabularyDinaService extends DefaultDinaService<Vocabulary> {
 
     public VocabularyDinaService(@NonNull BaseDAO baseDAO, SmartValidator sv) {
       super(baseDAO, sv);

@@ -19,18 +19,18 @@ import org.hibernate.annotations.NaturalId;
 import org.hibernate.jpa.QueryHints;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityGraph;
-import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceUnitUtil;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.EntityGraph;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Id;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceUnitUtil;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -386,14 +386,21 @@ public class BaseDAO {
   }
 
   /**
-   * Returns a reference to an entity that should exist without actually loading it. Useful to set
-   * relationships without loading the entity.
+   * Returns a reference (lazy proxy) for an entity identified by its natural ID value.
+   * Returns null if the natural ID is null.
+   * Useful to set relationships without loading the entity.
    *
-   * @param entityClass
-   * @param naturalId
-   * @return
+   * @param <T> the entity type
+   * @param entityClass the entity class
+   * @param naturalId the natural ID value
+   * @return a lazy-loaded entity proxy, or null if naturalId is null
    */
   public <T> T getReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
+
+    if (naturalId == null) {
+      return null;
+    }
+
     SimpleNaturalIdLoadAccess<T> loadAccess = entityManager.unwrap(Session.class)
         .bySimpleNaturalId(entityClass);
     return loadAccess.getReference(naturalId);

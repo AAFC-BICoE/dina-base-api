@@ -8,9 +8,13 @@ spring:
     password: test
     change-log: classpath:/db/changelog/db.changelog-master.xml
     contexts: schema-change, initial-data
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://keycloak.example.com/auth/realms/my-realm
+          jwk-set-uri: https://keycloak.example.com/auth/realms/my-realm/protocol/openid-connect/certs
 keycloak.enabled: false
-crnk:
-  allow-unknown-attributes: true
 embedded.postgresql:
   enabled: true
   # Need to specify the version the same as in Production

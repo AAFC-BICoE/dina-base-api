@@ -2,9 +2,9 @@ package ca.gc.aafc.dina.jpa;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import java.util.List;
 
 /**

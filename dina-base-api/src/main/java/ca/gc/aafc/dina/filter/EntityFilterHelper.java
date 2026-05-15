@@ -12,13 +12,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.FetchParent;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.FetchParent;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Root;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 
@@ -126,6 +126,11 @@ public final class EntityFilterHelper {
         }
       } catch (IllegalArgumentException iaEx) {
         //  if attribute of the given name does not exist
+
+        // unwrap exception if possible
+        if (iaEx.getCause() != null) {
+          throw new UnknownAttributeException(iaEx.getCause());
+        }
         throw new UnknownAttributeException(iaEx);
       }
 

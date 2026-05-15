@@ -2,7 +2,7 @@ package ca.gc.aafc.dina.validation;
 
 import java.util.List;
 import java.util.Optional;
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;

@@ -1,7 +1,7 @@
 package ca.gc.aafc.dina.vocabulary;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
 

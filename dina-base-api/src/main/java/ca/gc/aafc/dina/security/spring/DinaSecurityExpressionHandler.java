@@ -1,6 +1,9 @@
 package ca.gc.aafc.dina.security.spring;
 
+import java.util.function.Supplier;
+
 import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.expression.EvaluationContext;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.authentication.AuthenticationTrustResolver;
@@ -12,6 +15,12 @@ import org.springframework.security.core.Authentication;
  */
 public class DinaSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
   private final AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
+
+  @Override
+  public EvaluationContext createEvaluationContext(Supplier<Authentication> authentication,
+                                                   MethodInvocation invocation) {
+    return createEvaluationContext(authentication.get(), invocation);
+  }
 
   @Override
   protected MethodSecurityExpressionOperations createSecurityExpressionRoot(

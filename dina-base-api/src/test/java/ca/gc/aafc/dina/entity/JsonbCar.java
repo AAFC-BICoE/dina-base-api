@@ -1,17 +1,18 @@
 package ca.gc.aafc.dina.entity;
 
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,6 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class JsonbCar implements DinaEntity {
 
   @Id
@@ -33,11 +33,11 @@ public class JsonbCar implements DinaEntity {
   @NaturalId
   private UUID uuid;
 
-  @Type(type = "jsonb")
+  @Type(JsonType.class)
   @Column(columnDefinition = "jsonb")
   private Map<String, Object> jsonData;
 
-  @Type(type = "jsonb")
+  @Type(JsonType.class)
   @Column(columnDefinition = "jsonb")
   private List<CarDetails> jsonListData;
 

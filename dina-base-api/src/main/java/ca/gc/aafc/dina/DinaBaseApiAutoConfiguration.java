@@ -14,7 +14,7 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.Locale;
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 @Configuration
 public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {

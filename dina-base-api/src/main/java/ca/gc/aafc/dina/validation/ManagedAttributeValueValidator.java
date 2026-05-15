@@ -15,11 +15,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import javax.inject.Named;
+import jakarta.inject.Named;
 import lombok.NonNull;
 
-// CHECKSTYLE:OFF NoFinalizer
-// CHECKSTYLE:OFF SuperFinalize
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
 
   private static final String MANAGED_ATTRIBUTE_INVALID_VALUE = "managedAttribute.value.invalid";
@@ -179,10 +177,5 @@ public class ManagedAttributeValueValidator<E extends ManagedAttribute> implemen
 
   protected String getMessageForKey(String key, Object... objects) {
     return messageSource.getMessage(key, objects, LocaleContextHolder.getLocale());
-  }
-
-  // Avoid CT_CONSTRUCTOR_THROW
-  protected final void finalize() {
-    // no-op
   }
 }

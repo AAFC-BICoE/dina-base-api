@@ -27,8 +27,8 @@ import org.springframework.context.annotation.Primary;
 
 import java.util.Optional;
 import java.util.UUID;
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

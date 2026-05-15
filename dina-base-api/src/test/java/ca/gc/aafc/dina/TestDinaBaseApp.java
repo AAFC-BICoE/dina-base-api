@@ -1,25 +1,24 @@
 package ca.gc.aafc.dina;
 
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
 import org.springframework.validation.SmartValidator;
 
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.jpa.BaseDAO;
+import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
+import ca.gc.aafc.dina.security.KeycloakClaimParser;
 import ca.gc.aafc.dina.security.auth.GroupAuthorizationService;
+import ca.gc.aafc.dina.security.oauth2.DinaAuthenticationToken;
 import ca.gc.aafc.dina.service.DefaultDinaServiceTest.DinaServiceTestImplementation;
 
+import jakarta.inject.Inject;
 import java.util.List;
-import javax.inject.Inject;
-
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.toedter.spring.hateoas.jsonapi.JsonApiConfiguration;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Small test application running on dina-base-api
@@ -50,7 +49,6 @@ public class TestDinaBaseApp {
     return new DinaServiceTestImplementation(baseDAO, sv);
   }
 
-
   /**
    * Mocks a given token to return a agent identifier and list of given groups.
    *
@@ -59,29 +57,18 @@ public class TestDinaBaseApp {
    */
   public static void mockToken(
     List<String> keycloakGroupClaim,
-    KeycloakAuthenticationToken mockToken
+    DinaAuthenticationToken mockToken
   ) {
     // Mock the needed fields on the keycloak token:
     Mockito.when(mockToken.getName()).thenReturn("test-user");
-    mockClaim(mockToken, "agent-identifier", "a2cef694-10f1-42ec-b403-e0f8ae9d2ae6");
-    mockClaim(mockToken, "groups", keycloakGroupClaim);
+    Mockito.when(mockToken.getUser()).thenReturn(toDinaUser(keycloakGroupClaim));
   }
 
-  /**
-   * Mock a given tokens claims by returning a given value for the given claim key.
-   *
-   * @param token - token holding claims
-   * @param key   - key of claim to mock
-   * @param value - return value of the claim
-   */
-  public static void mockClaim(KeycloakAuthenticationToken token, String key, Object value) {
-    Mockito.when(
-      token.getAccount()
-        .getKeycloakSecurityContext()
-        .getToken()
-        .getOtherClaims()
-        .get(key))
-      .thenReturn(value);
+  private static DinaAuthenticatedUser toDinaUser(List<String> keycloakGroupClaim) {
+    return new DinaAuthenticatedUser("test-user",
+      null,
+      UUID.randomUUID().toString(),
+      KeycloakClaimParser.parseGroupClaims(keycloakGroupClaim),
+      Set.of(), false);
   }
-
 }

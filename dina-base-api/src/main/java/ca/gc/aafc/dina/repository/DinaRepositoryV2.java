@@ -60,8 +60,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import javax.persistence.criteria.Predicate;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 
@@ -262,7 +262,6 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
    * Handles bulk updates.
    * @param jsonApiBulkDocument
    * @param dtoCustomizer
-   * @throws ResourceNotFoundException
    */
   public ResponseEntity<RepresentationModel<?>> handleBulkCreate(JsonApiBulkDocument jsonApiBulkDocument,
                                Consumer<D> dtoCustomizer) {
@@ -273,7 +272,6 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     }
 
     JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(dtos, null);
-
     return ResponseEntity.ok().body(builder.build());
   }
 

@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.sql.Date;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import ca.gc.aafc.dina.BasePostgresItContext;
 import com.fasterxml.jackson.databind.JsonMappingException;

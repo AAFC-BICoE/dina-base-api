@@ -2,8 +2,8 @@ package ca.gc.aafc.dina.validation;
 
 import java.time.format.DateTimeParseException;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 import ca.gc.aafc.dina.datetime.ISODateTime;
 import ca.gc.aafc.dina.datetime.ISODateTime.Format;

@@ -7,11 +7,11 @@ import java.util.Map;
 import java.util.function.Consumer;
 import lombok.NonNull;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.validation.groups.Default;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.validation.groups.Default;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;

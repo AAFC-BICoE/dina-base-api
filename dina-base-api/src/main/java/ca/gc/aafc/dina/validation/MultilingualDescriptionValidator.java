@@ -9,7 +9,7 @@ import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualDescription.MultilingualPair;
 
 import java.util.List;
-import javax.inject.Named;
+import jakarta.inject.Named;
 import lombok.NonNull;
 
 @Component

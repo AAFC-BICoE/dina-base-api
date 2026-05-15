@@ -10,8 +10,12 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Optional;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import lombok.extern.log4j.Log4j2;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * Configuration of RabbitMQ related beans
@@ -48,7 +52,10 @@ public class RabbitMQConfig {
 
   @Bean
   protected MessageConverter createMessageConverter() {
-    return new Jackson2JsonMessageConverter();
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    objectMapper.registerModule(new JavaTimeModule());
+    return new Jackson2JsonMessageConverter(objectMapper);
   }
 
   @Bean

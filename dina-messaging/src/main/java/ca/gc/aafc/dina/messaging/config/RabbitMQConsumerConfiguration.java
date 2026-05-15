@@ -3,21 +3,20 @@ package ca.gc.aafc.dina.messaging.config;
 
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
-import org.springframework.context.annotation.Bean;
 
 /**
+ * Base class for creating RabbitMQ consumer queues with Dead Letter Exchange (DLX) support.
  *
- * Creates a bean representing the queue.
- * A Dead Letter Queue (DLQ) is also created to store messages that can't be processed (mostly due to unhandled exceptions).
+ * Messages that fail processing (mostly due to unhandled exceptions) are automatically routed to the configured Dead Letter Queue.
+ * All queues use the default exchange ("") and queue name as routing key.
  *
- * All queues (including DLQ) are using the default exchange ("", empty string) and default routing key (name of the queue).
- *
- * This class is not declared as Configuration by default since the number of queues is unknown.
- * If more than 1 queue is required, override the create methods to set a name ont he beans otherwise only 1 will be created.
- *
- * Create a concrete class and add the 2 following annotations:
- * Configuration
- * ConditionalOnProperty(prefix = "dina.messaging", name = "isConsumer", havingValue = "true")
+ * This is a base class only - not a Spring configuration.
+ * Concrete subclasses must:
+ * <ul>
+ *   <li>Add @Configuration annotation</li>
+ *   <li>Add ConditionalOnProperty(prefix = "dina.messaging", name = "isConsumer", havingValue = "true")</li>
+ *   <li>Add 2 methods createQueueBean() and createDeadLetterQueueBean() with @Bean annotations and explicit bean names</li>
+ * </ul>
  */
 public class RabbitMQConsumerConfiguration {
 
@@ -33,7 +32,6 @@ public class RabbitMQConsumerConfiguration {
    * Creates a Queue with a Dead Letter Exchange.
    * @return
    */
-  @Bean
   public Queue createQueue() {
     return QueueBuilder.durable(queueName)
       .deadLetterExchange("")
@@ -41,9 +39,7 @@ public class RabbitMQConsumerConfiguration {
       .build();
   }
 
-  @Bean
   public Queue createDeadLetterQueue() {
     return QueueBuilder.durable(deadLetterQueueName).build();
   }
-
 }

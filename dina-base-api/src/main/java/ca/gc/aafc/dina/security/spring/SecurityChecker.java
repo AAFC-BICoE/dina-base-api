@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.security.spring;
 
 import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -9,6 +10,7 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.security.access.expression.ExpressionUtils;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.util.SimpleMethodInvocation;
@@ -39,11 +41,16 @@ public final class SecurityChecker {
     private final String value;
   }
 
-  private final MethodSecurityConfig config;
+  private final MethodSecurityExpressionHandler expressionHandler;
+
   private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
-  public SecurityChecker(Optional<MethodSecurityConfig> config) {
-    this.config = config.orElse(null);
+  /**
+   *
+   * @param expressionHandler optional Provided by {@link MethodSecurityConfig} if Keycloak is enabled
+   */
+  public SecurityChecker(Optional<MethodSecurityExpressionHandler> expressionHandler) {
+    this.expressionHandler = expressionHandler.orElse(null);
   }
 
   /**
@@ -56,7 +63,7 @@ public final class SecurityChecker {
   public Set<String> getPermissionsForObject(@NonNull Object target, @NonNull DinaAuthorizationService as) {
     Set<String> permissions = new HashSet<>();
 
-    if (config == null) {
+    if (expressionHandler == null) {
       return permissions;
     }
 
@@ -79,13 +86,31 @@ public final class SecurityChecker {
   ) {
     Method preAuthorizeMethod = MethodUtils.getMatchingMethod(as.getClass(), methodName, Object.class);
 
-    EvaluationContext evaluationContext = config.createExpressionHandler().createEvaluationContext(
+    EvaluationContext evaluationContext = expressionHandler.createEvaluationContext(
       SecurityContextHolder.getContext().getAuthentication(),
       new SimpleMethodInvocation(as, preAuthorizeMethod, entity));
 
     return ExpressionUtils.evaluateAsBoolean(
       PARSER.parseExpression(getPreAuthorizeExpression(preAuthorizeMethod)), evaluationContext);
   }
+
+//  private boolean checkObjectPreAuthorized(
+//    @NonNull DinaAuthorizationService as,
+//    @NonNull Object entity,
+//    @NonNull String methodName
+//  ) {
+//    Method preAuthorizeMethod = MethodUtils.getMatchingMethod(as.getClass(), methodName, Object.class);
+//
+//    // Create a MethodInvocation instead of SimpleMethodInvocation
+//    MethodInvocation invocation = new MethodInvocationImpl(as, preAuthorizeMethod, new Object[]{entity});
+//
+//    EvaluationContext evaluationContext = config.createExpressionHandler().createEvaluationContext(
+//      SecurityContextHolder.getContext().getAuthentication(),
+//      invocation);
+//
+//    return ExpressionUtils.evaluateAsBoolean(
+//      PARSER.parseExpression(getPreAuthorizeExpression(preAuthorizeMethod)), evaluationContext);
+//  }
 
   private String getPreAuthorizeExpression(Method matchingMethod) {
     PreAuthorize annotation = matchingMethod.getAnnotation(PreAuthorize.class);

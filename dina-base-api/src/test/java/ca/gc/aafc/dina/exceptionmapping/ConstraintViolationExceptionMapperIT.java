@@ -23,8 +23,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import javax.transaction.Transactional;
-import javax.validation.ConstraintViolationException;
+import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolationException;
 
 @SpringBootTest(classes = {DinaRepositoryV2IT.RepoV2TestConfig.class, PersonTestConfig.class})
 @Transactional

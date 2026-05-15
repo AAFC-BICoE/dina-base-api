@@ -26,9 +26,13 @@ public class UserMessageNotification implements DinaMessage {
   private String type = TYPE;
 
   private UUID userIdentifier;
+  private String username;
 
   private String group;
+
   private String notificationType;
+  private Map<String, String> notificationParams;
+
   private String title;
   private String message;
 

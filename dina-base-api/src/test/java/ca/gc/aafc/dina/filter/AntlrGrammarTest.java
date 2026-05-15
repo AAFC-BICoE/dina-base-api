@@ -176,6 +176,12 @@ public class AntlrGrammarTest {
     queryStr = "fiql=" + fiql;
     queryComponent = QueryStringParser.parse(queryStr);
     assertEquals(fiql, queryComponent.getFiql());
+
+    // Check values with accent
+    fiql = "name==*éüßãâä*";
+    queryStr = "fiql=" + fiql;
+    queryComponent = QueryStringParser.parse(queryStr);
+    assertEquals(fiql, queryComponent.getFiql());
   }
 
 }

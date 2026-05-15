@@ -1,24 +1,24 @@
 package ca.gc.aafc.dina.entity;
 
 import io.hypersistence.utils.hibernate.type.array.StringArrayType;
-import javax.persistence.Transient;
-import javax.validation.constraints.Size;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Transient;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToOne;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -28,7 +28,6 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeDef(name = "string-array", typeClass = StringArrayType.class)
 public class Person implements DinaEntityIdentifiableByName {
 
   @Id
@@ -47,7 +46,7 @@ public class Person implements DinaEntityIdentifiableByName {
   private String group;
 
   @Column(name = "nick_names")
-  @Type(type = "string-array")
+  //@Type(type = "string-array")
   private String[] nickNames;
 
   // Simulates a json:api optional field
@@ -62,7 +61,7 @@ public class Person implements DinaEntityIdentifiableByName {
 
   private OffsetDateTime createdOn;
 
-  @OneToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "department_id")
   private Department department;
 

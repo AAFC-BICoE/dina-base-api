@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 

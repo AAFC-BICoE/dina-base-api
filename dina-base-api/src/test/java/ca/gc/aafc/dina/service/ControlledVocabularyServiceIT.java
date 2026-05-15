@@ -26,9 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.UUID;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.transaction.Transactional;
 import lombok.Setter;
 
 @Transactional
@@ -90,6 +90,7 @@ public class ControlledVocabularyServiceIT {
         .uuid(UUID.randomUUID())
         .group("grp")
         .name("Protocol Data Element 1")
+        .acceptedValues(new String[] {"a", "b"})
         .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
     assertEquals("protocol_data_element_1", controlledVocabularyItem.getKey());
 

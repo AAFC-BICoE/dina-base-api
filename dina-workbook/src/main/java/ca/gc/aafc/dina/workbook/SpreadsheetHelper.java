@@ -299,10 +299,12 @@ public final class SpreadsheetHelper {
       return fromStringFct.apply(value);
     }
 
-    value = value.toLowerCase();
-    for (E val : enumClass.getEnumConstants()) {
-      if (val.name().toLowerCase().equalsIgnoreCase(value)) {
-        return Optional.of(val);
+    if (enumClass != null) {
+      value = value.toLowerCase();
+      for (E val : enumClass.getEnumConstants()) {
+        if (val.name().equalsIgnoreCase(value)) {
+          return Optional.of(val);
+        }
       }
     }
     return Optional.empty();

@@ -7,7 +7,7 @@ import org.springframework.validation.Errors;
 import ca.gc.aafc.dina.entity.ControlledVocabulary;
 import ca.gc.aafc.dina.entity.ControlledVocabularyItem;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 public class ControlledVocabularyItemValidator extends DinaBaseValidator<ControlledVocabularyItem> {
 

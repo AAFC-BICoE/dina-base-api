@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
-import javax.validation.ValidationException;
+import jakarta.validation.ValidationException;
 import java.util.Optional;
 
 /**

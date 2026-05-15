@@ -9,7 +9,7 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.service.ControlledVocabularyItemService;
 import ca.gc.aafc.dina.service.ControlledVocabularyService;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 import lombok.NonNull;
 
 import static ca.gc.aafc.dina.entity.ControlledVocabulary.ControlledVocabularyClass.CONTROLLED_TERM;

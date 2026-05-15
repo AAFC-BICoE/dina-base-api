@@ -1,6 +1,6 @@
 package ca.gc.aafc.dina.validation;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.MessageSource;
