@@ -26,63 +26,55 @@ import org.apache.cxf.jaxrs.ext.search.jpa.JPACriteriaQueryVisitor;
  */
 public class EnumSafeJPACriteriaQueryVisitor<T, E> extends JPACriteriaQueryVisitor<T, E> {
 
-    public EnumSafeJPACriteriaQueryVisitor(EntityManager em,
-                                           Class<T> tClass,
-                                           Class<E> queryClass) {
-        super(em, tClass, queryClass);
+  public EnumSafeJPACriteriaQueryVisitor(EntityManager em,
+                                         Class<T> tClass,
+                                         Class<E> queryClass) {
+    super(em, tClass, queryClass);
+  }
+
+  public EnumSafeJPACriteriaQueryVisitor(EntityManager em,
+                                         Class<T> tClass,
+                                         Class<E> queryClass,
+                                         Map<String, String> fieldMap) {
+    super(em, tClass, queryClass, fieldMap);
+  }
+
+  public EnumSafeJPACriteriaQueryVisitor(EntityManager em,
+                                         Class<T> tClass,
+                                         Class<E> queryClass,
+                                         List<String> joinProps) {
+    super(em, tClass, queryClass, joinProps);
+  }
+
+  public EnumSafeJPACriteriaQueryVisitor(EntityManager em,
+                                         Class<T> tClass,
+                                         Class<E> queryClass,
+                                         Map<String, String> fieldMap,
+                                         List<String> joinProps) {
+    super(em, tClass, queryClass, fieldMap, joinProps);
+  }
+
+  @Override
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  protected Predicate doBuildPredicate(ConditionType ct, Path<?> path,
+                                       Class<?> valueClazz, Object value) {
+    if (valueClazz != null && valueClazz.isEnum()) {
+      return buildEnumPredicate(ct, path, value);
     }
+    // Non-enum: delegate to parent (original behavior preserved)
+    return super.doBuildPredicate(ct, path, valueClazz, value);
+  }
 
-    public EnumSafeJPACriteriaQueryVisitor(EntityManager em,
-                                           Class<T> tClass,
-                                           Class<E> queryClass,
-                                           Map<String, String> fieldMap) {
-        super(em, tClass, queryClass, fieldMap);
-    }
-
-    public EnumSafeJPACriteriaQueryVisitor(EntityManager em,
-                                           Class<T> tClass,
-                                           Class<E> queryClass,
-                                           List<String> joinProps) {
-        super(em, tClass, queryClass, joinProps);
-    }
-
-    public EnumSafeJPACriteriaQueryVisitor(EntityManager em,
-                                           Class<T> tClass,
-                                           Class<E> queryClass,
-                                           Map<String, String> fieldMap,
-                                           List<String> joinProps) {
-        super(em, tClass, queryClass, fieldMap, joinProps);
-    }
-
-    @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    protected Predicate doBuildPredicate(ConditionType ct, Path<?> path,
-                                         Class<?> valueClazz, Object value) {
-
-        if (valueClazz != null && valueClazz.isEnum()) {
-            return buildEnumPredicate(ct, path, value);
-        }
-
-        // Non-enum: delegate to parent (original behavior preserved)
-        return super.doBuildPredicate(ct, path, valueClazz, value);
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private Predicate buildEnumPredicate(ConditionType ct, Path<?> path, Object value) {
-        CriteriaBuilder cb = getCriteriaBuilder();
-
-        // Use path directly — no .as() — correct type inferred from field mapping
-        Expression exp = path;
-
-        return switch (ct) {
-            case EQUALS -> cb.equal(exp, value);
-            case NOT_EQUALS -> cb.notEqual(exp, value);
-            case GREATER_THAN -> cb.greaterThan(exp, (Comparable) value);
-            case GREATER_OR_EQUALS -> cb.greaterThanOrEqualTo(exp, (Comparable) value);
-            case LESS_THAN -> cb.lessThan(exp, (Comparable) value);
-            case LESS_OR_EQUALS -> cb.lessThanOrEqualTo(exp, (Comparable) value);
-            default -> throw new IllegalArgumentException(
-                "Unsupported condition type for enum: " + ct);
-        };
-    }
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private Predicate buildEnumPredicate(ConditionType ct, Path<?> path, Object value) {
+    CriteriaBuilder cb = getCriteriaBuilder();
+    // Use path directly — no .as() — correct type inferred from field mapping
+    Expression exp = path;
+    return switch (ct) {
+      case EQUALS -> cb.equal(exp, value);
+      case NOT_EQUALS -> cb.notEqual(exp, value);
+      default -> throw new IllegalArgumentException(
+        "Unsupported condition type for enum: " + ct);
+    };
+  }
 }
