@@ -120,7 +120,14 @@
       <groupId>com.github.tennaito</groupId>
       <artifactId>rsql-jpa</artifactId>
       <version>${rsql-jpa.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.eclipse.persistence</groupId>
+          <artifactId>javax.persistence</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
+
     <!-- JaVers auditing -->
     <dependency>
       <groupId>org.javers</groupId>
