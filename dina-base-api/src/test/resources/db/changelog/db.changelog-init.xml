@@ -6,6 +6,8 @@
 	context="schema-change">
 
 	<changeSet context="schema-change" id="init_create_department_related_tables" author="cgendreau">
+		<sql>CREATE TYPE person_type AS ENUM ('HUMAN', 'ROBOT');</sql>
+
 		<createTable tableName="department_type">
 			<column autoIncrement="true" name="id" type="SERIAL">
 				<constraints primaryKey="true" primaryKeyName="pk_department_type_id" />
@@ -27,6 +29,7 @@
 			<column name="room" type="integer"/>
 			<column name="group_name" type="varchar(255)"/>
 			<column name="nick_names" type="text[]"/>
+			<column name="person_type" type="person_type"/>
 			<column name="created_by" type="varchar(255)"/>
 			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
 		</createTable>
