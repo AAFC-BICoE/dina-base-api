@@ -1,7 +1,11 @@
 package ca.gc.aafc.dina.entity;
 
-import io.hypersistence.utils.hibernate.type.array.StringArrayType;
+import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.ManyToOne;
+import org.hibernate.annotations.Type;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -10,7 +14,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.NaturalId;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,7 +21,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.OneToOne;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -57,9 +59,18 @@ public class Person implements DinaEntityIdentifiableByName {
   @Transient
   private String augmentedData;
 
+  @Type(PostgreSQLEnumType.class)
+  @Enumerated(EnumType.STRING)
+  @Column(columnDefinition = "person_type")
+  private PersonType personType;
+
   private String createdBy;
 
   private OffsetDateTime createdOn;
+
+  public enum PersonType {
+    HUMAN, ROBOT
+  }
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "department_id")
