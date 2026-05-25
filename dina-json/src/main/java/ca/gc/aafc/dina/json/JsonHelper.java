@@ -1,15 +1,27 @@
 package ca.gc.aafc.dina.json;
 
-import java.util.Objects;
-import java.util.Optional;
-
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
+import com.jayway.jsonpath.TypeRef;
+import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
+import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
+
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Utility methods to work with Jackson's Json objects.
  */
 public final class JsonHelper {
+
+  private static final Configuration JSONPATH_CONFIG = Configuration.builder()
+    .jsonProvider(new JacksonJsonNodeJsonProvider())
+    .mappingProvider(new JacksonMappingProvider())
+    .build();
 
   private JsonHelper() {
     // utility class
@@ -74,5 +86,22 @@ public final class JsonHelper {
    */
   public static String safeAsText(JsonNode objNode, String fieldName) {
     return objNode.has(fieldName) ? objNode.get(fieldName).asText() : "";
+  }
+
+  /**
+   * Generic method to find element in JsonNode
+   * @param node the json node
+   * @param jsonPathExpression the JsonPath expression
+   * @param typeRef the TypeRef specifying the return type
+   * @return the result of the specified type, or null if not found
+   */
+  public static <T> T findInDocument(JsonNode node, String jsonPathExpression,
+                                     TypeRef<T> typeRef) {
+    try {
+      DocumentContext dc = JsonPath.using(JSONPATH_CONFIG).parse(node);
+      return dc.read(jsonPathExpression, typeRef);
+    } catch (PathNotFoundException pnf) {
+      return null;
+    }
   }
 }

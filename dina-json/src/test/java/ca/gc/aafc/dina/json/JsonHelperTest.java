@@ -1,12 +1,11 @@
 package ca.gc.aafc.dina.json;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.jayway.jsonpath.TypeRef;
 
 import ca.gc.aafc.dina.jsonapi.JSONApiDocumentStructure;
 
@@ -14,7 +13,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 public class JsonHelperTest {
+
+  private static final Resource resource = new ClassPathResource("jsonhelper-test-data.json");
 
   @Test
   public void onUtilityFunctions_expectedResultReturned(){
@@ -46,5 +52,15 @@ public class JsonHelperTest {
     assertTrue(JsonHelper.safeTextEquals(attributeNode.get(), "attribute1", "value1"));
     assertFalse(JsonHelper.safeTextEquals(attributeNode.get(), "attribute1", "wrongValue"));
     assertFalse(JsonHelper.safeTextEquals(attributeNode.get(), "attributeXYZ", "value1"));
+  }
+
+  @Test
+  public void testFindActiveSpecimen() throws IOException {
+    JsonNode node = TestConstants.OBJECT_MAPPER.readTree(resource.getInputStream());
+    List<JsonNode> result = JsonHelper.findInDocument(node,
+      "$.data[?(@.attributes.isActive == true)]", new TypeRef<List<JsonNode>>(){});
+
+    assertEquals("spec-002", result.get(0).get("id").asText());
+    assertTrue(result.get(0).get("attributes").get("isActive").asBoolean());
   }
 }
