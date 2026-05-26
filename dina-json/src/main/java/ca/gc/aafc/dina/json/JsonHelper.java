@@ -10,6 +10,7 @@ import com.jayway.jsonpath.TypeRef;
 import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -22,6 +23,9 @@ public final class JsonHelper {
     .jsonProvider(new JacksonJsonNodeJsonProvider())
     .mappingProvider(new JacksonMappingProvider())
     .build();
+
+  private static final TypeRef<List<JsonNode>> JSON_NODE_TYPEREF = new TypeRef<>() {
+  };
 
   private JsonHelper() {
     // utility class
@@ -89,13 +93,41 @@ public final class JsonHelper {
   }
 
   /**
+   * Find first matching element in JsonNode
+   * @param node the json node
+   * @param jsonPathExpression the JsonPath expression
+   * @return the first matching JsonNode, or null if not found
+   * @see <a href="https://github.com/json-path/JsonPath">JsonPath GitHub Repository</a>
+   */
+  public static JsonNode findOneInJsonNode(JsonNode node, String jsonPathExpression) {
+    List<JsonNode> result = findInJsonNode(node, jsonPathExpression, JSON_NODE_TYPEREF);
+    if (result != null && !result.isEmpty()) {
+      return result.getFirst();
+    }
+    return null;
+  }
+
+
+  /**
+   * Find all matching elements in JsonNode
+   * @param node the json node
+   * @param jsonPathExpression the JsonPath expression
+   * @return List of matching JsonNodes, or empty list if not found
+   * @see <a href="https://github.com/json-path/JsonPath">JsonPath GitHub Repository</a>
+   */
+  public static List<JsonNode> findAllInJsonNode(JsonNode node, String jsonPathExpression) {
+    List<JsonNode> result = findInJsonNode(node, jsonPathExpression, JSON_NODE_TYPEREF);
+    return result != null ? result : List.of();
+  }
+
+  /**
    * Generic method to find element in JsonNode
    * @param node the json node
    * @param jsonPathExpression the JsonPath expression
    * @param typeRef the TypeRef specifying the return type
    * @return the result of the specified type, or null if not found
    */
-  public static <T> T findInDocument(JsonNode node, String jsonPathExpression,
+  public static <T> T findInJsonNode(JsonNode node, String jsonPathExpression,
                                      TypeRef<T> typeRef) {
     try {
       DocumentContext dc = JsonPath.using(JSONPATH_CONFIG).parse(node);

@@ -11,6 +11,7 @@ import ca.gc.aafc.dina.jsonapi.JSONApiDocumentStructure;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -57,10 +58,24 @@ public class JsonHelperTest {
   @Test
   public void testFindActiveSpecimen() throws IOException {
     JsonNode node = TestConstants.OBJECT_MAPPER.readTree(resource.getInputStream());
-    List<JsonNode> result = JsonHelper.findInDocument(node,
-      "$.data[?(@.attributes.isActive == true)]", new TypeRef<List<JsonNode>>(){});
+    JsonNode result = JsonHelper.findOneInJsonNode(node,
+      "$.data[?(@.attributes.isActive == true)]");
 
-    assertEquals("spec-002", result.get(0).get("id").asText());
-    assertTrue(result.get(0).get("attributes").get("isActive").asBoolean());
+    assertNotNull(result);
+    assertEquals("spec-002", result.get("id").asText());
+    assertTrue(result.get("attributes").get("isActive").asBoolean());
+  }
+
+  @Test
+  public void testGetAllSpecimenIds() throws IOException {
+    JsonNode jsonNode = TestConstants.OBJECT_MAPPER.readTree(resource.getInputStream());
+    List<JsonNode> results = JsonHelper.findAllInJsonNode(jsonNode,
+      "$.data[*].id");
+
+    assertNotNull(results);
+    assertEquals(3, results.size());
+    assertEquals("spec-001", results.get(0).asText());
+    assertEquals("spec-002", results.get(1).asText());
+    assertEquals("spec-003", results.get(2).asText());
   }
 }
