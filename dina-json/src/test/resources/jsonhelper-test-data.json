@@ -1,0 +1,77 @@
+{
+  "data": [
+    {
+      "type": "specimen",
+      "id": "spec-001",
+      "attributes": {
+        "dwcRecordedDate": "2023-01-15",
+        "isActive": false,
+        "dwcRecordNumber": "REC-001"
+      },
+      "relationships": {
+        "collection": {
+          "data": {
+            "type": "collection",
+            "id": "coll-A"
+          }
+        }
+      }
+    },
+    {
+      "type": "specimen",
+      "id": "spec-002",
+      "attributes": {
+        "dwcRecordedDate": "2023-02-20",
+        "isActive": true,
+        "dwcRecordNumber": "REC-002"
+      },
+      "relationships": {
+        "collection": {
+          "data": {
+            "type": "collection",
+            "id": "coll-B"
+          }
+        }
+      }
+    },
+    {
+      "type": "specimen",
+      "id": "spec-003",
+      "attributes": {
+        "dwcRecordedDate": "2023-03-10",
+        "isActive": true,
+        "dwcRecordNumber": "REC-003"
+      },
+      "relationships": {
+        "collection": {
+          "data": {
+            "type": "collection",
+            "id": "coll-A"
+          }
+        }
+      }
+    }
+  ],
+  "included": [
+    {
+      "type": "collection",
+      "id": "coll-A",
+      "attributes": {
+        "name": "Insects Collection",
+        "code": "INS"
+      }
+    },
+    {
+      "type": "collection",
+      "id": "coll-B",
+      "attributes": {
+        "name": "Plants Collection",
+        "code": "PLT"
+      }
+    }
+  ],
+  "meta": {
+    "totalResourceCount": 3,
+    "version": "1.0"
+  }
+}
