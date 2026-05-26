@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.Option;
+import com.jayway.jsonpath.ParseContext;
 import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.TypeRef;
 import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
@@ -19,10 +21,12 @@ import java.util.Optional;
  */
 public final class JsonHelper {
 
-  private static final Configuration JSONPATH_CONFIG = Configuration.builder()
-    .jsonProvider(new JacksonJsonNodeJsonProvider())
-    .mappingProvider(new JacksonMappingProvider())
-    .build();
+  private static final ParseContext PARSE_CONTEXT = JsonPath.using(
+    Configuration.builder()
+      .jsonProvider(new JacksonJsonNodeJsonProvider())
+      .mappingProvider(new JacksonMappingProvider())
+      .options(Option.ALWAYS_RETURN_LIST)
+      .build());
 
   private static final TypeRef<List<JsonNode>> JSON_NODE_TYPEREF = new TypeRef<>() {
   };
@@ -101,10 +105,7 @@ public final class JsonHelper {
    */
   public static JsonNode findOneInJsonNode(JsonNode node, String jsonPathExpression) {
     List<JsonNode> result = findInJsonNode(node, jsonPathExpression, JSON_NODE_TYPEREF);
-    if (result != null && !result.isEmpty()) {
-      return result.getFirst();
-    }
-    return null;
+    return result != null && !result.isEmpty() ? result.getFirst() : null;
   }
 
 
@@ -130,7 +131,7 @@ public final class JsonHelper {
   public static <T> T findInJsonNode(JsonNode node, String jsonPathExpression,
                                      TypeRef<T> typeRef) {
     try {
-      DocumentContext dc = JsonPath.using(JSONPATH_CONFIG).parse(node);
+      DocumentContext dc = PARSE_CONTEXT.parse(node);
       return dc.read(jsonPathExpression, typeRef);
     } catch (PathNotFoundException pnf) {
       return null;
