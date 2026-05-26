@@ -78,4 +78,14 @@ public class JsonHelperTest {
     assertEquals("spec-002", results.get(1).asText());
     assertEquals("spec-003", results.get(2).asText());
   }
+
+  @Test
+  public void testFindOneInJsonNode_definitePath() throws IOException {
+    JsonNode node = TestConstants.OBJECT_MAPPER.readTree(resource.getInputStream());
+    JsonNode result = JsonHelper.findOneInJsonNode(node, "$.data");
+
+    assertNotNull(result);
+    assertTrue(result.isArray());
+    assertEquals(3, result.size());
+  }
 }
