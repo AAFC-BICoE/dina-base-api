@@ -1,15 +1,35 @@
 package ca.gc.aafc.dina.json;
 
-import java.util.Objects;
-import java.util.Optional;
-
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.Option;
+import com.jayway.jsonpath.ParseContext;
+import com.jayway.jsonpath.PathNotFoundException;
+import com.jayway.jsonpath.TypeRef;
+import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
+import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Utility methods to work with Jackson's Json objects.
  */
 public final class JsonHelper {
+
+  private static final ParseContext PARSE_CONTEXT = JsonPath.using(
+    Configuration.builder()
+      .jsonProvider(new JacksonJsonNodeJsonProvider())
+      .mappingProvider(new JacksonMappingProvider())
+      .options(Option.ALWAYS_RETURN_LIST)
+      .build());
+
+  private static final TypeRef<List<JsonNode>> JSON_NODE_TYPEREF = new TypeRef<>() {
+  };
 
   private JsonHelper() {
     // utility class
@@ -74,5 +94,47 @@ public final class JsonHelper {
    */
   public static String safeAsText(JsonNode objNode, String fieldName) {
     return objNode.has(fieldName) ? objNode.get(fieldName).asText() : "";
+  }
+
+  /**
+   * Find first matching element in JsonNode
+   * @param node the json node
+   * @param jsonPathExpression the JsonPath expression
+   * @return the first matching JsonNode, or null if not found
+   * @see <a href="https://github.com/json-path/JsonPath">JsonPath GitHub Repository</a>
+   */
+  public static JsonNode findOneInJsonNode(JsonNode node, String jsonPathExpression) {
+    List<JsonNode> result = findInJsonNode(node, jsonPathExpression, JSON_NODE_TYPEREF);
+    return result != null && !result.isEmpty() ? result.getFirst() : null;
+  }
+
+
+  /**
+   * Find all matching elements in JsonNode
+   * @param node the json node
+   * @param jsonPathExpression the JsonPath expression
+   * @return List of matching JsonNodes, or empty list if not found
+   * @see <a href="https://github.com/json-path/JsonPath">JsonPath GitHub Repository</a>
+   */
+  public static List<JsonNode> findAllInJsonNode(JsonNode node, String jsonPathExpression) {
+    List<JsonNode> result = findInJsonNode(node, jsonPathExpression, JSON_NODE_TYPEREF);
+    return result != null ? result : List.of();
+  }
+
+  /**
+   * Generic method to find element in JsonNode
+   * @param node the json node
+   * @param jsonPathExpression the JsonPath expression
+   * @param typeRef the TypeRef specifying the return type
+   * @return the result of the specified type, or null if not found
+   */
+  public static <T> T findInJsonNode(JsonNode node, String jsonPathExpression,
+                                     TypeRef<T> typeRef) {
+    try {
+      DocumentContext dc = PARSE_CONTEXT.parse(node);
+      return dc.read(jsonPathExpression, typeRef);
+    } catch (PathNotFoundException pnf) {
+      return null;
+    }
   }
 }
