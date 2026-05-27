@@ -46,7 +46,7 @@ import java.util.function.Function;
 @Component
 public class BaseDAO {
 
-  public static final String LOAD_GRAPH_HINT_KEY = "javax.persistence.loadgraph";
+  public static final String LOAD_GRAPH_HINT_KEY = "jakarta.persistence.loadgraph";
   public static final int DEFAULT_STREAM_FETCH_SIZE = 100;
 
   public static final int DEFAULT_LIMIT = 100;

@@ -9,7 +9,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.168-SNAPSHOT</version>
+    <version>0.169-SNAPSHOT</version>
   </parent>
 
   <artifactId>dina-test-support</artifactId>
@@ -27,20 +27,9 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-json</artifactId>
-      <version>0.168-SNAPSHOT</version>
+      <version>0.169-SNAPSHOT</version>
     </dependency>
-
-    <dependency>
-      <groupId>io.github.aafc-bicoe</groupId>
-      <artifactId>dina-search</artifactId>
-      <version>0.168-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.eclipse.parsson</groupId>
-      <artifactId>parsson</artifactId>
-      <version>${eclipse-parsson.version}</version>
-    </dependency>
+    
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>

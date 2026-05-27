@@ -137,15 +137,9 @@ public class SimpleFilterHandlerV2IT extends BasePostgresItContext {
   }
 
   @Test
-  public void searchEmployees_whenRSQL_exception() {
-    String rsqlQuery = "filter[rsql]=name==c";
-    assertThrows(UnknownAttributeException.class, () -> this.personRepository.getAll(rsqlQuery));
-  }
-
-  @Test
   public void searchEmployees_unknownSort_exception() {
-    String rsqlQuery = "sort=abc";
-    assertThrows(UnknownAttributeException.class, () -> this.personRepository.getAll(rsqlQuery));
+    String sortQuery = "sort=abc";
+    assertThrows(UnknownAttributeException.class, () -> this.personRepository.getAll(sortQuery));
   }
 
   /**

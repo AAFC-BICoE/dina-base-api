@@ -36,7 +36,8 @@ public final class FIQLFilterHandler {
     try {
       SearchCondition<T> condition = parser.parse(fiqlQuery);
       // Convert to JPA Predicate using a visitor JPACriteriaQueryVisitor
-      JPACriteriaQueryVisitor<T, E> visitor = new JPACriteriaQueryVisitor<>(em, clazz, clazz2);
+      JPACriteriaQueryVisitor<T, E> visitor =
+        new EnumSafeJPACriteriaQueryVisitor<>(em, clazz, clazz2);
       condition.accept(visitor);
 
       if (orderBy != null && !orderBy.isEmpty()) {
@@ -72,7 +73,8 @@ public final class FIQLFilterHandler {
     try {
       SearchCondition<T> condition = parser.parse(fiqlQuery);
       // Convert to JPA Predicate using a visitor JPACriteriaQueryVisitor
-      JPACriteriaQueryVisitor<T, Long> visitor = new JPACriteriaQueryVisitor<>(em, clazz, Long.class);
+      JPACriteriaQueryVisitor<T, Long> visitor =
+        new EnumSafeJPACriteriaQueryVisitor<>(em, clazz, Long.class);
       condition.accept(visitor);
 
       return visitor.count();

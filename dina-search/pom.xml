@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.168-SNAPSHOT</version>
+    <version>0.169-SNAPSHOT</version>
   </parent>
 
   <artifactId>dina-search</artifactId>
@@ -20,11 +20,6 @@
     <dependency>
       <groupId>co.elastic.clients</groupId>
       <artifactId>elasticsearch-java</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.parsson</groupId>
-      <artifactId>parsson</artifactId>
-      <version>${eclipse-parsson.version}</version>
     </dependency>
 
     <dependency>

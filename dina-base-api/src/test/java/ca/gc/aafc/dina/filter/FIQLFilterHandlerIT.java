@@ -74,6 +74,25 @@ public class FIQLFilterHandlerIT {
 
   @Test
   @Transactional
+  public void fiqlFilterHandler_whenFiqlEnumOrFilterIsSet_filteredPersonsAreReturned() {
+    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("Alex")
+      .personType(Person.PersonType.HUMAN).createdOn(CREATION_DATE_TIME).build());
+    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("Murphy")
+      .personType(Person.PersonType.HUMAN).createdOn(CREATION_DATE_TIME).build());
+    entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name("Robocop")
+      .personType(Person.PersonType.ROBOT).createdOn(CREATION_DATE_TIME).build());
+
+    var q = FIQLFilterHandler.criteriaQuery(entityManager,
+      "personType==HUMAN,personType==ROBOT",
+      Person.class, Person.class, null);
+
+    List<Person> result = entityManager.createQuery(q).getResultList();
+
+    assertEquals(3, result.size());
+  }
+
+  @Test
+  @Transactional
   public void fiqlFilterHandler_whenFiqlWildcardFilterProvided_filteredEmployeesAreReturned() {
 
     // Check that the 2 persons were returned.
