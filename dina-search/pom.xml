@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.168</version>
+    <version>0.169</version>
   </parent>
 
   <artifactId>dina-search</artifactId>
@@ -20,7 +20,6 @@
     <dependency>
       <groupId>co.elastic.clients</groupId>
       <artifactId>elasticsearch-java</artifactId>
-      <version>7.17.15</version>
     </dependency>
 
     <dependency>

@@ -1,20 +1,27 @@
 package ca.gc.aafc.dina.json;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.jayway.jsonpath.TypeRef;
 
 import ca.gc.aafc.dina.jsonapi.JSONApiDocumentStructure;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 public class JsonHelperTest {
+
+  private static final Resource resource = new ClassPathResource("jsonhelper-test-data.json");
 
   @Test
   public void onUtilityFunctions_expectedResultReturned(){
@@ -46,5 +53,39 @@ public class JsonHelperTest {
     assertTrue(JsonHelper.safeTextEquals(attributeNode.get(), "attribute1", "value1"));
     assertFalse(JsonHelper.safeTextEquals(attributeNode.get(), "attribute1", "wrongValue"));
     assertFalse(JsonHelper.safeTextEquals(attributeNode.get(), "attributeXYZ", "value1"));
+  }
+
+  @Test
+  public void testFindActiveSpecimen() throws IOException {
+    JsonNode node = TestConstants.OBJECT_MAPPER.readTree(resource.getInputStream());
+    JsonNode result = JsonHelper.findOneInJsonNode(node,
+      "$.data[?(@.attributes.isActive == true)]");
+
+    assertNotNull(result);
+    assertEquals("spec-002", result.get("id").asText());
+    assertTrue(result.get("attributes").get("isActive").asBoolean());
+  }
+
+  @Test
+  public void testGetAllSpecimenIds() throws IOException {
+    JsonNode jsonNode = TestConstants.OBJECT_MAPPER.readTree(resource.getInputStream());
+    List<JsonNode> results = JsonHelper.findAllInJsonNode(jsonNode,
+      "$.data[*].id");
+
+    assertNotNull(results);
+    assertEquals(3, results.size());
+    assertEquals("spec-001", results.get(0).asText());
+    assertEquals("spec-002", results.get(1).asText());
+    assertEquals("spec-003", results.get(2).asText());
+  }
+
+  @Test
+  public void testFindOneInJsonNode_definitePath() throws IOException {
+    JsonNode node = TestConstants.OBJECT_MAPPER.readTree(resource.getInputStream());
+    JsonNode result = JsonHelper.findOneInJsonNode(node, "$.data");
+
+    assertNotNull(result);
+    assertTrue(result.isArray());
+    assertEquals(3, result.size());
   }
 }
