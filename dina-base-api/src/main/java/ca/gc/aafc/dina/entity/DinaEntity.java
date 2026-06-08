@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.entity;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,6 +22,13 @@ public interface DinaEntity {
    * @return the name of the group or null
    */
   default String getGroup() {
+    return null;
+  }
+
+  /**
+   * to be used with Hibernate UpdateTimestamp
+   */
+  default Instant getLastUpdatedOn() {
     return null;
   }
 
