@@ -1,10 +1,18 @@
 package ca.gc.aafc.dina.entity;
 
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.NaturalIdCache;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import ca.gc.aafc.dina.i18n.MultilingualDescription;
+import ca.gc.aafc.dina.i18n.MultilingualTitle;
+
 import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
-import java.time.OffsetDateTime;
-import java.util.UUID;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -15,22 +23,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-
-import org.hibernate.annotations.Generated;
-import org.hibernate.annotations.GenerationTime;
-
-import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.NaturalIdCache;
-import org.hibernate.annotations.Type;
-
-import ca.gc.aafc.dina.i18n.MultilingualDescription;
-import ca.gc.aafc.dina.i18n.MultilingualTitle;
 
 @MappedSuperclass
 @Getter
@@ -100,7 +100,11 @@ public abstract class ControlledVocabulary implements DinaEntity {
   private String createdBy;
 
   @Column(name = "created_on", insertable = false, updatable = false)
-  @Generated(value = GenerationTime.INSERT)
+  @ColumnDefault("CURRENT_TIMESTAMP")
+  @Generated
   private OffsetDateTime createdOn;
 
+  @UpdateTimestamp
+  @Column(name = "last_updated_on")
+  private Instant lastUpdatedOn;
 }

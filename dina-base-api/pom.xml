@@ -24,6 +24,7 @@
     <commons.beanutils.version>1.11.0</commons.beanutils.version>
 
     <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+
     <javers.version>7.3.8</javers.version>
     <mybatis.version>3.0.5</mybatis.version>
     <hypersistence-utils-hibernate-62.version>3.9.4</hypersistence-utils-hibernate-62.version>
@@ -240,6 +241,13 @@
   </dependencies>
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>@{argLine} -XX:+EnableDynamicAgentLoading -Xshare:off</argLine>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>

@@ -24,7 +24,9 @@ import ca.gc.aafc.dina.validation.QualifiedValueValidator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Instant;
 import java.util.UUID;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -58,6 +60,15 @@ public class ControlledVocabularyServiceIT {
         .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
 
     assertEquals("protocol_data_element", managedAttribute.getKey());
+    assertNotNull(managedAttribute.getCreatedOn());
+
+    Instant lastUpdatedOn = managedAttribute.getLastUpdatedOn();
+    assertNotNull(lastUpdatedOn);
+
+    managedAttribute.setTerm("new term");
+    Instant lastUpdatedOn2 = controlledVocabularyService.update(managedAttribute)
+      .getLastUpdatedOn();
+    assertTrue(lastUpdatedOn.isBefore(lastUpdatedOn2));
   }
 
   @Test
