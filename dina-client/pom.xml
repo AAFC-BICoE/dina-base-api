@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.169</version>
+    <version>0.170</version>
   </parent>
 
   <artifactId>dina-client</artifactId>
@@ -17,8 +17,8 @@
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <properties>
-    <okhttp.version>4.9.0</okhttp.version>
-    <retrofit.version>2.9.0</retrofit.version>
+    <okhttp.version>4.12.0</okhttp.version>
+    <retrofit.version>3.0.0</retrofit.version>
   </properties>
 
   <dependencies>

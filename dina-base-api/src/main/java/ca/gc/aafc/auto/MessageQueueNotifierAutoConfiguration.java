@@ -1,19 +1,19 @@
 package ca.gc.aafc.auto;
 
-import lombok.extern.log4j.Log4j2;
-
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import ca.gc.aafc.dina.messaging.MessageQueueNotifier;
 import ca.gc.aafc.dina.messaging.producer.DocumentOperationNotificationMessageProducer;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * This class is outside the ComponentScan that is using DinaBaseApiAutoConfiguration base package.
  */
 @Log4j2
-@Configuration
+@AutoConfiguration
 public class MessageQueueNotifierAutoConfiguration {
 
   @ConditionalOnBean(DocumentOperationNotificationMessageProducer.class)

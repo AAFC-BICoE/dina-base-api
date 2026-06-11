@@ -3,16 +3,18 @@ package ca.gc.aafc.dina.entity;
 import io.hypersistence.utils.hibernate.type.array.StringArrayType;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Generated;
-import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.NaturalIdCache;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
 import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import jakarta.persistence.Column;
@@ -106,8 +108,13 @@ public abstract class ControlledVocabularyItem implements DinaEntity {
   private String createdBy;
 
   @Column(name = "created_on", insertable = false, updatable = false)
-  @Generated(value = GenerationTime.INSERT)
+  @ColumnDefault("CURRENT_TIMESTAMP")
+  @Generated
   private OffsetDateTime createdOn;
+
+  @UpdateTimestamp
+  @Column(name = "last_updated_on")
+  private Instant lastUpdatedOn;
 
   public abstract <T extends ControlledVocabulary> T getControlledVocabulary();
 }

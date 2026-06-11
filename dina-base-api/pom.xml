@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.169</version>
+    <version>0.170</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -24,9 +24,10 @@
     <commons.beanutils.version>1.11.0</commons.beanutils.version>
 
     <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
-    <javers.version>7.0.3</javers.version>
+
+    <javers.version>7.3.8</javers.version>
     <mybatis.version>3.0.5</mybatis.version>
-    <hypersistence-utils-hibernate-60.version>3.9.4</hypersistence-utils-hibernate-60.version>
+    <hypersistence-utils-hibernate-62.version>3.9.4</hypersistence-utils-hibernate-62.version>
 
     <jsoup.version>1.22.2</jsoup.version>
 
@@ -156,22 +157,22 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-filter</artifactId>
-      <version>0.169</version>
+      <version>0.170</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-messaging</artifactId>
-      <version>0.169</version>
+      <version>0.170</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-json</artifactId>
-      <version>0.169</version>
+      <version>0.170</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.169</version>
+      <version>0.170</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -214,8 +215,8 @@
 
     <dependency>
       <groupId>io.hypersistence</groupId>
-      <artifactId>hypersistence-utils-hibernate-60</artifactId>
-      <version>${hypersistence-utils-hibernate-60.version}</version>
+      <artifactId>hypersistence-utils-hibernate-62</artifactId>
+      <version>${hypersistence-utils-hibernate-62.version}</version>
     </dependency>
 
     <dependency>
@@ -240,6 +241,13 @@
   </dependencies>
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>@{argLine} -XX:+EnableDynamicAgentLoading -Xshare:off</argLine>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>

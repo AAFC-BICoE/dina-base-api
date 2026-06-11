@@ -383,6 +383,7 @@
 
 			<column name="created_by" type="varchar(255)"/>
 			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+			<column name="last_updated_on" type="timestamptz"/>
 		</createTable>
 		<createTable tableName="test_controlled_vocabulary_item">
 			<column autoIncrement="true" name="id" type="SERIAL">
@@ -416,6 +417,7 @@
 
 			<column name="created_by" type="varchar(255)"/>
 			<column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+			<column name="last_updated_on" type="timestamptz"/>
 		</createTable>
 		<addUniqueConstraint
 				columnNames="controlled_vocabulary_id, key, dina_component"
