@@ -18,6 +18,10 @@ import java.util.Set;
 import jakarta.inject.Named;
 import lombok.NonNull;
 
+/**
+ * @deprecated Replaced by ManagedAttributeValueValidatorV2
+ */
+@Deprecated
 public class ManagedAttributeValueValidator<E extends ManagedAttribute> implements Validator {
 
   private static final String MANAGED_ATTRIBUTE_INVALID_VALUE = "managedAttribute.value.invalid";

@@ -18,6 +18,7 @@ import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 import java.util.UUID;
@@ -75,6 +76,8 @@ public class ControlledVocabularyValueValidatorIT {
       .managedAttributes(Map.of("managed_attribute_1", "12"))
       .build();
     myControlledVocabularyValueValidator.validate(ma, ma.getManagedAttributes());
+
+    assertTrue(myControlledVocabularyValueValidator.isApplicableTo(managedAttributeItem));
 
     // try invalid value
     ma.setManagedAttributes(Map.of("managed_attribute_1", "xy"));

@@ -38,6 +38,30 @@ public abstract class ManagedAttributeValueValidatorV2<E extends ControlledVocab
    */
   public abstract String getDinaComponent();
 
+  /**
+   * Checks if a {@link ControlledVocabularyItem} can be deleted.
+   * The goal of this method is to check if the item is used.
+   * @param controlledVocabularyItem
+   * @return
+   */
+  public boolean canBeDeleted(E controlledVocabularyItem) {
+    return false;
+  }
+
+  /**
+   * Checks if this is  value validator is applicable to {@link ControlledVocabularyItem}.
+   * <p>
+   * Returns true if value validator and item both belong to the same controlled vocabulary
+   * and have the same Dina component.
+   *
+   * @param controlledVocabularyItem the item to compare against
+   * @return true if this value validator is applicable to the given item, false otherwise
+   */
+  public boolean isApplicableTo(E controlledVocabularyItem) {
+    return getControlledVocabularyUuid().equals(
+      controlledVocabularyItem.getControlledVocabulary().getUuid())
+      && Objects.equals(getDinaComponent(), controlledVocabularyItem.getDinaComponent());
+  }
 
   public <D extends DinaEntity> void validate(D entity, Map<String, String> managedAttributes) {
     validate(managedAttributes, ValidationErrorsHelper.newErrorsObject(entity));
@@ -49,7 +73,7 @@ public abstract class ManagedAttributeValueValidatorV2<E extends ControlledVocab
   }
 
   /**
-   * Internal validate method that is throwing {@link javax.validation.ValidationException} if there is
+   * Internal validate method that is throwing {@link jakarta.validation.ValidationException} if there is
    * any errors
    * @param managedAttributes
    * @param errors
