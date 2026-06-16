@@ -20,7 +20,7 @@
     <jcip-annotations.version>1.0</jcip-annotations.version>
     <local-javax-jaxb.version>2.3.0.1</local-javax-jaxb.version>
     <rsql-jpa.version>2.0.2</rsql-jpa.version>
-    
+
     <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
 
     <javers.version>7.3.8</javers.version>
