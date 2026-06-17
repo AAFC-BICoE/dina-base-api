@@ -22,7 +22,7 @@ public interface DinaRepositoryLayer<I,D> {
   JsonApiDto<D> create(JsonApiDocument docToCreate, Consumer<D> dtoCustomizer);
 
   JsonApiDto<D> update(JsonApiDocument patchDto) throws ResourceNotFoundException, ResourceGoneException,
-    ConflictException;
+      ConflictException;
 
   void delete(I identifier) throws ResourceNotFoundException, ResourceGoneException;
 

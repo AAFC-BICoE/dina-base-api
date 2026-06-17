@@ -3,7 +3,7 @@ package ca.gc.aafc.dina.dto;
 /**
  * Represents a typical DTI in DINA.
  */
-public interface DinaDto extends JsonApiResource{
+public interface DinaDto extends JsonApiResource {
 
   /**
    * Used by resource that keeps track of version of the resource to detect stale client data.
