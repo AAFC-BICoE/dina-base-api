@@ -34,6 +34,7 @@ import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.exception.ConflictException;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.filter.QueryComponent;
@@ -294,7 +295,7 @@ public class DinaRepositoryV2IT {
 
   @Test
   public void onCreateUpdateDelete_noException() throws ResourceNotFoundException,
-      ResourceGoneException {
+      ResourceGoneException, ConflictException {
 
     PersonDTO personDto = PersonDTO.builder()
       .name("Bob")

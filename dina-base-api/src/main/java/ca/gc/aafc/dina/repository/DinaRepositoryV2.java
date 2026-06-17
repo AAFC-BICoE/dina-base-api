@@ -15,12 +15,14 @@ import com.github.tennaito.rsql.misc.ArgumentParser;
 import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
 
+import ca.gc.aafc.dina.dto.DinaDto;
 import ca.gc.aafc.dina.dto.ExternalRelationDto;
 import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.JsonApiDtoMeta;
 import ca.gc.aafc.dina.dto.JsonApiExternalResource;
 import ca.gc.aafc.dina.dto.JsonApiResource;
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.exception.ConflictException;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.exception.ResourcesGoneException;
@@ -305,7 +307,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
    * @throws ResourceNotFoundException
    */
   public ResponseEntity<RepresentationModel<?>> handleBulkUpdate(JsonApiBulkDocument jsonApiBulkDocument)
-      throws ResourceNotFoundException, ResourceGoneException {
+      throws ResourceNotFoundException, ResourceGoneException, ConflictException {
     List<JsonApiDto<D> > dtos = new ArrayList<>();
     for (var data : jsonApiBulkDocument.getData()) {
       dtos.add(update(JsonApiDocument.builder().data(data).build()));
@@ -323,7 +325,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
    */
   public ResponseEntity<RepresentationModel<?>> handleUpdate(JsonApiDocument partialPatchDto,
                                                              UUID id)
-      throws ResourceNotFoundException, ResourceGoneException {
+      throws ResourceNotFoundException, ResourceGoneException, ConflictException {
 
     // Sanity check
     if (!Objects.equals(id, partialPatchDto.getId())) {
@@ -679,7 +681,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
    * @return freshly reloaded dto of the updated resource
    */
   public JsonApiDto<D> update(JsonApiDocument patchDto)
-      throws ResourceNotFoundException, ResourceGoneException {
+      throws ResourceNotFoundException, ResourceGoneException, ConflictException {
 
     // make sure data is safe to manipulate (if data is provided)
     if (patchDto.getAttributes() != null) {
@@ -702,6 +704,11 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     if (patchDto.getAttributes() != null) {
       D dto = objMapper.convertValue(patchDto.getAttributes(), resourceClass);
 
+      // check version to detect stale data
+      if (dto instanceof DinaDto dinaDto) {
+        checkResourceVersion(dinaDto, entity);
+      }
+
       // apply DTO on entity using the keys from patchDto but remove all immutable fields (if any)
       Set<String> attributesToPatch = new HashSet<>(patchDto.getData().getAttributesName());
       attributesToPatch.removeAll(registry.getImmutableAttributesForClass(resourceClass,
@@ -720,6 +727,23 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
       auditService.audit(reloadedDto.getDto());
     }
     return reloadedDto;
+  }
+
+  /**
+   * Throws {@link ConflictException} when the client-supplied version
+   * does not match the persisted entity version.
+   *
+   * Override this method to customize the version-mismatch behavior.
+   */
+  protected void checkResourceVersion(DinaDto dto, E entity) throws ConflictException {
+    Long clientVersion = dto.getResourceVersion();
+    if (clientVersion == null) {
+      // client did not supply a version → skip check (lenient mode)
+      return;
+    }
+    if (!clientVersion.equals(entity.getResourceVersion())) {
+      throw ConflictException.create(dto.getJsonApiType(), dto.getJsonApiId());
+    }
   }
 
   /**
