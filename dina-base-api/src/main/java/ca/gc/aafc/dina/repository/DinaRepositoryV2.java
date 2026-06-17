@@ -742,7 +742,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
       return;
     }
     if (!clientVersion.equals(entity.getResourceVersion())) {
-      throw ConflictException.create(dto.getJsonApiType(), dto.getJsonApiId());
+      throw ConflictException.create(dto.getJsonApiType(), entity.getUuid());
     }
   }
 

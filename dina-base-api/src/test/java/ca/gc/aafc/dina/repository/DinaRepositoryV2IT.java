@@ -493,6 +493,33 @@ public class DinaRepositoryV2IT {
     assertNotNull(loadedDocs.get("errors"));
   }
 
+
+  @Test
+  public void onOldResourceVersion_conflictDetected() throws Exception {
+    PersonDTO personDto1 = PersonDTO.builder()
+      .name("Bob test onOldResourceVersion_conflictDetected")
+      .build();
+    JsonApiDocument doc1 = JsonApiDocuments.createJsonApiDocument(null, PersonDTO.TYPE_NAME,
+      JsonAPITestHelper.toAttributeMap(personDto1));
+
+    var created = repositoryV2.handleCreate(doc1, null);
+    UUID assignedId = JsonApiModelAssistant.extractUUIDFromRepresentationModelLink(created);
+
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put("resourceVersion", "0");
+    attributes.put("name", "Jimbo 0");
+
+    JsonApiDocument document = JsonApiDocument.builder()
+      .data(JsonApiDocument.ResourceObject.builder()
+        .id(assignedId)
+        .attributes(attributes)
+        .build())
+      .build();
+    repositoryV2.handleUpdate(document, assignedId);
+    // try to update again but using the same version number
+    assertThrows(ConflictException.class, () -> repositoryV2.handleUpdate(document, assignedId));
+  }
+
   @Test
   public void onApiInfo_infoReturned() throws Exception {
     var response = mockMvc.perform(
