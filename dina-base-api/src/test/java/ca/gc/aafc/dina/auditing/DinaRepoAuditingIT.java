@@ -7,6 +7,7 @@ import ca.gc.aafc.dina.dto.DepartmentDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.exception.ConflictException;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
@@ -85,7 +86,8 @@ public class DinaRepoAuditingIT {
 
   @Test
   @Transactional
-  public void update_SnapShotsPersisted() throws ResourceGoneException, ResourceNotFoundException {
+  public void update_SnapShotsPersisted()
+      throws ResourceGoneException, ResourceNotFoundException, ConflictException {
     PersonDTO personDto = createPersonDto();
     JsonApiDocument personDocToCreate = JsonApiDocuments.createJsonApiDocument(null, PersonDTO.TYPE_NAME,
       JsonAPITestHelper.toAttributeMap(personDto));

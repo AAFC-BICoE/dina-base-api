@@ -26,6 +26,14 @@ public interface DinaEntity {
   }
 
   /**
+   * Used to detect potential conflicting data
+   * @return
+   */
+  default Long getResourceVersion() {
+    return null;
+  }
+
+  /**
    * to be used with Hibernate UpdateTimestamp
    */
   default Instant getLastUpdatedOn() {

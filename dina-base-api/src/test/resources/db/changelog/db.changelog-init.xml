@@ -27,6 +27,9 @@
 			</column>
 			<column name="name" type="varchar(255)"/>
 			<column name="room" type="integer"/>
+			<column name="resource_version" type="BIGINT" defaultValueNumeric="0">
+				<constraints nullable="false"/>
+			</column>
 			<column name="group_name" type="varchar(255)"/>
 			<column name="nick_names" type="text[]"/>
 			<column name="person_type" type="person_type"/>

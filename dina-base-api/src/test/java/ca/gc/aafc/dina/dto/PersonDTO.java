@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 @RelatedEntity(Person.class)
 @TypeName(PersonDTO.TYPE_NAME)
 @JsonApiTypeForClass(PersonDTO.TYPE_NAME)
-public class PersonDTO implements ca.gc.aafc.dina.dto.JsonApiResource {
+public class PersonDTO implements DinaDto {
 
   public static final String TYPE_NAME = "person";
   public static final String CONSTANT = "HAS CONSTANT";
@@ -60,6 +60,8 @@ public class PersonDTO implements ca.gc.aafc.dina.dto.JsonApiResource {
   private String expensiveToCompute;
 
   private String augmentedData;
+
+  private Long resourceVersion;
 
   @JsonIgnore
   public UUID getJsonApiId() {

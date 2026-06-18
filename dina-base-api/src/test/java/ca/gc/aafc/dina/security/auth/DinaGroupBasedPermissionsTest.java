@@ -21,6 +21,7 @@ import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.dto.ItemDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.exception.ConflictException;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.jpa.BaseDAO;
@@ -98,7 +99,7 @@ public class DinaGroupBasedPermissionsTest {
 
   @Test
   public void save_AuthorizedGroup_UpdatesObject()
-      throws ResourceGoneException, ResourceNotFoundException {
+      throws ResourceGoneException, ResourceNotFoundException, ConflictException {
     String expectedName = RandomStringUtils.random(6);
     Person persisted = Person.builder().uuid(UUID.randomUUID()).group(GROUP_1).name("name").build();
     baseDAO.create(persisted);

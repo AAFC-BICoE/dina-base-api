@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.toedter.spring.hateoas.jsonapi.JsonApiError;
 import com.toedter.spring.hateoas.jsonapi.JsonApiErrors;
 
+import ca.gc.aafc.dina.exception.ConflictException;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.exception.ResourcesGoneException;
@@ -85,6 +86,18 @@ public class JsonApiExceptionControllerAdvice {
       )
       .forEach(errors::withError);
     return ResponseEntity.status(HttpStatus.GONE).body(errors);
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleConflictException(ConflictException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(
+      JsonApiErrors.create().withError(
+        JsonApiError.create()
+          .withCode(Integer.toString(HttpStatus.CONFLICT.value()))
+          .withStatus(HttpStatus.CONFLICT.toString())
+          .withTitle("Conflict")
+          .withDetail(ex.getMessage()))
+    );
   }
 
   @ExceptionHandler
