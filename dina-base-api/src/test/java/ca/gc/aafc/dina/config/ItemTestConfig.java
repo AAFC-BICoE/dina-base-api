@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ca.gc.aafc.dina.dto.ItemDto;
 import ca.gc.aafc.dina.entity.Item;
+import ca.gc.aafc.dina.exception.ConflictException;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.exception.ResourcesGoneException;
@@ -123,7 +124,8 @@ public class ItemTestConfig {
     @Transactional
     public ResponseEntity<RepresentationModel<?>> onUpdate(
       @RequestBody JsonApiDocument partialPatchDto,
-      @PathVariable UUID id) throws ResourceNotFoundException, ResourceGoneException {
+      @PathVariable UUID id) throws ResourceNotFoundException, ResourceGoneException,
+      ConflictException {
       return handleUpdate(partialPatchDto, id);
     }
 
@@ -131,7 +133,7 @@ public class ItemTestConfig {
     @Transactional
     public ResponseEntity<RepresentationModel<?>> onBulkUpdate(
       @RequestBody JsonApiBulkDocument jsonApiBulkDocument)
-      throws ResourceNotFoundException, ResourceGoneException {
+      throws ResourceNotFoundException, ResourceGoneException, ConflictException {
       return handleBulkUpdate(jsonApiBulkDocument);
     }
 

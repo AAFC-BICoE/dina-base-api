@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.repository;
 import java.util.function.Consumer;
 
 import ca.gc.aafc.dina.dto.JsonApiDto;
+import ca.gc.aafc.dina.exception.ConflictException;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.filter.QueryComponent;
@@ -20,7 +21,8 @@ public interface DinaRepositoryLayer<I,D> {
 
   JsonApiDto<D> create(JsonApiDocument docToCreate, Consumer<D> dtoCustomizer);
 
-  JsonApiDto<D> update(JsonApiDocument patchDto) throws ResourceNotFoundException, ResourceGoneException;
+  JsonApiDto<D> update(JsonApiDocument patchDto) throws ResourceNotFoundException, ResourceGoneException,
+      ConflictException;
 
   void delete(I identifier) throws ResourceNotFoundException, ResourceGoneException;
 

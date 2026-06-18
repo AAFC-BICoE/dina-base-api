@@ -6,6 +6,7 @@ import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
 import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.Data;
@@ -35,6 +36,7 @@ public abstract class BaseControlledVocabularyItemDto <T extends BaseControlledV
 
   protected String createdBy;
   protected OffsetDateTime createdOn;
+  protected Instant lastUpdatedOn;
 
   public abstract T getControlledVocabulary();
 

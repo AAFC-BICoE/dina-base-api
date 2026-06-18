@@ -34,6 +34,7 @@ import ca.gc.aafc.dina.dto.JsonApiDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
+import ca.gc.aafc.dina.exception.ConflictException;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.filter.QueryComponent;
@@ -294,7 +295,7 @@ public class DinaRepositoryV2IT {
 
   @Test
   public void onCreateUpdateDelete_noException() throws ResourceNotFoundException,
-      ResourceGoneException {
+      ResourceGoneException, ConflictException {
 
     PersonDTO personDto = PersonDTO.builder()
       .name("Bob")
@@ -490,6 +491,33 @@ public class DinaRepositoryV2IT {
     Map<String, Object> loadedDocs = objMapper.readValue(response.getResponse().getContentAsString(),
       IT_OM_TYPE_REF);
     assertNotNull(loadedDocs.get("errors"));
+  }
+
+
+  @Test
+  public void onOldResourceVersion_conflictDetected() throws Exception {
+    PersonDTO personDto1 = PersonDTO.builder()
+      .name("Bob test onOldResourceVersion_conflictDetected")
+      .build();
+    JsonApiDocument doc1 = JsonApiDocuments.createJsonApiDocument(null, PersonDTO.TYPE_NAME,
+      JsonAPITestHelper.toAttributeMap(personDto1));
+
+    var created = repositoryV2.handleCreate(doc1, null);
+    UUID assignedId = JsonApiModelAssistant.extractUUIDFromRepresentationModelLink(created);
+
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put("resourceVersion", "0");
+    attributes.put("name", "Jimbo 0");
+
+    JsonApiDocument document = JsonApiDocument.builder()
+      .data(JsonApiDocument.ResourceObject.builder()
+        .id(assignedId)
+        .attributes(attributes)
+        .build())
+      .build();
+    repositoryV2.handleUpdate(document, assignedId);
+    // try to update again but using the same version number
+    assertThrows(ConflictException.class, () -> repositoryV2.handleUpdate(document, assignedId));
   }
 
   @Test

@@ -16,7 +16,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.Session;
 import org.hibernate.SimpleNaturalIdLoadAccess;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.jpa.QueryHints;
+import org.hibernate.jpa.AvailableHints;
 import org.springframework.stereotype.Component;
 
 import jakarta.persistence.EntityGraph;
@@ -208,7 +208,7 @@ public class BaseDAO {
         tq.setParameter(param.getKey(), param.getValue());
       }
     }
-    tq.setHint(QueryHints.HINT_FETCH_SIZE, DEFAULT_STREAM_FETCH_SIZE);
+    tq.setHint(AvailableHints.HINT_FETCH_SIZE, DEFAULT_STREAM_FETCH_SIZE);
     try {
       return tq.getResultStream();
     } catch (NoResultException nrEx) {

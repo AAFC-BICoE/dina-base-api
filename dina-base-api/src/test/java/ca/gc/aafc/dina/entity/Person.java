@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.ManyToOne;
 import org.hibernate.annotations.Type;
 import jakarta.persistence.Transient;
+import jakarta.persistence.Version;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,6 +39,9 @@ public class Person implements DinaEntityIdentifiableByName {
 
   @NaturalId
   private UUID uuid;
+
+  @Version
+  private Long resourceVersion;
 
   private Integer room;
 
