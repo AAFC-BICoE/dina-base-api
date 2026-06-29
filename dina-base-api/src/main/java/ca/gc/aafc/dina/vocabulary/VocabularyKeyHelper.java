@@ -36,6 +36,31 @@ public final class VocabularyKeyHelper {
       .collect(Collectors.joining("_"));
   }
 
+  /**
+   * Generates a key from a vocabulary element's name and type.
+   * <p>
+   * The key is constructed by first generating a base key from the provided name,
+   * then appending the lowercase type name if the type is not STRING.
+   * For STRING types, only the name-based key is returned.
+   * </p>
+   *
+   * @param name the name of the vocabulary element; must not be null
+   * @param type the type of the vocabulary element; must not be null
+   * @return a key combining the name and type information
+   *
+   * @see #generateKeyFromName(String)
+   * @see TypedVocabularyElement.VocabularyElementType
+   */
+  public static String generateKeyFromNameAndType(String name,
+                                                  TypedVocabularyElement.VocabularyElementType type) {
+    Objects.requireNonNull(name);
+    Objects.requireNonNull(type);
+
+    String key = generateKeyFromName(name);
+    return type != TypedVocabularyElement.VocabularyElementType.STRING ?
+      key + "_" + type.name().toLowerCase() : key;
+  }
+
   private static String processName(String name) {
     return RegExUtils.removeAll(name.toLowerCase(), NON_ALPHANUMERICAL);
   }
