@@ -135,6 +135,7 @@ public class ControlledVocabularyServiceIT {
         .uuid(UUID.randomUUID())
         .group("grp")
         .name("Protocol Data Element 1")
+        .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.STRING)
         .acceptedValues(new String[] {"a", "b"})
         .createdBy(CONTROLLED_VOCAB_CREATED_BY)
         .controlledVocabulary(controlledVocabulary).build());
