@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.security;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -114,9 +115,16 @@ public class KeycloakSecurityConfig {
   }
 
   private static DinaAuthenticatedUser jwtToDinaAuthenticatedUser(Jwt jwt) {
+    // Sanity check since in Keycloak 25+ sub claim might not be automatically included
+    String internalId = jwt.getSubject();
+    if (StringUtils.isBlank(internalId)) {
+      log.warn("JWT token missing 'sub' claim. This may indicate a Keycloak configuration issue. " +
+        "Ensure the 'sub' protocol mapper is configured for your client.");
+    }
+
     return DinaAuthenticatedUser.builder()
       .username(jwt.getClaimAsString(USERNAME_KEY))
-      .internalIdentifier(jwt.getSubject())
+      .internalIdentifier(internalId)
       .agentIdentifier((String) jwt.getClaims().get(AGENT_IDENTIFIER_CLAIM_KEY))
       .isServiceAccount(extractIsServiceAccount(jwt))
       .rolesPerGroup(extractRolesPerGroup(jwt))
