@@ -41,7 +41,15 @@ public abstract class ControlledVocabularyItemService<T extends ControlledVocabu
   @Override
   protected void preCreate(ControlledVocabularyItem entity) {
     if (StringUtils.isNotBlank(entity.getName())) {
-      entity.setKey(VocabularyKeyHelper.generateKeyFromName(entity.getName()));
+      // for now, we only add the type for managed attribute since we only have the
+      // ElasticSearch dynamic_templates for them
+      if (ControlledVocabulary.ControlledVocabularyType.MANAGED_ATTRIBUTE ==
+        entity.getControlledVocabulary().getType()) {
+        entity.setKey(VocabularyKeyHelper.generateKeyFromNameAndType(entity.getName(),
+          entity.getVocabularyElementType()));
+      } else {
+        entity.setKey(VocabularyKeyHelper.generateKeyFromName(entity.getName()));
+      }
     }
 
     if (entity.getUuid() == null) {

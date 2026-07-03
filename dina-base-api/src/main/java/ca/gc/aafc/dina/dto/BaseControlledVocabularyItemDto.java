@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
+import ca.gc.aafc.dina.jsonapi.JsonApiImmutable;
 import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
 import java.time.Instant;
@@ -18,15 +19,20 @@ public abstract class BaseControlledVocabularyItemDto <T extends BaseControlledV
 
   protected UUID uuid;
 
+  @JsonApiImmutable(JsonApiImmutable.ImmutableOn.UPDATE)
   protected String name;
+  @JsonApiImmutable(JsonApiImmutable.ImmutableOn.UPDATE)
   protected String key;
+
   protected String group;
   protected String term;
 
   protected MultilingualTitle multilingualTitle;
   protected MultilingualDescription multilingualDescription;
 
+  @JsonApiImmutable(JsonApiImmutable.ImmutableOn.UPDATE)
   protected TypedVocabularyElement.VocabularyElementType vocabularyElementType;
+  
   protected String[] acceptedValues;
 
   protected String unit;

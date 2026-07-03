@@ -14,6 +14,7 @@ import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
 import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -82,6 +83,7 @@ public abstract class ControlledVocabularyItem implements DinaEntity {
   @Type(JsonType.class)
   private MultilingualDescription multilingualDescription;
 
+  @NotNull
   @Enumerated(EnumType.STRING)
   private TypedVocabularyElement.VocabularyElementType vocabularyElementType;
 

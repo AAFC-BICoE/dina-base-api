@@ -21,6 +21,7 @@ import ca.gc.aafc.dina.validation.ControlledTermValueValidator;
 import ca.gc.aafc.dina.validation.ControlledVocabularyItemValidator;
 import ca.gc.aafc.dina.validation.ManagedAttributeValueValidatorV2;
 import ca.gc.aafc.dina.validation.QualifiedValueValidator;
+import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -72,6 +73,29 @@ public class ControlledVocabularyServiceIT {
   }
 
   @Test
+  public void controlledVocabularyItemService_OnCreate_keyWithTypeCorrectlyGenerated() {
+
+    MyControlledVocabulary controlledVocabulary = controlledVocabularyService
+      .create(MyControlledVocabulary.builder()
+        .uuid(UUID.randomUUID())
+        .type(ControlledVocabulary.ControlledVocabularyType.MANAGED_ATTRIBUTE)
+        .vocabClass(ControlledVocabulary.ControlledVocabularyClass.QUALIFIED_VALUE)
+        .name("Protocol Data Element")
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
+    assertNotNull(controlledVocabulary.getCreatedOn());
+
+    MyControlledVocabularyItem controlledVocabularyItem = controlledVocabularyItemService
+      .create(MyControlledVocabularyItem.builder()
+        .uuid(UUID.randomUUID())
+        .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.INTEGER)
+        .group("grp")
+        .name("Protocol Data Element 1")
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY)
+        .controlledVocabulary(controlledVocabulary).build());
+    assertEquals("protocol_data_element_1_integer", controlledVocabularyItem.getKey());
+  }
+
+  @Test
   public void controlledVocabularyService_OnFindOne_OneReturned() {
     MyControlledVocabulary vocab1 = controlledVocabularyService
       .createAndFlush(MyControlledVocabulary.builder()
@@ -96,14 +120,6 @@ public class ControlledVocabularyServiceIT {
 
   @Test
   public void controlledVocabularyItemService_OnCreate_entityCreated() {
-    MyControlledVocabularyItem controlledVocabularyItem = controlledVocabularyItemService
-      .create(MyControlledVocabularyItem.builder()
-        .uuid(UUID.randomUUID())
-        .group("grp")
-        .name("Protocol Data Element 1")
-        .acceptedValues(new String[] {"a", "b"})
-        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
-    assertEquals("protocol_data_element_1", controlledVocabularyItem.getKey());
 
     MyControlledVocabulary controlledVocabulary = controlledVocabularyService
       .create(MyControlledVocabulary.builder()
@@ -114,8 +130,17 @@ public class ControlledVocabularyServiceIT {
         .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
     assertNotNull(controlledVocabulary.getCreatedOn());
 
-    controlledVocabularyItem.setControlledVocabulary(controlledVocabulary);
-    controlledVocabularyItemService.update(controlledVocabularyItem);
+    MyControlledVocabularyItem controlledVocabularyItem = controlledVocabularyItemService
+      .create(MyControlledVocabularyItem.builder()
+        .uuid(UUID.randomUUID())
+        .group("grp")
+        .name("Protocol Data Element 1")
+        .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.STRING)
+        .acceptedValues(new String[] {"a", "b"})
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY)
+        .controlledVocabulary(controlledVocabulary).build());
+    assertEquals("protocol_data_element_1", controlledVocabularyItem.getKey());
+
     MyControlledVocabularyItem foundItem = controlledVocabularyItemService.findOneByKey(controlledVocabularyItem.getKey(), controlledVocabulary.getUuid());
     assertNotNull(foundItem);
     assertEquals(controlledVocabularyItem.getUuid(), foundItem.getUuid());
