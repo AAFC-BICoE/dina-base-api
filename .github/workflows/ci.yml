@@ -72,6 +72,6 @@ jobs:
 
       - name: Deploy to GitHub Pages (master branch only)
         if: ${{ github.ref == 'refs/heads/master' }}
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
