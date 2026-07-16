@@ -56,7 +56,8 @@
     <jakarta.json-api.version>2.0.2</jakarta.json-api.version>
 
     <!-- Versions override-->
-    <tomcat.version>10.1.55</tomcat.version>
+    <tomcat.version>10.1.56</tomcat.version>
+    <jackson-bom.version>2.18.8</jackson-bom.version>
     <xml-unit.version>2.10.0</xml-unit.version>
     <assertj.version>3.27.7</assertj.version>
 
