@@ -31,7 +31,7 @@ public class MultilingualTitle implements Serializable {
   @NoArgsConstructor
   @AllArgsConstructor
   @Value
-  public static class MultilingualTitlePair {
+  public static class MultilingualTitlePair implements Serializable {
 
     @NotEmpty
     // 2 or 3 letters ISO 639 code
