@@ -1,11 +1,11 @@
 package ca.gc.aafc.dina.entity;
 
-import io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.ManyToOne;
-import org.hibernate.annotations.Type;
+
+import org.hibernate.annotations.JdbcTypeCode;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.Size;
@@ -14,6 +14,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -63,7 +64,7 @@ public class Person implements DinaEntityIdentifiableByName {
   @Transient
   private String augmentedData;
 
-  @Type(PostgreSQLEnumType.class)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   @Enumerated(EnumType.STRING)
   @Column(columnDefinition = "person_type")
   private PersonType personType;
