@@ -25,7 +25,7 @@
 
     <javers.version>7.3.8</javers.version>
     <mybatis.version>3.0.5</mybatis.version>
-    <hypersistence-utils-hibernate-62.version>3.9.4</hypersistence-utils-hibernate-62.version>
+    <hypersistence-utils-hibernate-63.version>3.15.4</hypersistence-utils-hibernate-63.version>
 
     <jsoup.version>1.22.2</jsoup.version>
 
@@ -214,8 +214,8 @@
 
     <dependency>
       <groupId>io.hypersistence</groupId>
-      <artifactId>hypersistence-utils-hibernate-62</artifactId>
-      <version>${hypersistence-utils-hibernate-62.version}</version>
+      <artifactId>hypersistence-utils-hibernate-63</artifactId>
+      <version>${hypersistence-utils-hibernate-63.version}</version>
     </dependency>
 
     <dependency>

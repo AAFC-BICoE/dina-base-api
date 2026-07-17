@@ -15,6 +15,7 @@ import org.hibernate.type.SqlTypes;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -82,7 +83,7 @@ public class JsonbMethod implements DinaEntity {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
-  public static class CarDetails {
+  public static class CarDetails implements Serializable {
     private String value;
   }
 }
