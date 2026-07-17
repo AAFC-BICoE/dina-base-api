@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.tuple.Pair;
@@ -27,6 +28,7 @@ public final class JsonAPITestHelper {
 
   static {
     IT_OBJECT_MAPPER.registerModule(new JavaTimeModule());
+    IT_OBJECT_MAPPER.registerModule(new Jdk8Module());
     IT_OBJECT_MAPPER.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     IT_OBJECT_MAPPER.setSerializationInclusion(Include.NON_NULL);
   }

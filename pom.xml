@@ -58,8 +58,6 @@
 
     <!-- Versions override-->
     <tomcat.version>10.1.56</tomcat.version>
-    <assertj.version>3.27.7</assertj.version>
-
     <testcontainers.version>1.21.4</testcontainers.version>
   </properties>
 

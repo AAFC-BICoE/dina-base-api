@@ -19,7 +19,6 @@
 
   <properties>
     <openapi4j.version>1.0.4</openapi4j.version>
-    <jackson-datatype-jsr310.version>2.11.0</jackson-datatype-jsr310.version>
   </properties>
 
   <dependencies>
@@ -33,7 +32,6 @@
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
-      <version>${jackson-datatype-jsr310.version}</version>
     </dependency>  
     <dependency>
       <groupId>com.fasterxml.jackson.module</groupId>
