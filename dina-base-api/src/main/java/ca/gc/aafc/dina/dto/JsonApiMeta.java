@@ -17,8 +17,8 @@ public final class JsonApiMeta {
   public static final String RESOURCE_COUNT = "totalResourceCount";
   public static final String MODULE_VERSION = "moduleVersion";
 
-  private Integer totalResourceCount = null;
-  private String moduleVersion = null;
+  private Integer totalResourceCount;
+  private String moduleVersion;
 
   private JsonApiMeta() {
   }

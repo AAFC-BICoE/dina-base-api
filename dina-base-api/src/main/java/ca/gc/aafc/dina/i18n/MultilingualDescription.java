@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.i18n;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -25,7 +26,9 @@ import jakarta.validation.constraints.Size;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Value
-public class MultilingualDescription {
+public class MultilingualDescription implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private List<@Valid MultilingualPair> descriptions;
 
@@ -33,7 +36,9 @@ public class MultilingualDescription {
   @NoArgsConstructor
   @AllArgsConstructor
   @Value
-  public static class MultilingualPair {
+  public static class MultilingualPair implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @NotEmpty
     // 2 or 3 letters ISO 639 code
