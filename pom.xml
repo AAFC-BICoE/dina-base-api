@@ -54,9 +54,12 @@
     <jakarta.inject.version>2.0.1</jakarta.inject.version>
     <antlr4.version>4.13.0</antlr4.version>
     <jakarta.json-api.version>2.0.2</jakarta.json-api.version>
+    <xml-unit.version>2.10.0</xml-unit.version>
 
     <!-- Versions override-->
-<!--    <tomcat.version>10.1.55</tomcat.version>-->
+    <tomcat.version>10.1.56</tomcat.version>
+    <assertj.version>3.27.7</assertj.version>
+
     <testcontainers.version>1.21.4</testcontainers.version>
   </properties>
 
