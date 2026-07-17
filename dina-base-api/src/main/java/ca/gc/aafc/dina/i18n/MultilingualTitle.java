@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.i18n;
 
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,7 +23,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Value
-public class MultilingualTitle {
+public class MultilingualTitle implements Serializable {
 
   private List<@Valid MultilingualTitlePair> titles;
 
