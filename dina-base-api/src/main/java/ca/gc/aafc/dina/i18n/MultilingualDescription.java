@@ -28,8 +28,6 @@ import jakarta.validation.constraints.Size;
 @Value
 public class MultilingualDescription implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private List<@Valid MultilingualPair> descriptions;
 
   @Data
@@ -37,8 +35,6 @@ public class MultilingualDescription implements Serializable {
   @AllArgsConstructor
   @Value
   public static class MultilingualPair implements Serializable {
-
-    private static final long serialVersionUID = 1L;
 
     @NotEmpty
     // 2 or 3 letters ISO 639 code

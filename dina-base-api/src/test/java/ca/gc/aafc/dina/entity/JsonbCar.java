@@ -13,6 +13,7 @@ import org.hibernate.annotations.Type;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,7 @@ public class JsonbCar implements DinaEntity {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
-  public static class CarDetails {
+  public static class CarDetails implements Serializable {
     private String value;
   }
 }

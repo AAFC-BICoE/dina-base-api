@@ -30,6 +30,7 @@ public class KeycloakDisabledAuthConfig {
   @Bean
   public SecurityFilterChain configure(HttpSecurity http) throws Exception {
     http
+      .csrf(csrf -> csrf.disable())
       .authorizeHttpRequests(authz -> authz
         .anyRequest().permitAll()
       )
