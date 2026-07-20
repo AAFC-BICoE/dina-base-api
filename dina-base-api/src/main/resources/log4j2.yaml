@@ -27,6 +27,6 @@ Configuration:
             - ref: LogToConsole
 #            - ref: LogToFile
       Root:
-          level: warning
+          level: warn
           AppenderRef:
             - ref: LogToConsole

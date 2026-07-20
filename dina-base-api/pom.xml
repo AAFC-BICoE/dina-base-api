@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.172</version>
+    <version>0.173</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -25,7 +25,7 @@
 
     <javers.version>7.3.8</javers.version>
     <mybatis.version>3.0.5</mybatis.version>
-    <hypersistence-utils-hibernate-62.version>3.9.4</hypersistence-utils-hibernate-62.version>
+    <hypersistence-utils-hibernate-63.version>3.15.4</hypersistence-utils-hibernate-63.version>
 
     <jsoup.version>1.22.2</jsoup.version>
 
@@ -147,6 +147,15 @@
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
       <version>${commons.beanutils.version}</version>
+      <exclusions>
+        <!-- Exclude commons-logging to avoid conflicts with spring-jcl and Log4j2.
+             This project uses Log4j2 for logging (via spring-boot-starter-log4j2).
+             Spring's spring-jcl provides a bridge from commons-logging API to SLF4J/Log4j2. -->
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jsoup</groupId>
@@ -156,22 +165,22 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-filter</artifactId>
-      <version>0.172</version>
+      <version>0.173</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-messaging</artifactId>
-      <version>0.172</version>
+      <version>0.173</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-json</artifactId>
-      <version>0.172</version>
+      <version>0.173</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>0.172</version>
+      <version>0.173</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -214,8 +223,8 @@
 
     <dependency>
       <groupId>io.hypersistence</groupId>
-      <artifactId>hypersistence-utils-hibernate-62</artifactId>
-      <version>${hypersistence-utils-hibernate-62.version}</version>
+      <artifactId>hypersistence-utils-hibernate-63</artifactId>
+      <version>${hypersistence-utils-hibernate-63.version}</version>
     </dependency>
 
     <dependency>

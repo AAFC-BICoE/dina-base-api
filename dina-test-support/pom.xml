@@ -9,7 +9,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.172</version>
+    <version>0.173</version>
   </parent>
 
   <artifactId>dina-test-support</artifactId>
@@ -19,7 +19,6 @@
 
   <properties>
     <openapi4j.version>1.0.4</openapi4j.version>
-    <jackson-datatype-jsr310.version>2.11.0</jackson-datatype-jsr310.version>
   </properties>
 
   <dependencies>
@@ -27,13 +26,12 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-json</artifactId>
-      <version>0.172</version>
+      <version>0.173</version>
     </dependency>
     
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
-      <version>${jackson-datatype-jsr310.version}</version>
     </dependency>  
     <dependency>
       <groupId>com.fasterxml.jackson.module</groupId>
@@ -110,7 +108,7 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-search</artifactId>
-      <version>0.172</version>
+      <version>0.173</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

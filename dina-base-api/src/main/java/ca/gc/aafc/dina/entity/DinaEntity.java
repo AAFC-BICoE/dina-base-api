@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.entity;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -9,7 +10,7 @@ import java.util.UUID;
  * Represents a DINA entity with an id and uuid field. The id is usually the Primary Key
  * and auto-generated while the uuid is the natural key, a unique key that is publicly visible.
  */
-public interface DinaEntity {
+public interface DinaEntity extends Serializable {
 
   Integer getId();
 
