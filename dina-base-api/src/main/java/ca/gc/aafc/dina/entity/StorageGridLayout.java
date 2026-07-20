@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.entity;
 
+import java.io.Serializable;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,7 +16,7 @@ import java.util.regex.Pattern;
  */
 @Data
 @Builder
-public class StorageGridLayout {
+public class StorageGridLayout implements Serializable {
 
   @NotNull
   @Min(1)

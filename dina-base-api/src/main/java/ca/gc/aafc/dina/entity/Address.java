@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.entity;
 
+import java.io.Serializable;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,7 +12,7 @@ import jakarta.validation.constraints.Size;
  */
 @Data
 @Builder
-public class Address {
+public class Address implements Serializable {
 
   @Size(max = 150)
   private String addressLine1;

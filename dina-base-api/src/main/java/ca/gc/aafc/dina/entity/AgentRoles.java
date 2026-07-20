@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.entity;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 import jakarta.validation.constraints.Size;
@@ -16,7 +17,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class AgentRoles {
+public class AgentRoles implements Serializable {
   
   @NotNull
   private UUID agent;
