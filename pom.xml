@@ -6,7 +6,7 @@
 
   <groupId>io.github.aafc-bicoe</groupId>
   <artifactId>dina-base-parent</artifactId>
-  <version>0.173-SNAPSHOT</version>
+  <version>0.173</version>
 
   <packaging>pom</packaging>
 
@@ -57,7 +57,7 @@
     <xml-unit.version>2.10.0</xml-unit.version>
 
     <!-- Versions override-->
-    <tomcat.version>10.1.56</tomcat.version>
+    <tomcat.version>10.1.57</tomcat.version>
     <testcontainers.version>1.21.4</testcontainers.version>
   </properties>
 

@@ -38,10 +38,18 @@ jobs:
         run: mvn -pl dina-base-api jacoco:check
 
       - name: Run OWASP dependency-check (only on dev)
-        run: mvn org.owasp:dependency-check-maven:check
         if: ${{ github.ref == 'refs/heads/dev' }}
+        uses: dependency-check/Dependency-Check_Action@main
+        id: dina-base-api-dependency-check
         env:
-          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+          JAVA_HOME: /opt/jdk
+        with:
+          project: 'dina-base-api'
+          path: '.'
+          format: 'HTML'
+          args: >
+            --failOnCVSS 8
+            --suppression owasp-suppression.xml
 
       - name: Set up for Maven Central deploy (master branch only)
         if: ${{ github.ref == 'refs/heads/master' }}
