@@ -43,6 +43,7 @@ import ca.gc.aafc.dina.mapper.DinaMappingRegistry;
 import ca.gc.aafc.dina.repository.auditlog.AuditSnapshotRepository;
 import ca.gc.aafc.dina.security.TextHtmlSanitizer;
 import ca.gc.aafc.dina.security.auth.DinaAuthorizationService;
+import ca.gc.aafc.dina.security.auth.PermissionAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dina.util.ReflectionUtils;
@@ -174,6 +175,27 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
   protected Link generateLinkToResource(D dto) {
     return Link.of(
       Objects.toString(dto.getJsonApiType(), "") + "/" + Objects.toString(dto.getJsonApiId(), ""));
+  }
+
+  /**
+   * Checks if this repository is for the provided type
+   * @param type
+   * @return
+   */
+  public boolean isForJsonApiType(String type) {
+    return Objects.equals(jsonApiType, type);
+  }
+
+  public Set<String> checkPermissions(JsonApiDocument docToCheck) {
+
+    // make sure data is safe to manipulate
+    checkSubmittedData(docToCheck.getAttributes());
+    D dto = objMapper.convertValue(docToCheck.getAttributes(), resourceClass);
+
+    return authorizationService.getPermissionsForObject(
+      dinaMapper.toEntity(dto,
+        authorizationService instanceof PermissionAuthorizationService a ? a.evaluatedAttribute() :
+          Set.of(), null));
   }
 
   /**

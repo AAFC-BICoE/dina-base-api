@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.security.auth;
 
+import java.util.Set;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -76,6 +78,11 @@ public class GroupWithReadAuthorizationService extends PermissionAuthorizationSe
   @Override
   @PreAuthorize("hasMinimumGroupAndRolePermissions(@currentUser, 'USER', #entity)")
   public void authorizeDelete(Object entity) {
+  }
+
+  @Override
+  public Set<String> evaluatedAttribute() {
+    return Set.of("group");
   }
 
   @Override

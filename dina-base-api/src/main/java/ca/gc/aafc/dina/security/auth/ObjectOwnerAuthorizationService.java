@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.security.auth;
 
+import java.util.Set;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,11 @@ public class ObjectOwnerAuthorizationService extends PermissionAuthorizationServ
   @PreAuthorize("hasObjectOwnership(@currentUser, #entity)")
   public void authorizeDelete(Object entity) {
 
+  }
+
+  @Override
+  public Set<String> evaluatedAttribute() {
+    return Set.of("createdBy");
   }
 
   @Override
