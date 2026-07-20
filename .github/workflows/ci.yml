@@ -3,8 +3,6 @@ name: Java CI
 on: [push]
 
 permissions:
-  pages: write
-  id-token: write
   contents: read
 
 jobs:
@@ -78,8 +76,18 @@ jobs:
         with:
           path: 'target/generated-docs'
 
-      - name: Deploy to GitHub Pages (master branch only)
-        if: ${{ github.ref == 'refs/heads/master' }}
+  deploy:
+    if: ${{ github.ref == 'refs/heads/master' }}
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
