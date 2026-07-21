@@ -186,6 +186,11 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     return Objects.equals(jsonApiType, type);
   }
 
+  /**
+   * Checks permission on the provided json:api document.
+   * @param docToCheck
+   * @return
+   */
   public Set<String> checkPermissions(JsonApiDocument docToCheck) {
 
     // make sure data is safe to manipulate
@@ -198,11 +203,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
           Set.of(), null));
   }
 
-  /**
-   * Package-protected getter for DinaAuthorizationService
-   * @return
-   */
-  DinaAuthorizationService getAuthorizationService() {
+  public DinaAuthorizationService getAuthorizationService() {
     return authorizationService;
   }
 
