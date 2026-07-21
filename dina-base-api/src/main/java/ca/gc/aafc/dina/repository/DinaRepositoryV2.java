@@ -199,6 +199,14 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
   }
 
   /**
+   * Package-protected getter for DinaAuthorizationService
+   * @return
+   */
+  DinaAuthorizationService getAuthorizationService() {
+    return authorizationService;
+  }
+
+  /**
    * Handles bulk load.
    * @param jsonApiBulkDocument
    * @return

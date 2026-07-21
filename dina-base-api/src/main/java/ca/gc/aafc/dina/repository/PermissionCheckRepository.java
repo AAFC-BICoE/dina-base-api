@@ -1,12 +1,22 @@
 package ca.gc.aafc.dina.repository;
 
 import org.springframework.context.ApplicationContext;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 
-import jakarta.inject.Inject;
-import java.util.Map;
-
+import ca.gc.aafc.dina.dto.PermissionCheckDto;
+import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
+import ca.gc.aafc.dina.security.TextHtmlSanitizer;
+import ca.gc.aafc.dina.security.auth.PermissionAuthorizationService;
+
+import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiModel;
+
+import jakarta.inject.Inject;
+import java.net.URI;
+import java.util.Map;
+import java.util.UUID;
 
 @Repository
 public class PermissionCheckRepository {
@@ -14,11 +24,34 @@ public class PermissionCheckRepository {
   @Inject
   private ApplicationContext context;
 
-  public void checkPermissions(JsonApiDocument docToCheck) {
+  /**
+   * Called by a POST
+   * @param docToCheck
+   * @return
+   * @throws ResourceNotFoundException
+   */
+  public ResponseEntity<RepresentationModel<?>> handleCheckPermissions(JsonApiDocument docToCheck) throws ResourceNotFoundException {
     DinaRepositoryV2<?,?> repo = resolveRepository(docToCheck.getType());
 
-    // return that in the proper meta block
-    repo.checkPermissions(docToCheck);
+    if (repo == null) {
+      throw ResourceNotFoundException.create(PermissionCheckDto.TYPE_NAME, TextHtmlSanitizer.sanitizeText(docToCheck.getType()));
+    }
+
+    PermissionCheckDto dto;
+    if(repo.getAuthorizationService() instanceof PermissionAuthorizationService permissionAuthorizationService) {
+      dto = PermissionCheckDto.builder()
+        .id(UUID.randomUUID().toString())
+        .targetType(docToCheck.getType())
+        .permissions(repo.checkPermissions(docToCheck))
+        .permissionsProvider(permissionAuthorizationService.getName())
+        .evaluatedAttributes(permissionAuthorizationService.evaluatedAttribute())
+        .build();
+    } else {
+      throw new IllegalStateException("PermissionAuthorizationService instance required");
+    }
+
+    URI uri = URI.create(PermissionCheckDto.TYPE_NAME);
+    return ResponseEntity.created(uri).body(jsonApiModel().model(RepresentationModel.of(dto)).build());
   }
 
   private DinaRepositoryV2<?, ?> resolveRepository(String jsonApiType) {
