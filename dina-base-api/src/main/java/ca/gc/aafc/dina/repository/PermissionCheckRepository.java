@@ -32,7 +32,7 @@ public class PermissionCheckRepository {
    * @throws ResourceNotFoundException
    */
   public ResponseEntity<RepresentationModel<?>> handleCheckPermissions(JsonApiDocument docToCheck)
-    throws ResourceNotFoundException {
+      throws ResourceNotFoundException {
     DinaRepositoryV2<?, ?> repo = resolveRepository(docToCheck.getType());
 
     if (repo == null) {
