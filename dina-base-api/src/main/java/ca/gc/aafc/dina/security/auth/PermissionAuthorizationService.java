@@ -22,7 +22,7 @@ public abstract class PermissionAuthorizationService implements DinaAuthorizatio
    * Return the attribute(s) used by the specific authorization service to evaluate the permissions
    * @return
    */
-  public Set<String> evaluatedAttribute() {
+  public Set<String> evaluatedAttributes() {
     return Set.of();
   }
 }

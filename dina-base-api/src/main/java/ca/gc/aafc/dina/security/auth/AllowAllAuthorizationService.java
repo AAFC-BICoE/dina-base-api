@@ -2,6 +2,8 @@ package ca.gc.aafc.dina.security.auth;
 
 import java.util.Set;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 import ca.gc.aafc.dina.security.spring.SecurityChecker;
 
 /**
@@ -10,21 +12,25 @@ import ca.gc.aafc.dina.security.spring.SecurityChecker;
 public class AllowAllAuthorizationService implements DinaAuthorizationService {
 
   @Override
+  @PreAuthorize("isAuthenticated()")
   public void authorizeCreate(Object entity) {
     // do nothing
   }
 
   @Override
+  @PreAuthorize("isAuthenticated()")
   public void authorizeRead(Object entity) {
     // do nothing
   }
 
   @Override
+  @PreAuthorize("isAuthenticated()")
   public void authorizeUpdate(Object entity) {
     // do nothing
   }
 
   @Override
+  @PreAuthorize("isAuthenticated()")
   public void authorizeDelete(Object entity) {
     // do nothing
   }

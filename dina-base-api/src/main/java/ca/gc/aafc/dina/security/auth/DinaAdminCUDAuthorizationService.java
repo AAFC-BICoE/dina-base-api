@@ -13,6 +13,7 @@ public class DinaAdminCUDAuthorizationService extends PermissionAuthorizationSer
   }
 
   @Override
+  @PreAuthorize("isAuthenticated()")
   public void authorizeRead(Object entity) {
 
   }

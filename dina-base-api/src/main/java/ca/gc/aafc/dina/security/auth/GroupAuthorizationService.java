@@ -45,6 +45,7 @@ public class GroupAuthorizationService extends PermissionAuthorizationService {
    * @param entity
    */
   @Override
+  @PreAuthorize("allow()")
   public void authorizeRead(Object entity) {
   }
 
@@ -79,7 +80,7 @@ public class GroupAuthorizationService extends PermissionAuthorizationService {
   }
 
   @Override
-  public Set<String> evaluatedAttribute() {
+  public Set<String> evaluatedAttributes() {
     return Set.of("group");
   }
 

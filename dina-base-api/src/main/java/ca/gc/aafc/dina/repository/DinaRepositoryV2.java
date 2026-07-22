@@ -199,7 +199,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
 
     return authorizationService.getPermissionsForObject(
       dinaMapper.toEntity(dto,
-        authorizationService instanceof PermissionAuthorizationService a ? a.evaluatedAttribute() :
+        authorizationService instanceof PermissionAuthorizationService a ? a.evaluatedAttributes() :
           Set.of(), null));
   }
 

@@ -47,7 +47,7 @@ public class PermissionCheckRepository {
         .targetType(docToCheck.getType())
         .permissions(repo.checkPermissions(docToCheck))
         .permissionsProvider(permissionAuthorizationService.getName())
-        .evaluatedAttributes(permissionAuthorizationService.evaluatedAttribute())
+        .evaluatedAttributes(permissionAuthorizationService.evaluatedAttributes())
         .build();
     } else {
       throw new IllegalStateException("PermissionAuthorizationService instance required");

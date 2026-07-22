@@ -47,6 +47,14 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
   }
 
   /**
+   * Allow everything
+   * @return
+   */
+  public boolean allow() {
+    return true;
+  }
+
+  /**
    * Returns true if the given authenticated user is a member of the group the given target object belongs
    * to.
    *

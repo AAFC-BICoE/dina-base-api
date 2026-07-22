@@ -81,7 +81,7 @@ public class GroupWithReadAuthorizationService extends PermissionAuthorizationSe
   }
 
   @Override
-  public Set<String> evaluatedAttribute() {
+  public Set<String> evaluatedAttributes() {
     return Set.of("group");
   }
 

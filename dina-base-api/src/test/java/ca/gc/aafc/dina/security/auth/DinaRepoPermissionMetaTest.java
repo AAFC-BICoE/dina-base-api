@@ -124,7 +124,6 @@ public class DinaRepoPermissionMetaTest {
 //  }
 
   @TestConfiguration
- // @EntityScan(basePackageClasses = TestConfig.class)
   static class TestConfig {
     @Service
     public static class SpecialAuthServiceUnderTest extends PermissionAuthorizationService {

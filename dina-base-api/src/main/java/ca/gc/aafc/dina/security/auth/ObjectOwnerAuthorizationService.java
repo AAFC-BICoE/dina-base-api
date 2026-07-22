@@ -15,6 +15,7 @@ public class ObjectOwnerAuthorizationService extends PermissionAuthorizationServ
   }
 
   @Override
+  @PreAuthorize("isAuthenticated()")
   public void authorizeRead(Object entity) {
 
   }
@@ -32,7 +33,7 @@ public class ObjectOwnerAuthorizationService extends PermissionAuthorizationServ
   }
 
   @Override
-  public Set<String> evaluatedAttribute() {
+  public Set<String> evaluatedAttributes() {
     return Set.of("createdBy");
   }
 
