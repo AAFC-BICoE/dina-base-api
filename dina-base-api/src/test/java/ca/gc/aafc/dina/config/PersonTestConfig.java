@@ -45,6 +45,7 @@ import ca.gc.aafc.dina.mapper.DepartmentMapper;
 import ca.gc.aafc.dina.mapper.PersonMapper;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
 import ca.gc.aafc.dina.security.auth.AllowAllAuthorizationService;
+import ca.gc.aafc.dina.security.auth.GroupAuthorizationService;
 import ca.gc.aafc.dina.service.AuditService;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.service.DinaService;
@@ -123,11 +124,12 @@ public class PersonTestConfig {
   static class PersonDinaTestRepositoryV2 extends DinaRepositoryV2<PersonDTO, Person> {
     public PersonDinaTestRepositoryV2(
       DinaService<Person> dinaService,
+      GroupAuthorizationService groupAuthorizationService,
       BuildProperties buildProperties,
       Optional<AuditService> auditService,
       ObjectMapper objMapper
     ) {
-      super(dinaService, new AllowAllAuthorizationService(),
+      super(dinaService, groupAuthorizationService,
         auditService, PersonMapper.INSTANCE, PersonDTO.class, Person.class,
         buildProperties, objMapper);
     }

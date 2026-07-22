@@ -76,6 +76,9 @@ public final class SecurityChecker {
     if (this.checkObjectPreAuthorized(as, target, "authorizeUpdate")) {
       permissions.add(Operations.UPDATE.getValue());
     }
+    if (this.checkObjectPreAuthorized(as, target, "authorizeRead")) {
+      permissions.add(Operations.READ.getValue());
+    }
     return permissions;
   }
 
@@ -93,24 +96,6 @@ public final class SecurityChecker {
     return ExpressionUtils.evaluateAsBoolean(
       PARSER.parseExpression(getPreAuthorizeExpression(preAuthorizeMethod)), evaluationContext);
   }
-
-//  private boolean checkObjectPreAuthorized(
-//    @NonNull DinaAuthorizationService as,
-//    @NonNull Object entity,
-//    @NonNull String methodName
-//  ) {
-//    Method preAuthorizeMethod = MethodUtils.getMatchingMethod(as.getClass(), methodName, Object.class);
-//
-//    // Create a MethodInvocation instead of SimpleMethodInvocation
-//    MethodInvocation invocation = new MethodInvocationImpl(as, preAuthorizeMethod, new Object[]{entity});
-//
-//    EvaluationContext evaluationContext = config.createExpressionHandler().createEvaluationContext(
-//      SecurityContextHolder.getContext().getAuthentication(),
-//      invocation);
-//
-//    return ExpressionUtils.evaluateAsBoolean(
-//      PARSER.parseExpression(getPreAuthorizeExpression(preAuthorizeMethod)), evaluationContext);
-//  }
 
   private String getPreAuthorizeExpression(Method matchingMethod) {
     PreAuthorize annotation = matchingMethod.getAnnotation(PreAuthorize.class);

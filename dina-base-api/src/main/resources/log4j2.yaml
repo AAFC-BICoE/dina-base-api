@@ -22,11 +22,11 @@ Configuration:
       Logger:
         - name: ca.gc.aafc
           additivity: false
-          level: debug
+          level: INFO
           AppenderRef:
             - ref: LogToConsole
 #            - ref: LogToFile
       Root:
-          level: warn
+          level: WARN
           AppenderRef:
             - ref: LogToConsole

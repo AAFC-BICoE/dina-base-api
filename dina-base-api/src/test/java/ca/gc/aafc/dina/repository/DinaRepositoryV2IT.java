@@ -18,6 +18,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.SmartValidator;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
@@ -31,6 +33,7 @@ import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.config.PersonTestConfig;
 import ca.gc.aafc.dina.dto.ApiInfoDto;
 import ca.gc.aafc.dina.dto.JsonApiDto;
+import ca.gc.aafc.dina.dto.PermissionCheckDto;
 import ca.gc.aafc.dina.dto.PersonDTO;
 import ca.gc.aafc.dina.entity.Department;
 import ca.gc.aafc.dina.entity.Person;
@@ -582,5 +585,19 @@ public class DinaRepositoryV2IT {
       }
     }
 
+    @RestController
+    @RequestMapping(produces = JSON_API_VALUE)
+    static class TestPermissionCheckRepository extends PermissionCheckRepository {
+
+      public TestPermissionCheckRepository(List<DinaRepositoryV2<?, ?>> dinaRepositories) {
+        super(dinaRepositories);
+      }
+
+      @PostMapping(PermissionCheckDto.TYPE_NAME)
+      public ResponseEntity<RepresentationModel<?>> onPermissionCheck(@RequestBody JsonApiDocument docToCheck)
+          throws ResourceNotFoundException {
+        return handleCheckPermissions(docToCheck);
+      }
+    }
   }
 }

@@ -1,5 +1,7 @@
 package ca.gc.aafc.dina.security.auth;
 
+import java.util.Set;
+
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import ca.gc.aafc.dina.security.spring.DinaPermissionEvaluator;
 import ca.gc.aafc.dina.security.spring.MethodSecurityConfig;
@@ -43,6 +45,7 @@ public class GroupAuthorizationService extends PermissionAuthorizationService {
    * @param entity
    */
   @Override
+  @PreAuthorize("allow()")
   public void authorizeRead(Object entity) {
   }
 
@@ -74,6 +77,11 @@ public class GroupAuthorizationService extends PermissionAuthorizationService {
   @Override
   @PreAuthorize("hasMinimumGroupAndRolePermissions(@currentUser, 'USER', #entity)")
   public void authorizeDelete(Object entity) {
+  }
+
+  @Override
+  public Set<String> evaluatedAttributes() {
+    return Set.of("group");
   }
 
   @Override

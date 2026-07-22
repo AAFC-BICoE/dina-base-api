@@ -18,4 +18,11 @@ public abstract class PermissionAuthorizationService implements DinaAuthorizatio
     return checker.getPermissionsForObject(target, this);
   }
 
+  /**
+   * Return the attribute(s) used by the specific authorization service to evaluate the permissions
+   * @return
+   */
+  public Set<String> evaluatedAttributes() {
+    return Set.of();
+  }
 }
