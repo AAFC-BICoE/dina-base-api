@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.dto;
 import org.javers.core.metamodel.annotation.TypeName;
 import org.javers.core.metamodel.annotation.Value;
 
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +17,7 @@ import com.toedter.spring.hateoas.jsonapi.JsonApiId;
 @AllArgsConstructor
 @Value // This class is considered a "value" belonging to a parent DTO.
 @TypeName(ExternalRelationDto.TYPENAME)
-public class ExternalRelationDto {
+public class ExternalRelationDto implements Serializable {
 
   public static final String TYPENAME = "external-relation";
   public static final String ID_FIELD_NAME = "id";
