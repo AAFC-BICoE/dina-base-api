@@ -15,7 +15,7 @@ public class ObjectOwnerAuthorizationService extends PermissionAuthorizationServ
   }
 
   @Override
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("allow()")
   public void authorizeRead(Object entity) {
 
   }
