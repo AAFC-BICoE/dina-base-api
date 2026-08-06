@@ -184,4 +184,16 @@ public class AntlrGrammarTest {
     assertEquals(fiql, queryComponent.getFiql());
   }
 
+  @Test
+  public void onFiql_reservedWords_StringReturned() {
+    String fiql = "(name==\"GRDI_ECO_1000_IN-DB-PAD14-20160820-A_BE-BF2_S0086A7_R2\")";
+    String queryStr = "fiql=" + fiql;
+    QueryComponent queryComponent = QueryStringParser.parse(queryStr);
+    assertEquals(fiql, queryComponent.getFiql());
+
+    fiql = "\"(name==GRDI_ECO_1000_IN-DB-PAD14-20160820-A_BE-BF2_S0086A7_R2)\"";
+    queryStr = "fiql=" + fiql;
+    queryComponent = QueryStringParser.parse(queryStr);
+    assertEquals(fiql, queryComponent.getFiql());
+  }
 }
