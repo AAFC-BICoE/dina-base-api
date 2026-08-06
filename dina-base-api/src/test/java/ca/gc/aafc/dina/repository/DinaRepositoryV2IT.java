@@ -287,6 +287,14 @@ public class DinaRepositoryV2IT {
     assertEquals(2, resultList.resourceList().size());
     assertEquals("fiql test name 4", resultList.resourceList().getFirst().getDto().getName());
 
+    //make sure it is working with quotes
+    qc = QueryComponent.builder().fiql("\"(name==fiql test name 2),(name==fiql test name 4)\"")
+      .sorts(List.of("-name"))
+      .build();
+    resultList = repositoryV2.getAll(qc);
+    assertEquals(2, resultList.resourceList().size());
+    assertEquals("fiql test name 4", resultList.resourceList().getFirst().getDto().getName());
+
     qc = QueryComponent.builder().fiql("name==fiql*")
       .sorts(List.of("-name"))
       .build();

@@ -479,7 +479,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     boolean isFiqlBased = queryComponents.getFiql() != null;
 
     List<E> entities = isFiqlBased ?
-      loadEntities(queryComponents.getFiql(), pageOffset, pageLimit, queryComponents.getSorts(), includes, relationshipsPath) :
+      loadEntities(toSafeFiql(queryComponents.getFiql()), pageOffset, pageLimit, queryComponents.getSorts(), includes, relationshipsPath) :
       loadEntities(queryComponents, pageOffset, pageLimit, includes, relationshipsPath);
 
     List<JsonApiDto<D>> dtos = new ArrayList<>(entities.size());
@@ -498,7 +498,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     }
 
     Long resourceCount = isFiqlBased ?
-      dinaService.getResourceCount(entityClass, queryComponents.getFiql()) :
+      dinaService.getResourceCount(entityClass, toSafeFiql(queryComponents.getFiql())) :
       dinaService.getResourceCount(entityClass,
         (criteriaBuilder, root, em) -> {
           Predicate restriction =
@@ -660,6 +660,16 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
       return DEFAULT_PAGE_LIMIT;
     }
     return pageLimit;
+  }
+
+  /**
+   * For now safe is simply making sure the fiql engine will be able to work with the string.
+   * Remove quotes if required
+   * @param fiql
+   * @return
+   */
+  public static String toSafeFiql(String fiql) {
+    return StringUtils.unwrap(fiql, '"');
   }
 
   /**
