@@ -26,7 +26,7 @@ namePart: (ASCII_LETTER|UNDERSCORE)+ (ASCII_LETTER | INT | UNDERSCORE | DOT |
 propertyName: namePart;
 fieldName: namePart;
 type: (ASCII_LETTER|UNDERSCORE)+ (ASCII_LETTER | INT | UNDERSCORE | DASH)*;
-fiqlPart: (COMMA | SEMI | PARENTHESIS | attributeAcceptedValue | EXCL | EQUALS | ASTERISK)+;
+fiqlPart: (COMMA | SEMI | PARENTHESIS | attributeAcceptedValue | EXCL | EQUALS | ASTERISK | QUOTED_STRING)+;
 
 // sort property can start with a dash to indicate descending
 sortPropertyName: (DASH)? namePart;
