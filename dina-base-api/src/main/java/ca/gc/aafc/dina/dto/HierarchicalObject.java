@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.dto;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -11,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class HierarchicalObject {
+public class HierarchicalObject implements Serializable {
 
   @JsonIgnore
   private Integer id;
