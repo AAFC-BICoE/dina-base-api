@@ -7,6 +7,7 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -489,12 +490,20 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     addCalculatedAttributes(attributes, optionalFields);
     addNestedAttributesFromIncludes(attributes, includes);
 
+    int unauthorizedResources = 0;
     for (E e : entities) {
-      if (MapUtils.isNotEmpty(optionalFields)) {
-        dinaService.handleOptionalFields(e, optionalFields);
+      // filter out unauthorized resources
+      try {
+        authorizationService.authorizeRead(e);
+        if (MapUtils.isNotEmpty(optionalFields)) {
+          dinaService.handleOptionalFields(e, optionalFields);
+        }
+        dinaService.augmentEntity(e, includes);
+        dtos.add(jsonApiDtoAssistant.toJsonApiDto(dinaMapper.toDto(e, attributes, null), fields,
+          includes));
+      } catch (AuthorizationDeniedException ex) {
+        unauthorizedResources++;
       }
-      dinaService.augmentEntity(e, includes);
-      dtos.add(jsonApiDtoAssistant.toJsonApiDto(dinaMapper.toDto(e, attributes, null), fields, includes));
     }
 
     Long resourceCount = isFiqlBased ?
@@ -507,7 +516,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
           return restriction == null ? null : new Predicate[] {restriction};
         });
 
-    return new PagedResource<>(pageOffset, pageLimit, resourceCount.intValue(), dtos);
+    return new PagedResource<>(pageOffset, pageLimit, resourceCount.intValue() - unauthorizedResources, dtos);
   }
 
   /**
