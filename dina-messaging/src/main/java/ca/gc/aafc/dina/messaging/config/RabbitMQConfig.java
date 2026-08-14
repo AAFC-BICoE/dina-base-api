@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.messaging.config;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.DefaultJackson2JavaTypeMapper;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,8 @@ import lombok.extern.log4j.Log4j2;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import ca.gc.aafc.dina.messaging.DinaMessage;
 
 /**
  * Configuration of RabbitMQ related beans
@@ -55,7 +58,13 @@ public class RabbitMQConfig {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     objectMapper.registerModule(new JavaTimeModule());
-    return new Jackson2JsonMessageConverter(objectMapper);
+
+    DefaultJackson2JavaTypeMapper mapper = new DefaultJackson2JavaTypeMapper();
+    // explicitly allow dina messages
+    mapper.setTrustedPackages(DinaMessage.class.getPackageName() + ".message");
+    Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(objectMapper);
+    converter.setJavaTypeMapper(mapper);
+    return converter;
   }
 
   @Bean
