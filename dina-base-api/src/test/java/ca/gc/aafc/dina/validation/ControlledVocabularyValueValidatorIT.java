@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -170,7 +171,7 @@ public class ControlledVocabularyValueValidatorIT {
             .name("Controlled Term")
             .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
 
-    assertThrows(ValidationException.class, () -> controlledVocabularyItemService
+    var exception = assertThrows(ValidationException.class, () -> controlledVocabularyItemService
         .create(MyControlledVocabularyItem.builder()
             .uuid(UUID.randomUUID())
             .group("grp")
@@ -179,6 +180,20 @@ public class ControlledVocabularyValueValidatorIT {
             .createdBy(CONTROLLED_VOCAB_CREATED_BY)
             .multilingualDescription(MultilingualDescription.builder().build())
             .controlledVocabulary(managedAttribute).build()));
+
+    assertTrue(exception.getMessage().contains("description"));
+
+    var exception2 = assertThrows(ValidationException.class, () -> controlledVocabularyItemService
+      .create(MyControlledVocabularyItem.builder()
+        .uuid(UUID.randomUUID())
+        .group("grp")
+        .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.STRING)
+        .name("controlled term 1")
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY)
+        .multilingualDescription(MultilingualDescription.builder().descriptions(List.of(MultilingualDescription.MultilingualPair.of("en", ""))).build())
+        .controlledVocabulary(managedAttribute).build()));
+    assertTrue(exception2.getMessage().contains("empty"));
+
   }
 
   @Test
