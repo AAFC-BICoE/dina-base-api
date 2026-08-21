@@ -11,6 +11,7 @@ import ca.gc.aafc.dina.entity.MyControlledVocabulary;
 import ca.gc.aafc.dina.entity.MyControlledVocabularyItem;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.entity.ma.TestManagedAttributeUsage;
+import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.service.ControlledVocabularyItemService;
 import ca.gc.aafc.dina.service.ControlledVocabularyService;
 import ca.gc.aafc.dina.service.ControlledVocabularyServiceIT;
@@ -156,6 +157,28 @@ public class ControlledVocabularyValueValidatorIT {
     // try invalid key
     assertThrows(
       ValidationException.class, () -> myControlledTermValueValidator.validate(p, "controlled_term", "Controlled_Term_Invalid"));
+  }
+
+  @Test
+  void testEmptyDescription() {
+    UUID controlledVocabularyUuid = UUID.randomUUID();
+    MyControlledVocabulary managedAttribute = controlledVocabularyService
+        .create(MyControlledVocabulary.builder()
+            .uuid(controlledVocabularyUuid)
+            .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
+            .vocabClass(ControlledVocabulary.ControlledVocabularyClass.CONTROLLED_TERM)
+            .name("Controlled Term")
+            .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
+
+    assertThrows(ValidationException.class, () -> controlledVocabularyItemService
+        .create(MyControlledVocabularyItem.builder()
+            .uuid(UUID.randomUUID())
+            .group("grp")
+            .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.STRING)
+            .name("controlled term 1")
+            .createdBy(CONTROLLED_VOCAB_CREATED_BY)
+            .multilingualDescription(MultilingualDescription.builder().build())
+            .controlledVocabulary(managedAttribute).build()));
   }
 
   @Test
