@@ -123,7 +123,8 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
    * @return
    */
   public boolean isAdmin(DinaAuthenticatedUser user) {
-    return user.getAdminRoles().contains(DinaRole.DINA_ADMIN);
+    return user.getAdminRoles() != null &&
+        user.getAdminRoles().contains(DinaRole.DINA_ADMIN);
   }
 
   /**
@@ -132,8 +133,9 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
    * @return
    */
   public boolean isAdminForRead(DinaAuthenticatedUser user) {
-    return user.getAdminRoles().contains(DinaRole.DINA_ADMIN) ||
-      user.getAdminRoles().contains(DinaRole.READ_ONLY_ADMIN);
+    return user.getAdminRoles() != null &&
+        (user.getAdminRoles().contains(DinaRole.DINA_ADMIN) ||
+        user.getAdminRoles().contains(DinaRole.READ_ONLY_ADMIN));
   }
 
   /**
