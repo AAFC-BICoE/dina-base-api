@@ -1,19 +1,22 @@
 package ca.gc.aafc.dina.dto;
 
 import java.util.UUID;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 
 import ca.gc.aafc.dina.entity.AgentRoles;
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
+import lombok.Data;
 
 /**
 * Metadata describing a dataset for publication and exchange, including the
 * information required to generate an Ecological Metadata Language (EML)
 * document.
 */
-public class DatasetDto {
+@Data
+public class DatasetDto implements Serializable {
 
   public enum DatasetType {
     DWCA
