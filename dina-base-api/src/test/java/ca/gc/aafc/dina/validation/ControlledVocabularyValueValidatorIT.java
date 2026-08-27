@@ -11,6 +11,7 @@ import ca.gc.aafc.dina.entity.MyControlledVocabulary;
 import ca.gc.aafc.dina.entity.MyControlledVocabularyItem;
 import ca.gc.aafc.dina.entity.Person;
 import ca.gc.aafc.dina.entity.ma.TestManagedAttributeUsage;
+import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.service.ControlledVocabularyItemService;
 import ca.gc.aafc.dina.service.ControlledVocabularyService;
 import ca.gc.aafc.dina.service.ControlledVocabularyServiceIT;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -156,6 +158,42 @@ public class ControlledVocabularyValueValidatorIT {
     // try invalid key
     assertThrows(
       ValidationException.class, () -> myControlledTermValueValidator.validate(p, "controlled_term", "Controlled_Term_Invalid"));
+  }
+
+  @Test
+  void testEmptyDescription() {
+    UUID controlledVocabularyUuid = UUID.randomUUID();
+    MyControlledVocabulary managedAttribute = controlledVocabularyService
+        .create(MyControlledVocabulary.builder()
+            .uuid(controlledVocabularyUuid)
+            .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
+            .vocabClass(ControlledVocabulary.ControlledVocabularyClass.CONTROLLED_TERM)
+            .name("Controlled Term")
+            .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
+
+    var exception = assertThrows(ValidationException.class, () -> controlledVocabularyItemService
+        .create(MyControlledVocabularyItem.builder()
+            .uuid(UUID.randomUUID())
+            .group("grp")
+            .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.STRING)
+            .name("controlled term 1")
+            .createdBy(CONTROLLED_VOCAB_CREATED_BY)
+            .multilingualDescription(MultilingualDescription.builder().build())
+            .controlledVocabulary(managedAttribute).build()));
+
+    assertTrue(exception.getMessage().contains("description"));
+
+    var exception2 = assertThrows(ValidationException.class, () -> controlledVocabularyItemService
+      .create(MyControlledVocabularyItem.builder()
+        .uuid(UUID.randomUUID())
+        .group("grp")
+        .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.STRING)
+        .name("controlled term 1")
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY)
+        .multilingualDescription(MultilingualDescription.builder().descriptions(List.of(MultilingualDescription.MultilingualPair.of("en", ""))).build())
+        .controlledVocabulary(managedAttribute).build()));
+    assertTrue(exception2.getMessage().contains("empty"));
+
   }
 
   @Test
