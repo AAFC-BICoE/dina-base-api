@@ -118,6 +118,27 @@ public class DinaPermissionEvaluator extends SecurityExpressionRoot
   }
 
   /**
+   * Returns true if the given user has DINA_ADMIN role
+   * @param user
+   * @return
+   */
+  public boolean isAdmin(DinaAuthenticatedUser user) {
+    return user.getAdminRoles() != null &&
+        user.getAdminRoles().contains(DinaRole.DINA_ADMIN);
+  }
+
+  /**
+   * Returns true if the given user has DINA_ADMIN or READ_ONLY_ADMIN role
+   * @param user
+   * @return
+   */
+  public boolean isAdminForRead(DinaAuthenticatedUser user) {
+    return user.getAdminRoles() != null &&
+        (user.getAdminRoles().contains(DinaRole.DINA_ADMIN) ||
+        user.getAdminRoles().contains(DinaRole.READ_ONLY_ADMIN));
+  }
+
+  /**
    * Returns true if the given authenticated user is a member of the group the given target object belongs to
    * and also has the given role for that group.
    *

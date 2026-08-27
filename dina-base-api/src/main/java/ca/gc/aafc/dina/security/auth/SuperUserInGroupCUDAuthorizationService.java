@@ -1,0 +1,45 @@
+package ca.gc.aafc.dina.security.auth;
+
+import java.util.Set;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+
+
+/**
+ * Authorization service that will authorize SUPER_USER (and DINA_ADMIN) for the group of the entity.
+ * The currentUser must be at least SUPER_USER on the group defined on the entity.
+ */
+@Service
+public class SuperUserInGroupCUDAuthorizationService extends PermissionAuthorizationService {
+
+  @Override
+  @PreAuthorize("hasMinimumGroupAndRolePermissions(@currentUser, 'SUPER_USER', #entity)")
+  public void authorizeCreate(Object entity) {
+  }
+
+  @Override
+  @PreAuthorize("hasMinimumGroupAndRolePermissions(@currentUser, 'SUPER_USER', #entity)")
+  public void authorizeUpdate(Object entity) {
+  }
+
+  @Override
+  @PreAuthorize("hasMinimumGroupAndRolePermissions(@currentUser, 'SUPER_USER', #entity)")
+  public void authorizeDelete(Object entity) {
+  }
+
+  @Override
+  @PreAuthorize("allow()")
+  public void authorizeRead(Object entity) {
+  }
+
+  @Override
+  public Set<String> evaluatedAttributes() {
+    return Set.of("group");
+  }
+
+  @Override
+  public String getName() {
+    return SuperUserInGroupCUDAuthorizationService.class.getSimpleName();
+  }
+}

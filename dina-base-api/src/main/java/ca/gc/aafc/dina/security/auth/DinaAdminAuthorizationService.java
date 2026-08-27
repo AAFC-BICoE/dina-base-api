@@ -12,38 +12,38 @@ public class DinaAdminAuthorizationService extends PermissionAuthorizationServic
   /**
    * Utility method since the entity is not used to check the role
    */
-  @PreAuthorize("hasAdminRole(@currentUser, 'DINA_ADMIN')")
+  @PreAuthorize("isAdmin(@currentUser)")
   public void authorize() {
 
   }
 
   @Override
-  @PreAuthorize("hasAdminRole(@currentUser, 'DINA_ADMIN')")
+  @PreAuthorize("isAdmin(@currentUser)")
   public void authorizeCreate(Object entity) {
 
   }
 
   @Override
-  @PreAuthorize("hasAdminRole(@currentUser, 'DINA_ADMIN')")
+  @PreAuthorize("isAdmin(@currentUser)")
   public void authorizeRead(Object entity) {
 
   }
 
   @Override
-  @PreAuthorize("hasAdminRole(@currentUser, 'DINA_ADMIN')")
+  @PreAuthorize("isAdmin(@currentUser)")
   public void authorizeUpdate(Object entity) {
 
   }
 
   @Override
-  @PreAuthorize("hasAdminRole(@currentUser, 'DINA_ADMIN')")
+  @PreAuthorize("isAdmin(@currentUser)")
   public void authorizeDelete(Object entity) {
 
   }
 
   @Override
   public String getName() {
-    return "DinaAdminAuthorizationService";
+    return DinaAdminAuthorizationService.class.getSimpleName();
   }
 
 }
