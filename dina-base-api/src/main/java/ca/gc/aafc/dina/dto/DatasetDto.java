@@ -42,7 +42,7 @@ public class DatasetDto implements Serializable {
   public record UsageRights(
     String licenseName,
     String licenseUrl,
-    String usageTerms) {
+    String usageTerms) implements Serializable {
   }
 
   /**
@@ -51,7 +51,7 @@ public class DatasetDto implements Serializable {
    */
   public record KeywordSet(
     List<String> keywords,
-    String thesaurus) {
+    String thesaurus) implements Serializable {
   }
 
   /**
@@ -60,30 +60,30 @@ public class DatasetDto implements Serializable {
   public record Coverage(
     GeographicCoverage geographic,
     TemporalCoverage temporal,
-    List<TaxonomicCoverage> taxonomic) {
+    List<TaxonomicCoverage> taxonomic) implements Serializable {
   }
 
   public record GeographicCoverage(
     String geographicDescription,
-    BoundingBox boundingBox) {
+    BoundingBox boundingBox) implements Serializable {
   }
 
   public record BoundingBox(
     double west,
     double south,
     double east,
-    double north) {
+    double north) implements Serializable {
   }
 
   public record TemporalCoverage(
     LocalDate beginDate,
-    LocalDate endDate) {
+    LocalDate endDate) implements Serializable {
   }
 
   public record TaxonomicCoverage(
     String rank,
     String scientificName,
-    String commonName) {
+    String commonName) implements Serializable {
   }
   
 }
