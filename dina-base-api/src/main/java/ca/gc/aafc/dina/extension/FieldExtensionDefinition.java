@@ -22,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FieldExtensionDefinition {
-  
+
   private Extension extension;
 
   @Builder
@@ -75,7 +75,7 @@ public class FieldExtensionDefinition {
       return null;
     }
   }
-  
+
   @Builder
   @Getter
   @Setter
@@ -103,6 +103,9 @@ public class FieldExtensionDefinition {
     private MultilingualTitle multilingualTitle;
     private String dinaComponent;
 
+    private String conceptQueryEndpoint;
+    private String topLevelConcept;
+
     /**
      * Checks if the provided value is in the acceptedValues
      * If acceptedValues or value is null this method will return false;
@@ -128,5 +131,5 @@ public class FieldExtensionDefinition {
       return StringUtils.equals(this.key, key);
     }
   }
-  
+
 }

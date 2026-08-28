@@ -66,6 +66,8 @@ public final class TypedVocabularyElementValidator {
         break;
       case STRING:
         return true;
+      case CONCEPTURL:
+        return true;
       default: // unknown type
         return false;
     }
