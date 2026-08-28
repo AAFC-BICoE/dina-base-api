@@ -9,7 +9,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>0.177</version>
+    <version>0.178-SNAPSHOT</version>
   </parent>
 
   <artifactId>dina-test-support</artifactId>
@@ -26,7 +26,7 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-json</artifactId>
-      <version>0.177</version>
+      <version>0.178-SNAPSHOT</version>
     </dependency>
     
     <dependency>
@@ -108,7 +108,7 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-search</artifactId>
-      <version>0.177</version>
+      <version>0.178-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
