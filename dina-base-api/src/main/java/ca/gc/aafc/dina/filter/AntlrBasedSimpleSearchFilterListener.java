@@ -69,7 +69,6 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
         translateOperator(extractComparison(ctx)), ctx.attributeValue().getFirst().getText());
     }
     built.put(ctx, component);
-    System.out.println("EXIT FILTER: " + ctx.getText());
   }
 
   /**
@@ -171,9 +170,6 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
    */
   @Override
   public void exitExpression(SimpleSearchFilterParser.ExpressionContext ctx) {
-
-    System.out.println("EXIT EXPRESSION: " + ctx.getText()+ " -> " + built.get(ctx.filter()));
-
     if (ctx.filter() != null) {
       components.add(
           built.get(ctx.filter()));
