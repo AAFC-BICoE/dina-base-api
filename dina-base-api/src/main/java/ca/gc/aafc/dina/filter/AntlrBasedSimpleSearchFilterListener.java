@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.antlr.v4.runtime.tree.ParseTreeProperty;
+
 import lombok.Getter;
 
 import com.querydsl.core.types.Ops;
@@ -26,6 +29,13 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
   private final Map<String, List<String>> optFields = new HashMap<>();
   private final List<String> sortAttributes = new ArrayList<>();
 
+  /**
+   * Maps parser contexts to the FilterComponent built for that node.
+   * Used to assemble nested AND/OR filter groups while traversing
+   * the parse tree.
+   */
+  private final ParseTreeProperty<FilterComponent> built = new ParseTreeProperty<>();
+
   @Getter
   private String fiql;
 
@@ -37,6 +47,13 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
 
   @Override
   public void exitFilter(SimpleSearchFilterParser.FilterContext ctx) {
+
+    FilterComponent component;
+    if (ctx.propertyName() == null) {
+      throw new IllegalArgumentException(
+          "Invalid filter expression: " + ctx.getText());
+    }
+
     // more than 1 value means a OR
     if (ctx.attributeValue().size() > 1) {
       FilterGroup.FilterGroupBuilder fgBuilder =
@@ -46,11 +63,131 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
         fgBuilder.component(new FilterExpression(ctx.propertyName().getText(),
           translateOperator(extractComparison(ctx)), filterValue.getText()));
       }
-      components.add(fgBuilder.build());
-    } else if (ctx.attributeValue().size() == 1) {
-      components.add(new FilterExpression(ctx.propertyName().getText(),
-        translateOperator(extractComparison(ctx)), ctx.attributeValue().getFirst().getText()));
+      component = fgBuilder.build();
+    } else {
+      component = new FilterExpression(ctx.propertyName().getText(),
+        translateOperator(extractComparison(ctx)), ctx.attributeValue().getFirst().getText());
     }
+    built.put(ctx, component);
+  }
+
+  /**
+   * Resolves a primary filter expression to the FilterComponent previously
+   * built for either a filter predicate or a nested parenthesized expression.
+   */
+  @Override
+  public void exitFilterPrimary( SimpleSearchFilterParser.FilterPrimaryContext ctx) {
+
+    if (ctx.filter() != null) {
+      built.put(ctx, built.get(ctx.filter()));
+    } else {
+      built.put(ctx, built.get(ctx.filterOrExpression()));
+    }
+  }
+
+  /**
+   * Builds a FilterGroup using the AND conjunction.
+   *
+   * All child filter expressions or nested filter groups have already been
+   * constructed and stored in {@code built}. This method combines them into
+   * a single FilterGroup when more than one operand is present.
+   *
+   * Examples:
+   * (filter[a][EQ]=1&filter[b][EQ]=2)
+   * ((filter[a][EQ]=1|filter[b][EQ]=2)&filter[c][EQ]=3)
+   */
+  @Override
+  public void exitFilterAndExpression(SimpleSearchFilterParser.FilterAndExpressionContext ctx) {
+
+    if (ctx.filterPrimary().size() == 1) {
+      built.put(
+          ctx,
+          built.get(ctx.filterPrimary(0)));
+      return;
+    }
+
+    FilterGroup.FilterGroupBuilder builder = FilterGroup.builder()
+        .conjunction(FilterGroup.Conjunction.AND);
+
+    for (var primary : ctx.filterPrimary()) {
+      builder.component(built.get(primary));
+    }
+
+    built.put(ctx, builder.build());
+  }
+
+  /**
+   * Builds a FilterGroup using the OR conjunction.
+   *
+   * All child filter expressions or nested filter groups have already been
+   * constructed and stored in {@code built}. This method combines them into
+   * a single FilterGroup when more than one operand is present.
+   *
+   * Examples:
+   * (filter[a][EQ]=1|filter[b][EQ]=2)
+   * (filter[firstName][EQ]=John|filter[lastName][EQ]=John)
+   */
+  @Override
+  public void exitFilterOrExpression(
+      SimpleSearchFilterParser.FilterOrExpressionContext ctx) {
+
+    if (ctx.filterAndExpression().size() == 1) {
+      built.put(ctx, built.get(ctx.filterAndExpression(0)));
+      return;
+    }
+
+    FilterGroup.FilterGroupBuilder builder = FilterGroup.builder()
+        .conjunction(FilterGroup.Conjunction.OR);
+
+    for (var child : ctx.filterAndExpression()) {
+      builder.component(built.get(child));
+    }
+
+    built.put(ctx, builder.build());
+  }
+
+  /**
+   * Adds resolved filter components to the top-level component list.
+   *
+   * Individual filters and parenthesized filter groups are treated as
+   * top-level filter components. Multiple top-level components remain
+   * implicitly ANDed together when buildFilterComponent() is invoked.
+   *
+   * Examples:
+   * filter[a][EQ]=1&filter[b][EQ]=2
+   *
+   * becomes:
+   * AND(a, b)
+   *
+   * and:
+   * (filter[a][EQ]=1|filter[b][EQ]=2)&filter[c][EQ]=3
+   *
+   * becomes:
+   * AND(
+   * OR(a, b),
+   * c
+   * )
+   */
+  @Override
+  public void exitExpression(SimpleSearchFilterParser.ExpressionContext ctx) {
+    if (ctx.filter() != null) {
+      components.add(
+          built.get(ctx.filter()));
+    }
+
+    if (ctx.filterGroup() != null) {
+      components.add(
+          built.get(ctx.filterGroup()));
+    }
+  }
+
+  @Override
+  public void exitFilterGroup(
+      SimpleSearchFilterParser.FilterGroupContext ctx) {
+
+    built.put(
+        ctx,
+        built.get(ctx.filterOrExpression()));
   }
 
   @Override

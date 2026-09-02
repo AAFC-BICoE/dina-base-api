@@ -185,6 +185,113 @@ public class AntlrGrammarTest {
   }
 
   @Test
+  public void onOrGroupWithTopLevelFilter_andGroupReturned() {
+
+    String content = "(filter[firstName][EQ]=John|filter[lastName][EQ]=John)"
+        + "&filter[age][GT]=18";
+
+    QueryComponent queryComponent = QueryStringParser.parse(content);
+
+    FilterGroup root = (FilterGroup) queryComponent.getFilters();
+
+    assertEquals(FilterGroup.Conjunction.AND, root.getConjunction());
+    assertEquals(2, root.getComponents().size());
+
+    FilterGroup orGroup = (FilterGroup) root.getComponents().get(0);
+
+    assertEquals(FilterGroup.Conjunction.OR, orGroup.getConjunction());
+    assertEquals(2, orGroup.getComponents().size());
+  }
+
+  @Test
+  public void onNestedOrGroup_nestedFilterGroupsReturned() {
+
+    String content = "(filter[firstName][EQ]=John|"
+        + "(filter[lastName][EQ]=John|filter[nickname][EQ]=Johnny))";
+
+    QueryComponent queryComponent = QueryStringParser.parse(content);
+
+    FilterGroup root = (FilterGroup) queryComponent.getFilters();
+
+    assertEquals(FilterGroup.Conjunction.OR, root.getConjunction());
+    assertEquals(2, root.getComponents().size());
+
+    FilterGroup nested = (FilterGroup) root.getComponents().get(1);
+
+    assertEquals(FilterGroup.Conjunction.OR, nested.getConjunction());
+    assertEquals(2, nested.getComponents().size());
+  }
+
+  @Test
+  public void onMultipleFilters_existingAndBehaviorPreserved() {
+
+    String content = "filter[firstName][EQ]=John"
+        + "&filter[lastName][EQ]=Doe";
+
+    QueryComponent queryComponent = QueryStringParser.parse(content);
+
+    FilterGroup root = (FilterGroup) queryComponent.getFilters();
+
+    assertEquals(FilterGroup.Conjunction.AND, root.getConjunction());
+    assertEquals(2, root.getComponents().size());
+  }
+
+  @Test
+  public void onOrGroupWithOtherExpressions_everythingParsed() {
+
+    String content = "(filter[createdBy.name][EQ]=John"
+        + "|filter[updatedBy.name][EQ]=John)"
+        + "&sort=position,-name"
+        + "&page[limit]=10"
+        + "&include=author.name";
+
+    QueryComponent queryComponent = QueryStringParser.parse(content);
+
+    assertEquals(10, queryComponent.getPageLimit());
+
+    assertTrue(
+        queryComponent.getSorts().contains("position"));
+
+    assertTrue(
+        queryComponent.getSorts().contains("-name"));
+
+    assertTrue(
+        queryComponent.getIncludes().contains("author.name"));
+
+    FilterGroup root = (FilterGroup) queryComponent.getFilters();
+
+    assertEquals(FilterGroup.Conjunction.OR, root.getConjunction());
+  }
+
+  @Test
+public void onComplexFilterTree_structureReturned() {
+
+  String content =
+    "(filter[createdBy.name][EQ]=John Doe"
+      + "|filter[updatedBy.name][EQ]=John Doe)"
+      + "&filter[position][LT]=5";
+
+  QueryComponent queryComponent = QueryStringParser.parse(content);
+
+  FilterGroup root =
+    (FilterGroup) queryComponent.getFilters();
+
+  assertEquals(FilterGroup.Conjunction.AND, root.getConjunction());
+  assertEquals(2, root.getComponents().size());
+
+  FilterGroup orGroup =
+    (FilterGroup) root.getComponents().get(0);
+
+  assertEquals(FilterGroup.Conjunction.OR, orGroup.getConjunction());
+  assertEquals(2, orGroup.getComponents().size());
+
+  FilterExpression position =
+    (FilterExpression) root.getComponents().get(1);
+
+  assertEquals("position", position.attribute());
+}
+
+  @Test
   public void onFiql_reservedWords_StringReturned() {
     String fiql = "(name==\"GRDI_ECO_1000_IN-DB-PAD14-20160820-A_BE-BF2_S0086A7_R2\")";
     String queryStr = "fiql=" + fiql;

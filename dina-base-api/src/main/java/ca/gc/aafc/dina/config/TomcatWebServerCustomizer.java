@@ -13,6 +13,6 @@ public class TomcatWebServerCustomizer implements WebServerFactoryCustomizer<Tom
   @Override
   public void customize(TomcatServletWebServerFactory factory) {
     // Allow square brackets in URLs because they are often used in JSONAPI requests.
-    factory.addConnectorCustomizers(connector -> connector.setProperty("relaxedQueryChars", "[]"));
+    factory.addConnectorCustomizers(connector -> connector.setProperty("relaxedQueryChars", "[]|"));
   }
 }
