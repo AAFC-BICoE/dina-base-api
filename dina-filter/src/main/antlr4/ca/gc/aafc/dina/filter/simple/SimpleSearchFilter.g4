@@ -1,10 +1,35 @@
 grammar SimpleSearchFilter;
 
-simpleFilter: expression ( '&' expression )*;
+simpleFilter: expression ( AMP expression )*;
 
-expression: filter | fiql | fields | optFields | sort | page | include;
+expression: filter | filterGroup | fiql | fields | optFields | sort | page | include;
 
 filter: FILTER_KW '[' propertyName ']'( '[' comparison ']' )? '=' attributeValue (',' attributeValue)*;
+
+/**
+ * Logical filter expression supporting:
+ *  - OR (|)
+ *  - AND (&)
+ *  - nested grouping with parentheses
+ *
+ * AND has higher precedence than OR.
+ */
+filterGroup
+: LPAREN filterOrExpression RPAREN
+;
+
+filterOrExpression
+: filterAndExpression (PIPE filterAndExpression)*
+;
+
+filterAndExpression
+: filterPrimary (AMP filterPrimary)*
+;
+
+filterPrimary
+: filter
+| LPAREN filterOrExpression RPAREN
+;
 
 fiql: FIQL_KW '=' fiqlPart;
 
@@ -20,21 +45,17 @@ include: INCLUDE_KW '=' propertyName ( ',' propertyName )*;
 
 comparison: 'EQ' | 'NEQ' | 'GT' | 'GOE' | 'LT' | 'LOE' | 'LIKE' | 'ILIKE' | 'IN';
 
-namePart: (ASCII_LETTER|UNDERSCORE)+ (ASCII_LETTER | INT | UNDERSCORE | DOT |
-  FIELDS_KW | FILTER_KW | SORT_KW | PAGE_KW | INCLUDE_KW)*;
-
-propertyName: namePart;
-fieldName: namePart;
-type: (ASCII_LETTER|UNDERSCORE)+ (ASCII_LETTER | INT | UNDERSCORE | DASH)*;
-fiqlPart: (COMMA | SEMI | PARENTHESIS | attributeAcceptedValue | EXCL | EQUALS | ASTERISK | QUOTED_STRING)+;
+propertyName: PROPERTY_REFERENCE;
+type: PROPERTY_REFERENCE (DASH PROPERTY_REFERENCE)*;
+fiqlPart: (COMMA | SEMI | LPAREN | RPAREN | attributeAcceptedValue | EXCL | EQUALS | ASTERISK | QUOTED_STRING)+;
 
 // sort property can start with a dash to indicate descending
-sortPropertyName: (DASH)? namePart;
+sortPropertyName: (DASH)? PROPERTY_REFERENCE;
 
 attributeValue: QUOTED_STRING | attributeAcceptedValue;
 
 attributeAcceptedValue: (
-  ASCII_LETTER
+  PROPERTY_REFERENCE
   | UNICODE_NON_ASCII_LETTER
   | INT
   | UNDERSCORE
@@ -59,6 +80,9 @@ INCLUDE_KW: 'include';
 
 // lexer rules in order
 QUOTED_STRING: '"' (~["])* '"';
+PROPERTY_REFERENCE
+  : [a-zA-Z_][a-zA-Z0-9_.]*
+  ;
 INT: [0-9]+;
 ASCII_LETTER: [a-zA-Z]+;
 // Unicode letters except ASCII since ASCII already matched ASCII_LETTER
@@ -66,7 +90,10 @@ UNICODE_NON_ASCII_LETTER: [\p{L}];
 UNDERSCORE: [_];
 FORWARD_SLASH: [/];
 SPACE: [ ];
-PARENTHESIS: [()];
+AMP : '&';
+PIPE : '|';
+LPAREN : '(';
+RPAREN : ')';
 DASH: '-';
 DOT: '.';
 PERCENTAGE: '%';
