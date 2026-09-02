@@ -49,6 +49,11 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
   public void exitFilter(SimpleSearchFilterParser.FilterContext ctx) {
 
     FilterComponent component;
+    if (ctx.propertyName() == null) {
+      throw new IllegalArgumentException(
+          "Invalid filter expression: " + ctx.getText());
+    }
+
     // more than 1 value means a OR
     if (ctx.attributeValue().size() > 1) {
       FilterGroup.FilterGroupBuilder fgBuilder =
@@ -64,6 +69,7 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
         translateOperator(extractComparison(ctx)), ctx.attributeValue().getFirst().getText());
     }
     built.put(ctx, component);
+    System.out.println("EXIT FILTER: " + ctx.getText());
   }
 
   /**
@@ -165,6 +171,8 @@ class AntlrBasedSimpleSearchFilterListener extends SimpleSearchFilterBaseListene
    */
   @Override
   public void exitExpression(SimpleSearchFilterParser.ExpressionContext ctx) {
+
+    System.out.println("EXIT EXPRESSION: " + ctx.getText()+ " -> " + built.get(ctx.filter()));
 
     if (ctx.filter() != null) {
       components.add(
