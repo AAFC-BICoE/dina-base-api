@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
+import lombok.extern.jackson.Jacksonized;
 
 /**
  * Generic representation of an agent with one or multiple roles.
@@ -17,6 +18,7 @@ import lombok.experimental.SuperBuilder;
  */
 @Data
 @SuperBuilder
+@Jacksonized
 public class AgentRoles implements Serializable {
   
   @NotNull
