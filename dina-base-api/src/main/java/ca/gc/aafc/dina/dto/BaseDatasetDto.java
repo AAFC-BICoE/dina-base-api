@@ -23,6 +23,9 @@ public class BaseDatasetDto implements Serializable {
     DWCA
   }
 
+  public static final String AGENT_ROLE_CREATOR = "creator";
+  public static final String AGENT_ROLE_METADATA_PROVIDER = "metadataProvider";
+
   protected UUID uuid;
   protected String group;
 
