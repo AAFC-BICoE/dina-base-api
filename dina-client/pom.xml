@@ -17,17 +17,15 @@
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <properties>
-    <okhttp.version>4.12.0</okhttp.version>
+    <okhttp.version>5.5.0</okhttp.version>
     <retrofit.version>3.0.0</retrofit.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>okhttp</artifactId>
-      <version>${okhttp.version}</version>
+      <artifactId>okhttp-jvm</artifactId>
     </dependency>
-
     <dependency>
       <groupId>com.squareup.retrofit2</groupId>
       <artifactId>retrofit</artifactId>
@@ -39,6 +37,18 @@
       <version>${retrofit.version}</version>
     </dependency>
   </dependencies>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp-bom</artifactId>
+        <version>${okhttp.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <licenses>
     <license>
