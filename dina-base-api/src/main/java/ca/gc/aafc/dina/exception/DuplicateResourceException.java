@@ -6,7 +6,7 @@ import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class DuplicateResourceException extends RuntimeException {
+public final class DuplicateResourceException extends RuntimeException {
   private final String resourceType;
   private final String sourcePointer;
 
