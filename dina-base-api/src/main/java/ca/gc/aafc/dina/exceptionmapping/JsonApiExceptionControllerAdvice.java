@@ -15,6 +15,7 @@ import com.toedter.spring.hateoas.jsonapi.JsonApiError;
 import com.toedter.spring.hateoas.jsonapi.JsonApiErrors;
 
 import ca.gc.aafc.dina.exception.ConflictException;
+import ca.gc.aafc.dina.exception.DuplicateResourceException;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.exception.ResourcesGoneException;
@@ -130,6 +131,18 @@ public class JsonApiExceptionControllerAdvice {
   @ExceptionHandler
   public ResponseEntity<JsonApiErrors> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
     return buildUnprocessableEntityResponse(ex);
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleDuplicateResourceException(DuplicateResourceException ex) {
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+        JsonApiErrors.create().withError(
+            JsonApiError.create()
+                .withStatus(Integer.toString(HttpStatus.UNPROCESSABLE_ENTITY.value()))
+                .withCode("duplicate_resource")
+                .withTitle("Unprocessable Entity")
+                .withSourcePointer(ex.getSourcePointer())
+                .withDetail(TextHtmlSanitizer.sanitizeText(ex.getMessage()))));
   }
 
   @ExceptionHandler
