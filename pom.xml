@@ -118,7 +118,7 @@
 
   <build>
     <!-- declare plugin version to use in Maven modules-->
-    <pluginManagement>
+    <!-- <pluginManagement>
       <plugins>
         <plugin>
           <groupId>org.projectlombok</groupId>
@@ -126,7 +126,7 @@
           <version>${lombok-maven-plugin.version}</version>
         </plugin>
       </plugins>
-    </pluginManagement>
+    </pluginManagement> -->
 
     <plugins>
      <plugin>
