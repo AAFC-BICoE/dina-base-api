@@ -12,7 +12,6 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tennaito.rsql.misc.ArgumentParser;
 import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
 
@@ -102,7 +101,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
   protected final JsonApiModelAssistant<D> jsonApiModelAssistant;
 
   protected ObjectMapper objMapper;
-  private final ArgumentParser rsqlArgumentParser = new DinaFilterArgumentParser();
+  private final DinaFilterArgumentParser filterArgumentParser = new DinaFilterArgumentParser();
 
   public DinaRepositoryV2(@NonNull DinaService<E> dinaService,
                           @NonNull DinaAuthorizationService authorizationService,
@@ -511,7 +510,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
       dinaService.getResourceCount(entityClass,
         (criteriaBuilder, root, em) -> {
           Predicate restriction =
-            SimpleFilterHandlerV2.createPredicate(root, criteriaBuilder, rsqlArgumentParser::parse,
+            SimpleFilterHandlerV2.createPredicate(root, criteriaBuilder, filterArgumentParser::parse,
               em.getMetamodel(), fc);
           return restriction == null ? null : new Predicate[] {restriction};
         });
@@ -546,7 +545,7 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
       (criteriaBuilder, root, em) -> {
         EntityFilterHelper.leftJoinSortRelations(root, queryComponents.getSorts(), resourceClass, registry);
 
-        Predicate restriction = SimpleFilterHandlerV2.createPredicate(root, criteriaBuilder, rsqlArgumentParser::parse, em.getMetamodel(), fc);
+        Predicate restriction = SimpleFilterHandlerV2.createPredicate(root, criteriaBuilder, filterArgumentParser::parse, em.getMetamodel(), fc);
         return restriction == null ? null : new Predicate[]{restriction};
       },
       (cb, root) -> EntityFilterHelper.getOrders(cb, root, queryComponents.getSorts(), false),

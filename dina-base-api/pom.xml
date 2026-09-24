@@ -19,7 +19,6 @@
   <properties>
     <jcip-annotations.version>1.0</jcip-annotations.version>
     <local-javax-jaxb.version>2.3.0.1</local-javax-jaxb.version>
-    <rsql-jpa.version>2.0.2</rsql-jpa.version>
 
     <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
 
@@ -110,19 +109,6 @@
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-impl</artifactId>
       <version>${local-javax-jaxb.version}</version>
-    </dependency>
-
-    <!-- RSQL -->
-    <dependency>
-      <groupId>com.github.tennaito</groupId>
-      <artifactId>rsql-jpa</artifactId>
-      <version>${rsql-jpa.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.eclipse.persistence</groupId>
-          <artifactId>javax.persistence</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <!-- JaVers auditing -->
