@@ -21,7 +21,7 @@
 
     <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
 
-    <javers.version>7.3.8</javers.version>
+    <javers.version>7.9.0</javers.version>
     <mybatis.version>3.0.5</mybatis.version>
     <hypersistence-utils-hibernate-63.version>3.15.4</hypersistence-utils-hibernate-63.version>
 
