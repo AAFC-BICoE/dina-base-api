@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.entity;
 import java.io.Serializable;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
+import lombok.extern.jackson.Jacksonized;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -11,6 +12,7 @@ import jakarta.validation.constraints.Size;
  */
 @Data
 @SuperBuilder
+@Jacksonized
 public class Address implements Serializable {
 
   @Size(max = 150)
