@@ -34,10 +34,16 @@ public class FileDownloader {
   private final TokenBasedRequestBuilder tokenBasedRequestBuilder;
   private final Set<String> allowedHosts;
 
+  /**
+   * @param openIdConnectConfig OpenID Connect configuration used to get the access token
+   * @param allowedHosts hosts the access token may be sent to
+   */
   public FileDownloader(OpenIdConnectConfig  openIdConnectConfig, Set<String> allowedHosts) {
     AccessTokenManager accessTokenManager = new AccessTokenManager(openIdConnectConfig);
     httpClient = new OkHttpClient.Builder()
       .authenticator(new AccessTokenAuthenticator(accessTokenManager))
+      .followRedirects(false)
+      .followSslRedirects(false)
       .build();
     tokenBasedRequestBuilder = new TokenBasedRequestBuilder(accessTokenManager);
     this.allowedHosts = allowedHosts;
@@ -70,12 +76,12 @@ public class FileDownloader {
 
     try (Response response = downloadCall.execute()) {
 
-      Path destinationFile = destinationFileFunction.apply(extractFilenameFromResponse(response));
-
       ResponseBody body = response.body();
       if (!response.isSuccessful() || body == null) {
         throw new IllegalStateException("Can't read response body from downloadUrl. Returned code: " + response.code());
       }
+
+      Path destinationFile = destinationFileFunction.apply(extractFilenameFromResponse(response));
       try (OutputStream outputStream = new FileOutputStream(destinationFile.toFile());
            InputStream inputStream = body.byteStream()) {
         IOUtils.copy(inputStream, outputStream);

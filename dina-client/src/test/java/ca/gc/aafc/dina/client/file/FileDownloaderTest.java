@@ -23,6 +23,7 @@ import mockwebserver3.RecordedRequest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FileDownloaderTest {
 
@@ -96,6 +97,23 @@ public class FileDownloaderTest {
 
     assertEquals(List.of("evil.txt"), receivedFilenames);
     assertEquals(FILE_CONTENT, Files.readString(tempDir.resolve("evil.txt")));
+  }
+
+  @Test
+  void downloadFile_onErrorResponse_destinationFunctionNotCalled() {
+    server.setDispatcher(dispatcher(new MockResponse.Builder()
+      .code(404)
+      .setHeader("Content-Disposition", "attachment; filename=\"export.csv\"")
+      .build()));
+
+    List<String> receivedFilenames = new ArrayList<>();
+    assertThrows(IllegalStateException.class, () ->
+      fileDownloader.downloadFile(server.url("/file/abc").toString(), filename -> {
+        receivedFilenames.add(filename);
+        return tempDir.resolve("export.csv");
+      }));
+
+    assertTrue(receivedFilenames.isEmpty());
   }
 
   @Test
