@@ -55,6 +55,7 @@
     <antlr4.version>4.13.1</antlr4.version>
     <jakarta.json-api.version>2.0.2</jakarta.json-api.version>
     <xml-unit.version>2.10.0</xml-unit.version>
+    <commons-io.version>2.22.0</commons-io.version>
 
     <!-- Versions override-->
     <tomcat.version>10.1.59</tomcat.version>
