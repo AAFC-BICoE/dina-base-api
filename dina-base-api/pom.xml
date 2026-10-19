@@ -31,7 +31,6 @@
     <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 
     <commons.beanutils.version>1.11.0</commons.beanutils.version>
-    <commons-io.version>2.22.0</commons-io.version>
     <commons-csv.version>1.14.1</commons-csv.version>
     <apache-cxf.version>4.2.3</apache-cxf.version>
 
@@ -164,7 +163,6 @@
       <artifactId>antlr4-runtime</artifactId>
       <version>${antlr4.version}</version>
     </dependency>
-
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
