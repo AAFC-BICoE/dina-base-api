@@ -47,7 +47,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
 import org.testcontainers.containers.RabbitMQContainer;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import jakarta.inject.Inject;
 import java.util.ArrayList;
@@ -190,7 +190,7 @@ class MessageProducingServiceTest {
   }
 
   private static DocumentOperationNotification mapResult(String content) throws java.io.IOException {
-    return new ObjectMapper().readValue(content, DocumentOperationNotification.class);
+    return JsonMapper.builder().build().readValue(content, DocumentOperationNotification.class);
   }
 
   @TestConfiguration
