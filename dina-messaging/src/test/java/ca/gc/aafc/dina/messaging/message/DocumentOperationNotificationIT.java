@@ -2,7 +2,7 @@ package ca.gc.aafc.dina.messaging.message;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 
 import ca.gc.aafc.dina.messaging.DinaMessage;
 import ca.gc.aafc.dina.testsupport.TestResourceHelper;
@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 public class DocumentOperationNotificationIT {
 
   @Test
-  public void testSerDe() throws JsonProcessingException {
+  public void testSerDe() throws JacksonException {
 
     DocumentOperationNotification don = DocumentOperationNotification.builder()
       .documentId("abc")

@@ -5,8 +5,8 @@ import java.io.UnsupportedEncodingException;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiBulkResourceIdentifierDocument;
@@ -62,12 +62,12 @@ public abstract class MockMvcBasedRepository {
   }
 
   protected JsonApiDocument toJsonApiDocument(MvcResult mvcResult)
-      throws UnsupportedEncodingException, JsonProcessingException {
+      throws UnsupportedEncodingException, JacksonException {
     return objMapper.readValue(mvcResult.getResponse().getContentAsString(), JsonApiDocument.class);
   }
 
   protected JsonApiBulkDocument toJsonApiBulkDocument(MvcResult mvcResult)
-      throws UnsupportedEncodingException, JsonProcessingException {
+      throws UnsupportedEncodingException, JacksonException {
     return objMapper.readValue(mvcResult.getResponse().getContentAsString(), JsonApiBulkDocument.class);
   }
 

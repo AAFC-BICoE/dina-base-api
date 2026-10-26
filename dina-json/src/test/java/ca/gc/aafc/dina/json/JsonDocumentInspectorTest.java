@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,7 +14,7 @@ public class JsonDocumentInspectorTest {
 
   @Test
   public void testPredicateOnValues_onPredicateReturnsFalse_inspectorReturnsFalse()
-    throws JsonProcessingException {
+    throws JacksonException {
 
     Map<String, Object> multilingualDescription = TestConstants.OBJECT_MAPPER.readValue(
       """
@@ -27,11 +27,11 @@ public class JsonDocumentInspectorTest {
 
   @Test
   public void testPredicateOnValues_onPredicateReturnsFalse_inspectorReturnsFalseOnArrayElements()
-    throws JsonProcessingException {
+    throws JacksonException {
 
     Map<String, Object> names = TestConstants.OBJECT_MAPPER.readValue(
       """
-        {"names":["name 1", ""]}}
+        {"names":["name 1", ""]}
         """, TestConstants.IT_OM_TYPE_REF);
     assertFalse(JsonDocumentInspector.testPredicateOnValues(
       names, StringUtils::isNotBlank));
@@ -39,7 +39,7 @@ public class JsonDocumentInspectorTest {
     // make sure our assumption is right
     names = TestConstants.OBJECT_MAPPER.readValue(
       """
-        {"names":["name 1", "name 2"]}}
+        {"names":["name 1", "name 2"]}
         """, TestConstants.IT_OM_TYPE_REF);
     assertTrue(JsonDocumentInspector.testPredicateOnValues(
       names, StringUtils::isNotBlank));
@@ -47,7 +47,7 @@ public class JsonDocumentInspectorTest {
 
   @Test
   public void testPredicateOnValues_onPredicateReturnsFalse_inspectorReturnsFalseOnNestedArrayElements()
-    throws JsonProcessingException {
+    throws JacksonException {
     Map<String, Object> multilingualDescription = TestConstants.OBJECT_MAPPER.readValue(
       """
         {"descriptions":[{"lang":"en","desc":"en"},{"lang":"fr","desc":"fr", "notes":["a", ""]}]}

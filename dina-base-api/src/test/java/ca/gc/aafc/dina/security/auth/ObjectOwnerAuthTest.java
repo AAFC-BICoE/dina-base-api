@@ -30,7 +30,7 @@ import java.util.UUID;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 @Transactional
 @SpringBootTest(classes = {TestDinaBaseApp.class, ObjectOwnerAuthTest.ObjectOwnerAuthTestConfig.class},
