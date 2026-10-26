@@ -46,7 +46,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
-import org.testcontainers.containers.RabbitMQContainer;
+import org.testcontainers.rabbitmq.RabbitMQContainer;
 import tools.jackson.databind.json.JsonMapper;
 
 import jakarta.inject.Inject;
@@ -90,7 +90,6 @@ class MessageProducingServiceTest {
 
   @BeforeAll
   static void beforeAll() {
-    CONTAINER.withQueue("que");
     CONTAINER.withAdminPassword(null);
     CONTAINER.start();
   }

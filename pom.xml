@@ -61,7 +61,6 @@
     <elasticsearch-client.version>8.18.8</elasticsearch-client.version>
     <groovy.version>4.0.32</groovy.version>
     <json-path.version>3.0.0</json-path.version>
-    <testcontainers.version>1.21.4</testcontainers.version>
   </properties>
 
   <!-- Common sub module dependencies -->
