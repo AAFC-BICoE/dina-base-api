@@ -1,114 +1,115 @@
 package ca.gc.aafc.dina.testsupport.specs;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.openapi4j.core.model.v3.OAI3;
-import org.openapi4j.core.validation.ValidationResult;
-import org.openapi4j.core.validation.ValidationResults;
-import org.openapi4j.schema.validator.BaseJsonValidator;
-import org.openapi4j.schema.validator.ValidationContext;
-import org.openapi4j.schema.validator.ValidationData;
-import org.openapi4j.schema.validator.v3.SchemaValidator;
-
-import static org.openapi4j.core.model.v3.OAI3SchemaKeywords.ADDITIONALPROPERTIES;
-import static org.openapi4j.core.model.v3.OAI3SchemaKeywords.REQUIRED;
-import static org.openapi4j.core.validation.ValidationSeverity.ERROR;
+import com.networknt.schema.ExecutionContext;
+import com.networknt.schema.Schema;
+import com.networknt.schema.SchemaContext;
+import com.networknt.schema.SchemaLocation;
+import com.networknt.schema.keyword.Keyword;
+import com.networknt.schema.keyword.KeywordValidator;
+import com.networknt.schema.keyword.PropertiesValidator;
+import com.networknt.schema.path.NodePath;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Used for Open api response validation. Given {@link ValidationRestrictionOptions} to set if additional
  * fields are allowed and to specify which fields may remain missing. Default validation Ensures all
  * attributes and relations are present in the response and does not allow additional fields.
+ *
+ * It replaces the standard "properties" keyword: the standard validation is performed first and the
+ * restrictive checks are added on top of it.
  */
-class RestrictiveFieldValidator extends BaseJsonValidator<OAI3> {
-
-  private static final ValidationResult MISSING_FIELD_ERROR =
-    new ValidationResult(ERROR, 1026, "Field '%s' is required.");
-  private static final ValidationResults.CrumbInfo CRUMB_MISSING_FIELD =
-    new ValidationResults.CrumbInfo(REQUIRED, true);
-
-  private static final ValidationResult ADDITIONAL_FIELD_ERROR =
-    new ValidationResult(ERROR, 1000, "Additional property '%s' is not allowed.");
-  private static final ValidationResults.CrumbInfo ADDITIONAL_FIELD_CRUMB =
-    new ValidationResults.CrumbInfo(ADDITIONALPROPERTIES, true);
+class RestrictiveFieldValidator extends PropertiesValidator {
 
   private final ValidationRestrictionOptions options;
 
-  protected RestrictiveFieldValidator(
-    ValidationContext<OAI3> context,
-    JsonNode schemaNode,
-    JsonNode schemaParentNode,
-    SchemaValidator parentSchema,
-    ValidationRestrictionOptions options
-  ) {
-    super(context, schemaNode, schemaParentNode, parentSchema);
+  RestrictiveFieldValidator(SchemaLocation schemaLocation, JsonNode schemaNode, Schema parentSchema,
+                            SchemaContext schemaContext, ValidationRestrictionOptions options) {
+    super(schemaLocation, schemaNode, parentSchema, schemaContext);
     this.options = options == null ? ValidationRestrictionOptions.FULL_RESTRICTIONS : options;
   }
 
   /**
+   * Creates the "properties" {@link Keyword} to register in a dialect.
+   */
+  static Keyword keyword(ValidationRestrictionOptions options) {
+    return new Keyword() {
+      @Override
+      public String getValue() {
+        return PROPERTY;
+      }
+
+      @Override
+      public KeywordValidator newValidator(SchemaLocation schemaLocation, JsonNode schemaNode,
+                                           Schema parentSchema, SchemaContext schemaContext) {
+        return new RestrictiveFieldValidator(schemaLocation, schemaNode, parentSchema, schemaContext, options);
+      }
+    };
+  }
+
+  /**
    * Compares provided API response/request against schema specifications.
-   * 
-   * OpenAPI4j will validate each level independently. We need to perform the check on each level.
-   * 
-   * The schemaNode will also automatically update to the level we are currently at.
-   * 
-   * This method will scan one level at a time. If a nested object is found, it will run this method
-   * again with a new schemaPath and valuePath based on the new level. Any fields in the
-   * allowableMissingFields with nested objects will not be scanned any further.
-   * 
+   *
+   * Each level is validated independently so the check is performed on each level. The schemaNode
+   * is the "properties" node of the level we are currently at.
+   *
    * This validator will consider all fields provided in the schema as "required". Even though it is
    * possible for some of these fields to not be provided. This is by design to ensure that new
    * fields are validated against the schema as they are added.
-   * 
-   * Couple of options can be provided to this validator (from the constructor):
-   *    setAllowableMissingFields:
-   *        List of string names of the fields you would like to ignore from the required
-   *        field check. This also works for relationships.
+   *
+   * Options:
+   *    allowableMissingFields:
+   *        Names of the fields to ignore from the required field check. This also works for
+   *        relationships and fields nested under them.
    *    allowAdditionalFields:
-   *        Default is false. When true, fields that are not on the schema will not cause a 
+   *        Default is false. When true, fields that are not on the schema will not cause a
    *        validation error.
    */
   @Override
-  public boolean validate(JsonNode valueNode, ValidationData<?> validation) {
+  public void validate(ExecutionContext executionContext, JsonNode node, JsonNode rootNode,
+                       NodePath instanceLocation) {
+    super.validate(executionContext, node, rootNode, instanceLocation);
+
+    if (!node.isObject()) {
+      return;
+    }
+
     // If we are at a level that contains attributes or data nodes then we can skip it.
-    if (valueNode.has("attributes") || valueNode.has("data")) {
-      return true;
+    if (node.has("attributes") || node.has("data")) {
+      return;
     }
 
-    // If the result crumbs contains a allowable missing field, then skip checking anything.
-    boolean pathContainsAllowableMissingField = validation.results().crumbs().stream()
-      .map(crumb -> crumb.crumb())
-      .anyMatch(this::containsAllowableMissingField);
-    if (pathContainsAllowableMissingField) {
-      return true;
+    // If the path to this level goes through an allowable missing field, skip checking anything.
+    for (int i = 0; i < instanceLocation.getNameCount(); i++) {
+      if (isAllowableMissingField(instanceLocation.getName(i))) {
+        return;
+      }
     }
 
-    // Retrieved all fields at this level in the valueNode.
-    getSchemaNode().fieldNames().forEachRemaining(fieldName -> {
-      // Does the value node provided contain this field name?
-      if (!valueNode.has(fieldName) && !containsAllowableMissingField(fieldName)) {
-        // Report a missing schema value.
-        validation.add(CRUMB_MISSING_FIELD, MISSING_FIELD_ERROR, fieldName);
+    getSchemaNode().propertyNames().forEach(fieldName -> {
+      if (!node.has(fieldName) && !isAllowableMissingField(fieldName)) {
+        executionContext.addError(error().keyword("required").messageKey("required")
+          .instanceNode(node).property(fieldName).instanceLocation(instanceLocation)
+          .evaluationPath(executionContext.getEvaluationPath())
+          .locale(executionContext.getExecutionConfig().getLocale())
+          .message("Field '" + fieldName + "' is required.").build());
       }
     });
 
-    // If allow additional fields is true, then we can ignore the required and additional field checks.
     if (!options.isAllowAdditionalFields()) {
-      valueNode.fieldNames().forEachRemaining(fieldName -> {
-        // Does the schema contain this field, or is it an additional field.
-        if (!getSchemaNode().has(fieldName) && !containsAllowableMissingField(fieldName)) {
-          // Report an additional schema value.
-          validation.add(ADDITIONAL_FIELD_CRUMB, ADDITIONAL_FIELD_ERROR, fieldName);
+      node.propertyNames().forEach(fieldName -> {
+        if (!getSchemaNode().has(fieldName) && !isAllowableMissingField(fieldName)) {
+          executionContext.addError(error().keyword("additionalProperties").messageKey("additionalProperties")
+            .instanceNode(node).property(fieldName).instanceLocation(instanceLocation.append(fieldName))
+            .evaluationPath(executionContext.getEvaluationPath())
+            .locale(executionContext.getExecutionConfig().getLocale())
+            .message("Additional property '" + fieldName + "' is not allowed.").build());
         }
       });
     }
-
-    return true;
   }
 
-  private boolean containsAllowableMissingField(String fieldName) {
-    if (fieldName == null || options == null || options.getAllowableMissingFields() == null) {
-      return false;
-    }
-
-    return options.getAllowableMissingFields().contains(fieldName);
+  private boolean isAllowableMissingField(String fieldName) {
+    return fieldName != null && options.getAllowableMissingFields() != null
+      && options.getAllowableMissingFields().contains(fieldName);
   }
 }

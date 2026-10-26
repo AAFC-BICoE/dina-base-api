@@ -1,28 +1,24 @@
 package ca.gc.aafc.dina.testsupport.specs;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.networknt.schema.Error;
+import com.networknt.schema.Schema;
+import com.networknt.schema.SchemaLocation;
+import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.dialect.Dialect;
+import com.networknt.schema.dialect.Dialects;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
-import org.openapi4j.core.exception.EncodeException;
-import org.openapi4j.core.exception.ResolutionException;
-import org.openapi4j.core.model.reference.Reference;
-import org.openapi4j.core.model.v3.OAI3;
-import org.openapi4j.core.model.v3.OAI3SchemaKeywords;
-import org.openapi4j.core.validation.ValidationException;
-import org.openapi4j.parser.OpenApi3Parser;
-import org.openapi4j.parser.model.v3.OpenApi3;
-import org.openapi4j.parser.model.v3.Schema;
-import org.openapi4j.parser.validation.v3.OpenApi3Validator;
-import org.openapi4j.schema.validator.ValidationContext;
-import org.openapi4j.schema.validator.ValidationData;
-import org.openapi4j.schema.validator.v3.SchemaValidator;
 import org.springframework.http.HttpMethod;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,7 +33,10 @@ public final class OpenAPI3Assertions {
 
   public static final String SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY = "testing.skip-remote-schema-validation";
 
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+  private static final ObjectMapper YAML_MAPPER = YAMLMapper.builder().build();
+  private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+
+  private static final String SCHEMA_POINTER_PREFIX = "#/components/schemas/";
 
   private OpenAPI3Assertions() {
   }
@@ -56,7 +55,7 @@ public final class OpenAPI3Assertions {
   }
 
   /**
-   * Same as {@link #assertSchema(OpenApi3, String, String, ValidationRestrictionOptions)} but the assertion can be skipped by setting
+   * Same as {@link #assertSchema(URL, String, String, ValidationRestrictionOptions)} but the assertion can be skipped by setting
    * the System property {@link #SKIP_REMOTE_SCHEMA_VALIDATION_PROPERTY} to true.
    *
    * @param specsUrl    location of the spec
@@ -75,7 +74,7 @@ public final class OpenAPI3Assertions {
 
   /**
    * Assert an API response against an OpenAPI 3 Specification located at specsUrl with strict mode on. See
-   * {@link #assertSchema(OpenApi3, String, String, ValidationRestrictionOptions)}
+   * {@link #assertSchema(URL, String, String, ValidationRestrictionOptions)}
    *
    * @param specsUrl    location of the spec
    * @param schemaName  schema name
@@ -99,135 +98,70 @@ public final class OpenAPI3Assertions {
     Objects.requireNonNull(schemaName, "schemaName shall be provided");
     Objects.requireNonNull(apiResponse, "apiResponse shall be provided");
 
-    OpenApi3 openApi3 = innerParseAndValidateOpenAPI3Specs(specsUrl) ;
-    assertSchema(openApi3, schemaName, apiResponse, options);
-  }
-
-  /**
-   * Assert an API response against the provided OpenAPI 3 Specification with strict mode on. See {@link
-   * #assertSchema(URL, String, String, ValidationRestrictionOptions)}
-   *
-   * @param openApi     provided specification
-   * @param schemaName  schema name
-   * @param apiResponse the api response to assert
-   */
-  public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse) {
-    assertSchema(openApi, schemaName, apiResponse, ValidationRestrictionOptions.FULL_RESTRICTIONS);
-  }
-
-  /**
-   * Assert an API response against the provided OpenAPI 3 Specification.
-   *
-   * @param openApi     provided specification
-   * @param schemaName  schema name
-   * @param apiResponse the api response to assert
-   * @param options  strict mode will make all the fields from the schema required to make sure a complete
-   *                    api response is valid.
-   */
-  public static void assertSchema(OpenApi3 openApi, String schemaName, String apiResponse, ValidationRestrictionOptions options) {
-
-    SchemaValidator schemaValidator;
-    try {
-      ValidationContext<OAI3> context = new ValidationContext<>(openApi.getContext());
-      context.addValidator(OAI3SchemaKeywords.PROPERTIES,
-        (context1, schemaNode, schemaParentNode, parentSchema) ->
-          new RestrictiveFieldValidator(context1, schemaNode, schemaParentNode, parentSchema, options));
-      JsonNode schemaNode = loadSchemaAsJsonNode(openApi, schemaName);
-      if (schemaNode == null ) {
-        fail("can't find schema " + schemaName);
-      }
-      schemaValidator = new SchemaValidator(context, null, schemaNode);
-    } catch (EncodeException rEx) {
-      fail(rEx);
-      return;
+    String schemaUri = locateSchema(specsUrl, schemaName);
+    if (schemaUri == null) {
+      fail("can't find schema " + schemaName);
     }
 
     JsonNode apiResponseNode;
     try {
-      apiResponseNode = MAPPER.readTree(apiResponse);
-    } catch (IOException ioEx) {
-      fail(ioEx);
+      apiResponseNode = JSON_MAPPER.readTree(apiResponse);
+    } catch (JacksonException jEx) {
+      fail(jEx);
       return;
     }
 
-    ValidationData<?> validationData = new ValidationData<>();
-    schemaValidator.validate(apiResponseNode, validationData);
+    Dialect dialect = Dialect.builder(Dialects.getOpenApi30())
+      .keyword(RestrictiveFieldValidator.keyword(options))
+      .build();
+    // fetching is required to resolve file and remote references
+    SchemaRegistry registry = SchemaRegistry.withDefaultDialect(dialect,
+      builder -> builder.schemaLoader(loader -> loader.fetchRemoteResources()));
 
-    if (!validationData.isValid()) {
-      fail(validationData.results().toString());
+    Schema schema = registry.getSchema(SchemaLocation.of(schemaUri));
+    List<Error> errors = schema.validate(apiResponseNode);
+    if (!errors.isEmpty()) {
+      fail(errors.stream().map(Error::toString).collect(Collectors.joining(System.lineSeparator())));
     }
   }
 
   /**
-   * Load a schema inside an OpenApi3 object.
+   * Locate a schema in the main OpenAPI 3 file and, if not found, in the files referenced by the paths.
    *
-   * @param openApi
-   * @param schemaName
-   * @return the schema as {@link JsonNode}
-   * @throws EncodeException
+   * @return the location (URI with fragment) of the schema or null if not found.
    */
-  private static JsonNode loadSchemaAsJsonNode(OpenApi3 openApi, String schemaName)
-      throws EncodeException {
+  private static String locateSchema(URL specsUrl, String schemaName) {
+    JsonNode specs = readSpecs(specsUrl.toString());
+    Set<String> candidates = new LinkedHashSet<>();
+    candidates.add(specsUrl.toString());
+    candidates.addAll(getFilenamesFromPathRefs(specsUrl, specs));
 
-    // try to locate the schema in the main OpenAPI3 file
-    if (openApi.getComponents() != null) {
-      Schema schema = openApi.getComponents().getSchema(schemaName);
-      if (schema != null) {
-        return schema.toNode();
-      }
-    }
-
-    // then, try to reach it be refs from the paths
-    Set<String> filenamesFromPathRefs = getFilenamesFromPathRefs(openApi);
-    return loadFirstFoundSchema(openApi, filenamesFromPathRefs, schemaName);
-  }
-
-  /**
-   * Extract a set of filenames from the list of Paths declared in the OpenApi3 file
-   * @param openApi
-   * @return set of paths or empty set if no paths
-   */
-  private static Set<String> getFilenamesFromPathRefs(OpenApi3 openApi) {
-    if (openApi.getPaths() == null) {
-      return Collections.emptySet();
-    }
-    return openApi.getPaths().values().stream()
-        .map(path -> StringUtils.substringBefore(path.getRef(), "#"))
-        .collect(Collectors.toSet());
-  }
-
-  /**
-   * From a set of filenames, return the first content that can be located.
-   * @param openApi
-   * @param filenames
-   * @param schemaName
-   * @return content as JsonNode or null if not found.
-   */
-  private static JsonNode loadFirstFoundSchema(OpenApi3 openApi, Set<String> filenames,
-      String schemaName) {
-    Reference ref;
-    for (String filename : filenames) {
-      ref = openApi.getContext().getReferenceRegistry()
-          .getRef(filename + "#/components/schemas/" + schemaName);
-      if (ref != null) {
-        return ref.getContent();
+    for (String candidate : candidates) {
+      JsonNode content = candidate.equals(specsUrl.toString()) ? specs : readSpecs(candidate);
+      if (content.at("/components/schemas").has(schemaName)) {
+        return candidate + SCHEMA_POINTER_PREFIX + schemaName;
       }
     }
     return null;
   }
 
   /**
-   * Parse and validate the OpenAPI 3 specifications at the provided URL.
-   *
-   * @param specsURL
-   * @return the OpenApi3 as {@link OpenApi3}
-   * @throws ValidationException
-   * @throws ResolutionException
+   * Extract the set of files (absolute URI) referenced from the paths declared in the OpenAPI 3 file.
    */
-  public static OpenApi3 parseAndValidateOpenAPI3Specs(URL specsURL) throws ResolutionException, ValidationException {
-    OpenApi3 api = new OpenApi3Parser().parse(specsURL, new ArrayList<>(), false);
-    OpenApi3Validator.instance().validate(api);
-    return api;
+  private static Set<String> getFilenamesFromPathRefs(URL specsUrl, JsonNode specs) {
+    Set<String> filenames = new LinkedHashSet<>();
+    specs.path("paths").forEach(pathNode -> {
+      String ref = pathNode.path("$ref").asString("");
+      String filename = ref.contains("#") ? ref.substring(0, ref.indexOf('#')) : ref;
+      if (!filename.isEmpty()) {
+        try {
+          filenames.add(specsUrl.toURI().resolve(filename).toString());
+        } catch (URISyntaxException e) {
+          fail("Invalid reference " + ref, e);
+        }
+      }
+    });
+    return filenames;
   }
 
   /**
@@ -239,21 +173,18 @@ public final class OpenAPI3Assertions {
    * @param method   method at the endpoint path
    */
   public static void assertEndpoint(URL specsUrl, String path, HttpMethod method) {
-    OpenApi3 openApi3 = innerParseAndValidateOpenAPI3Specs(specsUrl);
-    for (String key : openApi3.getPaths().keySet()) {
-      if (key.equals(path)
-          && openApi3.getPaths().get(key).getOperation(method.name().toLowerCase()) != null) {
-        return;
-      }
+    JsonNode paths = readSpecs(specsUrl.toString()).path("paths");
+    if (paths.has(path) && paths.get(path).has(method.name().toLowerCase())) {
+      return;
     }
     fail("Failed find " + method.name() + " " + path + " in OpenAPI 3 specs");
   }
 
-  private static OpenApi3 innerParseAndValidateOpenAPI3Specs(URL specsUrl) {
-    try {
-      return parseAndValidateOpenAPI3Specs(specsUrl);
-    } catch (ResolutionException | ValidationException ex) {
-      fail("Failed to parse and validate the provided schema", ex);
+  private static JsonNode readSpecs(String location) {
+    try (InputStream is = new URL(location).openStream()) {
+      return YAML_MAPPER.readTree(is);
+    } catch (IOException | JacksonException ex) {
+      fail("Failed to parse the provided schema", ex);
     }
     return null;
   }
