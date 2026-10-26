@@ -19,7 +19,7 @@
 
   <properties>
     <json-schema-validator.version>3.0.8</json-schema-validator.version>
-    <rest-assured.version>5.5.7</rest-assured.version>
+    <rest-assured.version>6.3.0</rest-assured.version>
   </properties>
 
   <dependencies>
