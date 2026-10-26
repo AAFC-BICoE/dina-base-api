@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvParser;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import tools.jackson.databind.MappingIterator;
+import tools.jackson.dataformat.csv.CsvMapper;
+import tools.jackson.dataformat.csv.CsvReadFeature;
+import tools.jackson.dataformat.csv.CsvSchema;
 
 /**
  * For delimiter-separated files (e.g. CSV/TSV).
@@ -40,7 +40,7 @@ public final class DelimiterSeparatedConverter {
     List<WorkbookRow> sheetContent = new ArrayList<>();
     try (MappingIterator<String[]> it = mapper
       .readerForArrayOf(String.class)
-      .with(CsvParser.Feature.WRAP_AS_ARRAY)
+      .with(CsvReadFeature.WRAP_AS_ARRAY)
       .with(schemaBuilder.build())
       .readValues(in)) {
 

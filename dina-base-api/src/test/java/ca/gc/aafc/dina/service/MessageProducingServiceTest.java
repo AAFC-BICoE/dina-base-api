@@ -34,7 +34,7 @@ import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -46,8 +46,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.validation.SmartValidator;
-import org.testcontainers.containers.RabbitMQContainer;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import org.testcontainers.rabbitmq.RabbitMQContainer;
+import tools.jackson.databind.json.JsonMapper;
 
 import jakarta.inject.Inject;
 import java.util.ArrayList;
@@ -90,7 +90,6 @@ class MessageProducingServiceTest {
 
   @BeforeAll
   static void beforeAll() {
-    CONTAINER.withQueue("que");
     CONTAINER.withAdminPassword(null);
     CONTAINER.start();
   }
@@ -190,7 +189,7 @@ class MessageProducingServiceTest {
   }
 
   private static DocumentOperationNotification mapResult(String content) throws java.io.IOException {
-    return new ObjectMapper().readValue(content, DocumentOperationNotification.class);
+    return JsonMapper.builder().build().readValue(content, DocumentOperationNotification.class);
   }
 
   @TestConfiguration

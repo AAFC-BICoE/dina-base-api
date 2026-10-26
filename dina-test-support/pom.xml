@@ -18,7 +18,8 @@
   <url>https://github.com/AAFC-BICoE/dina-base-api</url>
 
   <properties>
-    <openapi4j.version>1.0.4</openapi4j.version>
+    <json-schema-validator.version>3.0.8</json-schema-validator.version>
+    <rest-assured.version>6.3.0</rest-assured.version>
   </properties>
 
   <dependencies>
@@ -29,14 +30,6 @@
       <version>0.184-SNAPSHOT</version>
     </dependency>
     
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-    </dependency>  
-    <dependency>
-      <groupId>com.fasterxml.jackson.module</groupId>
-      <artifactId>jackson-module-jaxb-annotations</artifactId>
-    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
@@ -54,30 +47,28 @@
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
+      <version>${rest-assured.version}</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.openapi4j</groupId>
-      <artifactId>openapi-parser</artifactId>
-      <version>${openapi4j.version}</version>
+      <groupId>com.networknt</groupId>
+      <artifactId>json-schema-validator</artifactId>
+      <version>${json-schema-validator.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.openapi4j</groupId>
-      <artifactId>openapi-schema-validator</artifactId>
-      <version>${openapi4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>${testcontainers.version}</version>
+      <groupId>tools.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-yaml</artifactId>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>elasticsearch</artifactId>
-      <version>${testcontainers.version}</version>
+      <artifactId>testcontainers-postgresql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers-elasticsearch</artifactId>
     </dependency>
 
     <dependency>

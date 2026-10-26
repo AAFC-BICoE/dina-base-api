@@ -1,8 +1,9 @@
 package ca.gc.aafc.dina.mybatis;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.postgresql.util.PGobject;
@@ -20,7 +21,8 @@ import java.sql.SQLException;
 public abstract class JacksonBasedTypeHandler<T> extends BaseTypeHandler<T> {
 
   // shared ObjectMapper for all instances
-  private static final ObjectMapper OM = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+  private static final ObjectMapper OM = JsonMapper.builder()
+    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).build();
 
   protected abstract Class<T> getTypeHandlerClass();
 
@@ -32,7 +34,7 @@ public abstract class JacksonBasedTypeHandler<T> extends BaseTypeHandler<T> {
       jsonObject.setType("jsonb");
       try {
         jsonObject.setValue(OM.writeValueAsString(parameter));
-      } catch (JsonProcessingException e) {
+      } catch (JacksonException e) {
         throw new RuntimeException(e);
       }
       ps.setObject(i, jsonObject);
@@ -46,7 +48,7 @@ public abstract class JacksonBasedTypeHandler<T> extends BaseTypeHandler<T> {
     }
     try {
       return OM.readValue(rs.getString(columnName), getTypeHandlerClass());
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       throw new RuntimeException(e);
     }
   }
@@ -58,7 +60,7 @@ public abstract class JacksonBasedTypeHandler<T> extends BaseTypeHandler<T> {
     }
     try {
       return OM.readValue(rs.getString(columnIndex), getTypeHandlerClass());
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       throw new RuntimeException(e);
     }
   }
@@ -70,7 +72,7 @@ public abstract class JacksonBasedTypeHandler<T> extends BaseTypeHandler<T> {
     }
     try {
       return OM.readValue(cs.getString(columnIndex), getTypeHandlerClass());
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       throw new RuntimeException(e);
     }
   }

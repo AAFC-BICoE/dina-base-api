@@ -1,14 +1,13 @@
 package ca.gc.aafc.dina.entity;
 
-import io.hypersistence.utils.hibernate.type.json.JsonType;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,11 +33,11 @@ public class JsonbCar implements DinaEntity {
   @NaturalId
   private UUID uuid;
 
-  @Type(JsonType.class)
+  @JdbcTypeCode(SqlTypes.JSON)
   @Column(columnDefinition = "jsonb")
   private Map<String, Object> jsonData;
 
-  @Type(JsonType.class)
+  @JdbcTypeCode(SqlTypes.JSON)
   @Column(columnDefinition = "jsonb")
   private List<CarDetails> jsonListData;
 

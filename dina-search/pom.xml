@@ -21,6 +21,11 @@
       <groupId>co.elastic.clients</groupId>
       <artifactId>elasticsearch-java</artifactId>
     </dependency>
+    <!-- The Elasticsearch 8.x client JSON mapper (JacksonJsonpMapper) requires Jackson 2 -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -35,8 +40,7 @@
 
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>rabbitmq</artifactId>
-      <version>${testcontainers.version}</version>
+      <artifactId>testcontainers-rabbitmq</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

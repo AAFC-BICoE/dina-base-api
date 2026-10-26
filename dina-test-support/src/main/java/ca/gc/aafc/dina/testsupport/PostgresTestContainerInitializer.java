@@ -5,7 +5,7 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -32,7 +32,7 @@ public class PostgresTestContainerInitializer
   private static final String DUMP_SCHEMA_PATH_OPTION = "embedded.postgresql.dump_schema_path";
   private static final String MAX_CONNECTION_OPTION = "embedded.postgresql.max_connection";
 
-  private static PostgreSQLContainer<?> sqlContainer = null;
+  private static PostgreSQLContainer sqlContainer = null;
 
   @Override
   public void initialize(ConfigurableApplicationContext ctx) {
@@ -45,7 +45,7 @@ public class PostgresTestContainerInitializer
           .parse(Optional.ofNullable(env.getProperty("embedded.postgresql.image")).orElse("postgres"))
           .asCompatibleSubstituteFor("postgres");
 
-        sqlContainer = new PostgreSQLContainer<>(myImage)
+        sqlContainer = new PostgreSQLContainer(myImage)
           .withDatabaseName(
             Optional.ofNullable(env.getProperty("embedded.postgresql.database"))
               .orElse("integration-tests-db"))

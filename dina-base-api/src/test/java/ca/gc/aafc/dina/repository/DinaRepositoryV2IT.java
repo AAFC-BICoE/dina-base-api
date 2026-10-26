@@ -24,9 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
 import com.toedter.spring.hateoas.jsonapi.JsonApiConfiguration;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
@@ -562,11 +560,7 @@ public class DinaRepositoryV2IT {
     public JsonApiConfiguration jsonApiConfiguration() {
       return new JsonApiConfiguration()
         .withPluralizedTypeRendered(false)
-        .withPageMetaAutomaticallyCreated(false)
-        .withObjectMapperCustomizer(objectMapper -> {
-          objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-          objectMapper.registerModule(new JavaTimeModule());
-        });
+        .withPageMetaAutomaticallyCreated(false);
     }
 
     @Service

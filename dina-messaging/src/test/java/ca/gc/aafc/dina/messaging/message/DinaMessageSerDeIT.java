@@ -4,8 +4,8 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.exc.InvalidTypeIdException;
 
 import ca.gc.aafc.dina.messaging.DinaMessage;
 import ca.gc.aafc.dina.testsupport.TestResourceHelper;
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class DinaMessageSerDeIT {
 
   @Test
-  public void testSerDe() throws JsonProcessingException {
+  public void testSerDe() throws JacksonException {
 
     ObjectExportNotification oen = ObjectExportNotification.builder()
       .uuid(UUID.randomUUID())

@@ -15,13 +15,13 @@ import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 
 import ca.gc.aafc.dina.TestDinaBaseApp;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
@@ -38,7 +38,7 @@ public class JsonbKeyValuePredicateIT {
   private BaseDAO baseDAO;
 
   @Test
-  void jsonb_predicate_building() throws JsonProcessingException {
+  void jsonb_predicate_building() throws JacksonException {
     String expectedValue = "CustomValue";
 
     JsonbCar car = newCar(expectedValue);
@@ -63,7 +63,7 @@ public class JsonbKeyValuePredicateIT {
   }
 
   @Test
-  void jsonb_predicate_building_caseInsensitive() throws JsonProcessingException {
+  void jsonb_predicate_building_caseInsensitive() throws JacksonException {
     String expectedValue = "CustomValue";
 
     // Test using the expected value but in upper case.
@@ -90,7 +90,7 @@ public class JsonbKeyValuePredicateIT {
   }
 
   @Test
-  void jsonb_arrayPredicate_building() throws JsonProcessingException {
+  void jsonb_arrayPredicate_building() throws JacksonException {
     String expectedValue = "CustomValue";
 
     JsonbCar car = newCar(expectedValue);

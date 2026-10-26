@@ -1,7 +1,7 @@
 package ca.gc.aafc.dina.json;
 
-import com.fasterxml.jackson.core.JsonPointer;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.core.JsonPointer;
+import tools.jackson.databind.JsonNode;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -9,8 +9,8 @@ import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.ParseContext;
 import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.TypeRef;
-import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
-import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
+import com.jayway.jsonpath.spi.json.Jackson3JsonNodeJsonProvider;
+import com.jayway.jsonpath.spi.mapper.Jackson3MappingProvider;
 
 import java.util.List;
 import java.util.Objects;
@@ -23,8 +23,8 @@ public final class JsonHelper {
 
   private static final ParseContext PARSE_CONTEXT = JsonPath.using(
     Configuration.builder()
-      .jsonProvider(new JacksonJsonNodeJsonProvider())
-      .mappingProvider(new JacksonMappingProvider())
+      .jsonProvider(new Jackson3JsonNodeJsonProvider())
+      .mappingProvider(new Jackson3MappingProvider())
       .options(Option.ALWAYS_RETURN_LIST)
       .build());
 

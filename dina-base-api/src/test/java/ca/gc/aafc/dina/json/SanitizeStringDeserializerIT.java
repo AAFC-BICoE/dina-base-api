@@ -4,8 +4,8 @@ import ca.gc.aafc.dina.BasePostgresItContext;
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import lombok.Data;
@@ -54,7 +54,7 @@ public class SanitizeStringDeserializerIT extends BasePostgresItContext {
 
   @Test
   public void testPredicateOnValues_onPredicateReturnsFalse_inspectorReturnsFalse()
-      throws JsonProcessingException {
+      throws JacksonException {
     MultilingualDescription multilingualDescription = MultilingualDescription.builder()
             .descriptions(List.of(
                     MultilingualDescription.MultilingualPair.of("en", "en"),

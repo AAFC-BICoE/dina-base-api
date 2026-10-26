@@ -9,8 +9,8 @@ import java.sql.Date;
 import jakarta.inject.Inject;
 
 import ca.gc.aafc.dina.BasePostgresItContext;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.Test;
 import lombok.Data;
@@ -41,7 +41,7 @@ public class DateDeserializerIT extends BasePostgresItContext {
     try {
       objectMapper.readValue(jsonDateWrapper, DateWrapper.class);
       fail("Exception not thrown.");
-    } catch(JsonMappingException exception) {
+    } catch(DatabindException exception) {
       IllegalArgumentException cause = (IllegalArgumentException) exception.getCause();
       assertEquals("\"bad value\": The date given is not in the JDBC date escape format (yyyy-[m]m-[d]d).", cause.getMessage());
     }

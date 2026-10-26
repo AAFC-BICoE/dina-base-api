@@ -1,14 +1,12 @@
 package ca.gc.aafc.dina.entity;
 
-import io.hypersistence.utils.hibernate.type.array.StringArrayType;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
-
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.NaturalIdCache;
-import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
@@ -77,10 +75,10 @@ public abstract class ControlledVocabularyItem implements DinaEntity {
   @Size(max = 255)
   private String term;
 
-  @Type(JsonType.class)
+  @JdbcTypeCode(SqlTypes.JSON)
   private MultilingualTitle multilingualTitle;
 
-  @Type(JsonType.class)
+  @JdbcTypeCode(SqlTypes.JSON)
   private MultilingualDescription multilingualDescription;
 
   @NotNull
@@ -94,7 +92,7 @@ public abstract class ControlledVocabularyItem implements DinaEntity {
    */
   private String uriTemplate;
 
-  @Type(StringArrayType.class)
+  @JdbcTypeCode(SqlTypes.ARRAY)
   @Column(columnDefinition = "text[]")
   private String[] acceptedValues;
 

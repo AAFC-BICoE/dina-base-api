@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 
 import ca.gc.aafc.dina.json.TestConstants;
 
@@ -76,7 +76,7 @@ public class JsonApiDocumentTest {
     """;
 
   @Test
-  public void testParseJsonApiDocument() throws JsonProcessingException {
+  public void testParseJsonApiDocument() throws JacksonException {
     JsonApiDocument jsonApiDocument = TestConstants.OBJECT_MAPPER.readValue(TEST_DOC, JsonApiDocument.class);
     JsonApiDocument JsonApiDocumentToCompare = JsonApiDocuments.createJsonApiDocument(
       UUID.fromString("0194d686-7ac0-72d0-be8a-5e3e40e5e370"), "article", Map.of());
@@ -86,7 +86,7 @@ public class JsonApiDocumentTest {
   }
 
   @Test
-  public void testParseJsonApiCompoundDocument() throws JsonProcessingException {
+  public void testParseJsonApiCompoundDocument() throws JacksonException {
     JsonApiCompoundDocument jsonApiDocument = TestConstants.OBJECT_MAPPER.readValue(TEST_COMPOUND_DOC, JsonApiCompoundDocument.class);
     assertEquals("0194d686-7ac0-72d0-be8a-5e3e40e5e370", jsonApiDocument.getIdAsStr());
     assertEquals(1, jsonApiDocument.getIncluded().size());

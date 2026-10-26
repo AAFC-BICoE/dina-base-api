@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import ca.gc.aafc.dina.testsupport.entity.ComplexObject;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import io.restassured.path.json.JsonPath;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
@@ -123,7 +123,7 @@ public class JsonAPITestHelperTest {
   }
 
   @Test
-  public void testToRelationshipByName() throws JsonProcessingException {
+  public void testToRelationshipByName() throws JacksonException {
     List<JsonAPIRelationship> rels = List.of(
             JsonAPIRelationship.of("organisms", "organism",
             "947f77ee-d144-45b5-b559-e239db0caa18"),

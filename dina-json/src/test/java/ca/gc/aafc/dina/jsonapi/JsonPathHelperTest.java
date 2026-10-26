@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.TypeRef;
-import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
-import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
+import com.jayway.jsonpath.spi.json.Jackson3JsonProvider;
+import com.jayway.jsonpath.spi.mapper.Jackson3MappingProvider;
 import com.jayway.jsonpath.Configuration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,8 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class JsonPathHelperTest {
 
   private static final Configuration JSON_PATH_CONF =  Configuration.builder()
-    .mappingProvider(new JacksonMappingProvider())
-    .jsonProvider(new JacksonJsonProvider())
+    .mappingProvider(new Jackson3MappingProvider())
+    .jsonProvider(new Jackson3JsonProvider())
     .build();
 
   @Test

@@ -3,7 +3,7 @@ package ca.gc.aafc.dina.messaging.message;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 
 import ca.gc.aafc.dina.testsupport.TestResourceHelper;
 
@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class UserMessageNotificationIT {
 
   @Test
-  public void testSerDe() throws JsonProcessingException {
+  public void testSerDe() throws JacksonException {
 
     UserMessageNotification oen = UserMessageNotification.builder()
       .title("notification").build();
