@@ -2,7 +2,7 @@ package ca.gc.aafc.dina.config;
 
 import jakarta.inject.Named;
 
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 
 /**

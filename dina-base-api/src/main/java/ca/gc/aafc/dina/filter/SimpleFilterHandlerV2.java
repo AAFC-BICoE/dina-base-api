@@ -2,10 +2,9 @@ package ca.gc.aafc.dina.filter;
 
 import ca.gc.aafc.dina.exception.UnknownAttributeException;
 import ca.gc.aafc.dina.jpa.JsonbKeyValuePredicate;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import com.querydsl.core.types.Ops;
 
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import java.lang.reflect.AccessibleObject;
 import java.util.Set;
 import lombok.NonNull;
@@ -13,7 +12,6 @@ import lombok.NonNull;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -131,7 +129,7 @@ public final class SimpleFilterHandlerV2 {
       try {
         return generateJsonbPredicate(ctx,
             path.getParentPath(), attributePath, attribute.get().getName(), filterValue.toString());
-      } catch (JsonProcessingException e) {
+      } catch (JacksonException e) {
         throw new IllegalArgumentException("Invalid Json filter value", e);
       }
     } else {
@@ -200,12 +198,12 @@ public final class SimpleFilterHandlerV2 {
    * @param columnName     the name of the column to match within the JSONB structure.
    * @param value          the value to match against the specified column name.
    * @return a Predicate representing the generated JSONB predicate.
-   * @throws JsonProcessingException if an error occurs during JSON processing.
+   * @throws JacksonException if an error occurs during JSON processing.
    */
   private static <E> Predicate generateJsonbPredicate(
     PredicateContext ctx,
     Path<E> root, List<String> attributePath, String columnName, String value
-  ) throws JsonProcessingException {
+  ) throws JacksonException {
     Queue<String> jsonbPath = new LinkedList<>(attributePath);
     while (!jsonbPath.isEmpty()) {
       if (jsonbPath.poll().equalsIgnoreCase(columnName)) {
@@ -319,13 +317,13 @@ public final class SimpleFilterHandlerV2 {
 
     // Check field for annotation.
     AccessibleObject ao = safeGetDeclaredField(clazz, attribute.getName());
-    if (isJdbcTypeCodeJson(ao) || isHibernateTypeJson(ao)) {
+    if (isJdbcTypeCodeJson(ao)) {
       return true;
     }
 
     // If no annotation is present on the field, check the method instead.
     ao = safeGetDeclaredMethod(clazz, attribute.getJavaMember().getName());
-    if (isJdbcTypeCodeJson(ao) || isHibernateTypeJson(ao)) {
+    if (isJdbcTypeCodeJson(ao)) {
       return true;
     }
 
@@ -336,11 +334,6 @@ public final class SimpleFilterHandlerV2 {
   private static boolean isJdbcTypeCodeJson(AccessibleObject ao) {
     return ao != null && ao.isAnnotationPresent(JdbcTypeCode.class) &&
       ao.getAnnotation(JdbcTypeCode.class).value() == SqlTypes.JSON;
-  }
-
-  private static boolean isHibernateTypeJson(AccessibleObject ao) {
-    return ao != null && ao.isAnnotationPresent(Type.class) &&
-      ao.getAnnotation(Type.class).value() == JsonType.class;
   }
 
   private static Predicate handleConjunction(PredicateContext ctx, Root<?> root,

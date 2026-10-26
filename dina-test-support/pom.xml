@@ -19,6 +19,7 @@
 
   <properties>
     <openapi4j.version>1.0.4</openapi4j.version>
+    <rest-assured.version>5.5.7</rest-assured.version>
   </properties>
 
   <dependencies>
@@ -29,10 +30,6 @@
       <version>0.184-SNAPSHOT</version>
     </dependency>
     
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-    </dependency>  
     <dependency>
       <groupId>com.fasterxml.jackson.module</groupId>
       <artifactId>jackson-module-jaxb-annotations</artifactId>
@@ -54,6 +51,7 @@
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
+      <version>${rest-assured.version}</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>

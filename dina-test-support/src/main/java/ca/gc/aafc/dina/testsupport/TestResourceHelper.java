@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.testsupport;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -9,8 +10,8 @@ import java.nio.file.Paths;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Utility static class to deal with test resources.
@@ -64,7 +65,9 @@ public final class TestResourceHelper {
     if (url == null) {
       throw new IOException("Resource " + resourceName + " not found in classpath");
     }
-    return OBJECT_MAPPER.readTree(url);
+    try (InputStream is = url.openStream()) {
+      return OBJECT_MAPPER.readTree(is);
+    }
   }
 
 }

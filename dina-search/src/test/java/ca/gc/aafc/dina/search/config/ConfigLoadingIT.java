@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.search.config;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,7 +13,7 @@ import jakarta.inject.Inject;
  * This test is making sure we can load 2 sets of properties for 2 different queues
  */
 @SpringBootTest
-@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
+@SpringBootApplication
 public class ConfigLoadingIT {
 
   @Inject

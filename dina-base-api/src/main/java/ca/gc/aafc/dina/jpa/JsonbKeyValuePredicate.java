@@ -5,8 +5,8 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Class that can build JPA Predicates from jsonb field using PostgreSQL
@@ -50,7 +50,7 @@ public final class JsonbKeyValuePredicate {
       this.path = "$[*]." + keyName + " ? (@ == $val)";
     }
 
-    public Predicate buildUsing(Path<?> root, CriteriaBuilder builder, String value, boolean caseSensitive) throws JsonProcessingException {
+    public Predicate buildUsing(Path<?> root, CriteriaBuilder builder, String value, boolean caseSensitive) throws JacksonException {
       return builder.isTrue(builder.function(
         JSONB_EXTRACT_PATH_PG_FUNCTION_NAME, 
         Boolean.class, 

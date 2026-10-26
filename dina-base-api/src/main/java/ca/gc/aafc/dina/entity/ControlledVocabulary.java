@@ -5,14 +5,12 @@ import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.NaturalIdCache;
-import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
 
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -89,10 +87,10 @@ public abstract class ControlledVocabulary implements DinaEntity {
   @Size(max = 255)
   private String version;
 
-  @Type(JsonType.class)
+  @JdbcTypeCode(SqlTypes.JSON)
   private MultilingualTitle multilingualTitle;
 
-  @Type(JsonType.class)
+  @JdbcTypeCode(SqlTypes.JSON)
   private MultilingualDescription multilingualDescription;
 
   @NotBlank

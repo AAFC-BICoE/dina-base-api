@@ -17,7 +17,7 @@ public class DinaSecurityExpressionHandler extends DefaultMethodSecurityExpressi
   private final AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
 
   @Override
-  public EvaluationContext createEvaluationContext(Supplier<Authentication> authentication,
+  public EvaluationContext createEvaluationContext(Supplier<? extends Authentication> authentication,
                                                    MethodInvocation invocation) {
     return createEvaluationContext(authentication.get(), invocation);
   }

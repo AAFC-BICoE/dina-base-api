@@ -7,12 +7,10 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -23,15 +21,11 @@ import org.apache.commons.lang3.tuple.Pair;
  */
 public final class JsonAPITestHelper {
 
-  private static final ObjectMapper IT_OBJECT_MAPPER = new ObjectMapper();
+  // Jackson 3 supports java.time and Optional natively and does not write dates as timestamps by default
+  private static final ObjectMapper IT_OBJECT_MAPPER = JsonMapper.builder()
+    .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(Include.NON_NULL))
+    .build();
   private static final TypeReference<Map<String, Object>> IT_OM_TYPE_REF = new TypeReference<>() { };
-
-  static {
-    IT_OBJECT_MAPPER.registerModule(new JavaTimeModule());
-    IT_OBJECT_MAPPER.registerModule(new Jdk8Module());
-    IT_OBJECT_MAPPER.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-    IT_OBJECT_MAPPER.setSerializationInclusion(Include.NON_NULL);
-  }
 
   private  JsonAPITestHelper() {
 
@@ -43,7 +37,7 @@ public final class JsonAPITestHelper {
    * @param obj
    * @return
    */
-  static String toString(Object obj) throws JsonProcessingException {
+  static String toString(Object obj) throws JacksonException {
     return IT_OBJECT_MAPPER.writeValueAsString(obj);
   }
 

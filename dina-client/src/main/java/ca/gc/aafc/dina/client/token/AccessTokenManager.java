@@ -8,7 +8,6 @@ import lombok.extern.log4j.Log4j2;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.converter.jackson.JacksonConverterFactory;
 
 /**
  * Encapsulate the logic to acquire and refresh tokens.
@@ -30,7 +29,7 @@ public class AccessTokenManager {
   public AccessTokenManager(OpenIdConnectConfig openIdConnectConfig) {
     Retrofit retrofit = new Retrofit.Builder()
       .baseUrl(openIdConnectConfig.getOpenIdConnectBaseUrl())
-      .addConverterFactory(JacksonConverterFactory.create())
+      .addConverterFactory(Jackson3ConverterFactory.create())
       .build();
 
     accessTokenApiCall = retrofit.create(AccessTokenApiCall.class);

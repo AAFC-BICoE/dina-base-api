@@ -9,9 +9,9 @@ import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
 import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
 
@@ -151,8 +151,9 @@ public class DinaRepositoryV2<D extends JsonApiResource, E extends DinaEntity>
     this.jsonApiModelAssistant = new JsonApiModelAssistant<>(buildProperties.getVersion());
 
     // copy the object mapper and set it to fail on unknown properties
-    this.objMapper = objMapper.copy()
-      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+    this.objMapper = objMapper.rebuild()
+      .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+      .build();
   }
 
   /**

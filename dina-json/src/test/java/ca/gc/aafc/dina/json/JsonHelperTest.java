@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.jayway.jsonpath.TypeRef;
 
 import ca.gc.aafc.dina.jsonapi.JSONApiDocumentStructure;

@@ -21,10 +21,8 @@
 
     <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
 
-    <javers.version>7.9.0</javers.version>
-    <mybatis.version>3.0.5</mybatis.version>
-    <hypersistence-utils-hibernate-63.version>3.15.4</hypersistence-utils-hibernate-63.version>
-
+    <javers.version>7.11.9</javers.version>
+    <mybatis.version>4.0.1</mybatis.version>
     <jsoup.version>1.23.2</jsoup.version>
 
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
@@ -35,7 +33,7 @@
     <apache-cxf.version>4.2.3</apache-cxf.version>
 
     <java-uuid-generator.version>5.2.0</java-uuid-generator.version>
-    <spring-hateoas-jsonapi.version>2.2.0</spring-hateoas-jsonapi.version>
+    <spring-hateoas-jsonapi.version>3.1.0</spring-hateoas-jsonapi.version>
   </properties>
 
   <dependencies>
@@ -55,7 +53,7 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-aop</artifactId>
+      <artifactId>spring-boot-starter-aspectj</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -105,10 +103,6 @@
       <version>${javers.version}</version>
     </dependency>
     <!--Util-->
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-    </dependency>
     <dependency>
       <groupId>com.jayway.jsonpath</groupId>
       <artifactId>json-path</artifactId>
@@ -191,20 +185,14 @@
     </dependency>
 
     <dependency>
-      <groupId>io.hypersistence</groupId>
-      <artifactId>hypersistence-utils-hibernate-63</artifactId>
-      <version>${hypersistence-utils-hibernate-63.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.mapstruct</groupId>
       <artifactId>mapstruct</artifactId>
       <version>${org.mapstruct.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.liquibase</groupId>
-      <artifactId>liquibase-core</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-liquibase</artifactId>
       <scope>test</scope>
     </dependency>
 
