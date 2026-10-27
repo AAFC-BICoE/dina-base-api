@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.toedter.spring.hateoas.jsonapi.JsonApiError;
 import com.toedter.spring.hateoas.jsonapi.JsonApiErrors;
 
+import tools.jackson.databind.exc.InvalidFormatException;
+import tools.jackson.databind.exc.UnrecognizedPropertyException;
+
 import ca.gc.aafc.dina.exception.ConflictException;
 import ca.gc.aafc.dina.exception.DuplicateResourceException;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
@@ -114,6 +117,16 @@ public class JsonApiExceptionControllerAdvice {
 
   @ExceptionHandler
   public ResponseEntity<JsonApiErrors> handleIllegalStateException(IllegalStateException ex) {
+    return buildBadRequestResponse(ex);
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleUnrecognizedPropertyException(UnrecognizedPropertyException ex) {
+    return buildBadRequestResponse(ex);
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleInvalidFormatException(InvalidFormatException ex) {
     return buildBadRequestResponse(ex);
   }
 
