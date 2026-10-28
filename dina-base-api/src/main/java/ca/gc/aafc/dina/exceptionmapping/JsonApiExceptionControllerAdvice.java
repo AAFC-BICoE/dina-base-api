@@ -9,13 +9,14 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.toedter.spring.hateoas.jsonapi.JsonApiError;
 import com.toedter.spring.hateoas.jsonapi.JsonApiErrors;
 
-import tools.jackson.core.exc.InputCoercionException;
-import tools.jackson.databind.exc.InvalidFormatException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.exc.UnrecognizedPropertyException;
 
@@ -122,23 +123,14 @@ public class JsonApiExceptionControllerAdvice {
     return buildBadRequestResponse(ex);
   }
 
-  @ExceptionHandler
-  public ResponseEntity<JsonApiErrors> handleUnrecognizedPropertyException(UnrecognizedPropertyException ex) {
-    return buildBadRequestResponse(ex);
-  }
-
-  @ExceptionHandler
-  public ResponseEntity<JsonApiErrors> handleInvalidFormatException(InvalidFormatException ex) {
-    return buildBadRequestResponse(ex);
-  }
-
-  @ExceptionHandler
-  public ResponseEntity<JsonApiErrors> handleMismatchedInputException(MismatchedInputException ex) {
-    return buildBadRequestResponse(ex);
-  }
-
-  @ExceptionHandler
-  public ResponseEntity<JsonApiErrors> handleInputCoercionException(InputCoercionException ex) {
+  // Catch client-side json mapping & syntax issues
+  @ExceptionHandler({
+    StreamReadException.class,          // Catches JsonParseException & InputCoercionException
+    MismatchedInputException.class,     // Catches InvalidFormatException
+    UnrecognizedPropertyException.class
+  })
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseEntity<JsonApiErrors> handleClientJsonErrors(JacksonException ex) {
     return buildBadRequestResponse(ex);
   }
 
