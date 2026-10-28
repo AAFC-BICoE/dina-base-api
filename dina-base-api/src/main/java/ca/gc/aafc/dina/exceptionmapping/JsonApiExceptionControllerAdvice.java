@@ -9,16 +9,12 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.toedter.spring.hateoas.jsonapi.JsonApiError;
 import com.toedter.spring.hateoas.jsonapi.JsonApiErrors;
 
 import tools.jackson.core.JacksonException;
-import tools.jackson.core.exc.StreamReadException;
-import tools.jackson.databind.exc.MismatchedInputException;
-import tools.jackson.databind.exc.UnrecognizedPropertyException;
 
 import ca.gc.aafc.dina.exception.ConflictException;
 import ca.gc.aafc.dina.exception.DuplicateResourceException;
@@ -123,13 +119,8 @@ public class JsonApiExceptionControllerAdvice {
     return buildBadRequestResponse(ex);
   }
 
-  // Catch client-side json mapping & syntax issues
-  @ExceptionHandler({
-    StreamReadException.class,          // Catches JsonParseException & InputCoercionException
-    MismatchedInputException.class,     // Catches InvalidFormatException
-    UnrecognizedPropertyException.class
-  })
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  // Catch all jackson exceptions as bad request errors
+  @ExceptionHandler(JacksonException.class)
   public ResponseEntity<JsonApiErrors> handleClientJsonErrors(JacksonException ex) {
     return buildBadRequestResponse(ex);
   }
