@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.toedter.spring.hateoas.jsonapi.JsonApiError;
 import com.toedter.spring.hateoas.jsonapi.JsonApiErrors;
 
+import tools.jackson.core.exc.InputCoercionException;
 import tools.jackson.databind.exc.InvalidFormatException;
+import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.exc.UnrecognizedPropertyException;
 
 import ca.gc.aafc.dina.exception.ConflictException;
@@ -127,6 +129,16 @@ public class JsonApiExceptionControllerAdvice {
 
   @ExceptionHandler
   public ResponseEntity<JsonApiErrors> handleInvalidFormatException(InvalidFormatException ex) {
+    return buildBadRequestResponse(ex);
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleMismatchedInputException(MismatchedInputException ex) {
+    return buildBadRequestResponse(ex);
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<JsonApiErrors> handleInputCoercionException(InputCoercionException ex) {
     return buildBadRequestResponse(ex);
   }
 
