@@ -2,6 +2,7 @@ package ca.gc.aafc.dina;
 
 import org.hibernate.cfg.AvailableSettings;
 import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,7 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 import ca.gc.aafc.dina.jpa.DinaJackson3JsonFormatMapper;
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.MeterRegistry;
+import tools.jackson.databind.cfg.ConstructorDetector;
 import java.util.Locale;
 import jakarta.inject.Named;
 
@@ -33,6 +35,16 @@ public class DinaBaseApiAutoConfiguration implements WebMvcConfigurer {
   @Bean
   public HibernatePropertiesCustomizer jackson3JsonFormatMapperCustomizer() {
     return properties -> properties.put(AvailableSettings.JSON_FORMAT_MAPPER, new DinaJackson3JsonFormatMapper());
+  }
+
+  /**
+   * Jackson 3 will use a constructor with parameters (e.g. Lombok @AllArgsConstructor) even when a default
+   * constructor exists, which skips field initializers (default values). Restore the Jackson 2 behavior.
+   */
+  @Bean
+  public JsonMapperBuilderCustomizer constructorDetectorCustomizer() {
+    return builder -> builder.constructorDetector(
+      ConstructorDetector.DEFAULT.withAllowImplicitWithDefaultConstructor(false));
   }
 
   @Bean

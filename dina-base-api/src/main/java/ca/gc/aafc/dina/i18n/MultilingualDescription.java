@@ -10,6 +10,7 @@ import org.javers.core.metamodel.annotation.Value;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import jakarta.validation.constraints.Size;
 @Getter
 @AllArgsConstructor
 @RequiredArgsConstructor
+@EqualsAndHashCode
 @Value
 public class MultilingualDescription implements Serializable {
 

@@ -549,6 +549,82 @@ public class DinaRepositoryV2IT {
     assertThrows(IllegalArgumentException.class, () -> repositoryV2.create(doc1, null));
   }
 
+  @Test
+  public void create_unknownAttribute_badRequest() throws Exception {
+    Map<String, Object> doc = Map.of("data", Map.of("type", PersonDTO.TYPE_NAME,
+      "attributes", Map.of("name", "Bob unknown attribute", "noSuchField", 1)));
+
+    var response = mockMvc.perform(
+        post("/" + RepoV2TestConfig.PATH)
+          .contentType(JSON_API_VALUE)
+          .content(objMapper.writeValueAsString(doc)))
+      .andExpect(status().isBadRequest())
+      .andReturn();
+
+    Map<String, Object> errorDoc = objMapper.readValue(response.getResponse().getContentAsString(),
+      IT_OM_TYPE_REF);
+    assertNotNull(errorDoc.get("errors"));
+  }
+
+  @Test
+  public void update_invalidAttributeType_badRequest() throws Exception {
+    PersonDTO personDto = PersonDTO.builder()
+      .name("Bob invalid attribute type")
+      .build();
+    JsonApiDocument doc = JsonApiDocuments.createJsonApiDocument(null, PersonDTO.TYPE_NAME,
+      JsonAPITestHelper.toAttributeMap(personDto));
+    var created = repositoryV2.handleCreate(doc, null);
+    UUID assignedId = JsonApiModelAssistant.extractUUIDFromRepresentationModelLink(created);
+
+    Map<String, Object> patchDoc = Map.of("data", Map.of("type", PersonDTO.TYPE_NAME,
+      "id", assignedId.toString(), "attributes", Map.of("room", "not a number")));
+
+    var response = mockMvc.perform(
+        patch("/" + RepoV2TestConfig.PATH + "/" + assignedId)
+          .contentType(JSON_API_VALUE)
+          .content(objMapper.writeValueAsString(patchDoc)))
+      .andExpect(status().isBadRequest())
+      .andReturn();
+
+    Map<String, Object> errorDoc = objMapper.readValue(response.getResponse().getContentAsString(),
+      IT_OM_TYPE_REF);
+    assertNotNull(errorDoc.get("errors"));
+  }
+
+  @Test
+  public void create_mismatchedAttributeShape_badRequest() throws Exception {
+    Map<String, Object> doc = Map.of("data", Map.of("type", PersonDTO.TYPE_NAME,
+      "attributes", Map.of("name", Map.of("first", "Bob"))));
+
+    var response = mockMvc.perform(
+        post("/" + RepoV2TestConfig.PATH)
+          .contentType(JSON_API_VALUE)
+          .content(objMapper.writeValueAsString(doc)))
+      .andExpect(status().isBadRequest())
+      .andReturn();
+
+    Map<String, Object> errorDoc = objMapper.readValue(response.getResponse().getContentAsString(),
+      IT_OM_TYPE_REF);
+    assertNotNull(errorDoc.get("errors"));
+  }
+
+  @Test
+  public void create_numberOutOfRange_badRequest() throws Exception {
+    Map<String, Object> doc = Map.of("data", Map.of("type", PersonDTO.TYPE_NAME,
+      "attributes", Map.of("name", "Bob out of range", "room", 99999999999L)));
+
+    var response = mockMvc.perform(
+        post("/" + RepoV2TestConfig.PATH)
+          .contentType(JSON_API_VALUE)
+          .content(objMapper.writeValueAsString(doc)))
+      .andExpect(status().isBadRequest())
+      .andReturn();
+
+    Map<String, Object> errorDoc = objMapper.readValue(response.getResponse().getContentAsString(),
+      IT_OM_TYPE_REF);
+    assertNotNull(errorDoc.get("errors"));
+  }
+
   @TestConfiguration
   public static class RepoV2TestConfig {
 

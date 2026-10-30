@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.toedter.spring.hateoas.jsonapi.JsonApiError;
 import com.toedter.spring.hateoas.jsonapi.JsonApiErrors;
 
+import tools.jackson.core.JacksonException;
+
 import ca.gc.aafc.dina.exception.ConflictException;
 import ca.gc.aafc.dina.exception.DuplicateResourceException;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
@@ -114,6 +116,12 @@ public class JsonApiExceptionControllerAdvice {
 
   @ExceptionHandler
   public ResponseEntity<JsonApiErrors> handleIllegalStateException(IllegalStateException ex) {
+    return buildBadRequestResponse(ex);
+  }
+
+  // Catch all jackson exceptions as bad request errors
+  @ExceptionHandler(JacksonException.class)
+  public ResponseEntity<JsonApiErrors> handleClientJsonErrors(JacksonException ex) {
     return buildBadRequestResponse(ex);
   }
 

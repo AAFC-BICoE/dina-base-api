@@ -3,6 +3,7 @@ package ca.gc.aafc.dina.entity;
 import java.io.Serializable;
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -16,6 +17,7 @@ import java.util.regex.Pattern;
  */
 @Data
 @Builder
+@Jacksonized
 public class StorageGridLayout implements Serializable {
 
   @NotNull
