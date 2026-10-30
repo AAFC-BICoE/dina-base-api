@@ -1,8 +1,11 @@
 package ca.gc.aafc.dina.jpa;
 
 import java.lang.reflect.Type;
+import java.time.LocalDate;
 
 import org.hibernate.type.format.AbstractJsonFormatMapper;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.json.JsonMapper;
@@ -18,7 +21,10 @@ public class DinaJackson3JsonFormatMapper extends AbstractJsonFormatMapper {
   private final JsonMapper mapper;
 
   public DinaJackson3JsonFormatMapper() {
-    this(JsonMapper.builder().findAndAddModules().build());
+    // keep LocalDate as [yyyy, mm, dd], the format used by the previous (Jackson 2) mapper
+    this(JsonMapper.builder().findAndAddModules()
+      .withConfigOverride(LocalDate.class, o -> o.setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.ARRAY)))
+      .build());
   }
 
   public DinaJackson3JsonFormatMapper(JsonMapper mapper) {
