@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -129,22 +129,22 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-filter</artifactId>
-      <version>1.0</version>
+      <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-messaging</artifactId>
-      <version>1.0</version>
+      <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-json</artifactId>
-      <version>1.0</version>
+      <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>1.0</version>
+      <version>1.1-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
