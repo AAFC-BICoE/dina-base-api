@@ -137,6 +137,22 @@ public class SimpleFilterHandlerV2IT extends BasePostgresItContext {
   }
 
   @Test
+  public void searchEmployees_whenNameFilterIsILikeWithAccent_filteredEmployeesAreReturned() {
+    for (String name : List.of("Léa", "léo", "Paul")) {
+      entityManager.persist(Person.builder().uuid(UUID.randomUUID()).name(name).build());
+    }
+
+    QueryComponent qc = QueryComponent.builder()
+      .filters(new FilterExpression("name", Ops.LIKE_IC, "%Lé%"))
+      .build();
+
+    var personDtos = this.personRepository.getAll(qc);
+    assertEquals(List.of("Léa", "léo"),
+      personDtos.resourceList().stream().map(m -> m.getDto().getName()).sorted().collect(Collectors.toList())
+    );
+  }
+
+  @Test
   public void searchEmployees_unknownSort_exception() {
     String sortQuery = "sort=abc";
     assertThrows(UnknownAttributeException.class, () -> this.personRepository.getAll(sortQuery));
