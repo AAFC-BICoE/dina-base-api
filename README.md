@@ -5,7 +5,7 @@ Base [DINA](https://www.dina-project.net) API package for Java built on [SpringB
 
 ## Required
 
-* Java 21
+* Java 25
 * Maven 3.8 (tested)
 
 ## Documentation
