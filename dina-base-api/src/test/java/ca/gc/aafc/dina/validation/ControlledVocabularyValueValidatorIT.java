@@ -10,7 +10,7 @@ import ca.gc.aafc.dina.entity.ControlledVocabulary;
 import ca.gc.aafc.dina.entity.MyControlledVocabulary;
 import ca.gc.aafc.dina.entity.MyControlledVocabularyItem;
 import ca.gc.aafc.dina.entity.Person;
-import ca.gc.aafc.dina.entity.ma.TestManagedAttributeUsage;
+import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.service.ControlledVocabularyItemService;
 import ca.gc.aafc.dina.service.ControlledVocabularyService;
@@ -21,9 +21,12 @@ import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.List;
 import java.util.UUID;
+import lombok.Builder;
+import lombok.Data;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ValidationException;
@@ -35,6 +38,16 @@ import jakarta.validation.ValidationException;
 public class ControlledVocabularyValueValidatorIT {
 
   public static final String CONTROLLED_VOCAB_CREATED_BY = "system";
+
+  @Data
+  @Builder
+  static class TestManagedAttributeUsage implements DinaEntity {
+    private Integer id;
+    private UUID uuid;
+    private Map<String, String> managedAttributes;
+    private String createdBy;
+    private OffsetDateTime createdOn;
+  }
 
   @Inject
   private ControlledVocabularyService<MyControlledVocabulary> controlledVocabularyService;
