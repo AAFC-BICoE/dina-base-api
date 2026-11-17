@@ -33,12 +33,18 @@ public class DinaMessageSerDeIT {
 
     String oenAsJson = TestResourceHelper.OBJECT_MAPPER.writeValueAsString(oen);
     String rtunAsJson = TestResourceHelper.OBJECT_MAPPER.writeValueAsString(rtun);
+    String replayRequestAsJson = TestResourceHelper.OBJECT_MAPPER.writeValueAsString(
+      new DeadLetterQueueReplayRequest());
 
     DinaMessage oenAsMessage = TestResourceHelper.OBJECT_MAPPER.readValue(oenAsJson, DinaMessage.class);
     assertEquals(ObjectExportNotification.class, oenAsMessage.getClass());
 
     DinaMessage rtunAsMessage = TestResourceHelper.OBJECT_MAPPER.readValue(rtunAsJson, DinaMessage.class);
     assertEquals(ReportTemplateUploadNotification.class, rtunAsMessage.getClass());
+
+    DinaMessage replayRequestAsMessage = TestResourceHelper.OBJECT_MAPPER.readValue(
+      replayRequestAsJson, DinaMessage.class);
+    assertEquals(DeadLetterQueueReplayRequest.class, replayRequestAsMessage.getClass());
 
     assertThrows(InvalidTypeIdException.class, () -> TestResourceHelper.OBJECT_MAPPER.readValue(rtunAsJson, ObjectExportNotification.class));
   }

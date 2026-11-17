@@ -5,6 +5,7 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import ca.gc.aafc.dina.messaging.message.DeadLetterQueueReplayRequest;
 import ca.gc.aafc.dina.messaging.message.DocumentOperationNotification;
 import ca.gc.aafc.dina.messaging.message.ObjectExportNotification;
 import ca.gc.aafc.dina.messaging.message.ReportTemplateUploadNotification;
@@ -18,6 +19,7 @@ import ca.gc.aafc.dina.messaging.message.UserMessageNotification;
   include = JsonTypeInfo.As.PROPERTY,
   property = "type")
 @JsonSubTypes({
+  @JsonSubTypes.Type(value = DeadLetterQueueReplayRequest.class, name = DeadLetterQueueReplayRequest.TYPE),
   @JsonSubTypes.Type(value = DocumentOperationNotification.class, name = DocumentOperationNotification.TYPE),
   @JsonSubTypes.Type(value = ReportTemplateUploadNotification.class, name = ReportTemplateUploadNotification.TYPE),
   @JsonSubTypes.Type(value = ObjectExportNotification.class, name = ObjectExportNotification.TYPE),
