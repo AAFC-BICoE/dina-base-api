@@ -415,6 +415,9 @@
 			<column name="vocabulary_element_type" type="varchar(50)"/>
 			<column name="unit" type="varchar(50)"/>
 			<column name="dina_component" type="varchar(255)"/>
+			<column name="system_defined" type="boolean" defaultValueBoolean="false">
+				<constraints nullable="false"/>
+			</column>
 			<column name="multilingual_title" type="jsonb"/>
 			<column name="multilingual_description" type="jsonb"/>
 

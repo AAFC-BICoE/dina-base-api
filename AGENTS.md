@@ -23,3 +23,4 @@ Base library for [DINA](https://www.dina-project.net) APIs, built on Spring Boot
 - Test-only helper classes that are used by a single test belong as nested classes in that test, not as separate files.
 - Use Lombok (`@Data`, `@Builder`) for simple models; see `lombok.config`.
 - Update `docs/*.adoc` when changing documented behavior.
+- UUIDs must be real, generated values. Never hand-write or invent one (e.g. `00000000-0000-0000-0000-000000000001`); generate it with a UUID generator such as `UUID.randomUUID()`, `uuidgen`, or `python -c "import uuid; print(uuid.uuid4())"` (this is also the accepted way to generate values for Liquibase XML changesets).

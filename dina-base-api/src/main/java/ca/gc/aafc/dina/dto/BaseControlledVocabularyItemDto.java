@@ -32,6 +32,9 @@ public abstract class BaseControlledVocabularyItemDto <T extends BaseControlledV
 
   @JsonApiImmutable(JsonApiImmutable.ImmutableOn.UPDATE)
   protected TypedVocabularyElement.VocabularyElementType vocabularyElementType;
+
+  @JsonApiImmutable(JsonApiImmutable.ImmutableOn.UPDATE)
+  protected boolean systemDefined;
   
   protected String[] acceptedValues;
 

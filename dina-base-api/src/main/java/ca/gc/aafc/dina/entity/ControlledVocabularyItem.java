@@ -27,6 +27,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -101,6 +102,10 @@ public abstract class ControlledVocabularyItem implements DinaEntity {
 
   @Size(max = 250)
   private String dinaComponent;
+
+  @Builder.Default
+  @Column(nullable = false)
+  private boolean systemDefined = false;
 
   @NotBlank
   @Column(name = "created_by", updatable = false)
