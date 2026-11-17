@@ -57,6 +57,27 @@ public abstract class ControlledVocabularyItemService<T extends ControlledVocabu
     }
   }
 
+  /**
+   * Deletes the item unless it is systemDefined. Done here rather than in preDelete since subclasses
+   * override preDelete without calling super.
+   */
+  @Override
+  public void delete(T entity) {
+    if (entity.isSystemDefined()) {
+      throw new IllegalStateException(
+        "ControlledVocabularyItem is system defined and cannot be deleted: " + entity.getKey());
+    }
+    super.delete(entity);
+  }
+
+  /**
+   * Base implementation rejects all deletions. Subclasses allowing deletion should override this without
+   * calling super. The typical override checks whether the item's key is still in use (for example, by
+   * the {@link ca.gc.aafc.dina.validation.ManagedAttributeValueValidatorV2} instances applicable to the item)
+   * and throws {@link IllegalStateException} if it is.
+   *
+   * @param entity the item about to be deleted
+   */
   @Override
   protected void preDelete(ControlledVocabularyItem entity) {
     throw new UnsupportedOperationException("DELETE");

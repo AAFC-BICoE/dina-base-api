@@ -25,6 +25,7 @@ import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Instant;
@@ -93,6 +94,29 @@ public class ControlledVocabularyServiceIT {
         .createdBy(CONTROLLED_VOCAB_CREATED_BY)
         .controlledVocabulary(controlledVocabulary).build());
     assertEquals("protocol_data_element_1_integer", controlledVocabularyItem.getKey());
+  }
+
+  @Test
+  public void controlledVocabularyItemService_OnDeleteSystemDefined_throwsIllegalState() {
+    MyControlledVocabulary controlledVocabulary = controlledVocabularyService
+      .createAndFlush(MyControlledVocabulary.builder()
+        .uuid(UUID.randomUUID())
+        .type(ControlledVocabulary.ControlledVocabularyType.MANAGED_ATTRIBUTE)
+        .vocabClass(ControlledVocabulary.ControlledVocabularyClass.QUALIFIED_VALUE)
+        .name("System Vocab")
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY).build());
+
+    MyControlledVocabularyItem item = controlledVocabularyItemService
+      .createAndFlush(MyControlledVocabularyItem.builder()
+        .uuid(UUID.randomUUID())
+        .vocabularyElementType(TypedVocabularyElement.VocabularyElementType.STRING)
+        .group("grp")
+        .name("System Item")
+        .systemDefined(true)
+        .createdBy(CONTROLLED_VOCAB_CREATED_BY)
+        .controlledVocabulary(controlledVocabulary).build());
+
+    assertThrows(IllegalStateException.class, () -> controlledVocabularyItemService.delete(item));
   }
 
   @Test
