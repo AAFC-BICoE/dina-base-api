@@ -19,7 +19,9 @@ import ca.gc.aafc.dina.exception.UnknownAttributeException;
 /**
  * FIQL query handling
  * <a href="https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00">...</a>
+ * @deprecated Planned for removal in 1.2
  */
+@Deprecated
 public final class FIQLFilterHandler {
 
   private FIQLFilterHandler() {
