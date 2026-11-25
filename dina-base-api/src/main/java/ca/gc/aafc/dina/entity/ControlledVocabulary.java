@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -86,6 +87,14 @@ public abstract class ControlledVocabulary implements DinaEntity {
 
   @Size(max = 255)
   private String version;
+
+  /**
+   * If true, all items of the vocabulary must have a unique position.
+   * If false, items must not have a position.
+   */
+  @Builder.Default
+  @Column(nullable = false)
+  private boolean ordered = false;
 
   @JdbcTypeCode(SqlTypes.JSON)
   private MultilingualTitle multilingualTitle;

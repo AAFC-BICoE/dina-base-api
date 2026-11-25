@@ -1,6 +1,7 @@
 package ca.gc.aafc.dina.entity;
 
 import jakarta.persistence.Entity;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
@@ -9,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 
 @Entity(name = "test_controlled_vocabulary")
 @SuperBuilder
+@NoArgsConstructor
 public class MyControlledVocabulary extends ControlledVocabulary {
 
 }
