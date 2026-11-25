@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -46,8 +47,8 @@ public class ControlledVocabularyItemPositionIT {
   @AfterEach
   public void cleanUp() {
     dbSupport.runInNewTransaction(em -> {
-      em.createQuery("delete from MyControlledVocabularyItem").executeUpdate();
-      em.createQuery("delete from MyControlledVocabulary").executeUpdate();
+      em.createQuery("delete from test_controlled_vocabulary_item").executeUpdate();
+      em.createQuery("delete from test_controlled_vocabulary").executeUpdate();
     });
   }
 
@@ -72,7 +73,7 @@ public class ControlledVocabularyItemPositionIT {
     UUID item3 = createItem(tx, vocab, "item 3", 3);
 
     // moving the last item to position 2 alone conflicts with item 2, rejected on commit
-    assertThrows(RuntimeException.class, () -> setPosition(tx, item3, 2));
+    assertThrows(DataIntegrityViolationException.class, () -> setPosition(tx, item3, 2));
     assertEquals(3, findPosition(tx, item3));
 
     // moving the last item to position 2 and the previous one to position 3 is valid
@@ -86,6 +87,25 @@ public class ControlledVocabularyItemPositionIT {
     assertEquals(1, findPosition(tx, item1));
     assertEquals(2, findPosition(tx, item3));
     assertEquals(3, findPosition(tx, item2));
+  }
+
+  @Test
+  public void orderedVocabulary_duplicatedPosition_rejectedOnCommit() {
+    TransactionTemplate tx = new TransactionTemplate(transactionManager);
+
+    MyControlledVocabulary vocab = tx.execute(status -> controlledVocabularyService.create(
+      MyControlledVocabulary.builder()
+        .uuid(UUID.randomUUID())
+        .type(ControlledVocabulary.ControlledVocabularyType.SYSTEM)
+        .vocabClass(ControlledVocabulary.ControlledVocabularyClass.CONTROLLED_TERM)
+        .name("ordered vocab")
+        .ordered(true)
+        .createdBy("test").build()));
+
+    createItem(tx, vocab, "item 1", 1);
+
+    // a second item at the same position is rejected by the database when committing
+    assertThrows(DataIntegrityViolationException.class, () -> createItem(tx, vocab, "item 2", 1));
   }
 
   private UUID createItem(TransactionTemplate tx, MyControlledVocabulary vocab, String name, int position) {
