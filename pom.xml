@@ -53,12 +53,11 @@
     <!-- Common sub-module dependency properties -->
     <jakarta.inject.version>2.0.1</jakarta.inject.version>
     <antlr4.version>4.13.1</antlr4.version>
-    <jakarta.json-api.version>2.0.2</jakarta.json-api.version>
+    <jakarta.json-api.version>2.1.3</jakarta.json-api.version>
     <xml-unit.version>2.10.0</xml-unit.version>
     <commons-io.version>2.22.0</commons-io.version>
 
     <!-- Versions override-->
-    <elasticsearch-client.version>8.18.8</elasticsearch-client.version>
     <groovy.version>4.0.32</groovy.version>
     <json-path.version>3.0.0</json-path.version>
   </properties>

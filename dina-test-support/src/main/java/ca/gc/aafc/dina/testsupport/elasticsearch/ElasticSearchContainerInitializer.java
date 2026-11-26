@@ -36,7 +36,7 @@ public class ElasticSearchContainerInitializer implements ApplicationContextInit
 
   private static final String ES_TEST_USERNAME = "elastic";
   private static final String ES_TEST_PASSWORD = "s3cretPassword";
-  private static final String ES_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:8.19.8";
+  private static final String ES_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:9.2.8";
   private static final String LOG_MESSAGE_REGEX = ".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)";
 
   private static final Object LOCK = new Object();

@@ -1,20 +1,20 @@
 package ca.gc.aafc.dina.search.config;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.CredentialsProvider;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.core5.http.HttpHost;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
+import co.elastic.clients.json.jackson.Jackson3JsonpMapper;
+import co.elastic.clients.transport.rest5_client.Rest5ClientTransport;
+import co.elastic.clients.transport.rest5_client.low_level.Rest5Client;
+import co.elastic.clients.transport.rest5_client.low_level.Rest5ClientBuilder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -31,7 +31,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import lombok.extern.log4j.Log4j2;
 
-@ConditionalOnProperty(prefix = "elasticsearch", name = "host")
+@ConditionalOnProperty("elasticsearch.host")
 @Configuration
 @Log4j2
 public class ElasticSearchConfig {
@@ -42,26 +42,28 @@ public class ElasticSearchConfig {
   public ElasticsearchClient provideClient(ElasticSearchProperties esProps) throws IOException {
     int port = esProps.getPort() <= 0 ? DEFAULT_PORT : esProps.getPort();
 
-    log.debug("Configuring Elasticsearch client for {}:{}", esProps.getHost(), port);
+    HttpHost host = new HttpHost(esProps.getScheme(), esProps.getHost(), port);
 
-    var restClientBuilder = RestClient.builder(
-      new HttpHost(esProps.getHost(), port, esProps.getScheme())
-    );
+    log.debug("Configuring Elasticsearch client for {}", host);
 
-    // Optional
-    CredentialsProvider credentialsProvider = null;
+    var restClientBuilder = Rest5Client.builder(host);
+
     SSLContext sslContext = null;
-
-    if (StringUtils.isNotBlank(esProps.getUsername())) {
-      credentialsProvider = new BasicCredentialsProvider();
-      credentialsProvider.setCredentials(AuthScope.ANY,
-        new UsernamePasswordCredentials(esProps.getUsername(), esProps.getPassword()));
-    }
-
     if (StringUtils.isNotBlank(esProps.getCertPath())) {
       sslContext = createSSLContext(esProps.getCertPath());
     }
-    return createElasticsearchClient(restClientBuilder, credentialsProvider, sslContext);
+    return createElasticsearchClient(restClientBuilder,
+      createCredentialsProvider(host, esProps.getUsername(), esProps.getPassword()), sslContext);
+  }
+
+  private static CredentialsProvider createCredentialsProvider(HttpHost host, String username, String password) {
+    if (StringUtils.isBlank(username)) {
+      return null;
+    }
+    BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+    credentialsProvider.setCredentials(new AuthScope(host),
+      new UsernamePasswordCredentials(username, password == null ? null : password.toCharArray()));
+    return credentialsProvider;
   }
 
   /**
@@ -71,24 +73,23 @@ public class ElasticSearchConfig {
    * @param sslContext
    * @return
    */
-  public static ElasticsearchClient createElasticsearchClient(RestClientBuilder restClientBuilder,
+  public static ElasticsearchClient createElasticsearchClient(Rest5ClientBuilder restClientBuilder,
                                                        CredentialsProvider credentialsProvider,
                                                        SSLContext sslContext) {
-    RestClient restClient =
+    if (sslContext != null) {
+      restClientBuilder.setSSLContext(sslContext);
+    }
+    Rest5Client restClient =
       restClientBuilder
         .setHttpClientConfigCallback(httpClientBuilder -> {
           if (credentialsProvider != null) {
             httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
           }
-          if (sslContext != null) {
-            httpClientBuilder.setSSLContext(sslContext);
-          }
-          return httpClientBuilder;
         })
         .build();
 
     return new ElasticsearchClient(
-      new RestClientTransport(restClient, new JacksonJsonpMapper())
+      new Rest5ClientTransport(restClient, new Jackson3JsonpMapper())
     );
   }
 
