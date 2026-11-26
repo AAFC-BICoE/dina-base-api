@@ -16,6 +16,9 @@ public class ControlledVocabularyItemValidator extends DinaBaseValidator<Control
   private static final String MISSING_PLACEHOLDER_KEY = "controlledVocabulary.uriTemplate.missingPlaceholder";
   private static final String EMPTY_DESCRIPTION_KEY = "controlledVocabulary.emptyDescription";
 
+  private static final String POSITION_REQUIRED_KEY = "controlledVocabularyItem.position.required";
+  private static final String POSITION_NOT_ALLOWED_KEY = "controlledVocabularyItem.position.notAllowed";
+
   public ControlledVocabularyItemValidator(@Named("validationMessageSource") MessageSource messageSource) {
     super(ControlledVocabularyItem.class, messageSource);
   }
@@ -33,6 +36,20 @@ public class ControlledVocabularyItemValidator extends DinaBaseValidator<Control
     }
     validateDescription(target, errors);
     validateUriTemplate(target, errors);
+    validatePosition(target, errors);
+  }
+
+  public void validatePosition(ControlledVocabularyItem target, Errors errors) {
+    ControlledVocabulary vocab = target.getControlledVocabulary();
+    if (vocab == null) {
+      return;
+    }
+
+    if (vocab.isOrdered() && target.getPosition() == null) {
+      errors.rejectValue("position", POSITION_REQUIRED_KEY, getMessage(POSITION_REQUIRED_KEY));
+    } else if (!vocab.isOrdered() && target.getPosition() != null) {
+      errors.rejectValue("position", POSITION_NOT_ALLOWED_KEY, getMessage(POSITION_NOT_ALLOWED_KEY));
+    }
   }
 
   public void validateDescription(ControlledVocabularyItem target, Errors errors) {

@@ -43,6 +43,8 @@ public abstract class BaseControlledVocabularyItemDto <T extends BaseControlledV
 
   protected String dinaComponent;
 
+  protected Integer position;
+
   protected String createdBy;
   protected OffsetDateTime createdOn;
   protected Instant lastUpdatedOn;

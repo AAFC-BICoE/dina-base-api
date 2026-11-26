@@ -12,6 +12,7 @@ import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
 import ca.gc.aafc.dina.vocabulary.TypedVocabularyElement;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -102,6 +103,16 @@ public abstract class ControlledVocabularyItem implements DinaEntity {
 
   @Size(max = 250)
   private String dinaComponent;
+
+  /**
+   * Position of the item within its vocabulary. Positions are 1-based (the first item is at
+   * position 1). Required (and unique per vocabulary) when the vocabulary is ordered, must be
+   * null otherwise. Uniqueness is enforced by a deferred database constraint, so it is only
+   * checked when the transaction commits.
+   */
+  @Min(1)
+  @Column(name = "item_position")
+  private Integer position;
 
   @Builder.Default
   @Column(nullable = false)

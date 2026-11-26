@@ -5,11 +5,13 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity(name = "test_controlled_vocabulary_item")
 @SuperBuilder
+@NoArgsConstructor
 @Getter
 @Setter
 public class MyControlledVocabularyItem extends ControlledVocabularyItem {

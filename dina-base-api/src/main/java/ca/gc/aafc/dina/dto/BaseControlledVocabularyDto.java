@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import ca.gc.aafc.dina.entity.ControlledVocabulary;
 import ca.gc.aafc.dina.i18n.MultilingualDescription;
 import ca.gc.aafc.dina.i18n.MultilingualTitle;
+import ca.gc.aafc.dina.jsonapi.JsonApiImmutable;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -22,6 +23,9 @@ public abstract class BaseControlledVocabularyDto implements JsonApiResource {
 
   protected ControlledVocabulary.ControlledVocabularyType type;
   protected ControlledVocabulary.ControlledVocabularyClass vocabClass;
+
+  @JsonApiImmutable(JsonApiImmutable.ImmutableOn.UPDATE)
+  protected boolean ordered;
 
   protected String term;
   protected String version;

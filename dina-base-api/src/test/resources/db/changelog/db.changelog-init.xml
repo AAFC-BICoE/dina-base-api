@@ -381,6 +381,9 @@
 			</column>
 			<column name="term" type="varchar(255)"/>
 			<column name="version" type="varchar(255)"/>
+			<column name="ordered" type="boolean" defaultValueBoolean="false">
+				<constraints nullable="false"/>
+			</column>
 			<column name="multilingual_title" type="jsonb"/>
 			<column name="multilingual_description" type="jsonb"/>
 
@@ -415,6 +418,7 @@
 			<column name="vocabulary_element_type" type="varchar(50)"/>
 			<column name="unit" type="varchar(50)"/>
 			<column name="dina_component" type="varchar(255)"/>
+			<column name="item_position" type="integer"/>
 			<column name="system_defined" type="boolean" defaultValueBoolean="false">
 				<constraints nullable="false"/>
 			</column>
@@ -428,6 +432,12 @@
 		<addUniqueConstraint
 				columnNames="controlled_vocabulary_id, key, dina_component"
 				constraintName="unique_key_per_controlled_vocabulary_per_component"
+				tableName="test_controlled_vocabulary_item"/>
+		<addUniqueConstraint
+				columnNames="controlled_vocabulary_id, item_position"
+				constraintName="unique_position_per_controlled_vocabulary"
+				deferrable="true"
+				initiallyDeferred="true"
 				tableName="test_controlled_vocabulary_item"/>
 	</changeSet>
 
