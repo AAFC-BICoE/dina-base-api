@@ -34,6 +34,7 @@ Base library for [DINA](https://www.dina-project.net) APIs, built on Spring Boot
 
 - Set a release version from the current major and minor version:
   `mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion} versions:commit`
+- Before setting the next development version, verify that the current Git branch is `dev`; do not run that command on another branch.
 - Set the next development version from the next minor version:
   `mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}-SNAPSHOT versions:commit`
 - Run these commands from the repository root, review the resulting POM changes, and do not create a Git commit.

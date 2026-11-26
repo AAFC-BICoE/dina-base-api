@@ -1,6 +1,6 @@
 name: Check Dependencies' License
 
-on: [push]
+on: [workflow_dispatch]
 
 permissions:
   contents: read
