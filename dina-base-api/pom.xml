@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.github.aafc-bicoe</groupId>
     <artifactId>dina-base-parent</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2</version>
   </parent>
 
   <artifactId>dina-base-api</artifactId>
@@ -21,7 +21,7 @@
 
     <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
 
-    <javers.version>7.11.9</javers.version>
+    <javers.version>7.13.0</javers.version>
     <mybatis.version>4.0.1</mybatis.version>
     <jsoup.version>1.24.1</jsoup.version>
 
@@ -129,22 +129,22 @@
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-filter</artifactId>
-      <version>1.2-SNAPSHOT</version>
+      <version>1.2</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-messaging</artifactId>
-      <version>1.2-SNAPSHOT</version>
+      <version>1.2</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-json</artifactId>
-      <version>1.2-SNAPSHOT</version>
+      <version>1.2</version>
     </dependency>
     <dependency>
       <groupId>io.github.aafc-bicoe</groupId>
       <artifactId>dina-test-support</artifactId>
-      <version>1.2-SNAPSHOT</version>
+      <version>1.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -13,7 +13,10 @@ Base library for [DINA](https://www.dina-project.net) APIs, built on Spring Boot
 ## Build and test
 
 - Compile everything: `mvn -o test-compile` (use `-pl <module> -am` for one module plus its siblings; sibling SNAPSHOT artifacts are not otherwise resolvable)
-- Unit tests run with surefire (`*Test`); integration tests (`*IT`) run with failsafe and need Docker (Postgres Testcontainers).
+- Run unit tests with `mvn -o test`; run unit and integration tests with `mvn -o verify`.
+- Unit tests run with surefire (`*Test`); integration tests (`*IT`) run with failsafe.
+- Integration tests that use PostgreSQL, RabbitMQ, or Elasticsearch Testcontainers require Docker and may be slower or environment-dependent.
+- Run a targeted unit test with `mvn -o -pl <module> -am -Dtest=<TestClass> test`; run a targeted integration test with `mvn -o -pl <module> -am -Dit.test=<TestClass> verify`.
 - Static analysis: Checkstyle and SpotBugs are configured in the root `pom.xml` (`spotbugs-exclude.xml`, `owasp-suppression.xml`). Keep code compliant.
 
 ## Conventions
@@ -23,4 +26,14 @@ Base library for [DINA](https://www.dina-project.net) APIs, built on Spring Boot
 - Test-only helper classes that are used by a single test belong as nested classes in that test, not as separate files.
 - Use Lombok (`@Data`, `@Builder`) for simple models; see `lombok.config`.
 - Update `docs/*.adoc` when changing documented behavior.
+- Generate the AsciiDoc site with `mvn clean compile`; output is written to `target/generated-docs`.
+- Do not manually edit generated files or build output under `target/`.
 - UUIDs must be real, generated values. Never hand-write or invent one (e.g. `00000000-0000-0000-0000-000000000001`); generate it with a UUID generator such as `UUID.randomUUID()`, `uuidgen`, or `python -c "import uuid; print(uuid.uuid4())"` (this is also the accepted way to generate values for Liquibase XML changesets).
+
+## Release versioning
+
+- Set a release version from the current major and minor version:
+  `mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion} versions:commit`
+- Set the next development version from the next minor version:
+  `mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}-SNAPSHOT versions:commit`
+- Run these commands from the repository root, review the resulting POM changes, and do not create a Git commit.
